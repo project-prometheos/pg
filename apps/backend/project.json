@@ -1,0 +1,36 @@
+{
+  "name": "backend",
+  "root": "apps/backend",
+  "projectType": "application",
+  "sourceRoot": "apps/backend/app",
+  "targets": {
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe -m uvicorn app.main:app --reload",
+        "cwd": "apps/backend"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python -m compileall app",
+        "cwd": "apps/backend"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python -m ruff check app",
+        "cwd": "apps/backend"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python -m pytest",
+        "cwd": "apps/backend"
+      }
+    }
+  }
+}

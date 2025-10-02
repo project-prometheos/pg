@@ -1,0 +1,19 @@
+{
+  "name": "@pg/ui",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "exports": {
+    "./seed-box": "./src/SeedBox.tsx"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "eslint src --ext .ts,.tsx"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0"
+  },
+  "devDependencies": {
+    "typescript": "5.4.5"
+  }
+}

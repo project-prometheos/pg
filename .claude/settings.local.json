@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git log:*)",
+      "Bash(python:*)",
+      "Bash(where python)",
+      "Bash(C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe -m pip install -e packages/problemkit -e apps/backend[dev])",
+      "Bash(curl http://127.0.0.1:8000/api/health)",
+      "Bash(curl http://127.0.0.1:8000/api/problems/calc.product_rule.v1?seed=0)",
+      "Bash(npm run dev:*)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm run:*)",
+      "Bash(where uvicorn)",
+      "Bash(C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe -m uvicorn app.main:app --reload)",
+      "Bash(pnpm store prune:*)",
+      "Bash(pnpm remove:*)",
+      "Bash(pnpm add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

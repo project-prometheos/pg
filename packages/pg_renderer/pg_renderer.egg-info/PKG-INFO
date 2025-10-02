@@ -1,0 +1,70 @@
+Metadata-Version: 2.4
+Name: pg-renderer
+Version: 0.1.0
+Summary: Pure Python PG (Problem Generation) renderer for WeBWorK
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: sympy>=1.12
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0; extra == "dev"
+Requires-Dist: pytest-cov>=4.0; extra == "dev"
+Dynamic: requires-python
+
+# PG Renderer
+
+Pure Python renderer for WeBWorK PG (Problem Generation) files.
+
+## Features
+
+- **Week 1 MVP**: Numeric problems with basic PGML
+  - Variable assignments and math operations
+  - Random number generation with seeds
+  - PGML markup to HTML conversion
+  - Answer checking
+
+## Installation
+
+```bash
+pip install -e packages/pg_renderer
+```
+
+## Usage
+
+```python
+from pg_renderer import PGRenderer
+
+pg_source = """
+loadMacros("PGML.pl");
+Context("Numeric");
+$a = random(1, 5, 1);
+$b = random(2, 6, 1);
+$answer = $a + $b;
+BEGIN_PGML
+What is [$a] + [$b]?
+Answer: [_____]{$answer}
+END_PGML
+"""
+
+renderer = PGRenderer()
+result = renderer.render(pg_source, seed=42)
+
+print(result['statement_html'])
+print(result['answers'])
+```
+
+## Testing
+
+```bash
+cd packages/pg_renderer
+pytest
+```
+
+## Architecture
+
+- `parser.py` - Parse PG files into structured format
+- `evaluator.py` - Execute Perl-like setup code in Python
+- `random.py` - Deterministic random number generator
+- `pgml.py` - PGML to HTML renderer
+- `answer_checker.py` - Validate student answers
+- `context.py` - MathObjects context system
+

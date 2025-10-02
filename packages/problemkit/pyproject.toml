@@ -1,0 +1,19 @@
+[project]
+name = "problemkit"
+version = "0.1.0"
+description = "Framework-agnostic problem authoring kit"
+authors = [{ name = "PG Team" }]
+requires-python = ">=3.12"
+dependencies = [
+  "pydantic>=2.6",
+  "sympy>=1.12",
+  "numpy>=1.26",
+  "pint>=0.23"
+]
+
+[tool.ruff]
+line-length = 100
+
+[tool.mypy]
+python_version = "3.12"
+strict = true

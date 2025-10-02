@@ -1,0 +1,17 @@
+{
+  "name": "@pg/schemas",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "exports": {
+    "./problem": "./src/problem.ts"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "eslint src --ext .ts"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "5.4.5"
+  }
+}
