@@ -36,6 +36,10 @@ class PGEvaluator:
         # Clean up code
         setup_code = self._strip_comments(setup_code)
         
+        # Handle do { } until () blocks by extracting and executing the inner code
+        # For MVP, we'll just execute the assignments once (ignoring the until condition)
+        setup_code = re.sub(r'do\s*\{([^}]+)\}\s*until\s*\([^)]+\);', r'\1', setup_code, flags=re.DOTALL)
+        
         # Process line by line
         for line in setup_code.split('\n'):
             line = line.strip()

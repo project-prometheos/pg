@@ -1,5 +1,5 @@
 // Database problem rendering page
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import Markdown from '../components/Markdown';
 
@@ -17,6 +17,47 @@ const DatabaseProblemPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [studentAnswers, setStudentAnswers] = useState<Record<string, string>>({});
   const [feedback, setFeedback] = useState<any>(null);
+
+  // Ref for the problem container to inject inputs after markdown renders
+  const problemRef = useRef<HTMLDivElement>(null);
+
+  // Function to render problem statement - just render markdown and let useEffect handle inputs
+  const renderProblemStatement = (html: string) => {
+    // Replace answer blank placeholders with simple text placeholders
+    const htmlWithPlaceholders = html.replace(
+      /___ANSWER_BLANK_(\w+)___/g,
+      (match, answerId) => `<span class="answer-placeholder" data-answer-id="${answerId}">[Answer ${answerId.slice(-4)}]</span>`
+    );
+    
+    return <Markdown>{htmlWithPlaceholders}</Markdown>;
+  };
+
+  // Inject actual input elements after markdown renders
+  useEffect(() => {
+    if (!problemRef.current || !problem) return;
+
+    // Find all placeholder spans and replace with inputs
+    const placeholders = problemRef.current.querySelectorAll('.answer-placeholder');
+    placeholders.forEach((placeholder) => {
+      const answerId = placeholder.getAttribute('data-answer-id');
+      if (!answerId) return;
+
+      // Create input element
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'inline-block mx-1 px-3 py-1 border-b-2 border-blue-500 focus:outline-none focus:border-blue-700 bg-blue-50 font-mono text-center';
+      input.style.width = '150px';
+      input.style.verticalAlign = 'middle';
+      input.placeholder = 'your answer';
+      input.value = studentAnswers[answerId] || '';
+      input.addEventListener('input', (e) => {
+        handleAnswerChange(answerId, (e.target as HTMLInputElement).value);
+      });
+
+      // Replace placeholder with input
+      placeholder.parentNode?.replaceChild(input, placeholder);
+    });
+  }, [problem, problemRef.current]);
 
   // Load problem on mount or when seed changes
   useEffect(() => {
@@ -159,50 +200,24 @@ const DatabaseProblemPage = () => {
           </div>
         </div>
 
-        {/* Problem Statement */}
-        <div className="mb-6 p-6 bg-white rounded-lg shadow">
-          <div className="prose max-w-none">
-            <Markdown>
-              {problem.statement_html.replace(/___ANSWER_BLANK_\w+___/g, '[answer blank]')}
-            </Markdown>
-          </div>
-        </div>
-
-        {/* Answer Form */}
-        {problem.inputs && problem.inputs.length > 0 && (
-          <form onSubmit={handleSubmit} className="mb-6">
-            <div className="p-6 bg-white rounded-lg shadow space-y-4">
-              <h2 className="text-xl font-semibold text-gray-900">Your Answers</h2>
-              
-              {problem.inputs.map((inputId: string, index: number) => (
-                <div key={inputId}>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Answer {index + 1}:
-                  </label>
-                  <input
-                    type="text"
-                    value={studentAnswers[inputId] || ''}
-                    onChange={(e) => handleAnswerChange(inputId, e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="Enter your answer"
-                  />
-                  {feedback && feedback.results[inputId] && (
-                    <p className={`mt-1 text-sm ${feedback.results[inputId].correct ? 'text-green-600' : 'text-red-600'}`}>
-                      {feedback.results[inputId].message}
-                    </p>
-                  )}
-                </div>
-              ))}
-              
+        {/* Problem Statement with Inline Answer Inputs */}
+        <form onSubmit={handleSubmit} className="mb-6">
+          <div className="p-6 bg-white rounded-lg shadow">
+            <div ref={problemRef} className="prose max-w-none">
+              {renderProblemStatement(problem.statement_html)}
+            </div>
+            
+            {/* Submit Button */}
+            {problem.inputs && problem.inputs.length > 0 && (
               <button
                 type="submit"
-                className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition-colors"
+                className="mt-6 w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition-colors"
               >
                 Check Answers
               </button>
-            </div>
-          </form>
-        )}
+            )}
+          </div>
+        </form>
 
         {/* Feedback */}
         {feedback && (

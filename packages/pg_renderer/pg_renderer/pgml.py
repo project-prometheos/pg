@@ -21,18 +21,19 @@ class PGMLRenderer:
         """
         html = pgml
         
-        # 1. Remove PGML table constructs (simplify for MVP)
+        # 1. Variable interpolation FIRST (before any bracket/brace processing)
+        # This prevents variables like [$a] from being corrupted by table simplification
+        html = re.sub(r'\[\$(\w+)\]', self._interpolate_var, html)
+        
+        # 2. Remove PGML table constructs (simplify for MVP)
         # These are advanced layout features: [# ... #] and [. ... .]
         html = self._simplify_tables(html)
         
-        # 2. Display math FIRST (before variable interpolation): [`` ... ``] → KaTeX display math
+        # 3. Display math: [`` ... ``] → KaTeX display math
         html = re.sub(r'\[``(.*?)``\]', r'$$\1$$', html, flags=re.DOTALL)
         
-        # 3. Inline math: [` ... `] → KaTeX inline math
+        # 4. Inline math: [` ... `] → KaTeX inline math
         html = re.sub(r'\[`(.*?)`\]', r'$\1$', html)
-        
-        # 4. Variable interpolation: [$var] (after math, so we don't break LaTeX)
-        html = re.sub(r'\[\$(\w+)\]', self._interpolate_var, html)
         
         # 5. Answer blanks: [_____]{$answer} or [_]{$answer}
         html = re.sub(r'\[_+\]\{([^}]+)\}', self._create_answer_blank, html)
@@ -47,7 +48,12 @@ class PGMLRenderer:
         
         # 7. Lists (already Markdown with leading *) - nothing to do here
         
-        # 8. Paragraphs: ensure double newlines between blocks (Markdown)
+        # 8. Cleanup: Remove any remaining PGML artifacts (conservative)
+        # IMPORTANT: Do not touch LaTeX curly braces or math content
+        # Only remove trailing PGML table options like "]*{ ... }"
+        html = re.sub(r"\]\s*\*\s*\{[^}]+\}", "]", html)
+        
+        # 9. Paragraphs: ensure double newlines between blocks (Markdown)
         # Normalize Windows newlines and collapse extra spaces
         html = html.replace('\r\n', '\n')
         # Ensure we have a trailing newline
@@ -63,8 +69,39 @@ class PGMLRenderer:
         PGML tables use [# ... #] for rows and [. ... .] for cells.
         For MVP, we extract the content and ignore the layout directives.
         """
-        # Remove table options like *{ padding => [...] }
-        pgml = re.sub(r'\]\*\{[^}]+\}', ']', pgml)
+        # Remove table options like ]*{ padding => [...] }
+        # Need to handle nested braces and brackets properly
+        # Match: ]* followed by { then content (including nested [] and {}) then }
+        def remove_table_options(text):
+            # Use a more careful approach to handle nested structures
+            result = []
+            i = 0
+            while i < len(text):
+                # Look for ]*{
+                if i < len(text) - 2 and text[i:i+3] == ']*{':
+                    # Find the matching }
+                    brace_count = 1
+                    bracket_depth = 0
+                    j = i + 3
+                    while j < len(text) and brace_count > 0:
+                        if text[j] == '[':
+                            bracket_depth += 1
+                        elif text[j] == ']' and bracket_depth > 0:
+                            bracket_depth -= 1
+                        elif text[j] == '{' and bracket_depth == 0:
+                            brace_count += 1
+                        elif text[j] == '}' and bracket_depth == 0:
+                            brace_count -= 1
+                        j += 1
+                    # Replace ]*{...} with just ]
+                    result.append(']')
+                    i = j
+                else:
+                    result.append(text[i])
+                    i += 1
+            return ''.join(result)
+        
+        pgml = remove_table_options(pgml)
         
         # Convert [# ... #] table rows to simple line breaks
         pgml = re.sub(r'\[#\s*', '', pgml)
@@ -79,7 +116,14 @@ class PGMLRenderer:
     def _interpolate_var(self, match: re.Match) -> str:
         """Replace [$var] with variable value."""
         var_name = match.group(1)
-        value = self.variables.get(var_name, f'${var_name}')
+        
+        # Check if variable exists
+        if var_name not in self.variables:
+            # Variable not found - return a placeholder or empty string
+            # to avoid showing raw $varname
+            return f'[Variable ${var_name} not found]'
+        
+        value = self.variables.get(var_name)
         
         # Format numbers nicely
         if isinstance(value, float):

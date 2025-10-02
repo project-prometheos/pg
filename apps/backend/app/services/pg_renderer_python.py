@@ -7,6 +7,8 @@ from typing import Dict, Any
 from pg_renderer import PGRenderer
 from pg_renderer.answer_checker import AnswerChecker
 
+# Reload: Variable interpolation runs before table simplification
+
 
 class PGRenderService:
     """Service for rendering PG problems using Python renderer."""
