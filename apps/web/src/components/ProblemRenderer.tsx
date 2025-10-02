@@ -1,7 +1,6 @@
 import { FormEvent, useState } from 'react';
-import { InlineMath } from 'react-katex';
-import 'katex/dist/katex.min.css';
 
+import Markdown from './Markdown';
 import MathField from './math/MathField';
 import type { ProblemResponse } from '../types';
 
@@ -29,9 +28,7 @@ const ProblemRenderer = ({ problem, loading = false, onSubmit }: Props) => {
 
   return (
     <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-      <div className="text-lg">
-        <InlineMath math={problem.statementTex} />
-      </div>
+      <Markdown className="text-lg">{problem.statementTex}</Markdown>
       {problem.inputs.map((input) => (
         <div key={input.name} className="flex flex-col gap-2">
           {input.label ? <label htmlFor={input.name}>{input.label}</label> : null}

@@ -1,3 +1,4 @@
+import Markdown from './Markdown';
 import type { CheckResponse } from '../types';
 
 type Props = {
@@ -13,8 +14,10 @@ const Feedback = ({ feedback }: Props) => {
       <p>{feedback.correct ? 'Correct!' : 'Try again.'}</p>
       {feedback.feedback?.length ? (
         <ul className="mt-2 list-disc pl-4">
-          {feedback.feedback.map((line) => (
-            <li key={line}>{line}</li>
+          {feedback.feedback.map((line, idx) => (
+            <li key={idx}>
+              <Markdown>{line}</Markdown>
+            </li>
           ))}
         </ul>
       ) : null}

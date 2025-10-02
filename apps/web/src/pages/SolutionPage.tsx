@@ -1,8 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
-import { BlockMath } from 'react-katex';
-import 'katex/dist/katex.min.css';
 
+import Markdown from '../components/Markdown';
 import { fetchSolution } from '../services/api';
 
 const SolutionPage = () => {
@@ -24,9 +23,9 @@ const SolutionPage = () => {
   return (
     <article className="mx-auto max-w-3xl p-6">
       <h1 className="text-2xl font-semibold">Solution</h1>
-      <div className="mt-4 rounded bg-slate-100 p-4">
-        <BlockMath math={data?.solutionTex ?? ''} />
-      </div>
+      <Markdown className="mt-4 rounded bg-slate-100 p-4">
+        {data?.solutionTex ?? ''}
+      </Markdown>
     </article>
   );
 };
