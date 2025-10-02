@@ -18,7 +18,7 @@ def product_rule(*, seed: int, rng: RNG) -> ProblemInstance:
 
     return ProblemInstance(
         statement_tex=(
-            r"Compute $\\frac{d}{dx}\left((%s x + 1) x^{%s}\right)$." % (coefficient, exponent)
+            "Compute $\\frac{d}{dx}\\left((%s x + 1) x^{%s}\\right)$." % (coefficient, exponent)
         ),
         inputs=[InputSpec(name="ans", type="math", label="Answer")],
         answers={"ans": str(derivative)},

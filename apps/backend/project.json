@@ -7,7 +7,7 @@
     "dev": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "uvicorn app.main:app --reload",
+        "command": "C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe -m uvicorn app.main:app --reload",
         "cwd": "apps/backend"
       }
     },
