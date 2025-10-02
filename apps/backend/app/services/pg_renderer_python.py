@@ -7,7 +7,7 @@ from typing import Dict, Any
 from pg_renderer import PGRenderer
 from pg_renderer.answer_checker import AnswerChecker
 
-# Reload: Variable interpolation runs before table simplification
+# Reload: Added inequality and interval string comparison
 
 
 class PGRenderService:
@@ -33,17 +33,36 @@ class PGRenderService:
                 correct_answer = rendered['answers'][answer_id]['correct_value']
                 answer_type = rendered['answers'][answer_id]['type']
                 
+                # Build context for answer checking
+                context = {
+                    'variables': rendered['answers'][answer_id].get('variables', []),
+                    'checker': rendered['answers'][answer_id].get('checker', 'standard'),
+                    'tolerance': rendered['answers'][answer_id].get('tolerance', 0.01)
+                }
+                
+                # Debug logging
+                print(f"[DEBUG] Checking answer {answer_id}:")
+                print(f"  Student: '{student_answer}'")
+                print(f"  Correct: '{correct_answer}'")
+                print(f"  Type: {answer_type}")
+                print(f"  Context: {context}")
+                
                 is_correct, message = self.checker.check(
                     student_answer,
                     correct_answer,
-                    answer_type
+                    answer_type,
+                    context
                 )
+                
+                print(f"  Result: {is_correct} - {message}")
                 
                 results[answer_id] = {
                     'correct': is_correct,
                     'message': message,
                     'student_answer': student_answer,
-                    'correct_answer': correct_answer
+                    'correct_answer': correct_answer,
+                    'answer_type': answer_type,
+                    'context': context
                 }
         
         all_correct = all(r['correct'] for r in results.values()) if results else False

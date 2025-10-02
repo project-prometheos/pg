@@ -108,6 +108,8 @@ const DatabaseProblemPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('[Frontend] Submitting answers:', studentAnswers);
+    
     try {
       const response = await fetch(`/api/db/${problemId}/check`, {
         method: 'POST',
@@ -123,11 +125,28 @@ const DatabaseProblemPage = () => {
       }
       
       const result = await response.json();
+      console.log('[Frontend] Check result:', result);
       setFeedback(result);
     } catch (err: any) {
-      console.error('Error checking answers:', err);
+      console.error('[Frontend] Error checking answers:', err);
       setError(err.message || 'Failed to check answers');
     }
+  };
+
+  const handleShowAnswers = () => {
+    if (!problem || !problem.answers) return;
+    
+    console.log('[Frontend] Correct answers:', problem.answers);
+    
+    const correctAnswers: Record<string, string> = {};
+    problem.inputs.forEach((inputId: string) => {
+      if (problem.answers[inputId]) {
+        correctAnswers[inputId] = problem.answers[inputId].correct_value;
+      }
+    });
+    
+    setStudentAnswers(correctAnswers);
+    console.log('[Frontend] Filled in correct answers:', correctAnswers);
   };
 
   if (loading) {
@@ -207,14 +226,24 @@ const DatabaseProblemPage = () => {
               {renderProblemStatement(problem.statement_html)}
             </div>
             
-            {/* Submit Button */}
+            {/* Submit and Debug Buttons */}
             {problem.inputs && problem.inputs.length > 0 && (
-              <button
-                type="submit"
-                className="mt-6 w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition-colors"
-              >
-                Check Answers
-              </button>
+              <div className="mt-6 flex gap-3">
+                <button
+                  type="submit"
+                  className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition-colors"
+                >
+                  Check Answers
+                </button>
+                <button
+                  type="button"
+                  onClick={handleShowAnswers}
+                  className="px-6 py-3 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-md transition-colors"
+                  title="Fill in correct answers for debugging"
+                >
+                  Show Answers
+                </button>
+              </div>
             )}
           </div>
         </form>
@@ -225,9 +254,43 @@ const DatabaseProblemPage = () => {
             <h2 className={`text-xl font-semibold mb-2 ${feedback.all_correct ? 'text-green-800' : 'text-yellow-800'}`}>
               {feedback.all_correct ? '✓ Correct!' : 'Not quite right'}
             </h2>
-            <p className={feedback.all_correct ? 'text-green-700' : 'text-yellow-700'}>
+            <p className={`mb-4 ${feedback.all_correct ? 'text-green-700' : 'text-yellow-700'}`}>
               Score: {Math.round(feedback.score * 100)}%
             </p>
+            
+            {/* Detailed feedback for each answer */}
+            <div className="space-y-3 mt-4">
+              {Object.entries(feedback.results).map(([answerId, result]: [string, any]) => (
+                <div key={answerId} className={`p-3 rounded border ${result.correct ? 'bg-green-100 border-green-300' : 'bg-red-100 border-red-300'}`}>
+                  <div className="flex items-start gap-2">
+                    <span className={`font-bold ${result.correct ? 'text-green-700' : 'text-red-700'}`}>
+                      {result.correct ? '✓' : '✗'}
+                    </span>
+                    <div className="flex-1">
+                      <p className={`font-medium ${result.correct ? 'text-green-800' : 'text-red-800'}`}>
+                        {answerId}: {result.message}
+                      </p>
+                      <div className="mt-1 text-sm space-y-1">
+                        <p className="text-gray-700">
+                          <strong>Your answer:</strong> <code className="bg-white px-1 rounded">{result.student_answer}</code>
+                        </p>
+                        <p className="text-gray-700">
+                          <strong>Correct answer:</strong> <code className="bg-white px-1 rounded">{result.correct_answer}</code>
+                        </p>
+                        {result.answer_type && (
+                          <p className="text-gray-600">
+                            <strong>Type:</strong> {result.answer_type}
+                            {result.context?.checker && result.context.checker !== 'standard' && (
+                              <span className="ml-2 text-blue-600">({result.context.checker})</span>
+                            )}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 

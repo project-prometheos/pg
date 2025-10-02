@@ -13,4 +13,8 @@ pg_renderer.egg-info/SOURCES.txt
 pg_renderer.egg-info/dependency_links.txt
 pg_renderer.egg-info/requires.txt
 pg_renderer.egg-info/top_level.txt
+pg_renderer/checkers/__init__.py
+pg_renderer/checkers/base.py
+pg_renderer/checkers/formula.py
+pg_renderer/checkers/numeric.py
 tests/test_simple_numeric.py

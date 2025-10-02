@@ -36,7 +36,8 @@ class PGMLRenderer:
         html = re.sub(r'\[`(.*?)`\]', r'$\1$', html)
         
         # 5. Answer blanks: [_____]{$answer} or [_]{$answer}
-        html = re.sub(r'\[_+\]\{([^}]+)\}', self._create_answer_blank, html)
+        # Also handle optional width specifier: [_]{$answer}{15}
+        html = re.sub(r'\[_+\]\{([^}]+)\}(?:\{[0-9]+\})?', self._create_answer_blank, html)
         
         # 6. Formatting → Markdown
         # Bold: [*text*] → **text**
@@ -148,10 +149,39 @@ class PGMLRenderer:
         return f'___ANSWER_BLANK_{answer_id}___'
     
     def _eval_answer(self, expr: str) -> Any:
-        """Evaluate answer expression."""
-        # Remove $
-        expr = expr.strip().lstrip('$')
+        """
+        Evaluate answer expression.
         
-        # Look up variable
-        return self.variables.get(expr, expr)
+        The expression can be:
+        - A simple variable: $answer
+        - A Compute() expression: Compute("x >= $a")
+        - A literal string: "x >= 4"
+        """
+        expr = expr.strip()
+        
+        # If it starts with $, it's a variable reference
+        if expr.startswith('$'):
+            var_name = expr.lstrip('$')
+            result = self.variables.get(var_name, expr)
+            
+            # If the result is a string, interpolate any variables in it
+            if isinstance(result, str):
+                result = self._interpolate_variables_in_string(result)
+            
+            return result
+        
+        # Otherwise, it's a literal or expression - interpolate variables
+        return self._interpolate_variables_in_string(expr)
+    
+    def _interpolate_variables_in_string(self, text: str) -> str:
+        """Replace $variable references in a string with their values."""
+        def replacer(match):
+            var_name = match.group(1)
+            value = self.variables.get(var_name, f'${var_name}')
+            # Format numbers nicely
+            if isinstance(value, float):
+                return f'{value:g}'
+            return str(value)
+        
+        return re.sub(r'\$(\w+)', replacer, text)
 
