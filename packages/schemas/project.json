@@ -1,0 +1,21 @@
+{
+  "name": "schemas",
+  "root": "packages/schemas",
+  "projectType": "library",
+  "sourceRoot": "packages/schemas/src",
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm --dir packages/schemas build"
+      },
+      "outputs": ["{projectRoot}/dist"]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm --dir packages/schemas lint"
+      }
+    }
+  }
+}

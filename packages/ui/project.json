@@ -1,0 +1,21 @@
+{
+  "name": "ui",
+  "root": "packages/ui",
+  "projectType": "library",
+  "sourceRoot": "packages/ui/src",
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm --dir packages/ui build"
+      },
+      "outputs": ["{projectRoot}/dist"]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm --dir packages/ui lint"
+      }
+    }
+  }
+}

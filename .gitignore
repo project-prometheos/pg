@@ -1,3 +1,4 @@
+# Existing PG ignores
 *~
 *.swp
 *.bak
@@ -9,4 +10,26 @@ htdocs/node_modules
 htdocs/static-assets.json
 htdocs/**/*.min.js
 htdocs/**/*.min.css
-htdocs/tmp
+
+# Monorepo tooling
+node_modules/
+.nx/
+.pnp.cjs
+.pnp.loader.mjs
+pnpm-lock.yaml
+
+# Python caches
+__pycache__/
+.venv/
+.env
+uv.lock
+
+# Editors
+.idea/
+.vscode/
+.DS_Store
+
+# Testing artifacts
+apps/backend/.pytest_cache/
+coverage/
+dist/

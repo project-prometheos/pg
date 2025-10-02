@@ -1,0 +1,4 @@
+pydantic>=2.6
+sympy>=1.12
+numpy>=1.26
+pint>=0.23
