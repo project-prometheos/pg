@@ -86,11 +86,20 @@ def check_answers(
             student_answer = student_answers[i]
             correct_data = result['answers'][answer_id]
             
+            # Build context with options and other metadata
+            context = {}
+            if 'options' in correct_data:
+                context['options'] = correct_data['options']
+            if 'checker' in correct_data:
+                context['checker'] = correct_data['checker']
+            if 'variables' in correct_data:
+                context['variables'] = correct_data['variables']
+            
             is_correct, message = checker.check(
                 student_answer,
                 correct_data['correct_value'],
                 correct_data['type'],
-                {}
+                context
             )
             
             results[answer_id] = {

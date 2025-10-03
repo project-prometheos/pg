@@ -52,7 +52,8 @@ class PGRenderer:
                 if isinstance(spec, dict):
                     # Expect keys: correct_value, type, checker?, variables?
                     cv = spec.get('correct_value', '')
-                    atype = spec.get('type', self._detect_answer_type(str(cv)))
+                    # Avoid evaluating type detection if 'type' already present
+                    atype = spec['type'] if 'type' in spec else self._detect_answer_type(str(cv))
                     entry = {
                         'correct_value': cv,
                         'type': atype,
@@ -61,6 +62,8 @@ class PGRenderer:
                         entry['checker'] = spec['checker']
                     if 'variables' in spec:
                         entry['variables'] = spec['variables']
+                    if 'options' in spec:
+                        entry['options'] = spec['options']
                     answers[answer_id] = entry
                 else:
                     answers[answer_id] = {
@@ -108,10 +111,10 @@ class PGRenderer:
         if answer_str.startswith('<') and answer_str.endswith('>'):
             return 'vector'
         
-        # Check for inequalities: contains >=, <=, >, <, or variable with comparison
+        # Check for inequalities: treat as formulas for parity; checker routes appropriately
         if any(op in answer_str for op in ['>=', '<=', '>', '<']) and \
            any(var in answer_str for var in ['x', 'y', 'z', 't', 'r', 'theta']):
-            return 'formula'  # Treat inequalities as formulas
+            return 'formula'
         
         # Check if it's a simple number
         try:

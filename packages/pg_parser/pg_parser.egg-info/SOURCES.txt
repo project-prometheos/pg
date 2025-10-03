@@ -11,6 +11,7 @@ pg_parser.egg-info/SOURCES.txt
 pg_parser.egg-info/dependency_links.txt
 pg_parser.egg-info/requires.txt
 pg_parser.egg-info/top_level.txt
+tests/test_context_flags.py
 tests/test_parser.py
 tests/test_tokenizer.py
 tests/test_visitors.py

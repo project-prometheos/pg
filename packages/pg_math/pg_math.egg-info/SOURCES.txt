@@ -11,6 +11,7 @@ pg_math.egg-info/SOURCES.txt
 pg_math.egg-info/dependency_links.txt
 pg_math.egg-info/requires.txt
 pg_math.egg-info/top_level.txt
+tests/test_adaptive_parameters.py
 tests/test_formula.py
 tests/test_formula_parity.py
 tests/test_geometric.py

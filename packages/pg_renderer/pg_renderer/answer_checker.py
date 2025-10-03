@@ -4,8 +4,10 @@ import re
 from typing import Tuple, Dict, Any
 
 # Import new checker system
-from .checkers import NumericChecker, FormulaChecker
+from .checkers import NumericChecker, IntervalChecker, VectorChecker, PointChecker, InequalityChecker
 from .checkers.base import AnswerChecker as BaseChecker
+from pg_answer.evaluators.formula import FormulaEvaluator
+from pg_math import ToleranceMode
 
 
 class AnswerChecker:
@@ -21,8 +23,6 @@ class AnswerChecker:
         
         # Initialize specific checkers
         self.numeric_checker = NumericChecker(tolerance=tolerance)
-        self.formula_checker_standard = FormulaChecker(tolerance=tolerance, mode='standard')
-        self.formula_checker_constant = FormulaChecker(tolerance=tolerance, mode='up_to_constant')
     
     def check(
         self,
@@ -48,23 +48,49 @@ class AnswerChecker:
         if answer_type == 'number':
             return self.numeric_checker.check(student_answer, correct_answer, context)
         elif answer_type == 'formula':
-            # Check if it's an inequality (contains comparison operators)
-            if any(op in student_answer for op in ['>=', '<=', '>', '<']):
-                # For inequalities, use normalized string comparison
-                return self._check_inequality(student_answer, correct_answer)
+            # Check if it's an inequality (contains comparison operators) — but ignore method arrows '->'
+            sa = self._strip_method_calls(student_answer)
+            ca = self._strip_method_calls(correct_answer)
+            if self._looks_like_inequality(sa, context) or self._looks_like_inequality(ca, context):
+                # Delegate to inequality checker (sampling-based), but keep answer_type 'formula'
+                ineq = InequalityChecker(tolerance=self.tolerance)
+                return ineq.check(sa, ca, context)
             
             # Regular formula checking
             checker_mode = context.get('checker', 'standard')
-            if checker_mode == 'up_to_constant':
-                return self.formula_checker_constant.check(student_answer, correct_answer, context)
-            elif checker_mode == 'up_to_additive_constant':
-                checker = FormulaChecker(tolerance=self.tolerance, mode='up_to_additive_constant')
-                return checker.check(student_answer, correct_answer, context)
-            else:
-                return self.formula_checker_standard.check(student_answer, correct_answer, context)
+            options = context.get('options', {})
+
+            # Fraction flags pre-checks
+            if options.get('studentsMustReduceFractions', False):
+                if self._is_fraction(student_answer) and not self._is_reduced_fraction(student_answer):
+                    return False, "You must reduce your fraction to lowest terms."
+            if options.get('allowMixedNumbers', True) is False:
+                if self._is_mixed_number(student_answer):
+                    return False, "Mixed numbers are not allowed. Use improper fractions instead."
+
+            # Build evaluator with options from context
+            eval_kwargs = {
+                'tolerance': context.get('tolerance', self.tolerance),
+                'tolerance_mode': context.get('tolerance_mode', ToleranceMode.RELATIVE),
+                'variables': context.get('variables', None),
+                'test_points': context.get('numPoints', options.get('numPoints', 5)),
+                'test_at_zero': context.get('testAtZero', options.get('testAtZero', True)),
+                'limits': options.get('limits', None),
+                'check_undefined_points': options.get('checkUndefined', False),
+            }
+            # Additive constant parity
+            if checker_mode == 'up_to_additive_constant':
+                eval_kwargs['up_to_additive_constant'] = True
+
+            evaluator = FormulaEvaluator(correct_answer=correct_answer, **eval_kwargs)
+            result = evaluator.evaluate(student_answer)
+            return (result.correct, result.answer_message or ("Correct!" if result.correct else "Incorrect."))
         elif answer_type == 'interval':
-            # For intervals, use normalized string comparison for now
-            return self._check_interval(student_answer, correct_answer)
+            return IntervalChecker(tolerance=self.tolerance).check(student_answer, correct_answer, context)
+        elif answer_type == 'point':
+            return PointChecker(tolerance=self.tolerance).check(student_answer, correct_answer, context)
+        elif answer_type == 'vector':
+            return VectorChecker(tolerance=self.tolerance).check(student_answer, correct_answer, context)
         else:
             return self._check_string(student_answer, correct_answer)
     
@@ -104,6 +130,20 @@ class AnswerChecker:
         s = s.replace('e', 'e')
         
         return float(s)
+
+    # Inequality detection helpers
+    def _strip_method_calls(self, s: str) -> str:
+        """Remove Perl-style method calls like ->cmp(...) or ->withPostFilter(...)."""
+        # Quick remove for top-level method calls; conservative
+        return re.sub(r"->\s*\w+\s*\([^)]*\)", "", s)
+
+    def _looks_like_inequality(self, s: str, context: Dict[str, Any]) -> bool:
+        # Exclude occurrences of '>' that are part of '->'
+        if re.search(r"(?<!-)>(?!=)|>=|<=|<", s):
+            # Only treat as inequality if variables are present in context
+            vars_ = context.get('variables') or []
+            return bool(vars_)
+        return False
     
     def _check_formula(self, student: str, correct: str) -> Tuple[bool, str]:
         """Check formula answer (simplified for MVP)."""
@@ -131,44 +171,24 @@ class AnswerChecker:
         else:
             return False, "Incorrect."
     
-    def _check_inequality(self, student: str, correct: str) -> Tuple[bool, str]:
-        """
-        Check inequality answer by normalizing and comparing.
-        
-        Examples: "x >= 4", "y <= -2", "t > 0"
-        """
-        # Normalize: remove all whitespace
-        student_norm = re.sub(r'\s+', '', student.strip())
-        correct_norm = re.sub(r'\s+', '', correct.strip())
-        
-        if student_norm == correct_norm:
-            return True, "Correct!"
-        
-        # Also try with spaces around operators for readability
-        student_norm2 = re.sub(r'\s*([><=]+)\s*', r'\1', student.strip())
-        correct_norm2 = re.sub(r'\s*([><=]+)\s*', r'\1', correct.strip())
-        
-        if student_norm2 == correct_norm2:
-            return True, "Correct!"
-        
-        return False, f"Your inequality doesn't match. Expected: {correct}"
-    
-    def _check_interval(self, student: str, correct: str) -> Tuple[bool, str]:
-        """
-        Check interval notation by normalizing and comparing.
-        
-        Examples: "[1, 5)", "(-inf, 2]", "[0, inf)"
-        """
-        # Normalize: remove all whitespace
-        student_norm = student.strip().replace(' ', '')
-        correct_norm = correct.strip().replace(' ', '')
-        
-        # Handle various forms of infinity
-        student_norm = student_norm.replace('infinity', 'inf').replace('∞', 'inf')
-        correct_norm = correct_norm.replace('infinity', 'inf').replace('∞', 'inf')
-        
-        if student_norm == correct_norm:
-            return True, "Correct!"
-        
-        return False, f"Your interval doesn't match. Expected: {correct}"
+    # Removed string-based inequality/interval fallback in favor of dedicated checkers
+
+    # Fraction helpers (parity with Perl fraction cmp flags)
+    def _is_fraction(self, answer: str) -> bool:
+        return '/' in answer and not any(op in answer for op in ['+', '-', '*', '^', '(', ')'])
+
+    def _is_reduced_fraction(self, answer: str) -> bool:
+        if not self._is_fraction(answer):
+            return True
+        try:
+            num, den = answer.split('/', 1)
+            num_val = int(num.strip())
+            den_val = int(den.strip())
+            from math import gcd
+            return gcd(num_val, den_val) == 1
+        except Exception:
+            return True
+
+    def _is_mixed_number(self, answer: str) -> bool:
+        return bool(re.match(r'^\s*\d+\s+\d+/\d+\s*$', answer))
 

@@ -14,6 +14,8 @@ pg_translator.egg-info/requires.txt
 pg_translator.egg-info/top_level.txt
 tests/test_executor.py
 tests/test_golden_suite.py
+tests/test_integration_simple.py
+tests/test_performance.py
 tests/test_preprocessor.py
 tests/test_sandbox.py
 tests/test_translator.py

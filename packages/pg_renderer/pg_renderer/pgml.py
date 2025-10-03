@@ -27,9 +27,6 @@ class PGMLRenderer:
         # This prevents variables like [$a] from being corrupted by table simplification
         html = re.sub(r'\[\$(\w+)\]', self._interpolate_var, html)
         
-        # 1.5. Variable interpolation in LaTeX math contexts: $(x-$h)^2-$k$ → $(x-3)^2-5$
-        html = self._interpolate_variables_in_math(html)
-        
         # 2. Remove PGML table constructs (simplify for MVP)
         # These are advanced layout features: [# ... #] and [. ... .]
         html = self._simplify_tables(html)
@@ -43,6 +40,10 @@ class PGMLRenderer:
         # 5. Answer blanks: [_____]{$answer} or [_]{$answer}
         # Also handle optional width specifier: [_]{$answer}{15}
         html = re.sub(r'\[_+\]\{([^}]+)\}(?:\{[0-9]+\})?', self._create_answer_blank, html)
+        
+        # 5.5 Variable interpolation in LaTeX math contexts AFTER blanks are handled
+        # This prevents $answer in cmp chains from being expanded prematurely
+        html = self._interpolate_variables_in_math(html)
         
         # 6. Formatting → Markdown
         # Bold: [*text*] → **text**
@@ -170,7 +171,8 @@ class PGMLRenderer:
         # If it starts with $, it may be a variable or a method call like $var->cmp(...)
         if expr.startswith('$'):
             # Detect $var->cmp(options)
-            m = re.match(r'^\$(\w+)\s*->\s*cmp\s*\((.*?)\)\s*$', expr)
+            # Allow method chaining after cmp, e.g., $ans->cmp(...)->withPostFilter(...)
+            m = re.match(r'^\$(\w+)\s*->\s*cmp\s*\((.*?)\)\s*(?:->.*)?$', expr, re.DOTALL)
             if m:
                 var_name = m.group(1)
                 options_str = m.group(2)
@@ -188,12 +190,14 @@ class PGMLRenderer:
                 else:
                     value_str = str(base_val) if base_val is not None else expr
                     variables = []
-                return {
+                spec = {
                     'correct_value': value_str,
                     'type': 'formula',
                     'checker': checker,
                     'variables': variables,
+                    'options': options,
                 }
+                return spec
 
             # Simple variable reference $var
             var_name = expr.lstrip('$')
@@ -203,7 +207,24 @@ class PGMLRenderer:
                 result = self._interpolate_variables_in_string(result)
             return result
         
-        # Otherwise, it's a literal or expression - interpolate variables
+        # Otherwise, it's a literal or expression - handle inline Compute/Formula -> cmp(...)
+        inline = re.match(r"^(?:Compute|Formula)\(\s*['\"](.+?)['\"]\s*\)\s*->\s*cmp\s*\((.*?)\)\s*(?:->.*)?$", expr, flags=re.DOTALL)
+        if inline:
+            expr_str = inline.group(1)
+            options_str = inline.group(2)
+            options = self._parse_cmp_options(options_str)
+            checker = 'standard'
+            if options.get('upToConstant', False):
+                checker = 'up_to_additive_constant'
+            return {
+                'correct_value': expr_str,
+                'type': 'formula',
+                'checker': checker,
+                'variables': [],
+                'options': options,
+            }
+
+        # Fallback: interpolate variables within the literal
         return self._interpolate_variables_in_string(expr)
 
     def _parse_cmp_options(self, s: str) -> Dict[str, Any]:
@@ -251,22 +272,31 @@ class PGMLRenderer:
         return re.sub(r'\$(\w+)', replacer, text)
     
     def _interpolate_variables_in_math(self, text: str) -> str:
-        """Replace $variable references in LaTeX math contexts with their values."""
-        def replacer(match):
-            var_name = match.group(1)
+        """Replace $variable references only inside LaTeX math regions ($...$ or $$...$$)."""
+        def var_replacer(m):
+            var_name = m.group(1)
             if var_name in self.variables:
                 value = self.variables[var_name]
-                # Format numbers nicely for math
                 if isinstance(value, float):
                     return f'{value:g}'
                 elif hasattr(value, 'to_string'):
                     return value.to_string()
                 else:
                     return str(value)
-            else:
-                # Variable not found, keep original
-                return f'${var_name}'
-        
-        # Simple approach: replace $variable in math contexts
-        # This handles patterns like $(x-$h)^2-$k$ → $(x-3)^2-5$
-        return re.sub(r'\$(\w+)', replacer, text)
+            return f'${var_name}'
+
+        def replace_in(content: str) -> str:
+            return re.sub(r'\$(\w+)', var_replacer, content)
+
+        # Replace in $$...$$ blocks first
+        def repl_display(m):
+            inner = m.group(1)
+            return '$$' + replace_in(inner) + '$$'
+        text = re.sub(r'\$\$(.+?)\$\$', repl_display, text, flags=re.DOTALL)
+
+        # Replace in $...$ inline math (avoid $$ which already handled)
+        def repl_inline(m):
+            inner = m.group(1)
+            return '$' + replace_in(inner) + '$'
+        text = re.sub(r'(?<!\$)\$(?!\$)(.+?)(?<!\$)\$(?!\$)', repl_inline, text, flags=re.DOTALL)
+        return text

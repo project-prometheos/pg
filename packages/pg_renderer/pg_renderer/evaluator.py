@@ -101,6 +101,12 @@ class PGEvaluator:
             if match := re.match(r'\$(\w+)\s*=\s*(.+?);', line):
                 var_name = match.group(1)
                 expr = match.group(2)
+                # Handle $var->cmp(...) in setup
+                if '->cmp(' in expr:
+                    spec = self._handle_cmp_expression(expr)
+                    if spec is not None:
+                        self.variables[var_name] = spec
+                        continue
                 try:
                     self.variables[var_name] = self._eval_expression(expr)
                 except Exception as e:
@@ -167,6 +173,87 @@ class PGEvaluator:
                 # Fallback to raw string if we can't construct a Formula
                 return formula_str
         return expr
+
+    def _handle_cmp_expression(self, expr: str):
+        """Parse Perl-style cmp expressions into an answer spec dict.
+
+        Supports:
+        - $var->cmp(...)
+        - Compute('...')->cmp(...)
+        - Formula('...')->cmp(...)
+
+        Returns dict or None if not parsed.
+        """
+        s = expr.strip()
+        # Case 1: $var->cmp(...)
+        m = re.match(r'^\$(\w+)\s*->\s*cmp\s*\((.*?)\)\s*(?:->.*)?$', s, flags=re.DOTALL)
+        if m:
+            base_name = m.group(1)
+            options_str = m.group(2)
+            base_val = self.variables.get(base_name)
+            opts = self._parse_cmp_options(options_str)
+            checker = 'standard'
+            if opts.get('upToConstant', False):
+                checker = 'up_to_additive_constant'
+
+            if hasattr(base_val, 'to_string'):
+                value_str = base_val.to_string()
+                variables = getattr(base_val, 'variables', [])
+            else:
+                value_str = str(base_val) if base_val is not None else ''
+                variables = []
+
+            return {
+                'correct_value': value_str,
+                'type': 'formula',
+                'checker': checker,
+                'variables': variables,
+                'options': opts,
+            }
+
+        # Case 2: Compute('...')->cmp(...) or Formula('...')->cmp(...)
+        m2 = re.match(r"^(?:Compute|Formula)\(\s*['\"](.+?)['\"]\s*\)\s*->\s*cmp\s*\((.*?)\)\s*(?:->.*)?$", s, flags=re.DOTALL)
+        if m2:
+            expr_str = m2.group(1)
+            options_str = m2.group(2)
+            opts = self._parse_cmp_options(options_str)
+            checker = 'standard'
+            if opts.get('upToConstant', False):
+                checker = 'up_to_additive_constant'
+            return {
+                'correct_value': expr_str,
+                'type': 'formula',
+                'checker': checker,
+                'variables': [],
+                'options': opts,
+            }
+
+        return None
+
+    def _parse_cmp_options(self, s: str) -> Dict[str, Any]:
+        """Parse minimal Perl-style cmp options 'key => value'."""
+        opts: Dict[str, Any] = {}
+        parts = [p.strip() for p in s.split(',') if p.strip()]
+        for part in parts:
+            if '=>' not in part:
+                continue
+            key, val = [x.strip() for x in part.split('=>', 1)]
+            key = key.strip("'\"")
+            v = val.strip()
+            if v in ('1', 'true', 'True'):
+                opts[key] = True
+            elif v in ('0', 'false', 'False'):
+                opts[key] = False
+            else:
+                v_clean = v.strip("'\"")
+                try:
+                    opts[key] = int(v_clean)
+                except ValueError:
+                    try:
+                        opts[key] = float(v_clean)
+                    except ValueError:
+                        opts[key] = v_clean
+        return opts
     
     def _strip_comments(self, code: str) -> str:
         """Remove Perl comments."""

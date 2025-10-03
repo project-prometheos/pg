@@ -34,10 +34,15 @@ class PGRenderService:
                 answer_type = rendered['answers'][answer_id]['type']
                 
                 # Build context for answer checking
+                ans_meta = rendered['answers'][answer_id]
+                options = ans_meta.get('options', {})
                 context = {
-                    'variables': rendered['answers'][answer_id].get('variables', []),
-                    'checker': rendered['answers'][answer_id].get('checker', 'standard'),
-                    'tolerance': rendered['answers'][answer_id].get('tolerance', 0.01)
+                    'variables': ans_meta.get('variables', []),
+                    'checker': ans_meta.get('checker', 'standard'),
+                    'tolerance': ans_meta.get('tolerance', 0.01),
+                    'numPoints': options.get('numPoints', 5),
+                    'testAtZero': options.get('testAtZero', True),
+                    'options': options,
                 }
                 
                 # Debug logging

@@ -40,6 +40,9 @@ class FormulaEvaluator(AnswerEvaluator):
         variables: list[str] | None = None,
         test_points: int = 5,
         test_at_zero: bool = True,
+        up_to_additive_constant: bool = False,
+        limits: dict[str, tuple[float, float]] | None = None,
+        check_undefined_points: bool = False,
         **options: Any,
     ):
         """
@@ -74,6 +77,9 @@ class FormulaEvaluator(AnswerEvaluator):
         self.variables = variables or self.correct_formula.variables
         self.test_points = test_points
         self.test_at_zero = test_at_zero
+        self.up_to_additive_constant = up_to_additive_constant
+        self.limits = limits or {}
+        self.check_undefined_points = check_undefined_points
         self.parser = Parser()
 
     def parse_student_answer(self, answer: str) -> Formula:
@@ -112,12 +118,25 @@ class FormulaEvaluator(AnswerEvaluator):
         Returns:
             Tuple of (is_correct, score)
         """
-        # Use Formula's built-in comparison (symbolic + test points)
-        is_correct = student_formula.compare(
-            correct_formula,
-            tolerance=self.tolerance,
-            mode=self.tolerance_mode,
-        )
+        # Apply evaluator limits and undefined options to both formulas
+        try:
+            student_formula._limits = self.limits or getattr(student_formula, '_limits', {})
+            correct_formula._limits = self.limits or getattr(correct_formula, '_limits', {})
+            student_formula.check_undefined_points = self.check_undefined_points
+            correct_formula.check_undefined_points = self.check_undefined_points
+        except Exception:
+            pass
+
+        # Additive constant parity (antiderivative-style)
+        if self.up_to_additive_constant:
+            is_correct = self._check_up_to_additive_constant(student_formula, correct_formula)
+        else:
+            # Use Formula's built-in comparison (symbolic + test points)
+            is_correct = student_formula.compare(
+                correct_formula,
+                tolerance=self.tolerance,
+                mode=self.tolerance_mode,
+            )
 
         return is_correct, 1.0 if is_correct else 0.0
 
@@ -201,6 +220,45 @@ class FormulaEvaluator(AnswerEvaluator):
                 continue
 
         return all_match, test_results
+
+    def _check_up_to_additive_constant(self, student_formula: Formula, correct_formula: Formula) -> bool:
+        """Check if student = correct + C for some constant C by sampling.
+
+        Strategy: evaluate (student - correct) at multiple points and verify
+        the differences are approximately equal.
+        """
+        import random
+        random.seed(12345)
+
+        # Fast path: if both have no variables, any finite constant difference is OK
+        if not student_formula.variables and not correct_formula.variables:
+            try:
+                diff = student_formula - correct_formula
+                # If subtraction succeeds, treat as constant difference
+                return True
+            except Exception:
+                return False
+
+        diffs: list[float] = []
+        vars_ = self.variables or student_formula.variables or correct_formula.variables
+        if not vars_:
+            # No variables known; fallback to standard compare
+            return student_formula.compare(correct_formula, tolerance=self.tolerance, mode=self.tolerance_mode)
+
+        for _ in range(self.test_points):
+            bindings = {v: random.uniform(-10, 10) for v in vars_}
+            try:
+                s = student_formula.eval(**bindings).to_python()
+                c = correct_formula.eval(**bindings).to_python()
+                diffs.append(float(s - c))
+            except Exception:
+                continue
+
+        if len(diffs) < 3:
+            return False
+
+        baseline = diffs[0]
+        return all(abs(d - baseline) <= self.tolerance for d in diffs)
 
     def evaluate(self, student_answer: str) -> AnswerResult:
         """

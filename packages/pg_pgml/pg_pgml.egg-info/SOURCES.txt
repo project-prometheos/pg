@@ -15,6 +15,7 @@ tests/test_headings.py
 tests/test_parity_features.py
 tests/test_parser.py
 tests/test_renderer.py
+tests/test_renderer_complete.py
 tests/test_solutions_hints.py
 tests/test_tables.py
 tests/test_tokenizer.py
