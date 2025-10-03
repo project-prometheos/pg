@@ -1,0 +1,9 @@
+DOCUMENT(); loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl"); TEXT(beginproblem());
+Context("Numeric");
+$ans = Compute("pi");
+BEGIN_PGML
+**Problem 25.** Beräkna \(\arccos(-1)\). Svaret får inte innehålla trigonometriska funktioner.
+
+[_]{$ans}
+END_PGML
+ENDDOCUMENT();

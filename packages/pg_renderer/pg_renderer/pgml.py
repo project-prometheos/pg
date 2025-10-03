@@ -13,6 +13,8 @@ class PGMLRenderer:
         self.answer_counter = 0
         # answer_id → either string correct value or a dict with metadata
         self.answer_blanks: Dict[str, Any] = {}
+        # Track MultiAnswer indices
+        self._multi_indices: Dict[str, int] = {}
     
     def render(self, pgml: str) -> Tuple[str, Dict[str, str]]:
         """
@@ -178,11 +180,13 @@ class PGMLRenderer:
                 options_str = m.group(2)
                 base_val = self.variables.get(var_name, None)
                 # Determine checker/options
-                options = self._parse_cmp_options(options_str)
+                custom_checker_src, options = self._extract_custom_checker(options_str)
                 checker = 'standard'
                 if options.get('upToConstant', False):
                     # Additive constant parity (antiderivative style)
                     checker = 'up_to_additive_constant'
+                if custom_checker_src is not None:
+                    checker = 'custom'
                 # Build answer spec
                 if hasattr(base_val, 'to_string'):
                     value_str = base_val.to_string()
@@ -197,11 +201,91 @@ class PGMLRenderer:
                     'variables': variables,
                     'options': options,
                 }
+                if custom_checker_src is not None:
+                    spec['options']['custom_checker_src'] = custom_checker_src
+                return spec
+
+            # Detect $var->ans_rule(width)
+            m2 = re.match(r'^\$(\w+)\s*->\s*ans_rule\s*\((.*?)\)\s*$', expr, re.DOTALL)
+            if m2:
+                group = m2.group(1)
+                meta = self.variables.get(group, {})
+                idx = self._multi_indices.get(group, 0)
+                self._multi_indices[group] = idx + 1
+                # Extract correct value if available in group meta
+                correct_val = None
+                variables = []
+                atype = 'formula'
+                ganswers = meta.get('answers') if isinstance(meta, dict) else None
+                if ganswers and idx < len(ganswers):
+                    val = ganswers[idx]
+                    if hasattr(val, 'to_string'):
+                        correct_val = val.to_string()
+                        variables = getattr(val, 'variables', [])
+                        atype = 'formula'
+                    else:
+                        correct_val = str(val)
+                        # Try to determine if numeric
+                        try:
+                            float(correct_val)
+                            atype = 'number'
+                        except Exception:
+                            atype = 'formula'
+                spec = {
+                    'correct_value': correct_val if correct_val is not None else '',
+                    'type': atype,
+                    'checker': meta.get('checker', 'standard') if isinstance(meta, dict) else 'standard',
+                    'variables': variables,
+                    'options': meta.get('options', {}) if isinstance(meta, dict) else {},
+                    'group': group,
+                    'group_index': idx,
+                }
+                # If group has custom checker, mark it
+                if isinstance(meta, dict) and meta.get('custom_checker_src'):
+                    spec['checker'] = 'custom'
+                    spec['options'] = dict(spec['options'])
+                    spec['options']['custom_checker_src'] = meta['custom_checker_src']
                 return spec
 
             # Simple variable reference $var
             var_name = expr.lstrip('$')
             result = self.variables.get(var_name, expr)
+            # MultiAnswer group variable: expand to per-blank spec
+            if isinstance(result, dict) and result.get('__multi__'):
+                group = var_name
+                idx = self._multi_indices.get(group, 0)
+                self._multi_indices[group] = idx + 1
+                answers = result.get('answers', [])
+                correct_val = ''
+                variables = []
+                atype = 'formula'
+                if idx < len(answers):
+                    val = answers[idx]
+                    if hasattr(val, 'to_string'):
+                        correct_val = val.to_string()
+                        variables = getattr(val, 'variables', [])
+                        atype = 'formula'
+                    else:
+                        correct_val = str(val)
+                        try:
+                            float(correct_val)
+                            atype = 'number'
+                        except Exception:
+                            atype = 'formula'
+                spec = {
+                    'correct_value': correct_val,
+                    'type': atype,
+                    'checker': result.get('checker', 'standard'),
+                    'variables': variables,
+                    'options': result.get('options', {}),
+                    'group': group,
+                    'group_index': idx,
+                }
+                if result.get('custom_checker_src'):
+                    spec['checker'] = 'custom'
+                    spec['options'] = dict(spec['options'])
+                    spec['options']['custom_checker_src'] = result['custom_checker_src']
+                return spec
             # Interpolate variables if it's a string
             if isinstance(result, str):
                 result = self._interpolate_variables_in_string(result)
@@ -212,16 +296,18 @@ class PGMLRenderer:
         if inline:
             expr_str = inline.group(1)
             options_str = inline.group(2)
-            options = self._parse_cmp_options(options_str)
+            custom_checker_src, options = self._extract_custom_checker(options_str)
             checker = 'standard'
             if options.get('upToConstant', False):
                 checker = 'up_to_additive_constant'
+            if custom_checker_src is not None:
+                checker = 'custom'
             return {
                 'correct_value': expr_str,
                 'type': 'formula',
                 'checker': checker,
                 'variables': [],
-                'options': options,
+                'options': options | ({'custom_checker_src': custom_checker_src} if custom_checker_src is not None else {}),
             }
 
         # Fallback: interpolate variables within the literal
@@ -258,6 +344,36 @@ class PGMLRenderer:
                     except ValueError:
                         opts[key] = v_clean
         return opts
+
+    def _extract_custom_checker(self, s: str) -> Tuple[Any, Dict[str, Any]]:
+        """Extract checker => sub { ... } from cmp options string if present.
+
+        Returns (custom_checker_src or None, options_dict_without_checker).
+        """
+        # Find 'checker' => sub { ... }
+        m = re.search(r"checker\s*=>\s*sub\s*\{", s)
+        if not m:
+            return None, self._parse_cmp_options(s)
+        start = m.end() - 1  # position at '{'
+        # Balance braces to find matching '}'
+        depth = 0
+        i = start
+        while i < len(s):
+            if s[i] == '{':
+                depth += 1
+            elif s[i] == '}':
+                depth -= 1
+                if depth == 0:
+                    end = i
+                    break
+            i += 1
+        else:
+            # Unbalanced; fall back
+            return None, self._parse_cmp_options(s)
+        code = s[start + 1 : end]
+        # Remove the checker segment from options string and parse the rest
+        s_wo = s[: m.start()] + s[end + 1 :]
+        return code.strip(), self._parse_cmp_options(s_wo)
     
     def _interpolate_variables_in_string(self, text: str) -> str:
         """Replace $variable references in a string with their values."""

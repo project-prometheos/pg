@@ -1,0 +1,9 @@
+DOCUMENT(); loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl"); TEXT(beginproblem());
+Context("Numeric"); parser::Function->disable("Trig");
+$f = Formula("(1+x)/2")->reduce;
+BEGIN_PGML
+**Problem 12.** Skriv \(\cos^2(t/2)\) som en funktion av \(x=\cos t\). Ange polynomet/rationella funktionen \(f(x)\) med \( \cos^2(t/2)=f(\cos t)\).
+
+\(f(x)=\) [_]{$f}
+END_PGML
+ENDDOCUMENT();

@@ -1,0 +1,10 @@
+DOCUMENT(); loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl"); TEXT(beginproblem());
+Context("Numeric"); parser::Function->enable("ln");
+$y = Compute("(7 + sqrt(53))/2");
+$ans = Formula("ln($y)")->reduce;
+BEGIN_PGML
+**Problem 18.** Lös ekvationen \(e^x - e^{-x} = 7\).
+
+\(x=\) [_]{$ans}
+END_PGML
+ENDDOCUMENT();

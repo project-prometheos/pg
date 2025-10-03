@@ -1,0 +1,10 @@
+DOCUMENT(); loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl"); TEXT(beginproblem());
+Context("Numeric");
+$C = Compute("15"); $phi = Compute("atan(3/4)");
+BEGIN_PGML
+**Problem 11.** Skriv \(12\sin x + 9\cos x\) som \(C\sin(x+\varphi)\) där \(C\ge 0\) och \(-\pi \le \varphi \le \pi\).
+
+\(C=\) [_]{$C}  
+\(\varphi=\) [_]{$phi}
+END_PGML
+ENDDOCUMENT();

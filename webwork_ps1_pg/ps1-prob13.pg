@@ -1,0 +1,11 @@
+DOCUMENT(); loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl"); TEXT(beginproblem());
+# Solutions where tan is defined in [0,2pi[: x = 0, pi
+Context("Numeric");
+$A = Compute("0"); $B = Compute("pi");
+BEGIN_PGML
+**Problem 13.** Bestäm alla lösningar till \(\tan(5x)=\tan(3x)\) i \([0,2\pi[\). Växande ordning:
+\([\,\_\,] \le [\,\_\,]\).
+
+[_]{$A} <= [_]{$B}
+END_PGML
+ENDDOCUMENT();

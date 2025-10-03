@@ -1,0 +1,11 @@
+DOCUMENT(); loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl"); TEXT(beginproblem());
+# Interpreted as 3*ln(27^3) + (256/4)*ln(5)
+Context("Numeric"); parser::Function->enable("ln");
+$ans = Formula("ln(3^27 * 5^64)")->reduce;
+BEGIN_PGML
+**Problem 21.** Beräkna \(3\ln(27^3) + \frac{256}{4}\ln(5)\). Svaret får inte innehålla logaritmer.  
+*Svara antingen som tal (numeriskt) eller som ett motsvarande uttryck utan logaritmer.*
+
+[_]{$ans}
+END_PGML
+ENDDOCUMENT();

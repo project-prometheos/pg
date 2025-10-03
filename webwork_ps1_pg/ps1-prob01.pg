@@ -1,0 +1,9 @@
+DOCUMENT(); loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl"); TEXT(beginproblem());
+Context("Numeric");
+$ans = Compute("-sqrt(3)/3");
+BEGIN_PGML
+**Problem 1.** Beräkna \(\tan\!\left(\frac{23\pi}{6}\right)\). Svaret får innehålla rötter men inte trigonometriska funktioner.
+
+[_]{$ans}
+END_PGML
+ENDDOCUMENT();

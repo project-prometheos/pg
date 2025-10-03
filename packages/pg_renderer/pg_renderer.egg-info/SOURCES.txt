@@ -20,10 +20,12 @@ pg_renderer/checkers/inequality.py
 pg_renderer/checkers/interval.py
 pg_renderer/checkers/numeric.py
 pg_renderer/checkers/vector.py
+tests/test_custom_checker_unsupported.py
 tests/test_formula_checker.py
 tests/test_fraction_flags.py
 tests/test_inequality_checker.py
 tests/test_interval_checker.py
+tests/test_multianswer_parse.py
 tests/test_pgml_cmp_chained.py
 tests/test_pgml_inline_cmp.py
 tests/test_setup_cmp.py

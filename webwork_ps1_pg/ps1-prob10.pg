@@ -1,0 +1,11 @@
+DOCUMENT(); loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl"); TEXT(beginproblem());
+Context("Numeric");
+$C = Compute("sqrt(89)");
+$phi = Compute("atan2(8,5)");  # if missing in your WW, replace with atan(8/5)
+BEGIN_PGML
+**Problem 10.** Skriv \(5\sin x + 8\cos x\) som \(C\sin(x+\varphi)\) där \(C\ge 0\) och \(-\pi \le \varphi \le \pi\).
+
+\(C=\) [_]{$C}  
+\(\varphi=\) [_]{$phi}
+END_PGML
+ENDDOCUMENT();

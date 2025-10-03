@@ -1,0 +1,10 @@
+DOCUMENT(); loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl"); TEXT(beginproblem());
+Context("Numeric");
+$A=Compute("pi/4"); $B=Compute("3pi/4"); $C=Compute("5pi/4"); $D=Compute("7pi/4");
+BEGIN_PGML
+**Problem 15.** Bestäm alla lösningar till \(\cos^2 x = 1/2\) i \([0,2\pi[\). Växande ordning:
+\([\,\_\,] \le [\,\_\,] \le [\,\_\,] \le [\,\_\,]\).
+
+[_]{$A} <= [_]{$B} <= [_]{$C} <= [_]{$D}
+END_PGML
+ENDDOCUMENT();

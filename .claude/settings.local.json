@@ -19,7 +19,16 @@
       "Bash(C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe -m pytest tests/test_sandbox.py tests/test_executor.py -v --tb=no)",
       "Bash(C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe -m pytest packages/pg_translator/tests/test_sandbox.py -v --tb=short)",
       "Bash(C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe -m pytest packages/pg_translator/tests/test_sandbox.py -v --tb=line)",
-      "Bash(C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe -m pytest packages/pg_translator/tests/test_executor.py -v --tb=short)"
+      "Bash(C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe -m pytest packages/pg_translator/tests/test_executor.py -v --tb=short)",
+      "Read(//d/**)",
+      "Bash(C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe pypg.py tutorial/sample-problems/Algebra/AlgebraicFractionAnswer.pg --render-only --seed 423)",
+      "Bash(C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe debug_multians.py)",
+      "Bash(C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe pypg.py tutorial/sample-problems/Algebra/AlgebraicFractionAnswer.pg \"4y - 9\" \"dy - 4342\" --seed 423)",
+      "Bash(C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe pypg.py tutorial/sample-problems/Algebra/AlgebraicFractionAnswer.pg \"6*y - 5\" \"y - 9\" --seed 423)",
+      "Bash(C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe pypg.py tutorial/sample-problems/Algebra/AlgebraicFractionAnswer.pg \"6y - 5\" \"y - 8\" --seed 423)",
+      "Bash(C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe pypg.py tutorial/sample-problems/Algebra/AlgebraicFractionAnswer.pg \"6y-5\" \"y-9\" --seed 423)",
+      "Bash(C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe pypg.py tutorial/sample-problems/Algebra/AlgebraicFractionAnswer.pg \"4y - 9\" \"3y - 4342\" --seed 423)",
+      "Bash(C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe test_formula_recursion.py)"
     ],
     "deny": [],
     "ask": []

@@ -1,0 +1,11 @@
+DOCUMENT(); loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl"); TEXT(beginproblem());
+# Using natural log convention.
+Context("Numeric"); parser::Function->enable("ln");
+$A = Compute("1"); $B = Formula("sqrt(e)")->reduce;
+BEGIN_PGML
+**Problem 19.** Bestäm alla icke-negativa lösningar till \(3\ln x \cdot 6\ln x = 9\ln x\). Placera svaren i växande ordning:
+\([\,\_\,] \le [\,\_\,]\).
+
+[_]{$A} <= [_]{$B}
+END_PGML
+ENDDOCUMENT();

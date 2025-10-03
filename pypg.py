@@ -73,19 +73,53 @@ def check_answers(
 ) -> Dict[str, Any]:
     """Check student answers against correct answers."""
     answer_ids = list(result['answers'].keys())
-    
+
     if len(student_answers) > len(answer_ids):
         print(f"\n[WARNING] You provided {len(student_answers)} answers but problem has {len(answer_ids)} blanks")
         student_answers = student_answers[:len(answer_ids)]
     elif len(student_answers) < len(answer_ids):
         print(f"\n[WARNING] You provided {len(student_answers)} answers but problem has {len(answer_ids)} blanks")
-    
-    results = {}
+
+    # Group answers by MultiAnswer group
+    groups = {}
+    individual_answers = []
+
     for i, answer_id in enumerate(answer_ids):
+        answer_meta = result['answers'][answer_id]
+        if answer_meta.get('type') == 'multi' and 'group' in answer_meta:
+            group_id = answer_meta['group']
+            if group_id not in groups:
+                groups[group_id] = []
+            groups[group_id].append({
+                'answer_id': answer_id,
+                'index': i,
+                'meta': answer_meta,
+                'student_answer': student_answers[i] if i < len(student_answers) else None
+            })
+        else:
+            individual_answers.append((i, answer_id))
+
+    results = {}
+
+    # Check MultiAnswer groups
+    for group_id, group_items in groups.items():
+        group_result = checker.check_multi_group(group_id, group_items)
+        for item_result in group_result['items']:
+            answer_id = item_result['answer_id']
+            results[answer_id] = {
+                'student': item_result['student_answer'],
+                'correct': item_result['correct'],
+                'message': item_result['message'],
+                'correct_answer': item_result['correct_answer'],
+                'type': 'multi'
+            }
+
+    # Check individual answers
+    for i, answer_id in individual_answers:
         if i < len(student_answers):
             student_answer = student_answers[i]
             correct_data = result['answers'][answer_id]
-            
+
             # Build context with options and other metadata
             context = {}
             if 'options' in correct_data:
@@ -94,14 +128,14 @@ def check_answers(
                 context['checker'] = correct_data['checker']
             if 'variables' in correct_data:
                 context['variables'] = correct_data['variables']
-            
+
             is_correct, message = checker.check(
                 student_answer,
                 correct_data['correct_value'],
                 correct_data['type'],
                 context
             )
-            
+
             results[answer_id] = {
                 'student': student_answer,
                 'correct': is_correct,
@@ -117,7 +151,7 @@ def check_answers(
                 'correct_answer': result['answers'][answer_id]['correct_value'],
                 'type': result['answers'][answer_id]['type']
             }
-    
+
     return results
 
 
@@ -178,7 +212,7 @@ Examples:
     parser.add_argument(
         'answers',
         nargs='*',
-        help='Student answers in order of appearance (use quotes for complex expressions)'
+        help='Student answers in order of appearance (use quotes for complex expressions, or use -- to separate from flags)'
     )
     
     parser.add_argument(

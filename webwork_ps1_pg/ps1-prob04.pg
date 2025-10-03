@@ -1,0 +1,9 @@
+DOCUMENT(); loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl"); TEXT(beginproblem());
+Context("Numeric");
+$ans = Compute("sqrt(2 - sqrt(2))/2");
+BEGIN_PGML
+**Problem 4.** Beräkna \(\sin(\pi/8)\). Svaret får innehålla rötter men inte trigonometriska funktioner.
+
+[_]{$ans}
+END_PGML
+ENDDOCUMENT();

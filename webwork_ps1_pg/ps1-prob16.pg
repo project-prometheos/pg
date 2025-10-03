@@ -1,0 +1,9 @@
+DOCUMENT(); loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl"); TEXT(beginproblem());
+Context("Numeric"); parser::Function->disable("Trig");
+$f = Formula("(1+x)/(1-x)")->reduce;
+BEGIN_PGML
+**Problem 16.** Skriv \(\cot^2(t/2)\) som en funktion av \(x=\cos t\). Ange \(f(x)\) så att \(\cot^2(t/2)=f(\cos t)\).
+
+\(f(x)=\) [_]{$f}
+END_PGML
+ENDDOCUMENT();

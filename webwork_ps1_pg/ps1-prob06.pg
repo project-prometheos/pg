@@ -1,0 +1,9 @@
+DOCUMENT(); loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl"); TEXT(beginproblem());
+Context("Numeric"); Context()->flags->set(tolerance=>0, tolType=>"absolute");
+$ans = Compute("0");
+BEGIN_PGML
+**Problem 6.** Hur många lösningar har \(\cos(x)=-1/\sqrt3\) i intervallet \(\left[-\frac{\pi}{2},\frac{\pi}{2}\right]\)?
+
+[_]{$ans}
+END_PGML
+ENDDOCUMENT();

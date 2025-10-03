@@ -52,8 +52,14 @@ class PGRenderer:
                 if isinstance(spec, dict):
                     # Expect keys: correct_value, type, checker?, variables?
                     cv = spec.get('correct_value', '')
-                    # Avoid evaluating type detection if 'type' already present
-                    atype = spec['type'] if 'type' in spec else self._detect_answer_type(str(cv))
+                    raw_type = spec.get('type') if 'type' in spec else None
+                    raw_options = spec.get('options')
+                    # If this answer belongs to a MultiAnswer group, mark as 'multi'
+                    if 'group' in spec:
+                        atype = 'multi'
+                    else:
+                        # Avoid evaluating type detection if 'type' already present
+                        atype = raw_type if raw_type is not None else self._detect_answer_type(str(cv))
                     entry = {
                         'correct_value': cv,
                         'type': atype,
@@ -62,8 +68,13 @@ class PGRenderer:
                         entry['checker'] = spec['checker']
                     if 'variables' in spec:
                         entry['variables'] = spec['variables']
-                    if 'options' in spec:
-                        entry['options'] = spec['options']
+                    if raw_options is not None:
+                        entry['options'] = dict(raw_options) if isinstance(raw_options, dict) else raw_options
+                    if 'group' in spec:
+                        entry['group'] = spec['group']
+                        entry['part_type'] = raw_type if raw_type is not None else self._detect_answer_type(str(cv))
+                    if 'group_index' in spec:
+                        entry['group_index'] = spec['group_index']
                     answers[answer_id] = entry
                 else:
                     answers[answer_id] = {

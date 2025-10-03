@@ -1,7 +1,7 @@
 """Check student answers against correct values."""
 
 import re
-from typing import Tuple, Dict, Any
+from typing import Tuple, Dict, Any, List
 
 # Import new checker system
 from .checkers import NumericChecker, IntervalChecker, VectorChecker, PointChecker, InequalityChecker
@@ -24,6 +24,25 @@ class AnswerChecker:
         # Initialize specific checkers
         self.numeric_checker = NumericChecker(tolerance=tolerance)
     
+    def build_context(self, meta: Dict[str, Any]) -> Dict[str, Any]:
+        """Build a normalized context dictionary from rendered metadata."""
+        options = meta.get('options', {})
+        if isinstance(options, dict):
+            options = dict(options)
+        else:
+            options = {}
+        context = {
+            'variables': meta.get('variables', []),
+            'checker': meta.get('checker', 'standard'),
+            'options': options,
+            'tolerance': meta.get('tolerance', self.tolerance),
+            'group': meta.get('group'),
+            'group_index': meta.get('group_index'),
+        }
+        if 'tolerance' in meta:
+            context['tolerance'] = meta['tolerance']
+        return context
+
     def check(
         self,
         student_answer: str,
@@ -51,6 +70,9 @@ class AnswerChecker:
             # Check if it's an inequality (contains comparison operators) — but ignore method arrows '->'
             sa = self._strip_method_calls(student_answer)
             ca = self._strip_method_calls(correct_answer)
+            # Custom checker unsupported for now
+            if context.get('checker') == 'custom':
+                return False, "Custom checker (->with(checker => sub {...})) is not supported yet."
             if self._looks_like_inequality(sa, context) or self._looks_like_inequality(ca, context):
                 # Delegate to inequality checker (sampling-based), but keep answer_type 'formula'
                 ineq = InequalityChecker(tolerance=self.tolerance)
@@ -91,9 +113,138 @@ class AnswerChecker:
             return PointChecker(tolerance=self.tolerance).check(student_answer, correct_answer, context)
         elif answer_type == 'vector':
             return VectorChecker(tolerance=self.tolerance).check(student_answer, correct_answer, context)
+        elif answer_type == 'multi':
+            return False, "MultiAnswer groups are not supported yet in the Python port."
         else:
             return self._check_string(student_answer, correct_answer)
-    
+
+
+
+
+
+    def check_multi_group(
+        self,
+        group_id: str,
+        items: List[Dict[str, Any]],
+    ) -> Dict[str, Any]:
+        """Check a MultiAnswer group and return per-item results."""
+        if not items:
+            return {
+                'items': [],
+                'group_score': 0.0,
+                'group_correct': True,
+                'partial_credit': True,
+            }
+
+        sorted_items = sorted(
+            items,
+            key=lambda item: item.get('meta', {}).get('group_index', 0),
+        )
+
+        first_meta = sorted_items[0]['meta']
+        options = first_meta.get('options', {})
+        if not isinstance(options, dict):
+            options = {}
+        partial_credit_setting = options.get('partialCredit')
+        if partial_credit_setting is None:
+            partial_credit = True
+        elif isinstance(partial_credit_setting, bool):
+            partial_credit = partial_credit_setting
+        elif isinstance(partial_credit_setting, (int, float)):
+            partial_credit = bool(partial_credit_setting)
+        else:
+            partial_credit = str(partial_credit_setting).strip().lower() not in ('0', 'false', 'no')
+
+        group_checker = first_meta.get('checker', 'standard')
+        custom_checker_src = options.get('custom_checker_src')
+        # If custom checker is present, fall back to standard checking since we can't execute Perl
+        if group_checker == 'custom' or custom_checker_src:
+            group_checker = 'standard'
+            # Note: We're falling back to standard checking - custom logic is not executed
+
+        per_item_results = []
+        raw_correct_flags = []
+        for item in sorted_items:
+            meta = item['meta']
+            part_type = meta.get('part_type') or self._infer_part_type(meta.get('correct_value'))
+            context = self.build_context(meta)
+            context['checker'] = 'standard'
+            context['options'] = dict(context.get('options', {}))
+            student_answer = item.get('student_answer', '') or ''
+            is_correct, message = self.check(
+                student_answer,
+                meta.get('correct_value', ''),
+                part_type,
+                context,
+            )
+            per_item_results.append({
+                'answer_id': item['answer_id'],
+                'correct': is_correct,
+                'raw_correct': is_correct,
+                'message': message,
+                'student_answer': student_answer,
+                'correct_answer': meta.get('correct_value', ''),
+                'context': context,
+                'answer_type': 'multi',
+            })
+            raw_correct_flags.append(is_correct)
+
+        group_correct = all(raw_correct_flags)
+        if not partial_credit and not group_correct:
+            for entry in per_item_results:
+                if entry['raw_correct']:
+                    entry['message'] = 'MultiAnswer group requires all blanks to be correct.'
+                entry['correct'] = False
+            group_score = 0.0
+        else:
+            group_score = (
+                sum(1 for entry in per_item_results if entry['correct']) / len(per_item_results)
+                if per_item_results else 0.0
+            )
+            group_correct = all(entry['correct'] for entry in per_item_results)
+
+        return {
+            'items': per_item_results,
+            'group_score': group_score,
+            'group_correct': group_correct,
+            'partial_credit': partial_credit,
+        }
+
+
+
+
+    def _infer_part_type(self, value: Any) -> str:
+        """Best-effort type inference for MultiAnswer parts."""
+        if value is None:
+            return 'formula'
+        answer_str = str(value).strip()
+        if not answer_str:
+            return 'formula'
+        if ((answer_str.startswith('[') or answer_str.startswith('('))
+                and (answer_str.endswith(']') or answer_str.endswith(')'))):
+            return 'interval'
+        if answer_str.startswith('(') and answer_str.endswith(')') and ',' in answer_str:
+            return 'point'
+        if answer_str.startswith('<') and answer_str.endswith('>'):
+            return 'vector'
+        if (
+            any(op in answer_str for op in ['>=', '<=', '>', '<'])
+            and any(var in answer_str for var in ['x', 'y', 'z', 't', 'r', 'theta'])
+        ):
+            return 'formula'
+        try:
+            float(answer_str)
+            return 'number'
+        except (ValueError, TypeError):
+            pass
+        if (
+            any(char in answer_str for char in ['+', '-', '*', '/', '^', '(', ')'])
+            or any(var in answer_str.lower() for var in ['x', 'y', 'z', 't', 'sin', 'cos', 'sqrt'])
+        ):
+            return 'formula'
+        return 'string'
+
+
     def _check_numeric(self, student: str, correct: str) -> Tuple[bool, str]:
         """Check numeric answer with tolerance."""
         try:

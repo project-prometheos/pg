@@ -136,16 +136,23 @@ class Formula(MathValue):
                 else:
                     sympy_bindings[sp.Symbol(var)] = value
 
-            result = self._sympy_expr.subs(sympy_bindings)
+            try:
+                result = self._sympy_expr.subs(sympy_bindings)
+            except RecursionError:
+                # SymPy substitution triggered recursion - likely a malformed expression
+                raise ValueError(f"SymPy recursion error during substitution of {self.to_string()}")
 
             # Convert back to MathValue
-            if result.is_number:
+            # Use a safer check that doesn't trigger SymPy recursion
+            try:
+                # Try to convert to float - if it works, it's a number
+                numeric_value = float(result)
                 from .numeric import Real
-
-                return Real(float(result))
-            else:
-                # Still symbolic - return as Formula
-                return Formula(result, self.variables, self.context)
+                return Real(numeric_value)
+            except (TypeError, ValueError, RecursionError):
+                # Still symbolic - this means the formula has undefined variables
+                # or couldn't be evaluated at this point
+                raise ValueError(f"Formula evaluation resulted in symbolic expression: {result}")
         else:
             # Fallback: string-based evaluation
             # This requires the pg_parser package

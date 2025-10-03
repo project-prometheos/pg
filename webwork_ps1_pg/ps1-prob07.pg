@@ -1,0 +1,10 @@
+DOCUMENT(); loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl"); TEXT(beginproblem());
+Context("Numeric");
+$A = Compute("0"); $B = Compute("pi");
+BEGIN_PGML
+**Problem 7.** Bestäm lösningarna till \(2\sin x = \sin^2 x\) i \([0,2\pi[\). Växande ordning:
+\([\,\_\,] \le [\,\_\,]\).
+
+[_]{$A} <= [_]{$B}
+END_PGML
+ENDDOCUMENT();

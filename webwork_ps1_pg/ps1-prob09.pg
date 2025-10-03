@@ -1,0 +1,9 @@
+DOCUMENT(); loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl"); TEXT(beginproblem());
+Context("Numeric"); Context()->flags->set(tolerance=>0, tolType=>"absolute");
+$ans = Compute("4");
+BEGIN_PGML
+**Problem 9.** Hur många lösningar har \(\sin(x)=1\) i intervallet \([-4\pi,4\pi]\)?
+
+[_]{$ans}
+END_PGML
+ENDDOCUMENT();

@@ -1,0 +1,10 @@
+DOCUMENT(); loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl"); TEXT(beginproblem());
+Context("Numeric"); Context()->flags->set(reduceConstants=>0);
+$A = Compute("pi/6"); $B = Compute("7pi/6");
+BEGIN_PGML
+**Problem 2.** Bestäm alla lösningar till \(\cot(x)=\sqrt3\) i intervallet \([0,2\pi[\). Placera svaren i växande ordning:
+\([\,\_\,] \le [\,\_\,]\).
+
+[_]{$A} <= [_]{$B}
+END_PGML
+ENDDOCUMENT();
