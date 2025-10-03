@@ -1,0 +1,10 @@
+pg_parser>=0.1.0
+sympy>=1.12
+numpy>=1.24
+
+[dev]
+pytest>=7.0
+pytest-cov>=4.0
+hypothesis>=6.0
+mypy>=1.0
+ruff>=0.1.0

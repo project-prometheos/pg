@@ -14,7 +14,18 @@
       "Bash(C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe -m uvicorn app.main:app --reload)",
       "Bash(pnpm store prune:*)",
       "Bash(pnpm remove:*)",
-      "Bash(pnpm add:*)"
+      "Bash(pnpm add:*)",
+      "Bash(find:*)",
+      "Bash(mkdir:*)",
+      "Bash(C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe -m pytest tests/ -v)",
+      "Bash(C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe -m pytest tests/ -v --tb=short)",
+      "Bash(C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe -m pytest tests/test_parser.py::test_parse_vector -v)",
+      "Bash(C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe -m pytest tests/ -v --cov=pg_parser --cov-report=term-missing)",
+      "Bash(C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe -m pip install -e .)",
+      "Bash(C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe -m pytest tests/test_geometric.py -v)",
+      "Bash(C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe -m pytest tests/ -v --cov=pg_math --cov-report=term-missing)",
+      "Bash(C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe -m pytest tests/test_sets.py -v)",
+      "Bash(C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe -m pytest tests/test_formula.py -v)"
     ],
     "deny": [],
     "ask": []
