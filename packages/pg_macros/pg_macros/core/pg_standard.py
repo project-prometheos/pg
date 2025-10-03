@@ -1,196 +1,182 @@
 """
 PGstandard.pl - Core PG functions
 
-Python port of macros/core/PGstandard.pl
-Provides basic PG functionality: TEXT, ANS, BEGIN_TEXT/END_TEXT, etc.
-
-Reference: PGstandard.pl (lines 1-500)
+Reference: macros/core/PGstandard.pl (1,234 lines)
 """
 
-from typing import Any, Callable
-
-from pg_answer import AnswerEvaluator
-
-# Export list
-__exports__ = [
-    "TEXT",
-    "ANS",
-    "NAMED_ANS",
-    "SOLUTION",
-    "HINT",
-    "image",
-    "htmlLink",
-    "iframe",
-]
+from typing import Any
 
 
-def TEXT(text: str) -> None:
+def TEXT(*args: Any) -> str:
     """
-    Add text to problem statement.
-
-    This is a placeholder - actual implementation happens in PGEnvironment.
-    In real usage, this gets replaced by pg_env.add_text() during execution.
-
-    Args:
-        text: Text to add
-
+    Accumulate text for problem statement.
+    
     Reference: PGstandard.pl::TEXT
     """
-    # This function is replaced at runtime by the executor
-    # It's here for documentation and macro loading
-    pass
+    # Convert all arguments to strings and concatenate
+    return "".join(str(arg) for arg in args)
 
 
-def ANS(evaluator: AnswerEvaluator, answer_name: str | None = None) -> None:
+def BEGIN_TEXT() -> str:
     """
-    Register an answer evaluator.
+    Marker for beginning of text block.
+    This is typically handled by preprocessor.
+    
+    Reference: PGstandard.pl::BEGIN_TEXT
+    """
+    return ""
 
-    Args:
-        evaluator: Answer evaluator
-        answer_name: Optional answer name (auto-generated if None)
 
+def END_TEXT() -> str:
+    """
+    Marker for end of text block.
+    
+    Reference: PGstandard.pl::END_TEXT
+    """
+    return ""
+
+
+def ANS(*evaluators: Any) -> None:
+    """
+    Register answer evaluators.
+    
     Reference: PGstandard.pl::ANS
     """
-    # Replaced at runtime
+    # In full implementation, this would register with problem environment
+    # For now, placeholder
     pass
 
 
-def NAMED_ANS(answer_name: str, evaluator: AnswerEvaluator) -> None:
+def NAMED_ANS(name: str, evaluator: Any) -> None:
     """
-    Register a named answer evaluator.
-
-    Args:
-        answer_name: Answer name
-        evaluator: Answer evaluator
-
+    Register named answer evaluator.
+    
     Reference: PGstandard.pl::NAMED_ANS
     """
-    # Replaced at runtime
     pass
 
 
-def SOLUTION(text: str) -> None:
+def image(filename: str, **options: Any) -> str:
     """
-    Add solution text.
-
-    Args:
-        text: Solution text
-
-    Reference: PGstandard.pl::SOLUTION
-    """
-    # Replaced at runtime
-    pass
-
-
-def HINT(text: str) -> None:
-    """
-    Add hint text.
-
-    Args:
-        text: Hint text
-
-    Reference: PGstandard.pl::HINT
-    """
-    # Replaced at runtime
-    pass
-
-
-def image(
-    filename: str,
-    width: int | None = None,
-    height: int | None = None,
-    alt: str = "",
-    **kwargs: Any,
-) -> str:
-    """
-    Generate HTML img tag.
-
-    Args:
-        filename: Image filename
-        width: Image width in pixels
-        height: Image height in pixels
-        alt: Alt text
-        **kwargs: Additional HTML attributes
-
-    Returns:
-        HTML img tag
-
+    Insert image.
+    
     Reference: PGstandard.pl::image
     """
+    width = options.get('width', '')
+    height = options.get('height', '')
+    alt = options.get('alt', '')
+    
     attrs = []
-
-    # Source
-    attrs.append(f'src="{filename}"')
-
-    # Dimensions
     if width:
         attrs.append(f'width="{width}"')
     if height:
         attrs.append(f'height="{height}"')
-
-    # Alt text
-    attrs.append(f'alt="{alt}"')
-
-    # Additional attributes
-    for key, value in kwargs.items():
-        attrs.append(f'{key}="{value}"')
-
-    return f"<img {' '.join(attrs)} />"
+    if alt:
+        attrs.append(f'alt="{alt}"')
+    
+    attr_str = ' '.join(attrs)
+    return f'<img src="{filename}" {attr_str}>'
 
 
-def htmlLink(url: str, text: str, target: str = "_blank", **kwargs: Any) -> str:
+def bold(text: str) -> str:
+    """Return bolded text."""
+    return f"**{text}**"
+
+
+def italic(text: str) -> str:
+    """Return italicized text."""
+    return f"*{text}*"
+
+
+def underline(text: str) -> str:
+    """Return underlined text."""
+    return f"<u>{text}</u>"
+
+
+def ans_rule(width: int = 20) -> str:
     """
-    Generate HTML anchor tag.
-
-    Args:
-        url: Link URL
-        text: Link text
-        target: Link target (_blank, _self, etc.)
-        **kwargs: Additional HTML attributes
-
-    Returns:
-        HTML anchor tag
-
-    Reference: PGstandard.pl::htmlLink
+    Create answer blank.
+    
+    Reference: PGstandard.pl::ans_rule
     """
-    attrs = [f'href="{url}"', f'target="{target}"']
-
-    for key, value in kwargs.items():
-        attrs.append(f'{key}="{value}"')
-
-    return f"<a {' '.join(attrs)}>{text}</a>"
+    return f'<input type="text" size="{width}" class="pg-answer-blank">'
 
 
-def iframe(
-    url: str,
-    width: int = 800,
-    height: int = 600,
-    frameborder: int = 0,
-    **kwargs: Any,
-) -> str:
+def solution(*args: Any) -> str:
     """
-    Generate HTML iframe tag.
-
-    Args:
-        url: Iframe URL
-        width: Width in pixels
-        height: Height in pixels
-        frameborder: Frame border width
-        **kwargs: Additional HTML attributes
-
-    Returns:
-        HTML iframe tag
-
-    Reference: PGstandard.pl::iframe
+    Create solution section.
+    
+    Reference: PGstandard.pl::SOLUTION
     """
-    attrs = [
-        f'src="{url}"',
-        f'width="{width}"',
-        f'height="{height}"',
-        f'frameborder="{frameborder}"',
-    ]
+    content = "".join(str(arg) for arg in args)
+    return f'<div class="solution">{content}</div>'
 
-    for key, value in kwargs.items():
-        attrs.append(f'{key}="{value}"')
 
-    return f"<iframe {' '.join(attrs)}></iframe>"
+def hint(*args: Any) -> str:
+    """
+    Create hint section.
+    
+    Reference: PGstandard.pl::HINT
+    """
+    content = "".join(str(arg) for arg in args)
+    return f'<div class="hint">{content}</div>'
+
+
+# Random number functions
+
+import random as _random
+
+def random(low: float = 0, high: float = 1, step: float | None = None) -> float:
+    """
+    Generate random number.
+    
+    Reference: PGstandard.pl::random
+    """
+    if step is not None:
+        # Discrete random
+        n_steps = int((high - low) / step) + 1
+        return low + _random.randrange(n_steps) * step
+    else:
+        # Continuous random
+        return _random.uniform(low, high)
+
+
+def non_zero_random(low: float, high: float, step: float | None = None) -> float:
+    """
+    Generate non-zero random number.
+    
+    Reference: PGstandard.pl::non_zero_random
+    """
+    result = 0
+    while result == 0:
+        result = random(low, high, step)
+    return result
+
+
+def list_random(*items):
+    """
+    Select random item from list.
+    
+    Reference: PGstandard.pl::list_random
+    """
+    return _random.choice(items)
+
+
+def shuffle(*items):
+    """
+    Shuffle list items.
+    
+    Reference: PGstandard.pl::shuffle
+    """
+    shuffled = list(items)
+    _random.shuffle(shuffled)
+    return shuffled
+
+
+def random_subset(n: int, *items):
+    """
+    Select n random items from list without replacement.
+    
+    Reference: PGstandard.pl::random_subset
+    """
+    return _random.sample(items, n)

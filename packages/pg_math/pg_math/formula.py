@@ -7,8 +7,20 @@ Formula wraps an AST (Abstract Syntax Tree) for deferred evaluation, providing:
 - Simplification/reduction
 - Multiple evaluation modes
 - Multiple output formats
+- Test point evaluation for comparison
+- Python function generation
+- Domain checking
 
 Reference: lib/Value/Formula.pm (1,156 lines) in legacy Perl codebase
+
+NEW FEATURES FOR PARITY:
+- create_random_points(): Generate random test points for formula testing
+- create_point_values(): Evaluate formula at test points with error handling
+- python_function(): Convert formula to executable Python function
+- Domain checking with undefined point handling
+- Adaptive parameter support
+- Full comparison with test point evaluation
+- cmp(): Built-in answer checker
 """
 
 from __future__ import annotations
@@ -53,6 +65,9 @@ class Formula(MathValue):
         expression: str | Any,
         variables: list[str] | None = None,
         context: Any | None = None,
+        test_points: list[list[float]] | None = None,
+        num_test_points: int = 5,
+        limits: dict[str, tuple[float, float]] | None = None,
     ):
         """
         Create a Formula from an expression.
@@ -61,10 +76,27 @@ class Formula(MathValue):
             expression: Mathematical expression (string or AST node or SymPy expr)
             variables: List of variable names in the expression
             context: Mathematical context (for parsing and evaluation)
+            test_points: Pre-specified test points for comparison (optional)
+            num_test_points: Number of random test points to generate (default: 5)
+            limits: Variable limits for random test point generation {var: (min, max)}
         """
         self.expression = expression
         self.variables = variables or []
         self.context = context
+        
+        # Test point configuration (for formula comparison)
+        self._test_points = test_points
+        self._test_values = None
+        self._num_test_points = num_test_points
+        self._limits = limits or {}
+        
+        # Cached Python function for evaluation
+        self._python_func = None
+        
+        # Domain checking flags
+        self.domain_mismatch = False
+        self.check_undefined_points = False
+        self.max_undefined = num_test_points
 
         # If expression is a string and SymPy is available, parse it
         if isinstance(expression, str) and SYMPY_AVAILABLE:
@@ -235,6 +267,174 @@ class Formula(MathValue):
         else:
             raise RuntimeError("Cannot integrate: expression not parsed")
 
+    # Test point evaluation (NEW FOR PARITY)
+
+    def create_random_points(
+        self, 
+        num_points: int | None = None,
+        include: list[list[float]] | None = None,
+        no_errors: bool = False,
+    ) -> tuple[list[list[float]], list[MathValue | None], bool]:
+        """
+        Create random test points for formula comparison.
+        
+        Generates random points in variable domains and evaluates formula.
+        Ensures points where formula is defined (unless check_undefined_points).
+        
+        Args:
+            num_points: Number of points to generate (default: self._num_test_points)
+            include: Additional points to include
+            no_errors: If True, return error flag instead of raising
+            
+        Returns:
+            Tuple of (points, values, has_error):
+            - points: List of coordinate lists [[x1, y1], [x2, y2], ...]
+            - values: Evaluated values (None for undefined points)
+            - has_error: True if couldn't generate enough valid points
+            
+        Reference: lib/Value/Formula.pm::createRandomPoints (lines 338-406)
+        """
+        if num_points is None:
+            num_points = self._num_test_points
+        
+        if num_points < 1:
+            num_points = 1
+            
+        points = []
+        values = []
+        num_undefined = 0
+        
+        # Include pre-specified points
+        if include:
+            points.extend(include)
+            for point in include:
+                try:
+                    val = self.eval(**{var: point[i] for i, var in enumerate(self.variables)})
+                    values.append(val)
+                except (ValueError, ZeroDivisionError, ArithmeticError):
+                    values.append(None)
+                    if self.check_undefined_points:
+                        num_undefined += 1
+        
+        # Generate random points
+        attempts = 0
+        max_attempts = num_points * 10
+        
+        while len(points) - num_undefined < num_points and attempts < max_attempts:
+            # Generate random point
+            point = []
+            for var in self.variables:
+                if var in self._limits:
+                    low, high = self._limits[var]
+                else:
+                    low, high = -10.0, 10.0  # Default range
+                    
+                point.append(random.uniform(low, high))
+            
+            # Try to evaluate at this point
+            try:
+                bindings = {var: point[i] for i, var in enumerate(self.variables)}
+                val = self.eval(**bindings)
+                
+                points.append(point)
+                values.append(val)
+                attempts = 0  # Reset on success
+                
+            except (ValueError, ZeroDivisionError, ArithmeticError):
+                # Function undefined at this point
+                if self.check_undefined_points and num_undefined < self.max_undefined:
+                    points.append(point)
+                    values.append(None)
+                    num_undefined += 1
+                    
+                attempts += 1
+        
+        has_error = attempts >= max_attempts
+        
+        if has_error and not no_errors:
+            raise ValueError(f"Cannot generate enough valid test points for formula: {self.to_string()}")
+        
+        # Cache results if this was automatic generation
+        if num_points == self._num_test_points:
+            self._test_points = points
+            self._test_values = values
+        
+        return points, values, has_error
+
+    def create_point_values(
+        self,
+        points: list[list[float]] | None = None,
+        show_error: bool = True,
+        cache_results: bool = False,
+    ) -> list[MathValue | None]:
+        """
+        Evaluate formula at given test points.
+        
+        Args:
+            points: Test points to evaluate at (or use cached/generate)
+            show_error: If True, raise error on undefined points
+            cache_results: If True, cache the results
+            
+        Returns:
+            List of evaluated values (None for undefined)
+            
+        Reference: lib/Value/Formula.pm::createPointValues (lines 265-299)
+        """
+        if points is None:
+            if self._test_points is None:
+                points, _, _ = self.create_random_points()
+            else:
+                points = self._test_points
+        
+        values = []
+        
+        for point in points:
+            try:
+                bindings = {var: point[i] for i, var in enumerate(self.variables)}
+                val = self.eval(**bindings)
+                values.append(val)
+                
+            except (ValueError, ZeroDivisionError, ArithmeticError) as e:
+                if show_error and not self.check_undefined_points:
+                    raise ValueError(f"Cannot evaluate formula at point {point}: {e}")
+                values.append(None)
+        
+        if cache_results:
+            self._test_points = points
+            self._test_values = values
+        
+        return values
+
+    def python_function(self) -> Callable:
+        """
+        Convert formula to executable Python function.
+        
+        Returns a function that takes variable values and returns result.
+        Caches the function for repeated use.
+        
+        Returns:
+            Python function with signature func(*args) where args are variable values
+            
+        Reference: lib/Value/Formula.pm::perlFunction (lines 500+)
+        """
+        if self._python_func is not None:
+            return self._python_func
+        
+        # Create function using SymPy lambdify
+        if SYMPY_AVAILABLE and self._sympy_expr is not None:
+            symbols = [sp.Symbol(var) for var in self.variables]
+            func = sp.lambdify(symbols, self._sympy_expr, modules=['numpy', 'math'])
+            self._python_func = func
+            return func
+        else:
+            # Fallback: create function using eval
+            def eval_func(*args):
+                bindings = {var: args[i] for i, var in enumerate(self.variables)}
+                return self.eval(**bindings).to_python()
+            
+            self._python_func = eval_func
+            return eval_func
+
     # MathValue interface implementation
 
     def promote(self, other: MathValue) -> MathValue:
@@ -247,11 +447,14 @@ class Formula(MathValue):
         self, other: MathValue, tolerance: float = 0.001, mode: str = ToleranceMode.RELATIVE
     ) -> bool:
         """
-        Compare two formulas for equality.
+        Compare two formulas for equality using test point evaluation.
 
-        Two formulas are equal if:
-        1. They are symbolically equivalent (using SymPy), OR
-        2. They evaluate to the same value at multiple test points
+        Matches Perl's comparison behavior:
+        1. Try symbolic comparison (SymPy) first
+        2. Generate test points for left formula
+        3. Evaluate both formulas at test points
+        4. Compare values at each point with tolerance
+        5. Track domain mismatches (where one formula undefined)
 
         Args:
             other: Other value to compare
@@ -259,7 +462,9 @@ class Formula(MathValue):
             mode: Tolerance mode
 
         Returns:
-            True if formulas are equivalent
+            True if formulas are equivalent at all test points
+            
+        Reference: lib/Value/Formula.pm::compare (lines 169-235)
         """
         if not isinstance(other, Formula):
             # Try to promote other to Formula
@@ -268,43 +473,49 @@ class Formula(MathValue):
             else:
                 return False
 
-        # Try symbolic comparison first
+        # Try symbolic comparison first (fast path)
         if SYMPY_AVAILABLE and self._sympy_expr is not None and other._sympy_expr is not None:
-            difference = sp.simplify(self._sympy_expr - other._sympy_expr)
-            if difference == 0:
-                return True
-
-        # Fall back to test point evaluation
-        if self.variables:
-            # Test at multiple points
-            import random
-
-            random.seed(12345)  # Deterministic testing
-            test_points = 5
-
-            for _ in range(test_points):
-                # Generate random test values
-                bindings = {var: random.uniform(-10, 10) for var in self.variables}
-
-                try:
-                    val1 = self.eval(**bindings)
-                    val2 = other.eval(**bindings)
-
-                    if not val1.compare(val2, tolerance, mode):
-                        return False
-                except (ValueError, ZeroDivisionError):
-                    # Skip test points that cause errors
-                    continue
-
-            return True
-        else:
-            # No variables - compare constant values
             try:
-                val1 = self.eval()
-                val2 = other.eval()
-                return val1.compare(val2, tolerance, mode)
+                difference = sp.simplify(self._sympy_expr - other._sympy_expr)
+                if difference == 0:
+                    self.domain_mismatch = False
+                    return True
             except Exception:
+                pass  # Fall through to test point evaluation
+
+        # Get or generate test points for left formula
+        if self._test_points is None or self._test_values is None:
+            points, left_values, _ = self.create_random_points(no_errors=True)
+        else:
+            points = self._test_points
+            left_values = self._test_values
+
+        # Evaluate right formula at same test points
+        try:
+            right_values = other.create_point_values(points, show_error=False)
+        except Exception:
+            # Right formula can't be evaluated
+            self.domain_mismatch = True
+            return False
+
+        # Compare values at each test point
+        self.domain_mismatch = False
+        
+        for left_val, right_val in zip(left_values, right_values):
+            # Check for domain mismatch (one defined, other not)
+            if (left_val is None) != (right_val is None):
+                self.domain_mismatch = True
+                continue
+                
+            # Skip if both undefined
+            if left_val is None and right_val is None:
+                continue
+            
+            # Compare defined values
+            if not left_val.compare(right_val, tolerance, mode):
                 return False
+
+        return True
 
     def to_string(self) -> str:
         """Convert to human-readable string."""
@@ -506,3 +717,102 @@ class Formula(MathValue):
                 return cls(str(python_val), [], None)
         else:
             return cls(str(value.to_python()), [], None)
+
+    # Answer checking (NEW FOR PARITY)
+    
+    def cmp(self, **options):
+        """
+        Create an answer evaluator for this formula.
+        
+        This is the built-in answer checker that every Formula has in Perl.
+        Returns an answer evaluator configured for this formula.
+        
+        Args:
+            **options: Options to pass to FormulaEvaluator:
+                - tolerance: Comparison tolerance (default: 0.001)
+                - tol_type: Tolerance mode ('relative', 'absolute', 'sigfigs')
+                - num_points: Number of test points (default: 5)
+                - test_at: Specific points to test at
+                - limits: Variable limits {var: (min, max)}
+                - check_undefined: Check undefined points (default: False)
+        
+        Returns:
+            FormulaEvaluator configured for this formula
+            
+        Example:
+            >>> f = Formula("x^2", variables=["x"])
+            >>> evaluator = f.cmp()
+            >>> result = evaluator.evaluate("x*x")
+            >>> result.correct  # True
+            
+        Reference: lib/Value/Formula.pm::cmp (lines 430-470)
+        """
+        from pg_answer.evaluators.formula import FormulaEvaluator
+        
+        # Extract Formula-specific options
+        num_points = options.pop('num_points', self._num_test_points)
+        test_at = options.pop('test_at', None)
+        limits = options.pop('limits', self._limits)
+        check_undefined = options.pop('check_undefined', self.check_undefined_points)
+        
+        # Create configured evaluator
+        evaluator = FormulaEvaluator(
+            correct_answer=self,
+            variables=self.variables,
+            context=self.context,
+            num_test_points=num_points,
+            test_points=test_at,
+            limits=limits,
+            check_undefined_points=check_undefined,
+            **options
+        )
+        
+        return evaluator
+    
+    def adapt_parameters(self, student_formula, *param_names):
+        """Adaptive parameter finding (advanced)."""
+        if not SYMPY_AVAILABLE:
+            return None
+        
+        n_params = len(param_names)
+        if n_params == 0:
+            return {}
+        
+        try:
+            import numpy as np
+            
+            regular_vars = [v for v in self.variables if v not in param_names]
+            if not regular_vars:
+                return None
+            
+            test_pts, _, has_error = self.create_random_points(
+                num_points=n_params, include=regular_vars
+            )
+            if has_error or not test_pts:
+                return None
+            
+            student_func = student_formula.python_function()
+            correct_func = self.python_function()
+            
+            A_matrix = []
+            b_vector = []
+            
+            for pt in test_pts:
+                try:
+                    student_val = student_func(*pt)
+                    row = []
+                    for param in param_names:
+                        param_pt = list(pt) + [1 if p == param else 0 for p in param_names]
+                        val_with = correct_func(*param_pt)
+                        val_without = correct_func(*list(pt), *[0]*n_params)
+                        row.append(float(val_with - val_without))
+                    baseline = correct_func(*list(pt), *[0]*n_params)
+                    b_vector.append(float(student_val - baseline))
+                    A_matrix.append(row)
+                except:
+                    return None
+            
+            params_solution = np.linalg.lstsq(np.array(A_matrix), np.array(b_vector), rcond=None)[0]
+            return {param: float(val) for param, val in zip(param_names, params_solution)}
+        except:
+            return None

@@ -162,6 +162,38 @@ class Context:
             flags=flags,
         )
 
+    def get_flag(self, flag_name: str, default: Any = None) -> Any:
+        """
+        Get a context flag value.
+        
+        Args:
+            flag_name: Name of the flag
+            default: Default value if flag not set
+        
+        Returns:
+            Flag value or default
+        """
+        return self.flags.get(flag_name, default)
+    
+    def set_flag(self, flag_name: str, value: Any) -> None:
+        """
+        Set a context flag.
+        
+        Args:
+            flag_name: Name of the flag
+            value: Value to set
+        """
+        self.flags[flag_name] = value
+    
+    def copy_flags_to(self, target_context: "Context") -> None:
+        """
+        Copy flags from this context to another.
+        
+        Args:
+            target_context: Context to copy flags to
+        """
+        target_context.flags.update(self.flags)
+    
     @classmethod
     def numeric(cls) -> "Context":
         """

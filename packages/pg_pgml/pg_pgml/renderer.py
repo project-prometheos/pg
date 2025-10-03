@@ -81,6 +81,40 @@ class Renderer(ABC):
     @abstractmethod
     def visit_italic(self, node: Italic) -> str:
         pass
+    
+    # NEW FOR PARITY: Abstract methods for new node types
+    
+    @abstractmethod
+    def visit_heading(self, node: Any) -> str:
+        pass
+    
+    @abstractmethod
+    def visit_rule(self, node: Any) -> str:
+        pass
+    
+    @abstractmethod
+    def visit_table(self, node: Any) -> str:
+        pass
+    
+    @abstractmethod
+    def visit_table_row(self, node: Any) -> str:
+        pass
+    
+    @abstractmethod
+    def visit_align_block(self, node: Any) -> str:
+        pass
+    
+    @abstractmethod
+    def visit_pre_block(self, node: Any) -> str:
+        pass
+    
+    @abstractmethod
+    def visit_solution(self, node: Any) -> str:
+        pass
+    
+    @abstractmethod
+    def visit_hint(self, node: Any) -> str:
+        pass
 
 
 class HTMLRenderer(Renderer):
@@ -90,16 +124,18 @@ class HTMLRenderer(Renderer):
     Uses KaTeX-compatible syntax for math rendering.
     """
 
-    def __init__(self, context: dict[str, Any] | None = None, answer_counter: int = 1):
+    def __init__(self, context: dict[str, Any] | None = None, answer_counter: int = 1, code_executor: Any | None = None):
         """
         Initialize HTML renderer.
 
         Args:
             context: Variable bindings for interpolation
             answer_counter: Starting number for answer blanks
+            code_executor: Optional code executor with eval(code) method for [@...@] blocks
         """
         self.context = context or {}
         self.answer_counter = answer_counter
+        self.code_executor = code_executor
 
     def render(self, node: PGMLNode) -> str:
         """Render a PGML node to HTML."""
@@ -164,9 +200,35 @@ class HTMLRenderer(Renderer):
         )
 
     def visit_code(self, node: Code) -> str:
-        # Code execution placeholder (actual execution happens server-side)
-        # For now, just show the result placeholder
-        return f'<span class="pgml-code" data-code="{self._escape_html(node.code)}">[code result]</span>'
+        """Execute code block and interpolate result."""
+        # If no executor provided, show placeholder
+        if not self.code_executor:
+            return f'<span class="pgml-code" data-code="{self._escape_html(node.code)}">[code result]</span>'
+        
+        try:
+            # Execute code in the environment
+            result = self.code_executor.eval(node.code)
+            
+            # If display_result is False ([@code@] without *), return empty string
+            if not node.display_result:
+                return ""
+            
+            # Convert result to string for display
+            if result is None:
+                return ""
+            elif hasattr(result, 'to_tex'):  # MathValue object
+                # Render as inline math
+                return f'<span class="math-inline">\\({result.to_tex()}\\)</span>'
+            elif hasattr(result, '__html__'):  # Has HTML representation
+                return str(result.__html__())
+            else:
+                # Plain text result
+                result_str = str(result)
+                return self._escape_html(result_str)
+        
+        except Exception as e:
+            # Show error in development, hide in production
+            return f'<span class="pgml-code-error" title="{self._escape_html(str(e))}">[code error]</span>'
 
     def visit_math_inline(self, node: MathInline) -> str:
         # Use KaTeX inline math delimiters
@@ -180,6 +242,81 @@ class HTMLRenderer(Renderer):
     def visit_italic(self, node: Italic) -> str:
         content_html = "".join(child.accept(self) for child in node.content)
         return f"<em>{content_html}</em>"
+    
+    # NEW FOR PARITY: HTML rendering for new node types
+    
+    def visit_heading(self, node: Any) -> str:
+        """Render heading as <h1> through <h6>."""
+        from .parser import Heading
+        if not isinstance(node, Heading):
+            return ""
+        
+        content_html = "".join(child.accept(self) for child in node.content)
+        level = min(node.level, 6)  # Cap at h6
+        return f"<h{level}>{content_html}</h{level}>"
+    
+    def visit_rule(self, node: Any) -> str:
+        """Render horizontal rule."""
+        return '<hr class="pgml-rule">'
+    
+    def visit_table(self, node: Any) -> str:
+        """Render table with rows and cells."""
+        from .parser import Table
+        if not isinstance(node, Table):
+            return ""
+        
+        rows_html = "\n".join(row.accept(self) for row in node.rows)
+        return f'<table class="pgml-table">\n{rows_html}\n</table>'
+    
+    def visit_table_row(self, node: Any) -> str:
+        """Render table row with cells."""
+        from .parser import TableRow
+        if not isinstance(node, TableRow):
+            return ""
+        
+        cells_html = []
+        for cell_content in node.cells:
+            cell_html = "".join(child.accept(self) for child in cell_content)
+            cells_html.append(f"<td>{cell_html}</td>")
+        
+        return f"<tr>{''.join(cells_html)}</tr>"
+    
+    def visit_align_block(self, node: Any) -> str:
+        """Render alignment block."""
+        from .parser import AlignBlock
+        if not isinstance(node, AlignBlock):
+            return ""
+        
+        content_html = "".join(child.accept(self) for child in node.content)
+        align_class = f"text-{node.alignment}"
+        return f'<div class="pgml-align {align_class}">{content_html}</div>'
+    
+    def visit_pre_block(self, node: Any) -> str:
+        """Render pre-formatted block."""
+        from .parser import PreBlock
+        if not isinstance(node, PreBlock):
+            return ""
+        
+        escaped = self._escape_html(node.content)
+        return f'<pre class="pgml-pre">{escaped}</pre>'
+    
+    def visit_solution(self, node: Any) -> str:
+        """Render solution section."""
+        from .parser import Solution
+        if not isinstance(node, Solution):
+            return ""
+        
+        blocks_html = "\n".join(block.accept(self) for block in node.content)
+        return f'<div class="pgml-solution">\n<h4>Solution:</h4>\n{blocks_html}\n</div>'
+    
+    def visit_hint(self, node: Any) -> str:
+        """Render hint section."""
+        from .parser import Hint
+        if not isinstance(node, Hint):
+            return ""
+        
+        blocks_html = "\n".join(block.accept(self) for block in node.content)
+        return f'<div class="pgml-hint">\n<h4>Hint:</h4>\n{blocks_html}\n</div>'
 
     def _escape_html(self, text: str) -> str:
         """Escape HTML special characters."""
@@ -274,6 +411,105 @@ class TeXRenderer(Renderer):
     def visit_italic(self, node: Italic) -> str:
         content_tex = "".join(child.accept(self) for child in node.content)
         return f"\\textit{{{content_tex}}}"
+    
+    # NEW FOR PARITY: TeX rendering for new node types
+    
+    def visit_heading(self, node: Any) -> str:
+        """Render heading as TeX section commands."""
+        from .parser import Heading
+        if not isinstance(node, Heading):
+            return ""
+        
+        content_tex = "".join(child.accept(self) for child in node.content)
+        
+        # Map heading levels to TeX commands
+        heading_commands = {
+            1: "section",
+            2: "subsection",
+            3: "subsubsection",
+            4: "paragraph",
+            5: "subparagraph",
+            6: "subparagraph"
+        }
+        
+        command = heading_commands.get(node.level, "paragraph")
+        return f"\\{command}{{{content_tex}}}"
+    
+    def visit_rule(self, node: Any) -> str:
+        """Render horizontal rule."""
+        return "\\hrulefill"
+    
+    def visit_table(self, node: Any) -> str:
+        """Render table in TeX."""
+        from .parser import Table
+        if not isinstance(node, Table):
+            return ""
+        
+        if not node.rows:
+            return ""
+        
+        # Determine column count from first row
+        num_cols = len(node.rows[0].cells) if node.rows else 0
+        col_spec = "l" * num_cols  # Left-aligned columns
+        
+        rows_tex = " \\\\\n".join(row.accept(self) for row in node.rows)
+        return f"\\begin{{tabular}}{{{col_spec}}}\n{rows_tex}\n\\end{{tabular}}"
+    
+    def visit_table_row(self, node: Any) -> str:
+        """Render table row in TeX."""
+        from .parser import TableRow
+        if not isinstance(node, TableRow):
+            return ""
+        
+        cells_tex = []
+        for cell_content in node.cells:
+            cell_tex = "".join(child.accept(self) for child in cell_content)
+            cells_tex.append(cell_tex)
+        
+        return " & ".join(cells_tex)
+    
+    def visit_align_block(self, node: Any) -> str:
+        """Render alignment block."""
+        from .parser import AlignBlock
+        if not isinstance(node, AlignBlock):
+            return ""
+        
+        content_tex = "".join(child.accept(self) for child in node.content)
+        
+        if node.alignment == "center":
+            return f"\\begin{{center}}\n{content_tex}\n\\end{{center}}"
+        elif node.alignment == "right":
+            return f"\\begin{{flushright}}\n{content_tex}\n\\end{{flushright}}"
+        elif node.alignment == "left":
+            return f"\\begin{{flushleft}}\n{content_tex}\n\\end{{flushleft}}"
+        else:
+            return content_tex
+    
+    def visit_pre_block(self, node: Any) -> str:
+        """Render pre-formatted block."""
+        from .parser import PreBlock
+        if not isinstance(node, PreBlock):
+            return ""
+        
+        return f"\\begin{{verbatim}}\n{node.content}\n\\end{{verbatim}}"
+    
+    def visit_solution(self, node: Any) -> str:
+        """Render solution section."""
+        from .parser import Solution
+        if not isinstance(node, Solution):
+            return ""
+        
+        blocks_tex = "\n\n".join(block.accept(self) for block in node.content)
+        return f"\\textbf{{Solution:}}\n\n{blocks_tex}"
+    
+    def visit_hint(self, node: Any) -> str:
+        """Render hint section."""
+        from .parser import Hint
+        if not isinstance(node, Hint):
+            return ""
+        
+        blocks_tex = "\n\n".join(block.accept(self) for block in node.content)
+        return f"\\textbf{{Hint:}}\n\n{blocks_tex}"
 
     def _escape_tex(self, text: str) -> str:
         """Escape TeX special characters."""

@@ -17,6 +17,10 @@ pg_macros/core/pg_standard.py
 pg_macros/core/pgml.py
 pg_macros/parsers/__init__.py
 pg_macros/parsers/parser_popup.py
+pg_macros/ui/__init__.py
+pg_macros/ui/choice_macros.py
 tests/test_answer_macros.py
 tests/test_choice_macros.py
+tests/test_choice_macros_new.py
+tests/test_pg_standard.py
 tests/test_registry.py

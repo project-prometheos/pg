@@ -5,7 +5,7 @@ from typing import Tuple, Dict, Any, Set, Optional
 from .base import AnswerChecker
 
 try:
-    from sympy import sympify, simplify, expand, Symbol, SympifyError
+    from sympy import sympify, simplify, expand, Symbol, SympifyError, Rational
     from sympy.core.expr import Expr
     from sympy.parsing.sympy_parser import (
         parse_expr,
@@ -19,6 +19,7 @@ except ImportError:
     sympify = None
     Expr = None
     parse_expr = None
+    Rational = None
 
 
 class FormulaChecker(AnswerChecker):
@@ -66,13 +67,20 @@ class FormulaChecker(AnswerChecker):
         
         Args:
             student_answer: Student's expression string
-            correct_answer: Correct expression string
+            correct_answer: Correct expression string (may include ->cmp(...))
             context: Additional context with 'variables', 'domain', etc.
         
         Returns:
             (is_correct, feedback_message)
         """
         context = context or {}
+        
+        # Parse cmp() method parameters if present
+        cmp_params = {}
+        if '->cmp(' in correct_answer:
+            cmp_params = self._parse_cmp_params(correct_answer)
+            # Extract just the expression part
+            correct_answer = correct_answer.split('->cmp(')[0]
         
         try:
             # Parse expressions
@@ -85,6 +93,12 @@ class FormulaChecker(AnswerChecker):
             return False, f"Could not parse your answer: {str(e)}"
         
         try:
+            # Check cmp() parameters first
+            if cmp_params:
+                cmp_result = self._check_cmp_params(student_answer, student_expr, correct_expr, cmp_params)
+                if cmp_result is not None:
+                    return cmp_result
+            
             # Get variables from context or auto-detect
             variables = context.get('variables', None)
             if variables is None:
@@ -126,6 +140,124 @@ class FormulaChecker(AnswerChecker):
         )
         
         return parse_expr(expr_str, transformations=transformations)
+    
+    def _parse_cmp_params(self, answer_str: str) -> Dict[str, Any]:
+        """Parse cmp() method parameters from answer string."""
+        if '->cmp(' not in answer_str:
+            return {}
+        
+        # Extract the cmp(...) part
+        cmp_start = answer_str.find('->cmp(') + 6  # Skip '->cmp('
+        cmp_end = answer_str.rfind(')')
+        if cmp_end == -1:
+            return {}
+        
+        cmp_str = answer_str[cmp_start:cmp_end]
+        
+        # Parse parameters like "studentsMustReduceFractions => 1"
+        params = {}
+        for param in cmp_str.split(','):
+            param = param.strip()
+            if '=>' in param:
+                key, value = param.split('=>', 1)
+                key = key.strip()
+                value = value.strip()
+                
+                # Convert value to appropriate type
+                if value == '1':
+                    params[key] = True
+                elif value == '0':
+                    params[key] = False
+                else:
+                    try:
+                        params[key] = int(value)
+                    except ValueError:
+                        params[key] = value
+        
+        return params
+    
+    def _check_cmp_params(
+        self, 
+        student_answer: str, 
+        student_expr: Expr, 
+        correct_expr: Expr, 
+        cmp_params: Dict[str, Any]
+    ) -> Optional[Tuple[bool, str]]:
+        """
+        Check answer against cmp() parameters.
+        
+        Returns:
+            (is_correct, message) if cmp params should override normal checking
+            None if normal checking should proceed
+        """
+        from sympy import Rational, simplify
+        
+        # Check if studentsMustReduceFractions is required
+        if cmp_params.get('studentsMustReduceFractions', False):
+            # Student must provide reduced form
+            if self._is_fraction(student_answer):
+                if not self._is_reduced_fraction(student_answer):
+                    return False, "You must reduce your fraction to lowest terms."
+        
+        # Check if allowMixedNumbers is disabled
+        if not cmp_params.get('allowMixedNumbers', True):
+            if self._is_mixed_number(student_answer):
+                return False, "Mixed numbers are not allowed. Use improper fractions instead."
+        
+        # If reduceFractions is enabled, reduce both for comparison
+        if cmp_params.get('reduceFractions', False):
+            # Reduce the correct answer for comparison
+            correct_reduced = simplify(correct_expr)
+            student_reduced = simplify(student_expr)
+            
+            # Check if they're equivalent after reduction
+            if student_reduced == correct_reduced:
+                # But if studentsMustReduceFractions is required, check if student provided reduced form
+                if cmp_params.get('studentsMustReduceFractions', False):
+                    if self._is_fraction(student_answer):
+                        if not self._is_reduced_fraction(student_answer):
+                            return False, "You must reduce your fraction to lowest terms."
+                return True, "Correct!"
+            else:
+                return False, "Your answer is not equivalent to the correct answer."
+        
+        # No special handling needed, proceed with normal checking
+        return None
+    
+    def _is_fraction(self, answer: str) -> bool:
+        """Check if answer looks like a fraction."""
+        return '/' in answer and not any(op in answer for op in ['+', '-', '*', '^', '(', ')'])
+    
+    def _parse_fraction(self, answer: str) -> Optional[Rational]:
+        """Parse fraction string to Rational."""
+        try:
+            if '/' in answer:
+                num, den = answer.split('/', 1)
+                return Rational(int(num.strip()), int(den.strip()))
+        except (ValueError, ZeroDivisionError):
+            pass
+        return None
+    
+    def _is_reduced_fraction(self, answer: str) -> bool:
+        """Check if fraction string is in reduced form."""
+        if not self._is_fraction(answer):
+            return True  # Not a fraction, so consider it "reduced"
+        
+        try:
+            if '/' in answer:
+                num, den = answer.split('/', 1)
+                num_val = int(num.strip())
+                den_val = int(den.strip())
+                from math import gcd
+                return gcd(num_val, den_val) == 1
+        except (ValueError, ZeroDivisionError):
+            pass
+        return True  # If we can't parse, assume it's fine
+    
+    def _is_mixed_number(self, answer: str) -> bool:
+        """Check if answer looks like a mixed number (e.g., '1 1/2')."""
+        import re
+        return bool(re.match(r'^\d+\s+\d+/\d+$', answer.strip()))
     
     def _get_variables(self, *exprs: Expr) -> Set[Symbol]:
         """Extract all variables from expressions."""

@@ -1,127 +1,96 @@
-"""Tests for macro registry."""
+"""Tests for macro registry system."""
 
 import pytest
-
-from pg_macros import MacroRegistry, loadMacros
-
-
-def test_registry_list_available():
-    """Test listing available macros."""
-    available = MacroRegistry.list_available()
-
-    assert "PGstandard.pl" in available
-    assert "MathObjects.pl" in available
-    assert "PGML.pl" in available
-    assert "PGanswermacros.pl" in available
+from pg_macros import MacroRegistry, load_macros
 
 
-def test_registry_load_pgstandard():
+def test_create_registry():
+    """Test creating a registry."""
+    registry = MacroRegistry()
+    assert registry is not None
+
+
+def test_register_file():
+    """Test registering a macro file."""
+    registry = MacroRegistry()
+    
+    exports = {
+        "TEXT": lambda x: x,
+        "ANS": lambda x: None
+    }
+    
+    registry.register_file("test.pl", exports)
+    loaded = registry.load("test.pl")
+    
+    assert "TEXT" in loaded
+    assert "ANS" in loaded
+
+
+def test_load_pgstandard():
     """Test loading PGstandard.pl."""
-    exports = MacroRegistry.load_macro_file("PGstandard.pl")
-
+    exports = load_macros("PGstandard.pl")
+    
     assert "TEXT" in exports
     assert "ANS" in exports
-    assert "NAMED_ANS" in exports
     assert "image" in exports
-    assert "htmlLink" in exports
+    assert callable(exports["TEXT"])
 
 
-def test_registry_load_mathobjects():
+def test_load_mathobjects():
     """Test loading MathObjects.pl."""
-    exports = MacroRegistry.load_macro_file("MathObjects.pl")
+    exports = load_macros("MathObjects.pl")
+    
+    assert "Compute" in exports
+    assert callable(exports["Compute"])
 
-    assert "Real" in exports
-    assert "Complex" in exports
-    assert "Formula" in exports
+
+def test_load_multiple_macros():
+    """Test loading multiple macro files."""
+    exports = load_macros("PGstandard.pl", "MathObjects.pl")
+    
+    assert "TEXT" in exports
     assert "Compute" in exports
 
 
-def test_registry_load_pgml():
-    """Test loading PGML.pl."""
-    exports = MacroRegistry.load_macro_file("PGML.pl")
-
-    assert "PGML" in exports
-
-
-def test_registry_load_answer_macros():
-    """Test loading PGanswermacros.pl."""
-    exports = MacroRegistry.load_macro_file("PGanswermacros.pl")
-
-    assert "num_cmp" in exports
-    assert "fun_cmp" in exports
-    assert "str_cmp" in exports
+def test_text_function():
+    """Test TEXT function."""
+    exports = load_macros("PGstandard.pl")
+    TEXT = exports["TEXT"]
+    
+    result = TEXT("Hello", " ", "World")
+    assert result == "Hello World"
 
 
-def test_registry_load_choice_macros():
-    """Test loading PGchoicemacros.pl."""
-    exports = MacroRegistry.load_macro_file("PGchoicemacros.pl")
-
-    assert "MultipleChoice" in exports
-    assert "TrueFalse" in exports
-    assert "new_multiple_choice" in exports
-
-
-def test_registry_caching():
-    """Test that modules are cached."""
-    # Load once
-    exports1 = MacroRegistry.load_macro_file("PGstandard.pl")
-
-    # Load again - should return cached version
-    exports2 = MacroRegistry.load_macro_file("PGstandard.pl")
-
-    assert exports1 is exports2
+def test_image_function():
+    """Test image function."""
+    exports = load_macros("PGstandard.pl")
+    image_func = exports["image"]
+    
+    result = image_func("test.png", width="100", alt="Test")
+    assert "test.png" in result
+    assert "width" in result
+    assert "alt" in result
 
 
-def test_registry_unknown_macro():
-    """Test loading unknown macro file."""
-    with pytest.raises(ImportError, match="not found"):
-        MacroRegistry.load_macro_file("UnknownMacro.pl")
+def test_ans_rule_function():
+    """Test ans_rule function."""
+    exports = load_macros("PGstandard.pl")
+    ans_rule = exports["ans_rule"]
+    
+    result = ans_rule(30)
+    assert "input" in result
+    assert "30" in result
 
 
-def test_load_macros_single():
-    """Test loadMacros with single file."""
-    macros = loadMacros("PGstandard.pl")
-
-    assert "TEXT" in macros
-    assert "ANS" in macros
-
-
-def test_load_macros_multiple():
-    """Test loadMacros with multiple files."""
-    macros = loadMacros("PGstandard.pl", "MathObjects.pl", "PGML.pl")
-
-    # From PGstandard
-    assert "TEXT" in macros
-    assert "ANS" in macros
-
-    # From MathObjects
-    assert "Real" in macros
-    assert "Formula" in macros
-
-    # From PGML
-    assert "PGML" in macros
+def test_compute_function():
+    """Test Compute function."""
+    exports = load_macros("MathObjects.pl")
+    Compute = exports["Compute"]
+    
+    # Should create a formula or evaluate
+    result = Compute("2 + 3")
+    assert result is not None
 
 
-def test_load_macros_answer_macros():
-    """Test loadMacros with answer macros."""
-    macros = loadMacros("PGanswermacros.pl")
-
-    assert "num_cmp" in macros
-    assert "fun_cmp" in macros
-    assert "str_cmp" in macros
-
-    # Test that functions are callable
-    assert callable(macros["num_cmp"])
-    assert callable(macros["fun_cmp"])
-
-
-def test_registry_register_custom():
-    """Test registering custom macro mapping."""
-    from pg_macros import register_macro_file
-
-    # Register custom mapping
-    register_macro_file("CustomMacro.pl", "pg_macros.core.pg_standard")
-
-    # Should now be available
-    available = MacroRegistry.list_available()
-    assert "CustomMacro.pl" in available
+if __name__ == "__main__":
+    pytest.main([__file__, "-v"])

@@ -51,6 +51,51 @@ class PGEvaluator:
                 self._handle_context(line)
                 continue
             
+            # Handle list assignment: ($var1, $var2) = (expr1, expr2);
+            if line.startswith('(') and '=' in line and line.count('(') >= 2:
+                # Find the = sign and split into left and right parts
+                eq_pos = line.find('=')
+                left_part = line[:eq_pos].strip()
+                right_part = line[eq_pos+1:].strip().rstrip(';')
+                
+                # Parse left side: ($var1, $var2)
+                if left_part.startswith('(') and left_part.endswith(')'):
+                    var_names = [v.strip().lstrip('$') for v in left_part[1:-1].split(',')]
+                else:
+                    continue
+                
+                # Parse right side: (expr1, expr2) - handle nested parentheses
+                if right_part.startswith('(') and right_part.endswith(')'):
+                    expr_str = right_part[1:-1]
+                    expressions = []
+                    current_expr = ""
+                    paren_count = 0
+                    for char in expr_str:
+                        if char == '(':
+                            paren_count += 1
+                        elif char == ')':
+                            paren_count -= 1
+                        elif char == ',' and paren_count == 0:
+                            expressions.append(current_expr.strip())
+                            current_expr = ""
+                            continue
+                        current_expr += char
+                    if current_expr:
+                        expressions.append(current_expr.strip())
+                else:
+                    continue
+                
+                if len(var_names) == len(expressions):
+                    try:
+                        values = [self._eval_expression(expr) for expr in expressions]
+                        for var_name, value in zip(var_names, values):
+                            self.variables[var_name] = value
+                    except Exception as e:
+                        # Store expressions as strings if evaluation fails
+                        for var_name, expr in zip(var_names, expressions):
+                            self.variables[var_name] = expr
+                continue
+            
             # Handle variable assignments: $var = expr;
             if match := re.match(r'\$(\w+)\s*=\s*(.+?);', line):
                 var_name = match.group(1)
@@ -76,8 +121,9 @@ class PGEvaluator:
         
         # Handle function calls
         # random(1, 5, 1) → self.random.random(1, 5, 1)
-        for func in ['random', 'non_zero_random', 'list_random']:
-            expr_py = expr_py.replace(f'{func}(', f'self.random.{func}(')
+        # Use word boundaries to avoid partial replacements
+        for func in ['non_zero_random', 'list_random', 'random']:
+            expr_py = re.sub(rf'\b{func}\(', f'self.random.{func}(', expr_py)
         
         # Handle Formula() and Compute()
         if 'Formula(' in expr or 'Compute(' in expr:

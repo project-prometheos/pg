@@ -1,158 +1,137 @@
 """
-Macro Registry - Dynamic macro loading system.
+Macro registry for loadMacros() functionality.
 
-Provides loadMacros() function similar to Perl PG:
-- Maps Perl macro filenames to Python modules
-- Dynamically imports and caches macro implementations
-- Returns functions to caller's namespace
-
-Reference: PGcore.pl::loadMacros (lines 200-250)
+Reference: Perl loadMacros system in PGloadfiles.pm
 """
 
-from __future__ import annotations
-
 import importlib
-from typing import Any, Callable
+import importlib.util
+from pathlib import Path
+from typing import Any, Callable, Dict
 
 
 class MacroRegistry:
     """
-    Central registry for PG macros.
-
-    Maps Perl macro filenames (e.g., "PGstandard.pl") to Python module paths.
+    Registry for PG macros.
+    
+    Maps macro file names to Python modules/functions.
+    Supports dynamic loading similar to Perl's loadMacros().
     """
-
-    # Mapping: Perl filename -> Python module path
-    _file_to_module: dict[str, str] = {
-        # Core macros
-        "PGstandard.pl": "pg_macros.core.pg_standard",
-        "MathObjects.pl": "pg_macros.core.math_objects",
-        "PGML.pl": "pg_macros.core.pgml",
-        # Answer macros
-        "PGanswermacros.pl": "pg_macros.answers.pg_answer_macros",
-        "PGnumericalmacros.pl": "pg_macros.answers.pg_numerical_macros",
-        # Choice macros
-        "PGchoicemacros.pl": "pg_macros.choice.pg_choice_macros",
-        # Parser macros
-        "parserPopUp.pl": "pg_macros.parsers.parser_popup",
-        "parserRadioButtons.pl": "pg_macros.parsers.parser_radio_buttons",
-        "parserCheckboxes.pl": "pg_macros.parsers.parser_checkboxes",
-    }
-
-    # Cache: module path -> loaded module
-    _loaded_modules: dict[str, Any] = {}
-
-    # Cache: filename -> exported functions
-    _exports: dict[str, dict[str, Callable]] = {}
-
-    @classmethod
-    def register_mapping(cls, perl_filename: str, python_module: str) -> None:
+    
+    def __init__(self):
+        self._macros: Dict[str, Dict[str, Any]] = {}
+        self._loaded_files: set[str] = set()
+    
+    def register_file(self, filename: str, exports: Dict[str, Any]) -> None:
         """
-        Register a mapping from Perl filename to Python module.
-
+        Register all exports from a macro file.
+        
         Args:
-            perl_filename: Perl macro filename (e.g., "MyMacro.pl")
-            python_module: Python module path (e.g., "pg_macros.custom.my_macro")
+            filename: Macro filename (e.g., "PGstandard.pl")
+            exports: Dictionary of exported functions/values
         """
-        cls._file_to_module[perl_filename] = python_module
-
-    @classmethod
-    def load_macro_file(cls, filename: str) -> dict[str, Callable]:
+        self._macros[filename] = exports
+        self._loaded_files.add(filename)
+    
+    def is_loaded(self, filename: str) -> bool:
+        """Check if a macro file has been loaded."""
+        return filename in self._loaded_files
+    
+    def load(self, filename: str) -> Dict[str, Any]:
         """
-        Load a macro file and return its exported functions.
-
+        Load a macro file and return its exports.
+        
         Args:
-            filename: Perl macro filename (e.g., "PGstandard.pl")
-
+            filename: Macro filename (e.g., "PGstandard.pl")
+        
         Returns:
-            Dictionary of exported functions
-
+            Dictionary of exported functions/values
+        
         Raises:
-            ImportError: If macro file not found
+            ModuleNotFoundError: If macro not found
         """
-        # Check cache
-        if filename in cls._exports:
-            return cls._exports[filename]
+        # Check if already registered
+        if filename in self._macros:
+            return self._macros[filename]
+        
+        # Try to import Python module
+        # Map Perl macro names to Python modules
+        module_map = {
+            "PGstandard.pl": "pg_macros.core.pg_standard",
+            "MathObjects.pl": "pg_macros.core.math_objects",
+            "PGML.pl": "pg_macros.core.pgml",
+            "PGanswermacros.pl": "pg_macros.answers.pg_answer_macros",
+            "PGchoicemacros.pl": "pg_macros.ui.choice_macros",
+            "niceTables.pl": "pg_macros.ui.nice_tables",
+            "scaffold.pl": "pg_macros.ui.scaffold",
+        }
+        
+        python_module = module_map.get(filename)
+        if not python_module:
+            raise ModuleNotFoundError(f"Macro file not ported yet: {filename}")
+        
+        try:
+            module = importlib.import_module(python_module)
+            # Extract exported functions (those not starting with _)
+            exports = {
+                name: getattr(module, name)
+                for name in dir(module)
+                if not name.startswith('_') and callable(getattr(module, name))
+            }
+            self._macros[filename] = exports
+            self._loaded_files.add(filename)
+            return exports
+        except ImportError as e:
+            raise ModuleNotFoundError(f"Failed to load macro {filename}: {e}")
+    
+    def get_all_exports(self, *filenames: str) -> Dict[str, Any]:
+        """
+        Load multiple macro files and return combined exports.
+        
+        Args:
+            *filenames: Macro filenames to load
+        
+        Returns:
+            Combined dictionary of all exports
+        """
+        combined = {}
+        for filename in filenames:
+            exports = self.load(filename)
+            combined.update(exports)
+        return combined
 
-        # Get Python module path
-        if filename not in cls._file_to_module:
-            raise ImportError(
-                f"Macro file '{filename}' not found. "
-                f"Available: {', '.join(cls._file_to_module.keys())}"
-            )
 
-        module_path = cls._file_to_module[filename]
-
-        # Load module
-        if module_path not in cls._loaded_modules:
-            try:
-                module = importlib.import_module(module_path)
-                cls._loaded_modules[module_path] = module
-            except ImportError as e:
-                raise ImportError(
-                    f"Failed to import {module_path} for {filename}: {e}"
-                ) from e
-
-        module = cls._loaded_modules[module_path]
-
-        # Extract exports (functions marked for export)
-        exports = {}
-        if hasattr(module, "__exports__"):
-            # Module explicitly defines exports
-            for name in module.__exports__:
-                if hasattr(module, name):
-                    exports[name] = getattr(module, name)
-        else:
-            # Export all public functions (not starting with _)
-            for name in dir(module):
-                if not name.startswith("_"):
-                    attr = getattr(module, name)
-                    if callable(attr):
-                        exports[name] = attr
-
-        # Cache and return
-        cls._exports[filename] = exports
-        return exports
-
-    @classmethod
-    def list_available(cls) -> list[str]:
-        """List all available macro files."""
-        return sorted(cls._file_to_module.keys())
+# Global registry instance
+_global_registry = MacroRegistry()
 
 
-def loadMacros(*filenames: str) -> dict[str, Callable]:
+def load_macros(*filenames: str) -> Dict[str, Any]:
     """
-    Load PG macro files (Perl-compatible function).
-
-    Mimics Perl's loadMacros() function:
-    - Accepts one or more macro filenames
-    - Returns all exported functions
-
+    Load macro files (similar to Perl's loadMacros).
+    
+    Usage:
+        exports = load_macros("PGstandard.pl", "MathObjects.pl")
+        # Now use exports: exports['TEXT']("Hello")
+    
+    Or inject into namespace:
+        globals().update(load_macros("PGstandard.pl"))
+        # Now use directly: TEXT("Hello")
+    
     Args:
-        *filenames: Macro filenames (e.g., "PGstandard.pl", "PGML.pl")
-
+        *filenames: Macro filenames to load
+    
     Returns:
-        Combined dictionary of all exported functions
-
-    Example:
-        >>> macros = loadMacros("PGstandard.pl", "PGML.pl")
-        >>> macros['TEXT']("Hello")  # Use TEXT function
+        Combined dictionary of exported functions
     """
-    all_exports: dict[str, Callable] = {}
-
-    for filename in filenames:
-        exports = MacroRegistry.load_macro_file(filename)
-        all_exports.update(exports)
-
-    return all_exports
+    return _global_registry.get_all_exports(*filenames)
 
 
-def register_macro_file(filename: str, python_module: str) -> None:
+def register_macro_file(filename: str, exports: Dict[str, Any]) -> None:
     """
-    Register a custom macro file mapping.
-
+    Register a macro file manually.
+    
     Args:
-        filename: Perl macro filename
-        python_module: Python module path
+        filename: Macro filename
+        exports: Dictionary of exported functions
     """
-    MacroRegistry.register_mapping(filename, python_module)
+    _global_registry.register_file(filename, exports)

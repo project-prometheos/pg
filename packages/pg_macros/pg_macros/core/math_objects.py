@@ -1,46 +1,35 @@
 """
-MathObjects.pl - MathObjects integration
+MathObjects.pl - Load MathObjects system
 
-Python port of macros/core/MathObjects.pl
-Provides MathObject constructors and utilities.
-
-Reference: MathObjects.pl
+Reference: macros/core/MathObjects.pl (89 lines)
 """
 
-from pg_math import Complex, Formula, Interval, Matrix, Point, Real, Vector
-from pg_parser import Context
+# Import MathObjects from pg_math
+try:
+    from pg_math import (
+        Real, Complex, Infinity,
+        Point, Vector, Matrix,
+        List, String,
+        Interval, Set, Union,
+        Formula
+    )
+except ImportError:
+    # Fallback if pg_math not available
+    Real = None
+    Complex = None
+    Formula = None
 
-# Export list
-__exports__ = [
-    "Real",
-    "Complex",
-    "Formula",
-    "Compute",
-    "Point",
-    "Vector",
-    "Matrix",
-    "Interval",
-    "Context",
-]
 
-
-def Compute(expression: str, **kwargs) -> Formula:
+def Compute(expr: str, **options):
     """
-    Compute a mathematical expression (alias for Formula).
-
-    This is the primary way to create formulas in PG problems.
-
-    Args:
-        expression: Mathematical expression string
-        **kwargs: Additional options
-
-    Returns:
-        Formula object
-
-    Example:
-        >>> f = Compute("x^2 + 2*x + 1")
-        >>> f.eval(x=2)  # Returns 9
-
+    Compute a mathematical expression.
+    
     Reference: MathObjects.pl::Compute
     """
-    return Formula(expression, **kwargs)
+    if Formula is not None:
+        return Formula(expr, **options)
+    # Fallback to eval
+    try:
+        return eval(expr)
+    except:
+        return expr

@@ -25,6 +25,9 @@ class PGMLRenderer:
         # This prevents variables like [$a] from being corrupted by table simplification
         html = re.sub(r'\[\$(\w+)\]', self._interpolate_var, html)
         
+        # 1.5. Variable interpolation in LaTeX math contexts: $(x-$h)^2-$k$ → $(x-3)^2-5$
+        html = self._interpolate_variables_in_math(html)
+        
         # 2. Remove PGML table constructs (simplify for MVP)
         # These are advanced layout features: [# ... #] and [. ... .]
         html = self._simplify_tables(html)
@@ -183,5 +186,26 @@ class PGMLRenderer:
                 return f'{value:g}'
             return str(value)
         
+        return re.sub(r'\$(\w+)', replacer, text)
+    
+    def _interpolate_variables_in_math(self, text: str) -> str:
+        """Replace $variable references in LaTeX math contexts with their values."""
+        def replacer(match):
+            var_name = match.group(1)
+            if var_name in self.variables:
+                value = self.variables[var_name]
+                # Format numbers nicely for math
+                if isinstance(value, float):
+                    return f'{value:g}'
+                elif hasattr(value, 'to_string'):
+                    return value.to_string()
+                else:
+                    return str(value)
+            else:
+                # Variable not found, keep original
+                return f'${var_name}'
+        
+        # Simple approach: replace $variable in math contexts
+        # This handles patterns like $(x-$h)^2-$k$ → $(x-3)^2-5$
         return re.sub(r'\$(\w+)', replacer, text)
 
