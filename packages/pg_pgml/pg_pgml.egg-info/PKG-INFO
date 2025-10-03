@@ -1,0 +1,35 @@
+Metadata-Version: 2.4
+Name: pg_pgml
+Version: 0.1.0
+Summary: PGML (PG Markup Language) parser and renderer for WeBWorK
+Requires-Python: >=3.12
+Description-Content-Type: text/markdown
+Requires-Dist: pg_parser>=0.1.0
+Requires-Dist: pg_math>=0.1.0
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0.0; extra == "dev"
+Requires-Dist: pytest-cov>=4.0.0; extra == "dev"
+Requires-Dist: hypothesis>=6.0.0; extra == "dev"
+
+# pg_pgml
+
+PGML (PG Markup Language) parser and renderer for WeBWorK.
+
+PGML is a markdown-like language for authoring WeBWorK problems with:
+- Variable interpolation: `[$var]`
+- Answer blanks: `[_____]`, `[@ ans_rule() @]`
+- Code execution: `[@ code @]`
+- Math display: `[```math```]`, `[``latex``]`
+
+## Features
+
+- Tokenizer for PGML syntax
+- Document parser (blocks and inline elements)
+- HTML renderer
+- TeX renderer
+- Variable interpolation
+- Answer blank handling
+
+## Reference
+
+Based on `macros/core/PGML.pl` from legacy Perl codebase.

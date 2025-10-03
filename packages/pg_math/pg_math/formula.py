@@ -13,7 +13,9 @@ Reference: lib/Value/Formula.pm (1,156 lines) in legacy Perl codebase
 
 from __future__ import annotations
 
-from typing import Any
+import random
+import types
+from typing import Any, Callable
 
 try:
     import sympy as sp

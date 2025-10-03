@@ -1,0 +1,33 @@
+Metadata-Version: 2.4
+Name: pg_translator
+Version: 0.1.0
+Summary: PG problem file translator and executor for WeBWorK
+Requires-Python: >=3.12
+Description-Content-Type: text/markdown
+Requires-Dist: pg_parser>=0.1.0
+Requires-Dist: pg_math>=0.1.0
+Requires-Dist: pg_answer>=0.1.0
+Requires-Dist: pg_pgml>=0.1.0
+Requires-Dist: RestrictedPython>=6.0
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0.0; extra == "dev"
+Requires-Dist: pytest-cov>=4.0.0; extra == "dev"
+Requires-Dist: hypothesis>=6.0.0; extra == "dev"
+
+# pg_translator
+
+PG problem file translator and executor for WeBWorK.
+
+Executes .pg problem files safely, collecting problem text, answers, solutions, and hints.
+
+## Features
+
+- PG file preprocessing (BEGIN_TEXT/BEGIN_PGML expansion)
+- Safe code execution with RestrictedPython
+- Problem text and answer collection
+- Macro loading framework
+- Error reporting with line numbers
+
+## Reference
+
+Based on `lib/WeBWorK/PG/Translator.pm` from legacy Perl codebase.

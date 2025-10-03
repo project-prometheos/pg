@@ -50,6 +50,10 @@ class NumericEvaluator(AnswerEvaluator):
             allow_expressions: Allow student to enter expressions like "2*pi"
             **options: Additional options
         """
+        # Set instance variables FIRST before parsing
+        self.allow_expressions = allow_expressions
+        self.parser = Parser() if allow_expressions else None
+
         # Convert correct answer to MathValue
         if isinstance(correct_answer, MathValue):
             self.correct_value = correct_answer
@@ -69,9 +73,6 @@ class NumericEvaluator(AnswerEvaluator):
             tolerance_mode=tolerance_mode,
             **options,
         )
-
-        self.allow_expressions = allow_expressions
-        self.parser = Parser() if allow_expressions else None
 
     def _parse_numeric(self, answer: str) -> MathValue:
         """

@@ -1,0 +1,14 @@
+README.md
+pyproject.toml
+pg_translator/__init__.py
+pg_translator/executor.py
+pg_translator/preprocessor.py
+pg_translator/translator.py
+pg_translator.egg-info/PKG-INFO
+pg_translator.egg-info/SOURCES.txt
+pg_translator.egg-info/dependency_links.txt
+pg_translator.egg-info/requires.txt
+pg_translator.egg-info/top_level.txt
+tests/test_executor.py
+tests/test_preprocessor.py
+tests/test_translator.py
