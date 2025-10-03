@@ -46,13 +46,27 @@ class PGRenderer:
                 solution_renderer = PGMLRenderer(variables)
                 solution_html, _ = solution_renderer.render(problem.solution)
             
-            # Step 5: Format answers
+            # Step 5: Format answers (propagate metadata if available)
             answers = {}
-            for answer_id, correct_value in answer_blanks.items():
-                answers[answer_id] = {
-                    'correct_value': correct_value,
-                    'type': self._detect_answer_type(correct_value)
-                }
+            for answer_id, spec in answer_blanks.items():
+                if isinstance(spec, dict):
+                    # Expect keys: correct_value, type, checker?, variables?
+                    cv = spec.get('correct_value', '')
+                    atype = spec.get('type', self._detect_answer_type(str(cv)))
+                    entry = {
+                        'correct_value': cv,
+                        'type': atype,
+                    }
+                    if 'checker' in spec:
+                        entry['checker'] = spec['checker']
+                    if 'variables' in spec:
+                        entry['variables'] = spec['variables']
+                    answers[answer_id] = entry
+                else:
+                    answers[answer_id] = {
+                        'correct_value': spec,
+                        'type': self._detect_answer_type(str(spec))
+                    }
             
             return {
                 'statement_html': statement_html,

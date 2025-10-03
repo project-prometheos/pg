@@ -56,6 +56,19 @@ def test_up_to_constant():
     assert is_correct, f"Should be correct: {msg}"
 
 
+def test_up_to_additive_constant():
+    """Test checking up to additive constant."""
+    checker = FormulaChecker(mode='up_to_additive_constant')
+
+    # e^x + pi should be correct when compared to e^x up to additive constant
+    is_correct, msg = checker.check("e^x + pi", "e^x")
+    assert is_correct, f"Should be correct up to additive constant: {msg}"
+
+    # Not additive-constant equivalent
+    is_correct, msg = checker.check("x^2 + x", "x^2 + 1")
+    assert not is_correct, "Should be incorrect for non-constant difference"
+
+
 def test_syntax_error():
     """Test that syntax errors are caught."""
     checker = FormulaChecker()

@@ -57,6 +57,9 @@ class AnswerChecker:
             checker_mode = context.get('checker', 'standard')
             if checker_mode == 'up_to_constant':
                 return self.formula_checker_constant.check(student_answer, correct_answer, context)
+            elif checker_mode == 'up_to_additive_constant':
+                checker = FormulaChecker(tolerance=self.tolerance, mode='up_to_additive_constant')
+                return checker.check(student_answer, correct_answer, context)
             else:
                 return self.formula_checker_standard.check(student_answer, correct_answer, context)
         elif answer_type == 'interval':

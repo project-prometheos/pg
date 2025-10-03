@@ -29,6 +29,7 @@ class FormulaChecker(AnswerChecker):
     Supports multiple checking modes:
     - standard: Exact algebraic equivalence
     - up_to_constant: Answers differ by constant multiple (e.g., 2x vs x)
+    - up_to_additive_constant: Answers differ by additive constant (e.g., e^x vs e^x + C)
     - up_to_sign: Answers differ by sign (e.g., x vs -x)
     """
     
@@ -43,7 +44,7 @@ class FormulaChecker(AnswerChecker):
         
         Args:
             tolerance: Numeric tolerance for test point evaluation
-            mode: Checking mode ('standard', 'up_to_constant', 'up_to_sign')
+            mode: Checking mode ('standard', 'up_to_constant', 'up_to_additive_constant', 'up_to_sign')
             num_test_points: Number of random points to test for equivalence
         """
         super().__init__(tolerance)
@@ -109,6 +110,8 @@ class FormulaChecker(AnswerChecker):
                 is_correct = self._check_standard(student_expr, correct_expr, variables)
             elif self.mode == 'up_to_constant':
                 is_correct = self._check_up_to_constant(student_expr, correct_expr, variables)
+            elif self.mode == 'up_to_additive_constant':
+                is_correct = self._check_up_to_additive_constant(student_expr, correct_expr, variables)
             elif self.mode == 'up_to_sign':
                 is_correct = self._check_up_to_sign(student_expr, correct_expr, variables)
             else:
@@ -192,6 +195,12 @@ class FormulaChecker(AnswerChecker):
         """
         from sympy import Rational, simplify
         
+        # Accept additive constant if requested (upToConstant)
+        if cmp_params.get('upToConstant', False):
+            vars_ = self._get_variables(student_expr, correct_expr)
+            if self._check_up_to_additive_constant(student_expr, correct_expr, vars_):
+                return True, "Correct!"
+
         # Check if studentsMustReduceFractions is required
         if cmp_params.get('studentsMustReduceFractions', False):
             # Student must provide reduced form
@@ -336,6 +345,41 @@ class FormulaChecker(AnswerChecker):
         # Check if all ratios are approximately equal
         first_ratio = ratios[0]
         return all(abs(r - first_ratio) < self.tolerance for r in ratios)
+
+    def _check_up_to_additive_constant(
+        self,
+        student: Expr,
+        correct: Expr,
+        variables: Set[Symbol]
+    ) -> bool:
+        """
+        Check if student = correct + C for some constant C (antiderivative parity).
+
+        Evaluate diff = student - correct at several points and verify the
+        differences are approximately equal.
+        """
+        # No variables: any finite constant difference is OK
+        if not variables:
+            try:
+                _ = float(student - correct)
+                return True
+            except Exception:
+                return False
+
+        diffs = []
+        for _ in range(self.num_test_points):
+            test_values = self._generate_test_point(variables)
+            try:
+                d = float((student - correct).subs(test_values))
+                diffs.append(d)
+            except (ValueError, TypeError, ZeroDivisionError):
+                continue
+
+        if len(diffs) < 3:
+            return False
+
+        baseline = diffs[0]
+        return all(abs(d - baseline) < self.tolerance for d in diffs)
     
     def _check_up_to_sign(
         self,
@@ -398,4 +442,3 @@ class FormulaChecker(AnswerChecker):
             var: random.uniform(min_val, max_val)
             for var in variables
         }
-

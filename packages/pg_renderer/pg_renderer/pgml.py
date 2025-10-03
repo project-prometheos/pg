@@ -2,6 +2,7 @@
 
 import re
 from typing import Dict, Any, Tuple
+import re
 
 
 class PGMLRenderer:
@@ -10,7 +11,8 @@ class PGMLRenderer:
     def __init__(self, variables: Dict[str, Any]):
         self.variables = variables
         self.answer_counter = 0
-        self.answer_blanks: Dict[str, str] = {}  # answer_id → correct_value
+        # answer_id → either string correct value or a dict with metadata
+        self.answer_blanks: Dict[str, Any] = {}
     
     def render(self, pgml: str) -> Tuple[str, Dict[str, str]]:
         """
@@ -143,9 +145,12 @@ class PGMLRenderer:
         self.answer_counter += 1
         answer_id = f'AnSwEr{self.answer_counter:04d}'
         
-        # Evaluate answer expression to get correct value
+        # Evaluate answer expression to get correct value or spec dict
         correct_value = self._eval_answer(answer_expr)
-        self.answer_blanks[answer_id] = str(correct_value)
+        # Store either the dict (spec) or a plain string
+        self.answer_blanks[answer_id] = (
+            correct_value if isinstance(correct_value, dict) else str(correct_value)
+        )
         
         # Return a placeholder that won't break markdown
         # The frontend will replace these with actual input fields
@@ -162,19 +167,76 @@ class PGMLRenderer:
         """
         expr = expr.strip()
         
-        # If it starts with $, it's a variable reference
+        # If it starts with $, it may be a variable or a method call like $var->cmp(...)
         if expr.startswith('$'):
+            # Detect $var->cmp(options)
+            m = re.match(r'^\$(\w+)\s*->\s*cmp\s*\((.*?)\)\s*$', expr)
+            if m:
+                var_name = m.group(1)
+                options_str = m.group(2)
+                base_val = self.variables.get(var_name, None)
+                # Determine checker/options
+                options = self._parse_cmp_options(options_str)
+                checker = 'standard'
+                if options.get('upToConstant', False):
+                    # Additive constant parity (antiderivative style)
+                    checker = 'up_to_additive_constant'
+                # Build answer spec
+                if hasattr(base_val, 'to_string'):
+                    value_str = base_val.to_string()
+                    variables = getattr(base_val, 'variables', [])
+                else:
+                    value_str = str(base_val) if base_val is not None else expr
+                    variables = []
+                return {
+                    'correct_value': value_str,
+                    'type': 'formula',
+                    'checker': checker,
+                    'variables': variables,
+                }
+
+            # Simple variable reference $var
             var_name = expr.lstrip('$')
             result = self.variables.get(var_name, expr)
-            
-            # If the result is a string, interpolate any variables in it
+            # Interpolate variables if it's a string
             if isinstance(result, str):
                 result = self._interpolate_variables_in_string(result)
-            
             return result
         
         # Otherwise, it's a literal or expression - interpolate variables
         return self._interpolate_variables_in_string(expr)
+
+    def _parse_cmp_options(self, s: str) -> Dict[str, Any]:
+        """Parse a minimal subset of cmp(...) options from Perl-style 'key => value' list.
+
+        Only options that we currently use are parsed (e.g., upToConstant => 1).
+        Unknown keys are ignored.
+        """
+        opts: Dict[str, Any] = {}
+        # Split on commas not inside parentheses (cmp values here are simple)
+        parts = [p.strip() for p in s.split(',') if p.strip()]
+        for part in parts:
+            if '=>' not in part:
+                continue
+            key, val = [x.strip() for x in part.split('=>', 1)]
+            # Strip surrounding quotes for key
+            key = key.strip('"\'')
+            # Normalize boolean/numeric values
+            if val in ('1', 'true', 'True'):
+                opts[key] = True
+            elif val in ('0', 'false', 'False'):
+                opts[key] = False
+            else:
+                # Best-effort int/float; otherwise raw string without quotes
+                v_clean = val.strip('"\'')
+                try:
+                    opts[key] = int(v_clean)
+                except ValueError:
+                    try:
+                        opts[key] = float(v_clean)
+                    except ValueError:
+                        opts[key] = v_clean
+        return opts
     
     def _interpolate_variables_in_string(self, text: str) -> str:
         """Replace $variable references in a string with their values."""
@@ -208,4 +270,3 @@ class PGMLRenderer:
         # Simple approach: replace $variable in math contexts
         # This handles patterns like $(x-$h)^2-$k$ → $(x-3)^2-5$
         return re.sub(r'\$(\w+)', replacer, text)
-

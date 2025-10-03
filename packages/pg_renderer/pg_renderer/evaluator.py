@@ -3,6 +3,7 @@
 import re
 import math
 from typing import Dict, Any
+from pg_math import Formula as PGFormula
 from .context import Context
 from .random import PGRandom
 
@@ -150,15 +151,23 @@ class PGEvaluator:
             context_name = match.group(1)
             self.context = Context(context_name)
     
-    def _handle_formula(self, expr: str) -> str:
-        """Handle Formula() and Compute() objects."""
+    def _handle_formula(self, expr: str):
+        """Handle Formula() and Compute() objects and return a Formula object.
+
+        In Perl, Formula()/Compute() produce MathObject formulas with methods like ->cmp().
+        Mirror that here by returning a pg_math.Formula instance rather than a string.
+        """
         # Extract the formula string
         match = re.search(r'(?:Formula|Compute)\(["\'](.+?)["\']\)', expr)
         if match:
-            return match.group(1)
+            formula_str = match.group(1)
+            try:
+                return PGFormula(formula_str, context=self.context)
+            except Exception:
+                # Fallback to raw string if we can't construct a Formula
+                return formula_str
         return expr
     
     def _strip_comments(self, code: str) -> str:
         """Remove Perl comments."""
         return re.sub(r'#.*$', '', code, flags=re.MULTILINE)
-
