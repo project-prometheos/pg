@@ -26,16 +26,16 @@ import Markdown from './components/Markdown';
 
 <Markdown className="prose">
   # Hello World
-  
+
   This is some **bold** and *italic* text.
-  
+
   Inline math: $E = mc^2$
-  
+
   Display math:
   $$
   \frac{d}{dx} \sin(x) = \cos(x)
   $$
-  
+
   | Column 1 | Column 2 |
   |----------|----------|
   | Data 1   | Data 2   |

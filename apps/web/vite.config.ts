@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite';
+
 import react from '@vitejs/plugin-react';
 
 // NOTE: KaTeX fonts were failing to load with paths like
@@ -15,14 +16,14 @@ import react from '@vitejs/plugin-react';
 // the fonts with `?url` and define @font-face rules, or to use the CDN CSS.
 
 export default defineConfig({
-  server: {
-    port: 5173,
-    proxy: {
-      '/api': 'http://localhost:8000'
-    }
-  },
-  plugins: [react()],
-  optimizeDeps: {
-    exclude: ['katex']
-  }
+	server: {
+		port: 5173,
+		proxy: {
+			'/api': 'http://localhost:8000',
+		},
+	},
+	plugins: [react()],
+	optimizeDeps: {
+		exclude: ['katex'],
+	},
 });

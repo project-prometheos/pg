@@ -9,7 +9,7 @@ from ..services import problems as problem_service
 router = APIRouter()
 
 
-@router.get("/{problem_id}", response_model=ProblemResponse)
+@router.get("/{problem_id:path}", response_model=ProblemResponse)
 def read_problem(problem_id: str, seed: int = Query(..., ge=0)) -> ProblemResponse:
     """Return a deterministic problem variant for the requested seed."""
     try:

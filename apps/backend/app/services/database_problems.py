@@ -147,17 +147,29 @@ class DatabaseProblemService(ProblemService):
         return "Solution not found"
     
     def _pgml_to_latex(self, pgml_text: str) -> str:
-        """Convert PGML to LaTeX (simplified conversion)."""
+        """Convert PGML to LaTeX/Markdown (simplified conversion)."""
         import re
         
-        # Convert math expressions
+        # PGML uses \(...\) for inline math and \[...\] for display math
+        # Convert PGML inline math \(...\) to $ ... $
+        pgml_text = re.sub(r'\\\((.*?)\\\)', r'$\1$', pgml_text, flags=re.DOTALL)
+        
+        # Convert PGML display math \[...\] to $$ ... $$
+        pgml_text = re.sub(r'\\\[(.*?)\\\]', r'$$\1$$', pgml_text, flags=re.DOTALL)
+        
+        # Convert backtick math [` ... `] to $ ... $
         pgml_text = re.sub(r'\[`([^`]+)`\]', r'$\1$', pgml_text)
         
-        # Convert answer blanks
-        pgml_text = re.sub(r'\[_\]\{[^}]+\}', r'\\underline{\\hspace{2cm}}', pgml_text)
+        # Convert code-fenced math [``` ... ```] to display math
+        pgml_text = re.sub(r'\[```(.*?)```\]', r'$$\1$$', pgml_text, flags=re.DOTALL)
         
-        # Convert line breaks
-        pgml_text = pgml_text.replace('\n', '\\\\\n')
+        # Convert answer blanks [_]{...} to input placeholders
+        pgml_text = re.sub(r'\[_\]\{[^}]+\}', r'[____]', pgml_text)
+        
+        # Convert bold **text** (already markdown-compatible)
+        # Convert italics *text* (already markdown-compatible)
+        
+        # Don't convert line breaks to \\ - keep normal newlines for markdown
         
         return pgml_text
     

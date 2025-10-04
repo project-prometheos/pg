@@ -1,5 +1,6 @@
 """Database problem rendering endpoints."""
 
+import re
 from typing import Dict, Any
 from fastapi import APIRouter, Query, HTTPException, Body
 
@@ -8,6 +9,35 @@ from ..services.pg_renderer_python import get_pg_render_service
 
 
 router = APIRouter(prefix="/api/db", tags=["database", "rendering"])
+
+
+def _pgml_to_markdown(pgml_text: str) -> str:
+    """
+    Convert PGML math syntax to markdown math delimiters.
+    
+    PGML uses:
+    - \(...\) for inline math
+    - \[...\] for display math
+    
+    Markdown/KaTeX uses:
+    - $...$ for inline math
+    - $$...$$ for display math
+    
+    Also converts answer blanks [_]{...} to [____]
+    """
+    if not pgml_text:
+        return pgml_text
+    
+    # Convert PGML inline math \(...\) to $ ... $
+    pgml_text = re.sub(r'\\\((.*?)\\\)', r'$\1$', pgml_text, flags=re.DOTALL)
+    
+    # Convert PGML display math \[...\] to $$ ... $$
+    pgml_text = re.sub(r'\\\[(.*?)\\\]', r'$$\1$$', pgml_text, flags=re.DOTALL)
+    
+    # Convert answer blanks [_]{...} to [____]
+    pgml_text = re.sub(r'\[_\]\{[^}]+\}', r'[____]', pgml_text)
+    
+    return pgml_text
 
 
 def get_db() -> ProblemDB:
@@ -38,14 +68,18 @@ def render_database_problem(
     renderer = get_pg_render_service()
     rendered = renderer.render_problem(problem['pg_source'], seed=seed)
     
+    # Convert PGML math syntax to markdown for KaTeX rendering
+    statement_html = _pgml_to_markdown(rendered['statement_html'])
+    solution_html = _pgml_to_markdown(rendered['solution_html'])
+    
     return {
         'problem_id': problem_id,
         'name': problem['name'],
         'seed': seed,
-        'statement_html': rendered['statement_html'],
+        'statement_html': statement_html,
         'inputs': rendered['inputs'],
         'answers': rendered['answers'],
-        'solution_html': rendered['solution_html'],
+        'solution_html': solution_html,
         'warnings': rendered.get('warnings', []),
         'errors': rendered.get('errors', []),
         'metadata': problem['metadata']
