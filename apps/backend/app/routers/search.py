@@ -60,7 +60,7 @@ def search_problems(
     subjects: Optional[str] = Query(None, description="Comma-separated subjects"),
     categories: Optional[str] = Query(None, description="Comma-separated categories"),
     collection: Optional[str] = Query(None, description="Filter by collection"),
-    limit: int = Query(50, ge=1, le=100, description="Results per page"),
+    limit: int = Query(50, ge=1, le=500, description="Results per page"),
     offset: int = Query(0, ge=0, description="Offset for pagination")
 ) -> SearchResponse:
     """
@@ -125,3 +125,19 @@ def get_all_facets(
     """Get all available facet values for filtering."""
     db = get_db()
     return db.get_facets(collection=collection)
+
+
+class CollectionInfo(BaseModel):
+    """Problem collection information."""
+    id: str
+    name: str
+    description: Optional[str]
+    problem_count: int
+
+
+@router.get("/problems/collections/list", response_model=List[CollectionInfo])
+def list_collections() -> List[CollectionInfo]:
+    """List all problem collections."""
+    db = get_db()
+    collections = db.get_collections()
+    return [CollectionInfo(**c) for c in collections]

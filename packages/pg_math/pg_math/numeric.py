@@ -75,6 +75,10 @@ class Real(MathValue):
         """Convert to Python float."""
         return self.value
 
+    def __float__(self) -> float:
+        """Convert to Python float (for float() builtin)."""
+        return self.value
+
     # Arithmetic operators
 
     def __add__(self, other: Any) -> MathValue:

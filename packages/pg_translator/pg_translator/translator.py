@@ -21,7 +21,17 @@ from typing import Any
 from pg_answer import AnswerResult, EvaluatorRegistry
 from pg_parser import Context
 
+from .error_handler import PGError, format_execution_error, install_error_handlers
 from .executor import PGEnvironment, PGExecutor
+from .grading import (
+    ProblemGrader,
+    avg_problem_grader,
+    process_checkbox_radio_input,
+    std_problem_grader,
+    stringify_answers,
+)
+from .macro_loader import MacroLoader
+from .post_processor import ContentPostProcessor
 from .preprocessor import PGPreprocessor
 
 
@@ -54,8 +64,20 @@ class ProblemResult:
     score: float | None = None
     """Overall problem score (if answers checked)"""
 
+    problem_result: dict[str, Any] | None = None
+    """Grading result details"""
+
+    problem_state: dict[str, Any] | None = None
+    """Problem state (attempts, recorded score, etc.)"""
+
+    header_html: str | None = None
+    """Header HTML (CSS, JS, etc.)"""
+
     errors: list[str] | None = None
     """Execution errors"""
+
+    warnings: list[str] | None = None
+    """Warning messages"""
 
 
 class PGTranslator:
@@ -73,6 +95,7 @@ class PGTranslator:
         self,
         preprocessor: PGPreprocessor | None = None,
         executor: PGExecutor | None = None,
+        grader: ProblemGrader | None = None,
     ):
         """
         Initialize translator.
@@ -80,9 +103,19 @@ class PGTranslator:
         Args:
             preprocessor: PG preprocessor (creates default if None)
             executor: PG executor (creates default if None)
+            grader: Problem grader (uses std_problem_grader if None)
         """
         self.preprocessor = preprocessor or PGPreprocessor()
         self.executor = executor or PGExecutor()
+        self.grader = grader or std_problem_grader
+        self.macro_loader = MacroLoader(self.executor.sandbox)
+        self.post_processor = ContentPostProcessor()
+
+        # Try to load core macros (if available)
+        try:
+            self.macro_loader.unrestricted_load("PG.pl")
+        except:
+            pass  # PG.pl not yet ported
 
     def translate(
         self,

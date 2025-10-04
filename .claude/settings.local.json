@@ -28,7 +28,15 @@
       "Bash(C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe pypg.py tutorial/sample-problems/Algebra/AlgebraicFractionAnswer.pg \"6y - 5\" \"y - 8\" --seed 423)",
       "Bash(C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe pypg.py tutorial/sample-problems/Algebra/AlgebraicFractionAnswer.pg \"6y-5\" \"y-9\" --seed 423)",
       "Bash(C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe pypg.py tutorial/sample-problems/Algebra/AlgebraicFractionAnswer.pg \"4y - 9\" \"3y - 4342\" --seed 423)",
-      "Bash(C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe test_formula_recursion.py)"
+      "Bash(C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe test_formula_recursion.py)",
+      "Bash(C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe scripts/import_ps1.py)",
+      "Bash(curl:*)",
+      "Bash(C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe test_db_query.py)",
+      "Bash(C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe -c \"from app.main import app; print(''Backend imports OK'')\")",
+      "Bash(C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe test_api_endpoints.py)",
+      "Bash(python:*)",
+      "Bash(C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe -c \"import sys, json; data=json.load(sys.stdin); print(f''''Total: {data[\"\"total\"\"]} problems''''); print(f''''Returned: {len(data[\"\"problems\"\"])} problems'''')\")",
+      "Bash(C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe -m pytest packages/pg_math/tests/test_formula_enhanced.py -v --tb=short)"
     ],
     "deny": [],
     "ask": []

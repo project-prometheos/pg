@@ -101,10 +101,17 @@ class Formula(MathValue):
         # If expression is a string and SymPy is available, parse it
         if isinstance(expression, str) and SYMPY_AVAILABLE:
             try:
+                # Build local_dict with variables as symbols and constants
+                local_dict = {var: sp.Symbol(var) for var in self.variables}
+                # Add mathematical constants
+                local_dict['e'] = sp.E
+                local_dict['pi'] = sp.pi
+                local_dict['E'] = sp.E
+                local_dict['PI'] = sp.pi
                 self._sympy_expr = parse_expr(
                     expression,
                     transformations="all",
-                    local_dict={var: sp.Symbol(var) for var in self.variables},
+                    local_dict=local_dict,
                 )
             except Exception:
                 # Fallback: store as string
