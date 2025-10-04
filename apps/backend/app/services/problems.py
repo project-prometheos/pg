@@ -17,25 +17,26 @@ class ProblemNotFoundError(KeyError):
 def _pgml_to_markdown(pgml_text: str) -> str:
     """
     Convert PGML to Markdown with math delimiters.
-    
+
     PGML uses \(...\) for inline math and \[...\] for display math.
     We convert these to $ ... $ and $$ ... $$ for markdown/KaTeX rendering.
     """
     # Convert PGML inline math \(...\) to $ ... $
     pgml_text = re.sub(r'\\\((.*?)\\\)', r'$\1$', pgml_text, flags=re.DOTALL)
-    
+
     # Convert PGML display math \[...\] to $$ ... $$
     pgml_text = re.sub(r'\\\[(.*?)\\\]', r'$$\1$$', pgml_text, flags=re.DOTALL)
-    
+
     # Convert backtick math [` ... `] to $ ... $
     pgml_text = re.sub(r'\[`([^`]+)`\]', r'$\1$', pgml_text)
-    
+
     # Convert code-fenced math [``` ... ```] to display math
-    pgml_text = re.sub(r'\[```(.*?)```\]', r'$$\1$$', pgml_text, flags=re.DOTALL)
-    
+    pgml_text = re.sub(r'\[```(.*?)```\]', r'$$\1$$',
+                       pgml_text, flags=re.DOTALL)
+
     # Convert answer blanks [_]{...} to [____]
     pgml_text = re.sub(r'\[_\]\{[^}]+\}', r'[____]', pgml_text)
-    
+
     return pgml_text
 
 
@@ -51,17 +52,18 @@ class ProblemService:
             raise ProblemNotFoundError(f"Unknown problem id '{problem_id}'")
 
         instance = problem(seed=seed)
-        
+
         # Convert PGML to markdown-compatible format
         statement_tex = _pgml_to_markdown(instance.statement_tex)
         solution_tex = _pgml_to_markdown(instance.solution_tex)
-        
+
         return ProblemResponse(
             variant_id=self.registry.variant_id(problem_id, seed),
             problem_id=problem_id,
             seed=seed,
             statement_tex=statement_tex,
-            inputs=[InputSpec.model_validate(i.model_dump()) for i in instance.inputs],
+            inputs=[InputSpec.model_validate(
+                i.model_dump()) for i in instance.inputs],
             solution_tex=solution_tex,
             meta=instance.meta,
         )
