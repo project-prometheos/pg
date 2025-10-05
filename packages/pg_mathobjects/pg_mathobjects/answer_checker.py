@@ -40,11 +40,25 @@ class RealAnswerChecker(AnswerChecker):
     def check(self, student_answer: str) -> Dict[str, Any]:
         """Check if student answer matches correct Real number."""
         from .real import Real
+        from .formula import Formula
 
         try:
-            # Parse student answer
-            student_value = float(student_answer)
-            student_real = Real(student_value, self.correct_value.context)
+            # Normalize common constant representations
+            # Replace unicode π with 'pi', uppercase 'Pi' with 'pi'
+            normalized = student_answer.replace('π', 'pi').replace('Pi', 'pi')
+            
+            # First try to parse as a simple float
+            try:
+                student_value = float(normalized)
+                student_real = Real(student_value, self.correct_value.context)
+            except ValueError:
+                # If that fails, try parsing as a formula (which handles pi, e, etc.)
+                # Then evaluate it to get a numeric value
+                formula = Formula(normalized, self.correct_value.context)
+                # Evaluate with no variables (constant expression)
+                import sympy as sp
+                student_value = float(formula._tree.evalf())
+                student_real = Real(student_value, self.correct_value.context)
 
             # Compare with tolerance
             if student_real == self.correct_value:
@@ -52,7 +66,7 @@ class RealAnswerChecker(AnswerChecker):
             else:
                 return {'score': 0.0, 'correct': False}
 
-        except (ValueError, TypeError):
+        except (ValueError, TypeError) as e:
             return {
                 'score': 0.0,
                 'correct': False,
