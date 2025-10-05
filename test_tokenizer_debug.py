@@ -14,6 +14,7 @@ for t in tokens:
 
 print('\nParsed:')
 doc = PGMLParser.parse_text(text)
-answer_blank = doc.blocks[0].content[1]  # First is TEXT, second is ANSWER_BLANK
+# First is TEXT, second is ANSWER_BLANK
+answer_blank = doc.blocks[0].content[1]
 print(f'  Width: {answer_blank.width}')
 print(f'  Evaluator code: {repr(answer_blank.evaluator_code)}')

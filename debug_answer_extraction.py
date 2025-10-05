@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """Debug why answers aren't being extracted from PGML."""
 
+from pg_pgml import PGMLParser, HTMLRenderer
+from pg_math import Compute, Context
 import sys
 sys.path.insert(0, 'packages/pg_translator')
 sys.path.insert(0, 'packages/pg_macros')
 sys.path.insert(0, 'packages/pg_math')
 sys.path.insert(0, 'packages/pg_pgml')
 
-from pg_math import Compute, Context
-from pg_pgml import PGMLParser, HTMLRenderer
 
 # Set up context
 Context('Fraction-NoDecimals')
@@ -44,7 +44,8 @@ registered_answers = {}
 
 # Render with answer registration
 renderer = HTMLRenderer(context=context)
-renderer._register_answer = lambda name, ev: registered_answers.update({name: ev})
+renderer._register_answer = lambda name, ev: registered_answers.update({
+                                                                       name: ev})
 
 html = renderer.render(doc)
 
