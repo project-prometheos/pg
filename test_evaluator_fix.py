@@ -1,5 +1,7 @@
 """Test if evaluator objects are being captured correctly."""
 
+from pathlib import Path
+from packages.pg_translator.pg_translator import PGTranslator
 import sys
 import importlib
 
@@ -8,10 +10,9 @@ for mod in list(sys.modules.keys()):
     if 'pg_' in mod or 'packages' in mod:
         del sys.modules[mod]
 
-from packages.pg_translator.pg_translator import PGTranslator
-from pathlib import Path
 
-pg_src = Path('tutorial/sample-problems/Algebra/ExpandedPolynomial.pg').read_text()
+pg_src = Path(
+    'tutorial/sample-problems/Algebra/ExpandedPolynomial.pg').read_text()
 t = PGTranslator()
 result = t.translate_source(pg_src, seed=0)
 

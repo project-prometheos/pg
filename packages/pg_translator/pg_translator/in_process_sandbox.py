@@ -647,7 +647,7 @@ class InProcessSandbox:
                 output_text = '\n\n'.join(pg_env.output_array)
             else:
                 output_text = ''
-            
+
             answers = dict(pg_env.answers_hash)
             solution_text = ''.join(getattr(pg_env, 'solution_array', [])) if hasattr(
                 pg_env, 'solution_array') else None
@@ -714,22 +714,24 @@ class InProcessSandbox:
                 """Return a checker that can check multiple answers together."""
                 # For now, return self so it can be used as a checker
                 return self
-            
+
             def check(self, *student_answers):
                 """Check multiple student answers against the correct answers."""
                 # Extract the custom checker if provided
                 checker_func = self.options.get('checker')
-                
+
                 if checker_func and callable(checker_func):
                     # Call custom checker with (correct, student, self) tuple
                     try:
-                        results = checker_func(self.answers, student_answers, self)
+                        results = checker_func(
+                            self.answers, student_answers, self)
                         # results should be a list of [score1, score2, ...]
                         # Convert to dict format for each answer
                         if isinstance(results, list):
                             # Return results for all answers
                             # For now, return a dict with aggregate result
-                            all_correct = all(r >= 1.0 for r in results) if results else False
+                            all_correct = all(
+                                r >= 1.0 for r in results) if results else False
                             return {
                                 'correct': all_correct,
                                 'score': 1.0 if all_correct else 0.0,
@@ -742,7 +744,7 @@ class InProcessSandbox:
                             'score': 0.0,
                             'message': f'Error in custom checker: {str(e)}',
                         }
-                
+
                 # Default: check each answer individually
                 if len(student_answers) != len(self.answers):
                     return {
@@ -750,7 +752,7 @@ class InProcessSandbox:
                         'score': 0.0,
                         'message': f'Expected {len(self.answers)} answers, got {len(student_answers)}',
                     }
-                
+
                 results = []
                 for correct, student in zip(self.answers, student_answers):
                     if hasattr(correct, 'cmp'):
@@ -762,8 +764,9 @@ class InProcessSandbox:
                             results.append(0.0)
                     else:
                         # Simple comparison
-                        results.append(1.0 if str(correct) == str(student) else 0.0)
-                
+                        results.append(1.0 if str(correct) ==
+                                       str(student) else 0.0)
+
                 all_correct = all(r >= 1.0 for r in results)
                 return {
                     'correct': all_correct,

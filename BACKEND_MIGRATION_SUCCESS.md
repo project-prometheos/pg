@@ -1,4 +1,4 @@
-# Backend Migration to pg_translator - SUCCESS! 
+# Backend Migration to pg_translator - SUCCESS!
 
 ## Summary
 

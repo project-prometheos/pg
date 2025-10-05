@@ -79,11 +79,11 @@ sub_match = re.search(r'(=>|=)\s*sub\s*\{', original_line)
 if sub_match:
     # Track brace depth to find the end
     brace_depth = original_line.count('{') - original_line.count('}')
-    
+
     # Extract parameter name and stub with lambda
     if prefix_match:
         output_lines.append(f"{indent}{param_name} = lambda *args, **kwargs: None  # Stubbed Perl closure")
-    
+
     # Skip the rest of the closure block
     while i < len(lines) and brace_depth > 0:
         current_line = lines[i]
@@ -135,7 +135,7 @@ def PGML(pgml_text):
 ## Testing Results
 
 ### ✅ Now Working: Algebra/AlgebraicFractionAnswer
-**Before:** SyntaxError → NameError → Empty rendering  
+**Before:** SyntaxError → NameError → Empty rendering
 **After:** Renders successfully!
 
 ```
@@ -218,12 +218,12 @@ Frontend: ReactMarkdown + KaTeX
 1. **Variable Interpolation:** Make `[a]` show actual value `8`
    - Capture variables during execution
    - Pass to PGMLRenderer via `variables=` parameter
-   
+
 2. **Custom Checker Support:** Implement basic Python answer checking
    - Convert simple Perl checkers to Python
    - Support common validation patterns
 
-### Medium Priority  
+### Medium Priority
 3. **Test More Problems:** Verify across all database problems
 4. **Nested Tables:** Test PGML layout tables `[# ... #]*`
 5. **Performance:** Profile rendering on complex problems
@@ -246,6 +246,6 @@ The pg_translator preprocessor now successfully handles:
 Combined with the PGML rendering pipeline, **most PG problems now render correctly!**
 
 ---
-**Date:** 2025-10-05  
-**Branch:** porting/python  
+**Date:** 2025-10-05
+**Branch:** porting/python
 **Status:** Preprocessor ✅ Much improved | Rendering ✅ Complete | Variable interpolation ⚠️ TODO

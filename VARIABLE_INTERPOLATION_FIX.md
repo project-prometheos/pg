@@ -49,7 +49,7 @@ Verified with multiple problems and seeds:
 
 ```bash
 # AlgebraicFractionAnswer - seed 0
-# Shows: 8y/(y-1) + 9/(1-y) = 
+# Shows: 8y/(y-1) + 9/(1-y) =
 ✅ Variables: a=8, b=9, c=1
 
 # AlgebraicFractionAnswer - seed 42

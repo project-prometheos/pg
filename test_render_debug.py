@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 """Debug script to test rendering of Algebra/AlgebraicFractionAnswer"""
 
+from app.services.pg_translator_service import get_pg_translator_service
+from app.db import ProblemDB
 import sys
 sys.path.insert(0, 'apps/backend')
 
-from app.db import ProblemDB
-from app.services.pg_translator_service import get_pg_translator_service
 
 # Get problem
 db = ProblemDB.get_instance()
-problem = db.get_by_id('Algebra/AlgebraicFractionAnswer')  # Test failing problem
+# Test failing problem
+problem = db.get_by_id('Algebra/AlgebraicFractionAnswer')
 
 print("=" * 80)
 print("PROBLEM SOURCE:")

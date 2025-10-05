@@ -171,7 +171,7 @@ class PGTranslator:
             statement_html = env.render_text()
             solution_html = env.render_solution()
             hint_html = env.render_hint()
-            
+
             # Collect any execution errors from environment
             if env.errors:
                 errors.append(env.errors)
@@ -210,8 +210,10 @@ class PGTranslator:
                                     score=check_result.get('score', 0.0),
                                     correct=check_result.get('correct', False),
                                     student_answer=student_answer,
-                                    answer_message=check_result.get('message', ''),
-                                    correct_answer=str(evaluator) if hasattr(evaluator, '__str__') else '',
+                                    answer_message=check_result.get(
+                                        'message', ''),
+                                    correct_answer=str(evaluator) if hasattr(
+                                        evaluator, '__str__') else '',
                                 )
                                 answer_results[name] = result
                                 scores.append(result.score)
@@ -291,7 +293,7 @@ class PGTranslator:
             statement_html = env.render_text()
             solution_html = env.render_solution()
             hint_html = env.render_hint()
-            
+
             # Collect any execution errors from environment
             if env.errors:
                 errors.append(env.errors)
@@ -311,9 +313,11 @@ class PGTranslator:
                 scores: list[float] = []
 
                 # Group answer blanks by their evaluator (for MultiAnswer)
-                evaluator_groups: dict[int, list[tuple[str, str]]] = {}  # id(evaluator) -> [(name, student_answer), ...]
-                evaluator_map: dict[int, Any] = {}  # id(evaluator) -> evaluator
-                
+                # id(evaluator) -> [(name, student_answer), ...]
+                evaluator_groups: dict[int, list[tuple[str, str]]] = {}
+                # id(evaluator) -> evaluator
+                evaluator_map: dict[int, Any] = {}
+
                 for name, student_answer in inputs.items():
                     if name in env.answers:
                         # Extract evaluator from answer hash entry
@@ -322,18 +326,19 @@ class PGTranslator:
                             evaluator = ans_entry["ans_eval"]
                         else:
                             evaluator = ans_entry
-                        
+
                         # Group by evaluator object identity
                         eval_id = id(evaluator)
                         if eval_id not in evaluator_groups:
                             evaluator_groups[eval_id] = []
                             evaluator_map[eval_id] = evaluator
-                        evaluator_groups[eval_id].append((name, student_answer))
-                
+                        evaluator_groups[eval_id].append(
+                            (name, student_answer))
+
                 # Check each group
                 for eval_id, group_items in evaluator_groups.items():
                     evaluator = evaluator_map[eval_id]
-                    
+
                     # Check if it's a MultiAnswer (multiple blanks with same evaluator)
                     if len(group_items) > 1 and hasattr(evaluator, 'cmp'):
                         # MultiAnswer case - check all answers together
@@ -341,21 +346,24 @@ class PGTranslator:
                         if hasattr(checker, 'check'):
                             # Extract student answers in order
                             student_answers = [ans for _, ans in group_items]
-                            
+
                             # Call check with all student answers
                             check_result = checker.check(*student_answers)
-                            
+
                             # MultiAnswer checker returns results for all blanks
                             if 'results' in check_result and isinstance(check_result['results'], list):
                                 # Individual results for each blank
                                 for i, (name, student_ans) in enumerate(group_items):
-                                    individual_score = check_result['results'][i] if i < len(check_result['results']) else 0.0
+                                    individual_score = check_result['results'][i] if i < len(
+                                        check_result['results']) else 0.0
                                     result = AnswerResult(
                                         score=individual_score,
                                         correct=individual_score >= 1.0,
                                         student_answer=student_ans,
-                                        answer_message=check_result.get('message', ''),
-                                        correct_answer=str(evaluator.answers[i]) if hasattr(evaluator, 'answers') and i < len(evaluator.answers) else '',
+                                        answer_message=check_result.get(
+                                            'message', ''),
+                                        correct_answer=str(evaluator.answers[i]) if hasattr(
+                                            evaluator, 'answers') and i < len(evaluator.answers) else '',
                                     )
                                     answer_results[name] = result
                                     scores.append(individual_score)
@@ -364,9 +372,11 @@ class PGTranslator:
                                 for name, student_ans in group_items:
                                     result = AnswerResult(
                                         score=check_result.get('score', 0.0),
-                                        correct=check_result.get('correct', False),
+                                        correct=check_result.get(
+                                            'correct', False),
                                         student_answer=student_ans,
-                                        answer_message=check_result.get('message', ''),
+                                        answer_message=check_result.get(
+                                            'message', ''),
                                         correct_answer=str(evaluator),
                                     )
                                     answer_results[name] = result
@@ -379,14 +389,18 @@ class PGTranslator:
                                 checker = evaluator.cmp()
                                 # Now call check() method
                                 if hasattr(checker, 'check'):
-                                    check_result = checker.check(student_answer)
+                                    check_result = checker.check(
+                                        student_answer)
                                     # Convert dict to AnswerResult
                                     result = AnswerResult(
                                         score=check_result.get('score', 0.0),
-                                        correct=check_result.get('correct', False),
+                                        correct=check_result.get(
+                                            'correct', False),
                                         student_answer=student_answer,
-                                        answer_message=check_result.get('message', ''),
-                                        correct_answer=str(evaluator) if hasattr(evaluator, '__str__') else '',
+                                        answer_message=check_result.get(
+                                            'message', ''),
+                                        correct_answer=str(evaluator) if hasattr(
+                                            evaluator, '__str__') else '',
                                     )
                                     answer_results[name] = result
                                     scores.append(result.score)

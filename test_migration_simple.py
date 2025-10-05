@@ -1,9 +1,9 @@
 """Simple test of pg_translator service."""
 
+from app.services.pg_translator_service import get_pg_translator_service
 import sys
 sys.path.insert(0, 'D:/pg/apps/backend')
 
-from app.services.pg_translator_service import get_pg_translator_service
 
 # Test problem with symbolic math
 test_problem = """
@@ -44,7 +44,7 @@ for ans_id, ans_meta in result['answers'].items():
     print(f"\n  Answer {ans_id}:")
     print(f"    Correct value: {ans_meta['correct_value']}")
     print(f"    Type: {ans_meta['type']}")
-    
+
     # Check if symbolic
     correct_val_str = str(ans_meta['correct_value'])
     if 'pi' in correct_val_str.lower() or '/' in correct_val_str:

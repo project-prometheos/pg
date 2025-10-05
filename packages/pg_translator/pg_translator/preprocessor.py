@@ -205,33 +205,40 @@ class PGPreprocessor:
             if sub_match:
                 # Found start of a sub {} closure
                 # Track brace depth to find the end
-                brace_depth = original_line.count('{') - original_line.count('}')
-                
+                brace_depth = original_line.count(
+                    '{') - original_line.count('}')
+
                 # Extract the parameter name before the =>
-                prefix_match = re.match(r'^(\s*)(\w+)\s*=>\s*sub\s*\{', original_line)
+                prefix_match = re.match(
+                    r'^(\s*)(\w+)\s*=>\s*sub\s*\{', original_line)
                 if prefix_match:
                     indent = prefix_match.group(1)
                     param_name = prefix_match.group(2)
                     # Stub out the closure with a lambda that returns None
-                    output_lines.append(f"{indent}{param_name} = lambda *args, **kwargs: None  # Stubbed Perl closure")
+                    output_lines.append(
+                        f"{indent}{param_name} = lambda *args, **kwargs: None  # Stubbed Perl closure")
                 else:
                     # Assignment form: $var = sub { ... }
-                    assign_match = re.match(r'^(\s*)(\w+)\s*=\s*sub\s*\{', original_line)
+                    assign_match = re.match(
+                        r'^(\s*)(\w+)\s*=\s*sub\s*\{', original_line)
                     if assign_match:
                         indent = assign_match.group(1)
                         var_name = assign_match.group(2)
-                        output_lines.append(f"{indent}{var_name} = lambda *args, **kwargs: None  # Stubbed Perl closure")
+                        output_lines.append(
+                            f"{indent}{var_name} = lambda *args, **kwargs: None  # Stubbed Perl closure")
                     else:
                         # Unknown form, comment it out
-                        output_lines.append(f"# {original_line}  # Skipped Perl closure")
-                
+                        output_lines.append(
+                            f"# {original_line}  # Skipped Perl closure")
+
                 # Skip the rest of the closure block
                 i += 1
                 while i < len(lines) and brace_depth > 0:
                     current_line = lines[i]
-                    brace_depth += current_line.count('{') - current_line.count('}')
+                    brace_depth += current_line.count(
+                        '{') - current_line.count('}')
                     i += 1
-                
+
                 continue
 
             # Check for do { ... } until (condition) loops
@@ -310,7 +317,8 @@ class PGPreprocessor:
                     for line in body_lines:
                         # Strip existing indentation and transform
                         stripped_line = line.lstrip()
-                        transformed = self._transform_line(stripped_line.rstrip())
+                        transformed = self._transform_line(
+                            stripped_line.rstrip())
                         if transformed:
                             # Add consistent 4-space indentation
                             transformed_body.append('    ' + transformed)
@@ -443,20 +451,22 @@ class PGPreprocessor:
         def convert_string_interpolation(match):
             quote_char = match.group(1)  # " or '
             content = match.group(2)
-            
+
             # Only convert double-quoted strings (Perl interpolates these)
             if quote_char == '"':
                 # Check if contains $var
                 if '$' in content:
                     # Convert $var to {var}
-                    new_content = re.sub(r'\$([a-zA-Z_][a-zA-Z0-9_]*)', r'{\1}', content)
+                    new_content = re.sub(
+                        r'\$([a-zA-Z_][a-zA-Z0-9_]*)', r'{\1}', content)
                     return f'f"{new_content}"'
-            
+
             # Return as-is for single quotes or strings without variables
             return match.group(0)
-        
+
         # Match strings carefully (handle escaped quotes)
-        line = re.sub(r'(["\'])([^\1]*?)\1', convert_string_interpolation, line)
+        line = re.sub(r'(["\'])([^\1]*?)\1',
+                      convert_string_interpolation, line)
 
         # Transform Perl scalar variables: $var → var (outside of strings now)
         # Use negative lookbehind to avoid matching in strings

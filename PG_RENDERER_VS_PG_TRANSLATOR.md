@@ -577,7 +577,7 @@ The web backend **no longer uses pg_renderer**. It has been successfully migrate
 
 ### Current Status
 
-**pg_renderer**: 
+**pg_renderer**:
 - Status: **LEGACY / DEPRECATED**
 - Use: None (removed from production)
 - Maintenance: Frozen

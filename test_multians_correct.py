@@ -3,7 +3,8 @@
 from packages.pg_translator.pg_translator import PGTranslator
 from pathlib import Path
 
-pg_src = Path('tutorial/sample-problems/Algebra/AlgebraicFractionAnswer.pg').read_text()
+pg_src = Path(
+    'tutorial/sample-problems/Algebra/AlgebraicFractionAnswer.pg').read_text()
 t = PGTranslator()
 result = t.translate_source(pg_src, seed=0)
 

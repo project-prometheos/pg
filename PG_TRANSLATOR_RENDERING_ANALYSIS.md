@@ -1,6 +1,6 @@
 # PG Translator vs PG Renderer HTML Rendering Analysis
 
-**Date**: 2025-01-XX  
+**Date**: 2025-01-XX
 **Status**: ⚠️ Rendering differences identified
 
 ---
@@ -75,14 +75,14 @@ output_lines.append(f"TEXT(PGML({block_var}))")
 def render_text(self) -> str:
     # Plain TEXT segments - just joined!
     all_text = "\n".join(self.text_segments)  # ❌ NO RENDERING
-    
+
     # PGML segments - parsed and rendered
     if self.pgml_segments:
         pgml_text = "\n\n".join(self.pgml_segments)
         doc = PGMLParser.parse_text(pgml_text)
         renderer = HTMLRenderer(context=self.variables)
         pgml_html = renderer.render(doc)
-    
+
     return all_text + pgml_html
 ```
 
@@ -117,8 +117,8 @@ statement_html = _pgml_to_markdown(rendered['statement_html'])
 ### 5. Frontend (`Markdown.tsx`)
 
 ```tsx
-<ReactMarkdown 
-    remarkPlugins={[remarkMath, remarkGfm]} 
+<ReactMarkdown
+    remarkPlugins={[remarkMath, remarkGfm]}
     rehypePlugins={[rehypeRaw, rehypeKatex]}
 >
     {children}  {/* Expects $...$ and $$...$$ */}
@@ -171,20 +171,20 @@ class PGMLRenderer:
     def render(self, pgml: str) -> Tuple[str, Dict[str, str]]:
         # 1. Variable interpolation FIRST
         html = re.sub(r'\[\$(\w+)\]', self._interpolate_var, html)
-        
+
         # 2. Display math: [`` ... ``] → $$...$$
         html = re.sub(r'\[``(.*?)``\]', r'$$\1$$', html, flags=re.DOTALL)
-        
+
         # 3. Inline math: [` ... `] → $...$
         html = re.sub(r'\[`(.*?)`\]', r'$\1$', html)
-        
+
         # 4. Answer blanks: [_____]{$answer} → ___ANSWER_BLANK_AnSwEr0001___
         html = re.sub(r'\[_+\]\{([^}]+)\}(?:\{[0-9]+\})?', self._create_answer_blank, html)
-        
+
         # 5. Formatting: [*text*] → **text**, [|text|] → *text*
         html = re.sub(r'\[\*(.*?)\*\]', r'**\1**', html)
         html = re.sub(r'\[\|(.*?)\|\]', r'*\1*', html)
-        
+
         return html, self.answer_blanks
 ```
 
@@ -215,7 +215,7 @@ Apply PGML-to-markdown conversion to ALL text segments in `executor.py`:
 def render_text(self) -> str:
     # Combine plain text - but APPLY PGML transformation
     text_html = self._pgml_to_markdown("\n".join(self.text_segments))
-    
+
     # Render PGML segments
     pgml_html = ""
     if self.pgml_segments:
@@ -224,7 +224,7 @@ def render_text(self) -> str:
         renderer = HTMLRenderer(context=self.variables)
         pgml_html = renderer.render(doc)
         pgml_html = self._pgml_to_markdown(pgml_html)
-    
+
     # Combine
     if text_html and pgml_html:
         return text_html + "\n" + pgml_html
@@ -247,14 +247,14 @@ Treat TEXT blocks as PGML and parse them properly:
 def render_text(self) -> str:
     # Combine ALL text (TEXT + PGML) and parse as PGML
     all_pgml = "\n\n".join(self.text_segments + self.pgml_segments)
-    
+
     if not all_pgml:
         return ""
-    
+
     doc = PGMLParser.parse_text(all_pgml)
     renderer = HTMLRenderer(context=self.variables)
     html = renderer.render(doc)
-    
+
     # Convert LaTeX to markdown
     html = self._pgml_to_markdown(html)
     return html
@@ -268,19 +268,19 @@ Keep current architecture but ensure `_pgml_to_markdown()` is comprehensive:
 def _pgml_to_markdown(pgml_text: str) -> str:
     if not pgml_text:
         return pgml_text
-    
+
     # Inline math: \(...\) → $...$
     pgml_text = re.sub(r'\\\((.*?)\\\)', r'$\1$', pgml_text, flags=re.DOTALL)
-    
+
     # Display math: \[...\] → $$...$$
     pgml_text = re.sub(r'\\\[(.*?)\\\]', r'$$\1$$', pgml_text, flags=re.DOTALL)
-    
+
     # Bold: <strong> → **
     pgml_text = re.sub(r'<strong>(.*?)</strong>', r'**\1**', pgml_text)
-    
+
     # Italic: <em> → *
     pgml_text = re.sub(r'<em>(.*?)</em>', r'*\1*', pgml_text)
-    
+
     return pgml_text
 ```
 
@@ -308,15 +308,15 @@ def _pgml_to_markdown(self, text: str) -> str:
     """Convert PGML/LaTeX notation to markdown for frontend."""
     if not text:
         return text
-    
+
     import re
-    
+
     # Inline math: \(...\) → $...$
     text = re.sub(r'\\\((.*?)\\\)', r'$\1$', text, flags=re.DOTALL)
-    
+
     # Display math: \[...\] → $$...$$
     text = re.sub(r'\\\[(.*?)\\\]', r'$$\1$$', text, flags=re.DOTALL)
-    
+
     return text
 ```
 
@@ -327,7 +327,7 @@ def render_text(self) -> str:
     """Render all text segments to HTML."""
     # Convert TEXT segments
     text_html = self._pgml_to_markdown("\n".join(self.text_segments))
-    
+
     # Render PGML segments
     pgml_html = ""
     if self.pgml_segments:
@@ -335,7 +335,7 @@ def render_text(self) -> str:
         doc = PGMLParser.parse_text(pgml_text)
         renderer = HTMLRenderer(context=self.variables)
         pgml_html = self._pgml_to_markdown(renderer.render(doc))
-    
+
     # Combine
     if text_html and pgml_html:
         return text_html + "\n" + pgml_html

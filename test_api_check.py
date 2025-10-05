@@ -2,7 +2,7 @@
 import requests
 
 # Test with correct answer
-r = requests.post('http://localhost:8000/api/db/Algebra/ExpandedPolynomial/check', 
+r = requests.post('http://localhost:8000/api/db/Algebra/ExpandedPolynomial/check',
                   json={'seed': 0, 'inputs': {'AnSwEr0001': 'x^2-6*x+4'}})
 data = r.json()
 

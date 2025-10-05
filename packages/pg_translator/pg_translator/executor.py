@@ -123,45 +123,45 @@ class PGEnvironment:
             all_segments.extend(self.text_segments)
         if self.pgml_segments:
             all_segments.extend(self.pgml_segments)
-        
+
         if not all_segments:
             return ""
-        
+
         combined_text = "\n\n".join(all_segments)
-        
+
         # Render using PGMLRenderer
         renderer = PGMLRenderer(variables=self.variables)
         rendered_markdown, answer_blanks = renderer.render(combined_text)
-        
+
         # Register answer blanks
         self.answers.update(answer_blanks)
-        
+
         return rendered_markdown
 
     def render_solution(self) -> str | None:
         """Render solution text to markdown."""
         if not self.solution_segments:
             return None
-        
+
         solution_text = "\n".join(self.solution_segments)
-        
+
         # Use PGMLRenderer for PGML content in solutions
         renderer = PGMLRenderer(variables=self.variables)
         rendered_markdown, _ = renderer.render(solution_text)
-        
+
         return rendered_markdown
 
     def render_hint(self) -> str | None:
         """Render hint text to markdown."""
         if not self.hint_segments:
             return None
-        
+
         hint_text = "\n".join(self.hint_segments)
-        
+
         # Use PGMLRenderer for PGML content in hints
         renderer = PGMLRenderer(variables=self.variables)
         rendered_markdown, _ = renderer.render(hint_text)
-        
+
         return rendered_markdown
 
 

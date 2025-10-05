@@ -1,5 +1,6 @@
 """Test what pg_translator actually outputs."""
 
+from pg_translator import PGTranslator
 import sys
 sys.path.insert(0, r'd:\pg\packages\pg_translator')
 sys.path.insert(0, r'd:\pg\packages\pg_parser')
@@ -8,7 +9,6 @@ sys.path.insert(0, r'd:\pg\packages\pg_pgml')
 sys.path.insert(0, r'd:\pg\packages\pg_answer')
 sys.path.insert(0, r'd:\pg\packages\pg_mathobjects')
 
-from pg_translator import PGTranslator
 
 pg_source = """
 DOCUMENT();

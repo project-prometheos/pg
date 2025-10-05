@@ -194,7 +194,7 @@ $ans = Compute("pi/6");
 
 **Old:** Generic error message
 
-**New:** 
+**New:**
 - Line-by-line error mapping
 - Original PG file line numbers
 - Detailed stack traces

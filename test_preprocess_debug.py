@@ -4,15 +4,13 @@
 
 """Debug script to test preprocessing of BEGIN_PGML""""""Debug preprocessor output for a problem."""
 
-import sys
 
+import sys
+from app.db import ProblemDBimport sysfrom pg_translator.preprocessor import PGPreprocessor
+from app.db import ProblemDB
+from pg_translator.preprocessor import PGPreprocessor
 sys.path.insert(0, 'apps/backend')
 
-
-
-from app.db import ProblemDBimport sysfrom pg_translator.preprocessor import PGPreprocessor
-
-from pg_translator.preprocessor import PGPreprocessor
 
 sys.path.insert(0, 'apps/backend')import sys
 
@@ -22,11 +20,11 @@ db = ProblemDB.get_instance()from pathlib import Path
 
 problem = db.get_by_id('Algebra/AlgebraicFractionAnswer')
 
-from app.db import ProblemDB
 
 print("=" * 80)
 
-print("ORIGINAL PG SOURCE (last 1500 chars):")from pg_translator import PGPreprocessor# Add packages to path
+# Add packages to path
+print("ORIGINAL PG SOURCE (last 1500 chars):")from pg_translator import PGPreprocessor
 
 print("=" * 80)
 
@@ -53,7 +51,6 @@ print(preprocessed[-1500:])
 print("=" * 80)print("=" * 80)preprocessor = PGPreprocessor()
 
 
-
 # Check if PGML() is in the preprocessed codeprint("ORIGINAL PG SOURCE (last 1500 chars):")with open(file_path, 'r', encoding='utf-8') as f:
 
 if 'PGML(' in preprocessed:
@@ -66,10 +63,10 @@ if 'PGML(' in preprocessed:
 
     print(f"  Found {count} PGML() calls")
 
-else:print("=" * 80)python_code = preprocessor.preprocess(perl_code)
+else:
+    print("=" * 80)python_code = preprocessor.preprocess(perl_code)
 
-    print("\n✗ NO PGML() function calls found in preprocessed code!")
-
+   print("\n✗ NO PGML() function calls found in preprocessed code!")
 
 
 # Preprocess itprint("="*70)

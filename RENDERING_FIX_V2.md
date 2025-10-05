@@ -1,7 +1,7 @@
 # Rendering Fix v2 - HTML to Markdown Conversion
 
-**Issue**: LaTeX math and markdown formatting not rendering in browser  
-**Root Cause**: pg_pgml HTMLRenderer outputs HTML tags, but frontend expects plain markdown  
+**Issue**: LaTeX math and markdown formatting not rendering in browser
+**Root Cause**: pg_pgml HTMLRenderer outputs HTML tags, but frontend expects plain markdown
 **Status**: ✅ **FIXED**
 
 ---
@@ -156,13 +156,13 @@ Browser (Display)
 
 ## Status
 
-✅ **Implementation complete**  
-✅ Backend server running (will auto-reload)  
+✅ **Implementation complete**
+✅ Backend server running (will auto-reload)
 🧪 **Ready for testing** - refresh browser to see changes
 
 The fix ensures that pg_translator output is **fully compatible** with the React markdown renderer!
 
 ---
 
-**Fixed**: 2025-01-XX  
+**Fixed**: 2025-01-XX
 **Location**: `packages/pg_translator/pg_translator/executor.py`
