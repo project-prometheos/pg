@@ -66,7 +66,7 @@ def str_cmp(
 ) -> StringEvaluator:
     """
     Create string answer checker.
-    
+
     Args:
         correct_answer: Correct string answer
         mode: Comparison mode ("std", "regex", "ordered", etc.)
@@ -74,10 +74,10 @@ def str_cmp(
         case_sensitive: Whether comparison is case-sensitive
         trim_whitespace: Whether to trim leading/trailing whitespace
         **options: Additional options
-    
+
     Returns:
         StringEvaluator
-    
+
     Examples:
         ANS(str_cmp("hello", case_sensitive=False))
         ANS(str_cmp("a*b+c", mode="regex"))
@@ -132,7 +132,7 @@ def fun_cmp(
 ) -> FormulaEvaluator:
     """
     Create formula answer checker.
-    
+
     Args:
         correct_answer: Correct formula expression
         var: Variable name(s)
@@ -141,10 +141,10 @@ def fun_cmp(
         tolerance: Numerical tolerance
         tolerance_mode: "relative", "absolute", or "sigfigs"
         **options: Additional options
-    
+
     Returns:
         FormulaEvaluator
-    
+
     Examples:
         ANS(fun_cmp("x^2 + 1", var="x"))
         ANS(fun_cmp("sin(x)*cos(y)", var=["x", "y"]))
@@ -196,7 +196,7 @@ class NumericEvaluator:
     ):
         """
         Initialize with multiple tolerance modes.
-        
+
         Modes:
         - "relative": |student - correct| / |correct| < tolerance
         - "absolute": |student - correct| < tolerance
@@ -268,7 +268,7 @@ def test_formula_answer_problem():
 class PGMLParser:
     """
     Parse PGML (Problem Generation Markup Language).
-    
+
     PGML is a markdown-like syntax for PG problems:
     - Headers: ## Title
     - Bold: **bold**
@@ -277,13 +277,13 @@ class PGMLParser:
     - Answer blanks: [_____]{$ans}
     - Lists: - item or 1. item
     """
-    
+
     def parse(self, pgml_source: str) -> PGMLDocument:
         """Parse PGML source into document tree."""
-        
+
     def parse_line(self, line: str) -> list[PGMLNode]:
         """Parse a single line into nodes."""
-        
+
     def find_answer_blanks(self, pgml_source: str) -> list[AnswerBlank]:
         """Extract answer blank definitions."""
 ```
@@ -303,16 +303,16 @@ class PGMLParser:
 ```python
 class PGMLRenderer:
     """Render PGML to HTML."""
-    
+
     def render(self, document: PGMLDocument) -> str:
         """Render document to HTML."""
-        
+
     def render_node(self, node: PGMLNode) -> str:
         """Render single node to HTML."""
-        
+
     def render_math(self, latex: str, display: bool = False) -> str:
         """Render LaTeX math."""
-        
+
     def render_answer_blank(self, blank: AnswerBlank) -> str:
         """Render answer input field."""
 ```
@@ -326,7 +326,7 @@ class PGMLRenderer:
 def _process_pgml_block(self, content: str) -> str:
     """
     Process BEGIN_PGML...END_PGML block.
-    
+
     Converts to:
     - Parse PGML syntax
     - Extract answer blanks
@@ -356,10 +356,10 @@ ANS(ans)
 ```python
 def test_pgml_basic():
     """Test basic PGML rendering."""
-    
+
 def test_pgml_math():
     """Test PGML with math."""
-    
+
 def test_pgml_answer_blanks():
     """Test PGML answer blanks."""
 ```
@@ -400,7 +400,7 @@ def test_opl_problem_renders(problem_file):
     """Test that OPL problem renders without errors."""
     translator = PGTranslator()
     result = translator.translate(problem_file, seed=1234)
-    
+
     assert result.errors is None or len(result.errors) == 0
     assert result.statement_html
     assert len(result.answer_blanks) > 0
@@ -410,11 +410,11 @@ def test_opl_problem_with_multiple_seeds(problem_file):
     """Test problem renders consistently with different seeds."""
     translator = PGTranslator()
     results = []
-    
+
     for seed in [1, 2, 3]:
         result = translator.translate(problem_file, seed=seed)
         results.append(result.statement_html)
-    
+
     # Should produce valid output for each seed
     assert all(results)
 ```
@@ -438,10 +438,10 @@ import pstats
 def profile_problem(problem_file):
     profiler = cProfile.Profile()
     profiler.enable()
-    
+
     translator = PGTranslator()
     translator.translate(problem_file, seed=1234)
-    
+
     profiler.disable()
     stats = pstats.Stats(profiler)
     stats.sort_stats('cumulative')

@@ -380,8 +380,10 @@ class Complex(MathValue):
             denom = other.real**2 + other.imag**2
             if denom == 0:
                 raise ZeroDivisionError("Complex division by zero")
-            real_part = (self.real * other.real + self.imag * other.imag) / denom
-            imag_part = (self.imag * other.real - self.real * other.imag) / denom
+            real_part = (self.real * other.real +
+                         self.imag * other.imag) / denom
+            imag_part = (self.imag * other.real -
+                         self.real * other.imag) / denom
             return Complex(real_part, imag_part)
         else:
             return NotImplemented
@@ -404,7 +406,8 @@ class Complex(MathValue):
             result = complex(self.real, self.imag) ** other.value
             return Complex(result.real, result.imag)
         elif isinstance(other, Complex):
-            result = complex(self.real, self.imag) ** complex(other.real, other.imag)
+            result = complex(
+                self.real, self.imag) ** complex(other.real, other.imag)
             return Complex(result.real, result.imag)
         else:
             return NotImplemented

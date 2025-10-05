@@ -105,7 +105,8 @@ class PGPreprocessor:
                         # PGML blocks - render at runtime with context
                         # Store the PGML content and render it during execution
                         block_var = f"pgml_block_{len(text_blocks) - 1}"
-                        escaped_content = self._escape_triple_quotes(block_content)
+                        escaped_content = self._escape_triple_quotes(
+                            block_content)
                         output_lines.append(
                             f"{block_var} = '''\\n{escaped_content}\\n'''"
                         )
@@ -118,9 +119,11 @@ class PGPreprocessor:
                             output_lines.append(f"TEXT(PGML({block_var}))")
                     else:
                         # Plain TEXT blocks - convert to TEXT() calls
-                        transformed_content = self._transform_text_block(block_content)
+                        transformed_content = self._transform_text_block(
+                            block_content)
                         if "SOLUTION" in block_type:
-                            output_lines.append(f"SOLUTION({transformed_content})")
+                            output_lines.append(
+                                f"SOLUTION({transformed_content})")
                         elif "HINT" in block_type:
                             output_lines.append(f"HINT({transformed_content})")
                         else:
@@ -152,48 +155,48 @@ class PGPreprocessor:
         # Use regex to handle variable names (letters, numbers, underscores)
         import re
         line = re.sub(r'\$([a-zA-Z_][a-zA-Z0-9_]*)', r'\1', line)
-        
+
         # Remove trailing semicolons (optional in Python)
         line = re.sub(r';\s*$', '', line)
-        
+
         # Pass through - Python handles # comments same as Perl/PG
         return line
-    
+
     def _transform_text_block(self, content: str) -> str:
         r"""
         Transform TEXT block content to Python expression(s).
-        
+
         Handles:
         - Variable interpolation: $a → ", a, "
         - Function calls: \{ ans_rule(20) \} → ", ans_rule(20), "
         - LaTeX math: \( ... \) → keep as-is
         - Special vars: $PAR → ", PAR(), "
-        
+
         Returns:
             Python expression string suitable for TEXT() call
         """
         import re
-        
+
         # Split content into segments: text, $var, \{...}
         segments = []
         pos = 0
-        
+
         while pos < len(content):
             # Look for $var or \{...}
             var_match = re.search(r'\$([a-zA-Z_][a-zA-Z0-9_]*)', content[pos:])
             func_match = re.search(r'\\{([^}]+)\\}', content[pos:])
-            
+
             # Find which comes first
             next_var_pos = pos + var_match.start() if var_match else len(content)
             next_func_pos = pos + func_match.start() if func_match else len(content)
-            
+
             if next_var_pos < next_func_pos:
                 # Variable comes first
                 # Add text before variable
                 if next_var_pos > pos:
                     text_segment = content[pos:next_var_pos]
                     segments.append(repr(text_segment))
-                
+
                 # Add variable
                 var_name = var_match.group(1)
                 # Check if it's a known macro function
@@ -201,33 +204,33 @@ class PGPreprocessor:
                     segments.append(f"{var_name}()")
                 else:
                     segments.append(f"str({var_name})")
-                
+
                 pos = next_var_pos + len(var_match.group(0))
-            
+
             elif next_func_pos < len(content):
                 # Function call comes first
                 # Add text before function
                 if next_func_pos > pos:
                     text_segment = content[pos:next_func_pos]
                     segments.append(repr(text_segment))
-                
+
                 # Add function call
                 func_code = func_match.group(1).strip()
                 segments.append(func_code)
-                
+
                 pos = next_func_pos + len(func_match.group(0))
-            
+
             else:
                 # No more variables or functions - add remaining text
                 if pos < len(content):
                     text_segment = content[pos:]
                     segments.append(repr(text_segment))
                 break
-        
+
         # Join segments with commas for TEXT() call
         if not segments:
             return '""'
-        
+
         return ", ".join(segments)
 
     def _escape_triple_quotes(self, text: str) -> str:

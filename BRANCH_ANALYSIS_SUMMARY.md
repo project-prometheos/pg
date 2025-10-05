@@ -55,28 +55,28 @@ f962efc8 - Add quick start guide for macro system
 ```python
 class PGEnvironment:
     """PG problem environment - manages problem state during rendering."""
-    
+
     def __init__(self, envir: dict[str, Any]):
         # Text accumulation
         self.output_array: list[str] = []
-        
+
         # Answer tracking
         self.answers_hash: dict[str, Any] = {}
         self.answer_blank_queue: list[str] = []
         self._answer_counter = 0
-        
+
         # Sections
         self.solution_text: list[str] = []
         self.hint_text: list[str] = []
         self.comment_text: list[str] = []
-        
+
         # State flags
         self.document_started = False
         self.document_ended = False
-        
+
         # Display mode
         self.display_mode = envir.get("displayMode", "HTML")
-        
+
         # Problem metadata
         self.problem_seed = envir.get("problemSeed", 1234)
         self.inputs_ref = envir.get("inputs_ref", {})
@@ -109,9 +109,9 @@ def ENDDOCUMENT() -> None:
         raise RuntimeError("ENDDOCUMENT() called before DOCUMENT()")
     if env.document_ended:
         raise RuntimeError("ENDDOCUMENT() already called")
-    
+
     env.document_ended = True
-    
+
     # Process any remaining implicit answer blanks
     env.process_answer_queue()
 ```
@@ -125,17 +125,17 @@ def ENDDOCUMENT() -> None:
 def TEXT(*args: Any) -> None:
     """
     Append text to problem output.
-    
+
     Args:
         *args: Text to append (converted to strings and concatenated)
-    
+
     Example:
         TEXT("What is ", $a, " + ", $b, "?")
     """
     env = get_environment()
     if not env.document_started:
         raise RuntimeError("TEXT() called before DOCUMENT()")
-    
+
     text = "".join(str(arg) for arg in args)
     env.output_array.append(text)
 ```
@@ -170,25 +170,25 @@ END_TEXT
 def ANS(*evaluators: Any) -> None:
     """
     Register answer evaluators in order.
-    
+
     Pairs with answer blanks in the order they appear in problem text.
-    
+
     Args:
         *evaluators: AnswerEvaluator instances or objects with cmp() method
-    
+
     Example:
         TEXT("Answer: \\{ ans_rule(20) \\}")
         ANS(num_cmp(42))
     """
     env = get_environment()
-    
+
     for evaluator in evaluators:
         # Get next implicit answer name from queue
         if env.answer_blank_queue:
             answer_name = env.answer_blank_queue.pop(0)
         else:
             answer_name = env.new_ans_name()
-        
+
         env.answers_hash[answer_name] = evaluator
 ```
 
@@ -197,13 +197,13 @@ def ANS(*evaluators: Any) -> None:
 def NAMED_ANS(name: str, evaluator: Any) -> None:
     """
     Register answer evaluator with explicit name.
-    
+
     Used when you need to specify answer blank name explicitly.
-    
+
     Args:
         name: Answer blank name (e.g., "answer1")
         evaluator: AnswerEvaluator instance
-    
+
     Example:
         TEXT("Answer: \\{ NAMED_ANS_RULE('answer1', 20) \\}")
         NAMED_ANS('answer1', num_cmp(42))
@@ -217,7 +217,7 @@ def NAMED_ANS(name: str, evaluator: Any) -> None:
 def NEW_ANS_NAME() -> str:
     """
     Generate new unique answer name.
-    
+
     Returns:
         Answer name in format "AnSwEr0001", "AnSwEr0002", etc.
     """
@@ -232,7 +232,7 @@ def NEW_ANS_NAME() -> str:
 def SOLUTION(*args: Any) -> None:
     """
     Add solution text (displayed after due date).
-    
+
     Args:
         *args: Solution text to append
     """
@@ -246,7 +246,7 @@ def SOLUTION(*args: Any) -> None:
 def HINT(*args: Any) -> None:
     """
     Add hint text (displayed after N incorrect attempts).
-    
+
     Args:
         *args: Hint text to append
     """
@@ -260,7 +260,7 @@ def HINT(*args: Any) -> None:
 def COMMENT(*args: Any) -> None:
     """
     Add comment (only visible to instructors).
-    
+
     Args:
         *args: Comment text to append
     """
@@ -276,18 +276,18 @@ def COMMENT(*args: Any) -> None:
 def random(low: float = 0.0, high: float = 1.0, step: float = None) -> float:
     """
     Generate random number in range [low, high).
-    
+
     Args:
         low: Minimum value (default 0.0)
         high: Maximum value (default 1.0)
         step: Step size for discrete values (optional)
-    
+
     Returns:
         Random float or stepped value
     """
     env = get_environment()
     rng = env.get_random_generator()
-    
+
     if step is not None:
         # Discrete values
         n_steps = int((high - low) / step)
@@ -302,7 +302,7 @@ def random(low: float = 0.0, high: float = 1.0, step: float = None) -> float:
 def non_zero_random(low: float, high: float, step: float = None) -> float:
     """
     Generate non-zero random number.
-    
+
     Keeps generating until result != 0.
     """
     while True:
@@ -316,13 +316,13 @@ def non_zero_random(low: float, high: float, step: float = None) -> float:
 def list_random(*items: Any) -> Any:
     """
     Pick random item from list.
-    
+
     Args:
         *items: Items to choose from
-    
+
     Returns:
         Random item
-    
+
     Example:
         $x = list_random(1, 2, 3, 4, 5)
     """
@@ -338,10 +338,10 @@ def list_random(*items: Any) -> Any:
 def loadMacros(*macro_files: str) -> None:
     """
     Load macro files into problem namespace.
-    
+
     Args:
         *macro_files: Macro file names (e.g., "PGstandard.pl", "PGML.pl")
-    
+
     Example:
         loadMacros("PGstandard.pl", "PGML.pl", "PGcourse.pl")
     """
@@ -367,22 +367,22 @@ def loadMacros(*macro_files: str) -> None:
 def ans_rule(width: int = 20) -> str:
     """
     Create text input field for answer.
-    
+
     Args:
         width: Input field width in characters (default 20)
-    
+
     Returns:
         HTML input element
-    
+
     Example:
         TEXT("Answer: \\{ ans_rule(10) \\}")
     """
     env = get_environment()
     name = env.new_ans_name()
     env.record_implicit_ans_name(name)
-    
+
     mode = env.display_mode
-    
+
     if mode == "HTML":
         return f'<input type="text" name="{name}" id="{name}" size="{width}" aria-label="Answer blank"/>'
     elif mode == "TeX":
@@ -398,20 +398,20 @@ def ans_rule(width: int = 20) -> str:
 def ans_box(rows: int = 5, cols: int = 20) -> str:
     """
     Create multi-line text area for answer.
-    
+
     Args:
         rows: Number of rows (default 5)
         cols: Number of columns (default 20)
-    
+
     Returns:
         HTML textarea element
     """
     env = get_environment()
     name = env.new_ans_name()
     env.record_implicit_ans_name(name)
-    
+
     mode = env.display_mode
-    
+
     if mode == "HTML":
         return f'<textarea name="{name}" id="{name}" rows="{rows}" cols="{cols}" aria-label="Answer box"></textarea>'
     elif mode == "TeX":
@@ -427,16 +427,16 @@ def ans_box(rows: int = 5, cols: int = 20) -> str:
 def ans_radio_buttons(choices: list[tuple[str, str]], **options) -> str:
     """
     Create radio button group.
-    
+
     Args:
         choices: List of (value, label) tuples
-        **options: 
+        **options:
             - labels: Optional list of display labels
             - separator: HTML between buttons (default "<br/>")
-    
+
     Returns:
         HTML radio button group
-    
+
     Example:
         choices = [("A", "Apple"), ("B", "Banana"), ("C", "Cherry")]
         TEXT(ans_radio_buttons(choices))
@@ -445,10 +445,10 @@ def ans_radio_buttons(choices: list[tuple[str, str]], **options) -> str:
     env = get_environment()
     name = env.new_ans_name()
     env.record_implicit_ans_name(name)
-    
+
     separator = options.get("separator", "<br/>")
     mode = env.display_mode
-    
+
     if mode == "HTML":
         html_parts = []
         for i, (value, label) in enumerate(choices):
@@ -472,16 +472,16 @@ def ans_radio_buttons(choices: list[tuple[str, str]], **options) -> str:
 def pop_up_list(choices: list | dict, **options) -> str:
     """
     Create dropdown select menu.
-    
+
     Args:
         choices: List of options or dict of value:label pairs
         **options:
             - selected: Pre-selected value
             - placeholder: Placeholder text
-    
+
     Returns:
         HTML select element
-    
+
     Example:
         choices = {"": "Choose one", "red": "Red", "blue": "Blue"}
         TEXT(pop_up_list(choices))
@@ -490,21 +490,21 @@ def pop_up_list(choices: list | dict, **options) -> str:
     env = get_environment()
     name = env.new_ans_name()
     env.record_implicit_ans_name(name)
-    
+
     mode = env.display_mode
     selected = options.get("selected", "")
-    
+
     if isinstance(choices, dict):
         items = list(choices.items())
     else:
         items = [(str(c), str(c)) for c in choices]
-    
+
     if mode == "HTML":
         option_html = []
         for value, label in items:
             selected_attr = ' selected="selected"' if value == selected else ""
             option_html.append(f'<option value="{value}"{selected_attr}>{label}</option>')
-        
+
         return f'<select name="{name}" id="{name}" aria-label="Select answer">\n  ' + '\n  '.join(option_html) + '\n</select>'
     elif mode == "TeX":
         return "\\fbox{" + ", ".join(label for _, label in items) + "}"
@@ -613,15 +613,15 @@ def E() -> float:
 def MODES(**mode_content: str) -> str:
     """
     Return content specific to current display mode.
-    
+
     Args:
         HTML: HTML mode content
         TeX: TeX mode content
         PTX: PTX mode content
-    
+
     Returns:
         Content for current mode
-    
+
     Example:
         TEXT(MODES(
             HTML="<b>Bold in HTML</b>",
@@ -638,7 +638,7 @@ def MODES(**mode_content: str) -> str:
 def image(filename: str, **options) -> str:
     """
     Insert image.
-    
+
     Args:
         filename: Image file name
         **options:
@@ -646,37 +646,37 @@ def image(filename: str, **options) -> str:
             - height: Image height (HTML)
             - tex_size: Size in points (TeX)
             - alt: Alt text
-    
+
     Returns:
         HTML img tag or TeX includegraphics
-    
+
     Example:
         TEXT(image("graph.png", width=400, alt="Graph of function"))
     """
     mode = get_display_mode()
-    
+
     if mode == "HTML":
         width = options.get("width", "")
         height = options.get("height", "")
         alt = options.get("alt", "")
-        
+
         attrs = []
         if width:
             attrs.append(f'width="{width}"')
         if height:
             attrs.append(f'height="{height}"')
         attrs.append(f'alt="{alt}"')
-        
+
         return f'<img src="{filename}" {" ".join(attrs)}/>'
-    
+
     elif mode == "TeX":
         tex_size = options.get("tex_size", 400)
         return f"\\includegraphics[width={tex_size}pt]{{{filename}}}"
-    
+
     elif mode == "PTX":
         width = options.get("width", "80%")
         return f'<image source="{filename}" width="{width}"/>'
-    
+
     else:
         return f"[Image: {filename}]"
 ```
@@ -688,27 +688,27 @@ def image(filename: str, **options) -> str:
 def _PGbasicmacros_init() -> None:
     """
     Initialize PGbasicmacros in sandbox.
-    
+
     Registers all functions and constants with the sandbox.
     Called automatically by macro loader.
     """
     sandbox = get_sandbox()
-    
+
     # Register answer blank functions
     sandbox.register_function("ans_rule", ans_rule)
     sandbox.register_function("ans_box", ans_box)
     sandbox.register_function("ans_radio_buttons", ans_radio_buttons)
     sandbox.register_function("pop_up_list", pop_up_list)
-    
+
     # Register named variants
     sandbox.register_function("NAMED_ANS_RULE", NAMED_ANS_RULE)
     # ... etc ...
-    
+
     # Register display constants
     sandbox.register_function("PAR", PAR)
     sandbox.register_function("BR", BR)
     # ... etc ...
-    
+
     # Register utilities
     sandbox.register_function("MODES", MODES)
     sandbox.register_function("image", image)
@@ -726,10 +726,10 @@ def _PGbasicmacros_init() -> None:
 ```python
 def test_environment_creation():
     """Test PGEnvironment initialization."""
-    
+
 def test_answer_name_generation():
     """Test AnSwEr0001, AnSwEr0002, ... generation."""
-    
+
 def test_implicit_answer_pairing():
     """Test answer blank queue system."""
 ```
@@ -738,16 +738,16 @@ def test_implicit_answer_pairing():
 ```python
 def test_DOCUMENT_ENDDOCUMENT():
     """Test document lifecycle."""
-    
+
 def test_TEXT_output():
     """Test TEXT() accumulation."""
-    
+
 def test_ANS_registration():
     """Test ANS() pairing."""
-    
+
 def test_NAMED_ANS():
     """Test explicit answer naming."""
-    
+
 def test_SOLUTION_HINT_COMMENT():
     """Test section functions."""
 ```
@@ -756,7 +756,7 @@ def test_SOLUTION_HINT_COMMENT():
 ```python
 def test_random_functions():
     """Test random(), non_zero_random(), list_random()."""
-    
+
 def test_random_seed_reproducibility():
     """Test that same seed gives same results."""
 ```
@@ -767,16 +767,16 @@ def test_random_seed_reproducibility():
 ```python
 def test_ans_rule():
     """Test text input generation."""
-    
+
 def test_ans_box():
     """Test textarea generation."""
-    
+
 def test_ans_radio_buttons():
     """Test radio button group."""
-    
+
 def test_pop_up_list():
     """Test dropdown menu."""
-    
+
 def test_named_variants():
     """Test NAMED_* functions."""
 ```
@@ -785,10 +785,10 @@ def test_named_variants():
 ```python
 def test_display_constants():
     """Test PAR(), BR(), BBOLD(), etc."""
-    
+
 def test_MODES():
     """Test mode-specific content."""
-    
+
 def test_image():
     """Test image insertion."""
 ```
@@ -805,13 +805,13 @@ def test_multi_mode_output():
 ```python
 def test_simple_problem():
     """Test complete simple problem rendering."""
-    
+
 def test_problem_with_answer_rule():
     """Test problem with ans_rule() and ANS()."""
-    
+
 def test_problem_with_radio_buttons():
     """Test problem with multiple choice."""
-    
+
 def test_problem_with_multiple_answers():
     """Test problem with multiple answer blanks."""
 ```

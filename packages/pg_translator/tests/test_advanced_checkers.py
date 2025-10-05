@@ -61,7 +61,8 @@ class TestStrCmp:
         assert not evaluator.evaluate("abc").correct
 
         # More complex pattern - case sensitive
-        evaluator = str_cmp(r"[A-Z][a-z]+", regex_match=True, case_sensitive=True)
+        evaluator = str_cmp(
+            r"[A-Z][a-z]+", regex_match=True, case_sensitive=True)
         assert evaluator.evaluate("Hello").correct
         assert evaluator.evaluate("World").correct
         assert not evaluator.evaluate("hello").correct  # Case-sensitive now

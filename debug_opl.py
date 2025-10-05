@@ -1,5 +1,6 @@
 """Debug OPL problem rendering."""
 
+from pg_translator.preprocessor import PGPreprocessor
 from pg_translator import PGTranslator
 from pg_translator.executor import PGExecutor
 from pg_translator.in_process_sandbox import InProcessSandbox
@@ -15,7 +16,6 @@ print(pg_code)
 print("\n" + "="*60 + "\n")
 
 # Check preprocessor output
-from pg_translator.preprocessor import PGPreprocessor
 preprocessor = PGPreprocessor()
 result = preprocessor.preprocess(pg_code)
 

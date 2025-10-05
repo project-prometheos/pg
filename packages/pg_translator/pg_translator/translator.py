@@ -194,9 +194,10 @@ class PGTranslator:
                             evaluator = ans_entry["ans_eval"]
                         else:
                             evaluator = ans_entry
-                        
+
                         # Get correct answer from evaluator
-                        correct_answer = getattr(evaluator, "correct_answer", "")
+                        correct_answer = getattr(
+                            evaluator, "correct_answer", "")
                         result = evaluator.evaluate(student_answer)
                         answer_results[name] = result
                         scores.append(result.score)

@@ -42,7 +42,7 @@
 ❌ Answers not captured for grading
 ```
 
-**Root Cause**: 
+**Root Cause**:
 - `ANS(num_cmp(4))` is called in subprocess
 - Answer evaluator object created in subprocess
 - Answer evaluators can't be serialized back to parent process
@@ -134,12 +134,12 @@
 ```python
 class InProcessSandbox:
     """In-process sandbox with restricted execution."""
-    
+
     def __init__(self):
         self.namespace = {}
         self._setup_safe_builtins()
         self._load_macros()
-    
+
     def _setup_safe_builtins(self):
         """Setup safe built-in functions."""
         safe_builtins = {
@@ -165,16 +165,16 @@ class InProcessSandbox:
             'None': None,
         }
         self.namespace['__builtins__'] = safe_builtins
-    
+
     def _load_macros(self):
         """Load PG macro modules."""
         # Import and register all macro functions
         from pg_macros.core import pg_core, pg_basic_macros
-        
+
         # Create PG environment
         env = pg_core.PGEnvironment({'problemSeed': 1234})
         pg_core.set_environment(env)
-        
+
         # Register all functions in namespace
         self.namespace.update({
             'DOCUMENT': pg_core.DOCUMENT,
@@ -184,7 +184,7 @@ class InProcessSandbox:
             'ans_rule': pg_basic_macros.ans_rule,
             # ... etc
         })
-    
+
     def execute(self, code: str) -> dict:
         """Execute code in sandbox."""
         exec(code, self.namespace)
@@ -235,7 +235,7 @@ class InProcessSandbox:
 
 **Made By**: Implementation analysis
 **Date**: October 5, 2025
-**Rationale**: 
+**Rationale**:
 - Enables direct use of Week 1 macro implementations
 - Matches Perl PG architecture (Safe compartment)
 - Simpler integration path

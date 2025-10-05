@@ -15,5 +15,6 @@ print()
 for name, pattern in patterns.items():
     print(f"{name}:")
     for match in pattern.finditer(text):
-        print(f"  Match at {match.start()}-{match.end()}: {repr(match.group(0))}")
+        print(
+            f"  Match at {match.start()}-{match.end()}: {repr(match.group(0))}")
         print(f"    Groups: {match.groups()}")

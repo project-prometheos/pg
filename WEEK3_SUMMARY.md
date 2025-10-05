@@ -76,12 +76,12 @@ for start, end, name, match in matches:
 def PGML(pgml_text):
     # Parse PGML
     doc = parser.parse(pgml_text, context=locals())
-    
+
     # Collect and register answer blanks
     for blank in answer_blanks:
         evaluator = eval(blank.evaluator_expr, globals(), locals())
         ANS(evaluator)
-    
+
     return renderer.render(doc)
 ```
 
@@ -125,7 +125,7 @@ ENDDOCUMENT()
 BEGIN_PGML
 **Problem:** Calculate [`\\frac{1}{2} + \\frac{1}{3}`]
 
-+ First, find common denominator  
++ First, find common denominator
 + Then, add numerators
 
 [_]{num_cmp(5/6)}
@@ -217,6 +217,6 @@ Problems requiring MathObjects (Context, Compute, Formula) will be addressed in 
 
 ---
 
-**Date**: 2025-01-08  
-**Status**: ✅ **WEEK 3 COMPLETE**  
+**Date**: 2025-01-08
+**Status**: ✅ **WEEK 3 COMPLETE**
 **Achievement**: Full PGML Implementation (45/45 tests passing)

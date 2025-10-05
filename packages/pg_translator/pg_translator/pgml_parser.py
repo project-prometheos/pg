@@ -281,7 +281,7 @@ class PGMLParser:
             # Skip overlapping matches
             if start < pos:
                 continue
-            
+
             # Add text before match
             if pos < start:
                 text_content = text[pos:start]
@@ -399,11 +399,13 @@ class PGMLRenderer:
                 return f'\\({node.math}\\)'
 
         elif isinstance(node, BoldNode):
-            content = "".join(self._render_node(child) for child in node.children)
+            content = "".join(self._render_node(child)
+                              for child in node.children)
             return f"<b>{content}</b>"
 
         elif isinstance(node, ItalicNode):
-            content = "".join(self._render_node(child) for child in node.children)
+            content = "".join(self._render_node(child)
+                              for child in node.children)
             return f"<i>{content}</i>"
 
         elif isinstance(node, ListNode):
@@ -415,7 +417,8 @@ class PGMLRenderer:
             return f'<{tag}>{"".join(items)}</{tag}>'
 
         elif isinstance(node, HeadingNode):
-            content = "".join(self._render_node(child) for child in node.children)
+            content = "".join(self._render_node(child)
+                              for child in node.children)
             return f"<h{node.level}>{content}</h{node.level}>"
 
         elif isinstance(node, RuleNode):

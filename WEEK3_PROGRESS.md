@@ -1,6 +1,6 @@
 # Week 3 Progress Report
 
-**Status**: Day 1 & Day 2 Complete ✅  
+**Status**: Day 1 & Day 2 Complete ✅
 **Total Tests**: 64/64 passing (100%)
 
 ## Day 1: Advanced Answer Checkers ✅

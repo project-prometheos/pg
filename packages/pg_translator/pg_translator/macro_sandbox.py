@@ -16,27 +16,27 @@ from .sandbox import Sandbox, SandboxResult
 class MacroEnabledSandbox(Sandbox):
     """
     Sandbox with macro loading support.
-    
+
     Enhances the subprocess sandbox to:
     - Load PG macro modules (pg_core, pg_basic_macros)
     - Inject macro functions into problem namespace
     - Support PGEnvironment integration
     """
-    
+
     def __init__(self, timeout: int = 30):
         """
         Initialize macro-enabled sandbox.
-        
+
         Args:
             timeout: Maximum execution time in seconds
         """
         super().__init__(timeout=timeout)
         self.macro_modules: list[str] = []
-    
+
     def load_macros(self, *macro_names: str) -> None:
         """
         Mark macros to be loaded in sandbox.
-        
+
         Args:
             *macro_names: Macro names (e.g., "PG.pl", "PGbasicmacros.pl")
         """
@@ -45,20 +45,20 @@ class MacroEnabledSandbox(Sandbox):
             py_name = self._perl_to_python_name(name)
             if py_name not in self.macro_modules:
                 self.macro_modules.append(py_name)
-    
+
     def _perl_to_python_name(self, perl_name: str) -> str:
         """
         Convert Perl macro name to Python module name.
-        
+
         Args:
             perl_name: Perl macro name (e.g., "PG.pl", "PGbasicmacros.pl")
-        
+
         Returns:
             Python module name (e.g., "pg_core", "pg_basic_macros")
         """
         # Remove .pl extension
         name = perl_name.removesuffix(".pl")
-        
+
         # Convert to Python naming
         mapping = {
             "PG": "pg_core",
@@ -67,9 +67,9 @@ class MacroEnabledSandbox(Sandbox):
             "PGML": "pgml",
             "PGanswermacros": "pg_answer_macros",
         }
-        
+
         return mapping.get(name, name.lower().replace("pg", "pg_"))
-    
+
     def execute_with_macros(
         self,
         code: str,
@@ -79,35 +79,35 @@ class MacroEnabledSandbox(Sandbox):
     ) -> SandboxResult:
         """
         Execute code with macro support.
-        
+
         Args:
             code: Python code to execute
             seed: Random seed
             context: Mathematical context
             globals_dict: Additional global variables
-        
+
         Returns:
             SandboxResult with execution results
         """
         # Build macro imports
         macro_imports = self._build_macro_imports()
-        
+
         # Wrap code with macro setup
         wrapped_code = self._wrap_with_macros(code, macro_imports)
-        
+
         # Execute
         return self.execute(wrapped_code, seed, context, globals_dict)
-    
+
     def _build_macro_imports(self) -> str:
         """
         Build import statements for loaded macros.
-        
+
         Returns:
             Python import code
         """
         if not self.macro_modules:
             return ""
-        
+
         imports = []
         for module in self.macro_modules:
             if module == "pg_core":
@@ -130,7 +130,7 @@ except ImportError:
     def TEXT(*args): pg_env.add_text(' '.join(str(a) for a in args))
     def BEGIN_TEXT(): return ''
     def END_TEXT(): return ''
-    def ANS(*args): 
+    def ANS(*args):
         for ev in args:
             pg_env.register_answer(f'AnSwEr{len(pg_env.answers):04d}', ev)
     def NAMED_ANS(name, ev): pg_env.register_answer(name, ev)
@@ -158,7 +158,7 @@ except ImportError:
             self.output_array = []
             self.answers_hash = {}
 """)
-            
+
             elif module == "pg_basic_macros":
                 imports.append("""
 # Import PG basic macros
@@ -222,17 +222,17 @@ except ImportError:
     def PI(): return math.pi
     def E(): return math.e
 """)
-        
+
         return "\n".join(imports)
-    
+
     def _wrap_with_macros(self, code: str, macro_imports: str) -> str:
         """
         Wrap code with macro imports.
-        
+
         Args:
             code: User code
             macro_imports: Macro import statements
-        
+
         Returns:
             Wrapped code
         """
@@ -242,28 +242,28 @@ except ImportError:
 # User code begins here
 {code}
 """
-    
+
     def _wrap_code(
         self, code: str, seed: int, context: Any = None, globals_dict: dict[str, Any] | None = None
     ) -> str:
         """
         Override parent _wrap_code to include macro support.
-        
+
         Args:
             code: User's PG code
             seed: Random seed
             context: Mathematical context
             globals_dict: Additional globals
-        
+
         Returns:
             Complete Python script
         """
         # Get base wrapped code from parent
         base_code = super()._wrap_code(code, seed, context, globals_dict)
-        
+
         # Build macro imports
         macro_imports = self._build_macro_imports()
-        
+
         # Insert macro imports after the PGEnv class definition
         # Find the line "pg_env = PGEnv()"
         lines = base_code.split('\n')
@@ -272,21 +272,21 @@ except ImportError:
             if 'pg_env = PGEnv()' in line:
                 insert_index = i + 1
                 break
-        
+
         # Insert macro imports
         if insert_index > 0 and macro_imports:
             lines.insert(insert_index, "\n" + macro_imports + "\n")
-        
+
         return '\n'.join(lines)
 
 
 def create_macro_sandbox(timeout: int = 30) -> MacroEnabledSandbox:
     """
     Create a macro-enabled sandbox.
-    
+
     Args:
         timeout: Maximum execution time
-    
+
     Returns:
         MacroEnabledSandbox instance
     """

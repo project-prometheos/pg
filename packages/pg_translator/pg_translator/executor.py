@@ -184,21 +184,24 @@ class PGExecutor:
         if HAS_IN_PROCESS_SANDBOX and isinstance(self.sandbox, InProcessSandbox):
             # Use in-process sandbox (returns ExecutionResult)
             result = self.sandbox.execute(code, seed, context)
-            
+
             # Create environment from results
             env = PGEnvironment(seed=seed, context=context)
-            
+
             if result.success:
-                env.text_segments = [result.output_text] if result.output_text else []
-                env.solution_segments = [result.solution_text] if result.solution_text else []
-                env.hint_segments = [result.hint_text] if result.hint_text else []
+                env.text_segments = [
+                    result.output_text] if result.output_text else []
+                env.solution_segments = [
+                    result.solution_text] if result.solution_text else []
+                env.hint_segments = [
+                    result.hint_text] if result.hint_text else []
                 # Direct access to answer evaluators (no serialization!)
                 env.answers = result.answers
                 env.variables = result.variables
                 env.errors = result.errors
             else:
                 env.errors = result.errors
-            
+
             return env
         else:
             # Use subprocess sandbox (returns SandboxResult)

@@ -40,7 +40,7 @@ END_PGML
 ENDDOCUMENT()
 """
         result = translator.translate_source(pg_code, seed=1234)
-        
+
         assert result.statement_html != ""
         assert "Add the numbers" in result.statement_html
         assert "5" in result.statement_html
@@ -63,7 +63,7 @@ END_PGML
 ENDDOCUMENT()
 """
         result = translator.translate_source(pg_code, seed=1234)
-        
+
         assert result.statement_html != ""
         assert r"\(" in result.statement_html  # Inline math delimiters
         assert "frac" in result.statement_html
@@ -87,7 +87,7 @@ END_PGML
 ENDDOCUMENT()
 """
         result = translator.translate_source(pg_code, seed=1234)
-        
+
         assert result.statement_html != ""
         assert "<b>Problem:</b>" in result.statement_html
         assert "<li>" in result.statement_html  # List items
@@ -111,7 +111,7 @@ END_PGML
 ENDDOCUMENT()
 """
         result = translator.translate_source(pg_code, seed=1234)
-        
+
         assert result.statement_html != ""
         assert len(result.answer_blanks) == 2
         assert result.statement_html.count('<input type="text"') == 2
@@ -135,7 +135,7 @@ END_PGML_SOLUTION
 ENDDOCUMENT()
 """
         result = translator.translate_source(pg_code, seed=1234)
-        
+
         assert result.statement_html != ""
         assert result.solution_html is not None
         assert "answer is" in result.solution_html.lower()
@@ -160,7 +160,7 @@ END_PGML_HINT
 ENDDOCUMENT()
 """
         result = translator.translate_source(pg_code, seed=1234)
-        
+
         assert result.statement_html != ""
         assert result.hint_html is not None
         assert "Divide" in result.hint_html
@@ -188,7 +188,7 @@ ENDDOCUMENT()
         assert result_correct.answer_results is not None
         first_answer = list(result_correct.answer_results.values())[0]
         assert first_answer.correct
-        
+
         # Test incorrect answer
         result_incorrect = translator.translate_source(
             pg_code, seed=1234, inputs={"AnSwEr0001": "99"}
@@ -215,7 +215,7 @@ class TestPGMLIntegrationSummary:
             "Hints": "BEGIN_PGML_HINT",
             "Answer registration": "Auto-registers with ANS()",
         }
-        
+
         # All features should be tested above
         assert len(implemented_features) == 10
         print("\n✅ PGML Features Implemented:")

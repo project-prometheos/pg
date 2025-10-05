@@ -39,11 +39,11 @@ class PGSandbox:
     def register_function(self, name: str, func: Callable) -> None:
         """Register function in sandbox namespace."""
         self.namespace[name] = func
-    
+
     def register_variable(self, name: str, value: Any) -> None:
         """Register variable in sandbox namespace."""
         self.namespace[name] = value
-    
+
     def set_environment(self, env: PGEnvironment) -> None:
         """Set PG environment for this execution."""
         self._pg_environment = env
@@ -75,14 +75,14 @@ class PGExecutor:
         }
         pg_env = pg_core.PGEnvironment(envir)
         pg_core.set_environment(pg_env)
-        
+
         # Register macro functions
         self._register_pg_macros()
-        
+
         # Execute code
         self.sandbox.set_environment(pg_env)
         self.sandbox.exec(code)
-        
+
         # Convert pg_core.PGEnvironment to executor.PGEnvironment
         return self._convert_environment(pg_env)
 ```
@@ -106,13 +106,13 @@ class PGExecutor:
 ```python
 def test_load_pg_core():
     """Test loading PG.pl macros."""
-    
+
 def test_TEXT_function():
     """Test TEXT() outputs text."""
-    
+
 def test_ANS_registration():
     """Test ANS() registers answers."""
-    
+
 def test_simple_problem_complete():
     """Test complete problem with TEXT, ans_rule, ANS."""
 ```
@@ -140,7 +140,7 @@ def num_cmp(
 ) -> NumericEvaluator:
     """
     Create numeric answer checker with tolerance.
-    
+
     Args:
         correct_answer: The correct numerical answer
         mode: Comparison mode ('std', 'strict', 'arith')
@@ -149,10 +149,10 @@ def num_cmp(
         zeroLevel: Numbers below this are zero
         zeroLevelTol: Absolute tolerance near zero
         **options: Additional options (units, format, etc.)
-    
+
     Returns:
         NumericEvaluator configured for comparison
-    
+
     Example:
         ANS(num_cmp(3.14159, tolType='absolute', tolerance=0.001))
     """
@@ -189,7 +189,7 @@ class NumericEvaluator(AnswerEvaluator):
                 score=0.0,
                 message="Your answer must be a number."
             )
-        
+
         # Check tolerance
         if self.tol_type == "relative":
             # Relative tolerance
@@ -204,7 +204,7 @@ class NumericEvaluator(AnswerEvaluator):
             # Absolute tolerance
             diff = abs(student_value - self.correct_answer)
             is_correct = diff < self.tolerance
-        
+
         return AnswerResult(
             is_correct=is_correct,
             score=1.0 if is_correct else 0.0,
@@ -228,17 +228,17 @@ def str_cmp(
 ) -> StringEvaluator:
     """
     Create string answer checker.
-    
+
     Args:
         correct_answer: The correct string
         mode: Comparison mode
         ignoreCase: Ignore case differences
         ignoreWhitespace: Ignore whitespace
         **options: Additional options
-    
+
     Returns:
         StringEvaluator
-    
+
     Example:
         ANS(str_cmp("hello", ignoreCase=True))
     """
@@ -266,7 +266,7 @@ def fun_cmp(
 ) -> FormulaEvaluator:
     """
     Create formula answer checker.
-    
+
     Args:
         correct_answer: Correct formula (string or Formula object)
         var: Variable(s) to use
@@ -274,10 +274,10 @@ def fun_cmp(
         numPoints: Number of test points
         tolerance: Numerical tolerance
         **options: Additional options
-    
+
     Returns:
         FormulaEvaluator
-    
+
     Example:
         ANS(fun_cmp("x^2 + 1", var="x"))
     """
@@ -287,7 +287,7 @@ def fun_cmp(
         correct_formula = parser.parse(correct_answer)
     else:
         correct_formula = correct_answer
-    
+
     return FormulaEvaluator(
         correct_formula=correct_formula,
         variables=var if isinstance(var, list) else [var],
@@ -332,7 +332,7 @@ def _PGanswermacros_init():
     """Initialize answer checker macros."""
     from pg_translator.sandbox import get_sandbox
     sandbox = get_sandbox()
-    
+
     sandbox.register_function("num_cmp", num_cmp)
     sandbox.register_function("str_cmp", str_cmp)
     sandbox.register_function("fun_cmp", fun_cmp)
@@ -393,7 +393,7 @@ def test_simple_numeric_problem():
         "tests/problems/simple_numeric.pg",
         seed=1234
     )
-    
+
     assert result.errors is None
     assert "What is 2 + 2?" in result.statement_html
     assert 'name="AnSwEr0001"' in result.statement_html
@@ -402,24 +402,24 @@ def test_simple_numeric_problem():
 def test_simple_numeric_grading():
     """Test simple numeric problem grades correctly."""
     translator = PGTranslator()
-    
+
     # Correct answer
     result = translator.translate(
         "tests/problems/simple_numeric.pg",
         seed=1234,
         inputs={"AnSwEr0001": "4"}
     )
-    
+
     assert result.score == 1.0
     assert result.answer_results["AnSwEr0001"].is_correct
-    
+
     # Wrong answer
     result = translator.translate(
         "tests/problems/simple_numeric.pg",
         seed=1234,
         inputs={"AnSwEr0001": "5"}
     )
-    
+
     assert result.score == 0.0
     assert not result.answer_results["AnSwEr0001"].is_correct
 
@@ -427,7 +427,7 @@ def test_random_problem():
     """Test problem with random() function."""
     # Test with multiple seeds to ensure randomization works
     translator = PGTranslator()
-    
+
     results = []
     for seed in [1, 2, 3, 4, 5]:
         result = translator.translate(
@@ -435,7 +435,7 @@ def test_random_problem():
             seed=seed
         )
         results.append(result.statement_html)
-    
+
     # Should have different problems
     unique_problems = len(set(results))
     assert unique_problems > 1, "Random problems should vary"
@@ -456,16 +456,16 @@ def test_random_problem():
 def test_opl_problems():
     """Test that 10 OPL problems render without errors."""
     translator = PGTranslator()
-    
+
     opl_dir = Path("tests/opl_samples")
     pg_files = list(opl_dir.glob("*.pg"))[:10]
-    
+
     successes = 0
     for pg_file in pg_files:
         result = translator.translate(pg_file, seed=1234)
         if result.errors is None or len(result.errors) == 0:
             successes += 1
-    
+
     # Should render at least 7/10 successfully
     assert successes >= 7, f"Only {successes}/10 OPL problems rendered"
 ```

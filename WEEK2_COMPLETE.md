@@ -8,7 +8,7 @@
 
 1. **Simple numeric rendering** - Text and answer blanks
 2. **Grading correct answers** - Score 1.0
-3. **Grading incorrect answers** - Score 0.0  
+3. **Grading incorrect answers** - Score 0.0
 4. **Random problems** - Different seeds → different problems
 5. **Multiple answer blanks** - Multiple questions per problem
 6. **Named answer blanks** - Explicit answer naming
@@ -232,7 +232,7 @@ Tested with `random_addition.pg`:
 - Random problems working ✅
 - Grading accurate ✅
 
-**Exceeded Expectations**: 
+**Exceeded Expectations**:
 - Originally planned for simple Python-syntax problems
 - Now supporting full PG syntax with BEGIN_TEXT, $vars, \{...\}
 - Real .pg file support achieved Day 2 (planned for Day 3)

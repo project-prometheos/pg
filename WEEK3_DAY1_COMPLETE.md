@@ -1,6 +1,6 @@
 # Week 3 Day 1 Complete ✅
 
-**Date**: Continuation from Week 2 completion  
+**Date**: Continuation from Week 2 completion
 **Status**: 100% Complete (24/24 tests passing)
 
 ## Objectives Achieved
@@ -12,7 +12,7 @@ Created `cmp.py` module with PG-style answer checker functions:
   - Tolerance modes: relative, absolute, sigfigs
   - Zero-level handling
   - Multiple input formats (numbers, expressions, scientific notation)
-  
+
 - ✅ **str_cmp()** - String answer checker
   - Case-sensitive/insensitive matching
   - Whitespace trimming control
@@ -33,9 +33,9 @@ Fixed and enhanced numeric tolerance handling:
 - ✅ **Relative tolerance**: Uses `abs(a-b) / max(abs(a), abs(b))` formula
   - Handles edge cases (zero, negative numbers)
   - Floating-point precision handling with epsilon
-  
+
 - ✅ **Absolute tolerance**: Direct difference comparison
-  
+
 - ✅ **Precision handling**: Added 1e-12 epsilon to avoid floating-point comparison issues
 
 ### 3. Comprehensive Test Suite
