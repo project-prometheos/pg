@@ -198,6 +198,42 @@ class PGPreprocessor:
                 i += 1
                 continue
 
+            # Check for Perl closures: sub { ... } - stub them out
+            # These are typically used for custom answer checkers
+            # Example: checker => sub { ... }
+            sub_match = re.search(r'(=>|=)\s*sub\s*\{', original_line)
+            if sub_match:
+                # Found start of a sub {} closure
+                # Track brace depth to find the end
+                brace_depth = original_line.count('{') - original_line.count('}')
+                
+                # Extract the parameter name before the =>
+                prefix_match = re.match(r'^(\s*)(\w+)\s*=>\s*sub\s*\{', original_line)
+                if prefix_match:
+                    indent = prefix_match.group(1)
+                    param_name = prefix_match.group(2)
+                    # Stub out the closure with a lambda that returns None
+                    output_lines.append(f"{indent}{param_name} = lambda *args, **kwargs: None  # Stubbed Perl closure")
+                else:
+                    # Assignment form: $var = sub { ... }
+                    assign_match = re.match(r'^(\s*)(\w+)\s*=\s*sub\s*\{', original_line)
+                    if assign_match:
+                        indent = assign_match.group(1)
+                        var_name = assign_match.group(2)
+                        output_lines.append(f"{indent}{var_name} = lambda *args, **kwargs: None  # Stubbed Perl closure")
+                    else:
+                        # Unknown form, comment it out
+                        output_lines.append(f"# {original_line}  # Skipped Perl closure")
+                
+                # Skip the rest of the closure block
+                i += 1
+                while i < len(lines) and brace_depth > 0:
+                    current_line = lines[i]
+                    brace_depth += current_line.count('{') - current_line.count('}')
+                    i += 1
+                
+                continue
+
             # Check for do { ... } until (condition) loops
             do_until_match = re.match(r'^\s*do\s*\{', original_line)
             if do_until_match:
@@ -218,10 +254,11 @@ class PGPreprocessor:
                         body = body_match.group(1).strip()
                         transformed_body = self._transform_line(body)
 
-                        # Generate Python while loop
+                        # Generate Python while loop with post-test
+                        # Perl: do {...} until (condition) means repeat until condition is TRUE
                         output_lines.append(f'while True:')
                         output_lines.append(f'    {transformed_body}')
-                        output_lines.append(f'    if not ({condition}):')
+                        output_lines.append(f'    if ({condition}):')
                         output_lines.append(f'        break')
 
                         i += 1
@@ -271,13 +308,20 @@ class PGPreprocessor:
                     # Transform body lines
                     transformed_body = []
                     for line in body_lines:
-                        transformed = self._transform_line(line.rstrip())
+                        # Strip existing indentation and transform
+                        stripped_line = line.lstrip()
+                        transformed = self._transform_line(stripped_line.rstrip())
                         if transformed:
+                            # Add consistent 4-space indentation
                             transformed_body.append('    ' + transformed)
 
-                    # Generate Python while loop: while not (condition):
-                    output_lines.append(f'while not ({condition}):')
+                    # Generate Python while loop with post-test (like do-until)
+                    # Perl: do {...} until (condition) means repeat until condition is TRUE
+                    # Python: while True: ... if (condition): break
+                    output_lines.append('while True:')
                     output_lines.extend(transformed_body)
+                    output_lines.append(f'    if ({condition}):')
+                    output_lines.append(f'        break')
 
                     continue
                 else:
@@ -394,7 +438,27 @@ class PGPreprocessor:
         # Transform Perl array variables: @array → array
         line = re.sub(r'@([a-zA-Z_][a-zA-Z0-9_]*)', r'\1', line)
 
-        # Transform Perl scalar variables: $var → var
+        # Transform Perl string interpolation: "$var text" → f"{var} text"
+        # Find all double-quoted strings and convert those with $var to f-strings
+        def convert_string_interpolation(match):
+            quote_char = match.group(1)  # " or '
+            content = match.group(2)
+            
+            # Only convert double-quoted strings (Perl interpolates these)
+            if quote_char == '"':
+                # Check if contains $var
+                if '$' in content:
+                    # Convert $var to {var}
+                    new_content = re.sub(r'\$([a-zA-Z_][a-zA-Z0-9_]*)', r'{\1}', content)
+                    return f'f"{new_content}"'
+            
+            # Return as-is for single quotes or strings without variables
+            return match.group(0)
+        
+        # Match strings carefully (handle escaped quotes)
+        line = re.sub(r'(["\'])([^\1]*?)\1', convert_string_interpolation, line)
+
+        # Transform Perl scalar variables: $var → var (outside of strings now)
         # Use negative lookbehind to avoid matching in strings
         line = re.sub(r'\$([a-zA-Z_][a-zA-Z0-9_]*)', r'\1', line)
 
@@ -402,6 +466,21 @@ class PGPreprocessor:
         # Special case: ->with( becomes .with_params( to avoid Python keyword
         line = line.replace('->with(', '.with_params(')
         line = line.replace('->', '.')
+
+        # Transform Perl string comparison operators (must be done carefully)
+        # eq → == (string equality)
+        # ne → != (string inequality)
+        # lt → < (less than)
+        # gt → > (greater than)
+        # le → <= (less than or equal)
+        # ge → >= (greater than or equal)
+        # Use word boundaries to avoid matching inside identifiers
+        line = re.sub(r'\beq\b', '==', line)
+        line = re.sub(r'\bne\b', '!=', line)
+        line = re.sub(r'\blt\b', '<', line)
+        line = re.sub(r'\bgt\b', '>', line)
+        line = re.sub(r'\ble\b', '<=', line)
+        line = re.sub(r'\bge\b', '>=', line)
 
         # Transform Perl namespace separator: Package::Function → Package.Function
         line = re.sub(

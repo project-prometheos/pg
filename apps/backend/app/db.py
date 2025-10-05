@@ -172,7 +172,7 @@ class ProblemDB:
     def get_collections(self) -> List[Dict[str, Any]]:
         """Get all problem collections."""
         rows = self.conn.execute(
-            "SELECT * FROM collections ORDER BY name"
+            "SELECT id, name, description, problem_count FROM collections ORDER BY name"
         ).fetchall()
         
         return [dict(row) for row in rows]

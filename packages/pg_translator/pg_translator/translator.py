@@ -171,6 +171,10 @@ class PGTranslator:
             statement_html = env.render_text()
             solution_html = env.render_solution()
             hint_html = env.render_hint()
+            
+            # Collect any execution errors from environment
+            if env.errors:
+                errors.append(env.errors)
 
             # 5. Collect answer blanks
             answer_blanks = {
@@ -195,12 +199,27 @@ class PGTranslator:
                         else:
                             evaluator = ans_entry
 
-                        # Get correct answer from evaluator
-                        correct_answer = getattr(
-                            evaluator, "correct_answer", "")
-                        result = evaluator.evaluate(student_answer)
-                        answer_results[name] = result
-                        scores.append(result.score)
+                        # Check if it's a MathObject (Formula, Real, etc.) - need to call .cmp() first
+                        if hasattr(evaluator, 'cmp'):
+                            checker = evaluator.cmp()
+                            # Now call check() method
+                            if hasattr(checker, 'check'):
+                                check_result = checker.check(student_answer)
+                                # Convert dict to AnswerResult
+                                result = AnswerResult(
+                                    score=check_result.get('score', 0.0),
+                                    correct=check_result.get('correct', False),
+                                    student_answer=student_answer,
+                                    answer_message=check_result.get('message', ''),
+                                    correct_answer=str(evaluator) if hasattr(evaluator, '__str__') else '',
+                                )
+                                answer_results[name] = result
+                                scores.append(result.score)
+                        elif hasattr(evaluator, 'evaluate'):
+                            # It's already an answer checker - call evaluate directly
+                            result = evaluator.evaluate(student_answer)
+                            answer_results[name] = result
+                            scores.append(result.score)
 
                 # Calculate overall score (average)
                 if scores:
@@ -272,6 +291,10 @@ class PGTranslator:
             statement_html = env.render_text()
             solution_html = env.render_solution()
             hint_html = env.render_hint()
+            
+            # Collect any execution errors from environment
+            if env.errors:
+                errors.append(env.errors)
 
             # 4. Collect answers
             answer_blanks = {
@@ -287,6 +310,10 @@ class PGTranslator:
                 answer_results = {}
                 scores: list[float] = []
 
+                # Group answer blanks by their evaluator (for MultiAnswer)
+                evaluator_groups: dict[int, list[tuple[str, str]]] = {}  # id(evaluator) -> [(name, student_answer), ...]
+                evaluator_map: dict[int, Any] = {}  # id(evaluator) -> evaluator
+                
                 for name, student_answer in inputs.items():
                     if name in env.answers:
                         # Extract evaluator from answer hash entry
@@ -295,9 +322,79 @@ class PGTranslator:
                             evaluator = ans_entry["ans_eval"]
                         else:
                             evaluator = ans_entry
-                        result = evaluator.evaluate(student_answer)
-                        answer_results[name] = result
-                        scores.append(result.score)
+                        
+                        # Group by evaluator object identity
+                        eval_id = id(evaluator)
+                        if eval_id not in evaluator_groups:
+                            evaluator_groups[eval_id] = []
+                            evaluator_map[eval_id] = evaluator
+                        evaluator_groups[eval_id].append((name, student_answer))
+                
+                # Check each group
+                for eval_id, group_items in evaluator_groups.items():
+                    evaluator = evaluator_map[eval_id]
+                    
+                    # Check if it's a MultiAnswer (multiple blanks with same evaluator)
+                    if len(group_items) > 1 and hasattr(evaluator, 'cmp'):
+                        # MultiAnswer case - check all answers together
+                        checker = evaluator.cmp()
+                        if hasattr(checker, 'check'):
+                            # Extract student answers in order
+                            student_answers = [ans for _, ans in group_items]
+                            
+                            # Call check with all student answers
+                            check_result = checker.check(*student_answers)
+                            
+                            # MultiAnswer checker returns results for all blanks
+                            if 'results' in check_result and isinstance(check_result['results'], list):
+                                # Individual results for each blank
+                                for i, (name, student_ans) in enumerate(group_items):
+                                    individual_score = check_result['results'][i] if i < len(check_result['results']) else 0.0
+                                    result = AnswerResult(
+                                        score=individual_score,
+                                        correct=individual_score >= 1.0,
+                                        student_answer=student_ans,
+                                        answer_message=check_result.get('message', ''),
+                                        correct_answer=str(evaluator.answers[i]) if hasattr(evaluator, 'answers') and i < len(evaluator.answers) else '',
+                                    )
+                                    answer_results[name] = result
+                                    scores.append(individual_score)
+                            else:
+                                # Fallback: same result for all blanks
+                                for name, student_ans in group_items:
+                                    result = AnswerResult(
+                                        score=check_result.get('score', 0.0),
+                                        correct=check_result.get('correct', False),
+                                        student_answer=student_ans,
+                                        answer_message=check_result.get('message', ''),
+                                        correct_answer=str(evaluator),
+                                    )
+                                    answer_results[name] = result
+                                    scores.append(result.score)
+                    else:
+                        # Single answer or regular evaluator - check individually
+                        for name, student_answer in group_items:
+                            # Check if it's a MathObject (Formula, Real, etc.) - need to call .cmp() first
+                            if hasattr(evaluator, 'cmp'):
+                                checker = evaluator.cmp()
+                                # Now call check() method
+                                if hasattr(checker, 'check'):
+                                    check_result = checker.check(student_answer)
+                                    # Convert dict to AnswerResult
+                                    result = AnswerResult(
+                                        score=check_result.get('score', 0.0),
+                                        correct=check_result.get('correct', False),
+                                        student_answer=student_answer,
+                                        answer_message=check_result.get('message', ''),
+                                        correct_answer=str(evaluator) if hasattr(evaluator, '__str__') else '',
+                                    )
+                                    answer_results[name] = result
+                                    scores.append(result.score)
+                            elif hasattr(evaluator, 'evaluate'):
+                                # It's already an answer checker - call evaluate directly
+                                result = evaluator.evaluate(student_answer)
+                                answer_results[name] = result
+                                scores.append(result.score)
 
                 if scores:
                     score = sum(scores) / len(scores)

@@ -1,6 +1,7 @@
 pyproject.toml
 pg_answer/__init__.py
 pg_answer/answer_hash.py
+pg_answer/cmp.py
 pg_answer/evaluator.py
 pg_answer/graders.py
 pg_answer.egg-info/PKG-INFO

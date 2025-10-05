@@ -19,7 +19,8 @@ from typing import Any
 from pg_answer import AnswerEvaluator, EvaluatorRegistry
 from pg_math import Complex, Formula, Real
 from pg_parser import Context, Parser
-from pg_pgml import HTMLRenderer, PGMLParser
+from pg_pgml import PGMLParser
+from pg_renderer import PGMLRenderer
 
 from .sandbox import Sandbox, SandboxResult
 
@@ -115,39 +116,53 @@ class PGEnvironment:
         return name
 
     def render_text(self) -> str:
-        """Render all text segments to HTML."""
-        # Combine plain text and PGML
-        all_text = "\n".join(self.text_segments)
-
-        # Render PGML segments
-        pgml_html = ""
+        """Render all text segments using PGMLRenderer."""
+        # Combine all segments
+        all_segments = []
+        if self.text_segments:
+            all_segments.extend(self.text_segments)
         if self.pgml_segments:
-            pgml_text = "\n\n".join(self.pgml_segments)
-            doc = PGMLParser.parse_text(pgml_text)
-            renderer = HTMLRenderer(context=self.variables)
-
-            # Allow renderer to register answers
-            renderer._register_answer = lambda name, ev: self.answers.update({
-                                                                             name: ev})
-
-            pgml_html = renderer.render(doc)
-
-        # Combine
-        if all_text and pgml_html:
-            return all_text + "\n" + pgml_html
-        return all_text + pgml_html
+            all_segments.extend(self.pgml_segments)
+        
+        if not all_segments:
+            return ""
+        
+        combined_text = "\n\n".join(all_segments)
+        
+        # Render using PGMLRenderer
+        renderer = PGMLRenderer(variables=self.variables)
+        rendered_markdown, answer_blanks = renderer.render(combined_text)
+        
+        # Register answer blanks
+        self.answers.update(answer_blanks)
+        
+        return rendered_markdown
 
     def render_solution(self) -> str | None:
-        """Render solution text to HTML."""
+        """Render solution text to markdown."""
         if not self.solution_segments:
             return None
-        return "\n".join(self.solution_segments)
+        
+        solution_text = "\n".join(self.solution_segments)
+        
+        # Use PGMLRenderer for PGML content in solutions
+        renderer = PGMLRenderer(variables=self.variables)
+        rendered_markdown, _ = renderer.render(solution_text)
+        
+        return rendered_markdown
 
     def render_hint(self) -> str | None:
-        """Render hint text to HTML."""
+        """Render hint text to markdown."""
         if not self.hint_segments:
             return None
-        return "\n".join(self.hint_segments)
+        
+        hint_text = "\n".join(self.hint_segments)
+        
+        # Use PGMLRenderer for PGML content in hints
+        renderer = PGMLRenderer(variables=self.variables)
+        rendered_markdown, _ = renderer.render(hint_text)
+        
+        return rendered_markdown
 
 
 class PGExecutor:

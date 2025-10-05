@@ -165,7 +165,9 @@ class InProcessSandbox:
         self._load_mathobjects()
 
         # Load core PG macros by default
-        self._load_pg_core()
+        # TEMP: Skip pg_core to use working stub implementations
+        # self._load_pg_core()
+        self._load_pg_core_stubs()  # Use stubs which work correctly with PGMLRenderer
         self._load_pg_basic_macros()
         self._load_pg_answer_macros()
 
@@ -234,67 +236,14 @@ class InProcessSandbox:
 
             # Define PGML function (not in pg_core)
             def PGML(pgml_text):
-                """Render PGML markup to HTML."""
-                from pg_pgml import PGMLParser, HTMLRenderer
-                from pg_pgml.parser import AnswerBlank
+                """Store PGML markup by calling TEXT (which pg_core tracks)."""
+                print(f"[DEBUG pg_core PGML()] Called, calling TEXT() instead")
+                # Just call TEXT() with the PGML content
+                # TEXT() will append to pg_core environment's output_array
+                pg_core.TEXT(pgml_text)
+                return ''
 
-                # Get current namespace for variable access
-                context = self.namespace
-
-                # Parse PGML text using the proper tokenizer/parser
-                doc = PGMLParser.parse_text(pgml_text)
-
-                # Collect answer blanks from the document tree
-                answer_blanks = []
-                visited = set()  # Track visited nodes to prevent infinite loops
-
-                def collect_answer_blanks(node, depth=0):
-                    """Recursively collect AnswerBlank nodes."""
-                    if depth > 50:  # Prevent stack overflow
-                        return
-
-                    # Prevent revisiting the same node
-                    node_id = id(node)
-                    if node_id in visited:
-                        return
-                    visited.add(node_id)
-
-                    if isinstance(node, AnswerBlank):
-                        answer_blanks.append(node)
-                        return  # Don't recurse into AnswerBlank itself
-
-                    # Check for children in various node types
-                    if hasattr(node, 'blocks') and node.blocks:
-                        for child in node.blocks:
-                            collect_answer_blanks(child, depth + 1)
-                    if hasattr(node, 'content') and isinstance(node.content, list):
-                        for child in node.content:
-                            collect_answer_blanks(child, depth + 1)
-                    if hasattr(node, 'items') and node.items:
-                        for item in node.items:
-                            collect_answer_blanks(item, depth + 1)
-
-                # Start collection from document root
-                collect_answer_blanks(doc)
-
-                # Evaluate evaluator expressions and register answers
-                for blank in answer_blanks:
-                    if blank.evaluator_code:
-                        try:
-                            # Remove Perl $ sigil before evaluation
-                            eval_expr = blank.evaluator_code.lstrip('$')
-                            # Evaluate in current namespace
-                            evaluator = eval(eval_expr, {}, context)
-                            # Register with ANS()
-                            pg_core.ANS(evaluator)
-                        except Exception:
-                            # If evaluation fails, skip this answer blank
-                            pass
-
-                # Render PGML to HTML using proper renderer
-                renderer = HTMLRenderer(context=context)
-                return renderer.render(doc)
-
+            # Add pg_core functions to namespace
             # Register core functions
             self.namespace.update({
                 'DOCUMENT': pg_core.DOCUMENT,
@@ -335,6 +284,7 @@ class InProcessSandbox:
                 self.answers_hash = {}
                 self.solution_array = []
                 self.hint_array = []
+                self.pgml_array = []  # For PGML content
                 self._answer_counter = 0
 
             def append_text(self, text):
@@ -367,66 +317,9 @@ class InProcessSandbox:
 
         # PGML rendering function
         def PGML(pgml_text):
-            """Render PGML markup to HTML (fallback mode without pg_core)."""
-            from pg_pgml import PGMLParser, HTMLRenderer
-            from pg_pgml.parser import AnswerBlank
-
-            # Get current namespace for variable access
-            context = self.namespace
-
-            # Parse PGML text using the proper tokenizer/parser
-            doc = PGMLParser.parse_text(pgml_text)
-
-            # Collect answer blanks from the document tree
-            answer_blanks = []
-            visited = set()  # Track visited nodes to prevent infinite loops
-
-            def collect_answer_blanks(node, depth=0):
-                """Recursively collect AnswerBlank nodes."""
-                if depth > 50:  # Prevent stack overflow
-                    return
-
-                # Prevent revisiting the same node
-                node_id = id(node)
-                if node_id in visited:
-                    return
-                visited.add(node_id)
-
-                if isinstance(node, AnswerBlank):
-                    answer_blanks.append(node)
-                    return  # Don't recurse into AnswerBlank itself
-
-                # Check for children in various node types
-                if hasattr(node, 'blocks') and node.blocks:
-                    for child in node.blocks:
-                        collect_answer_blanks(child, depth + 1)
-                if hasattr(node, 'content') and isinstance(node.content, list):
-                    for child in node.content:
-                        collect_answer_blanks(child, depth + 1)
-                if hasattr(node, 'items') and node.items:
-                    for item in node.items:
-                        collect_answer_blanks(item, depth + 1)
-
-            # Start collection from document root
-            collect_answer_blanks(doc)
-
-            # Evaluate evaluator expressions and register answers
-            for blank in answer_blanks:
-                if blank.evaluator_code:
-                    try:
-                        # Remove Perl $ sigil before evaluation
-                        eval_expr = blank.evaluator_code.lstrip('$')
-                        # Evaluate in current namespace
-                        evaluator = eval(eval_expr, {}, context)
-                        # Register with ANS()
-                        ANS(evaluator)
-                    except Exception:
-                        # If evaluation fails, skip this answer blank
-                        pass
-
-            # Render PGML to HTML using proper renderer
-            renderer = HTMLRenderer(context=context)
-            return renderer.render(doc)
+            """Return PGML markup - will be rendered by PGMLRenderer later."""
+            # Don't store in pgml_array - just return so TEXT() can handle it
+            return pgml_text
 
         # Random functions (don't shadow random module)
         import random as _random_module
@@ -749,7 +642,12 @@ class InProcessSandbox:
             pg_env = None
 
         if pg_env:
-            output_text = ''.join(pg_env.output_array)
+            # Get output from output_array (TEXT() calls, which include PGML content)
+            if hasattr(pg_env, 'output_array') and pg_env.output_array:
+                output_text = '\n\n'.join(pg_env.output_array)
+            else:
+                output_text = ''
+            
             answers = dict(pg_env.answers_hash)
             solution_text = ''.join(getattr(pg_env, 'solution_array', [])) if hasattr(
                 pg_env, 'solution_array') else None
@@ -765,8 +663,11 @@ class InProcessSandbox:
         variables = {}
         for key, value in self.namespace.items():
             if not key.startswith('_') and key not in ('__builtins__',):
-                # Only include simple types
+                # Include simple types AND answer evaluators (objects with evaluate method)
                 if isinstance(value, (int, float, str, bool, list, tuple, dict)):
+                    variables[key] = value
+                elif hasattr(value, 'evaluate') or hasattr(value, 'cmp'):
+                    # This is likely an answer evaluator (Formula, Real, etc.)
                     variables[key] = value
 
         return ExecutionResult(
@@ -808,6 +709,68 @@ class InProcessSandbox:
                 """Method for setting options (works around 'with' keyword)."""
                 self.options.update(kwargs)
                 return self
+
+            def cmp(self):
+                """Return a checker that can check multiple answers together."""
+                # For now, return self so it can be used as a checker
+                return self
+            
+            def check(self, *student_answers):
+                """Check multiple student answers against the correct answers."""
+                # Extract the custom checker if provided
+                checker_func = self.options.get('checker')
+                
+                if checker_func and callable(checker_func):
+                    # Call custom checker with (correct, student, self) tuple
+                    try:
+                        results = checker_func(self.answers, student_answers, self)
+                        # results should be a list of [score1, score2, ...]
+                        # Convert to dict format for each answer
+                        if isinstance(results, list):
+                            # Return results for all answers
+                            # For now, return a dict with aggregate result
+                            all_correct = all(r >= 1.0 for r in results) if results else False
+                            return {
+                                'correct': all_correct,
+                                'score': 1.0 if all_correct else 0.0,
+                                'message': 'Checked with custom MultiAnswer checker',
+                                'results': results,  # Individual results for each blank
+                            }
+                    except Exception as e:
+                        return {
+                            'correct': False,
+                            'score': 0.0,
+                            'message': f'Error in custom checker: {str(e)}',
+                        }
+                
+                # Default: check each answer individually
+                if len(student_answers) != len(self.answers):
+                    return {
+                        'correct': False,
+                        'score': 0.0,
+                        'message': f'Expected {len(self.answers)} answers, got {len(student_answers)}',
+                    }
+                
+                results = []
+                for correct, student in zip(self.answers, student_answers):
+                    if hasattr(correct, 'cmp'):
+                        checker = correct.cmp()
+                        if hasattr(checker, 'check'):
+                            result = checker.check(student)
+                            results.append(result.get('score', 0.0))
+                        else:
+                            results.append(0.0)
+                    else:
+                        # Simple comparison
+                        results.append(1.0 if str(correct) == str(student) else 0.0)
+                
+                all_correct = all(r >= 1.0 for r in results)
+                return {
+                    'correct': all_correct,
+                    'score': 1.0 if all_correct else 0.0,
+                    'message': '',
+                    'results': results,
+                }
 
         # Add .with() method using setattr to work around Python keyword
         setattr(MultiAnswerStub, 'with', MultiAnswerStub.with_params)

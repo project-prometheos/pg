@@ -27,7 +27,9 @@ class PGMLRenderer:
         
         # 1. Variable interpolation FIRST (before any bracket/brace processing)
         # This prevents variables like [$a] from being corrupted by table simplification
-        html = re.sub(r'\[\$(\w+)\]', self._interpolate_var, html)
+        # Match both [$varname] and [varname] (preprocessor may have removed $)
+        # Must start with a letter (not underscore) to avoid matching [_] answer blanks
+        html = re.sub(r'\[\$?([a-zA-Z]\w*)\]', self._interpolate_var, html)
         
         # 2. Remove PGML table constructs (simplify for MVP)
         # These are advanced layout features: [# ... #] and [. ... .]
@@ -150,10 +152,16 @@ class PGMLRenderer:
         
         # Evaluate answer expression to get correct value or spec dict
         correct_value = self._eval_answer(answer_expr)
-        # Store either the dict (spec) or a plain string
-        self.answer_blanks[answer_id] = (
-            correct_value if isinstance(correct_value, dict) else str(correct_value)
-        )
+        # Store the evaluator object, dict spec, or string
+        # Don't convert evaluator objects to strings!
+        if isinstance(correct_value, dict):
+            self.answer_blanks[answer_id] = correct_value
+        elif hasattr(correct_value, 'cmp') or hasattr(correct_value, 'evaluate'):
+            # It's an evaluator object - keep it as-is
+            self.answer_blanks[answer_id] = correct_value
+        else:
+            # It's a simple value - convert to string
+            self.answer_blanks[answer_id] = str(correct_value)
         
         # Return a placeholder that won't break markdown
         # The frontend will replace these with actual input fields
@@ -164,11 +172,19 @@ class PGMLRenderer:
         Evaluate answer expression.
         
         The expression can be:
-        - A simple variable: $answer
+        - A simple variable: $answer or answer (preprocessor removes $)
         - A Compute() expression: Compute("x >= $a")
         - A literal string: "x >= 4"
         """
         expr = expr.strip()
+        
+        # Check if it's a simple variable name (preprocessor may have removed $)
+        # Try to get it from variables first
+        if expr.isidentifier() and expr in self.variables:
+            result = self.variables[expr]
+            # If it's an evaluator object, return it directly
+            if hasattr(result, 'evaluate') or hasattr(result, 'cmp'):
+                return result
         
         # If it starts with $, it may be a variable or a method call like $var->cmp(...)
         if expr.startswith('$'):
@@ -250,6 +266,11 @@ class PGMLRenderer:
             # Simple variable reference $var
             var_name = expr.lstrip('$')
             result = self.variables.get(var_name, expr)
+            
+            # If result is an evaluator object (has evaluate method), return it directly
+            if hasattr(result, 'evaluate') or hasattr(result, 'cmp'):
+                return result
+            
             # MultiAnswer group variable: expand to per-blank spec
             if isinstance(result, dict) and result.get('__multi__'):
                 group = var_name

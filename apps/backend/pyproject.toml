@@ -16,6 +16,12 @@ dependencies = [
     "pydantic>=2.0.0",
     "numpy>=1.24.0",
     "problemkit",
+    "pg_translator>=0.1.0",
+    "pg_parser>=0.1.0",
+    "pg_math>=0.1.0",
+    "pg_answer>=0.1.0",
+    "pg_pgml>=0.1.0",
+    "pg_renderer>=0.1.0",
 ]
 
 [project.optional-dependencies]
