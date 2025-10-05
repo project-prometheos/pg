@@ -46,7 +46,7 @@ class RealAnswerChecker(AnswerChecker):
             # Normalize common constant representations
             # Replace unicode π with 'pi', uppercase 'Pi' with 'pi'
             normalized = student_answer.replace('π', 'pi').replace('Pi', 'pi')
-            
+
             # First try to parse as a simple float
             try:
                 student_value = float(normalized)

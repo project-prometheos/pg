@@ -21,12 +21,12 @@ for answer, description in test_cases:
         json={'seed': seed, 'inputs': {'AnSwEr0001': answer}}
     )
     data = r.json()
-    
+
     result = data['results']['AnSwEr0001']
     correct = result['correct']
     score = result['score']
     message = result.get('message', '')
-    
+
     status = '✅' if correct else '❌'
     print(f"{status} {description:25s} '{answer}'")
     print(f"   Score: {score}, Message: {message}")

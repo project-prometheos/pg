@@ -27,7 +27,7 @@ def check(self, student_answer: str) -> Dict[str, Any]:
     try:
         # Normalize common constant representations
         normalized = student_answer.replace('π', 'pi').replace('Pi', 'pi')
-        
+
         # First try to parse as a simple float
         try:
             student_value = float(normalized)

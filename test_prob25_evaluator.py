@@ -1,8 +1,8 @@
+from pg_translator import PGTranslator
+from app.db import ProblemDB
 import sys
 sys.path.insert(0, 'apps/backend')
 
-from app.db import ProblemDB
-from pg_translator import PGTranslator
 
 db = ProblemDB.get_instance()
 prob = db.get_by_id('PS1/Problem-25')
