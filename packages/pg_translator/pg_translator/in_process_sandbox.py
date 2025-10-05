@@ -105,9 +105,18 @@ class InProcessSandbox:
             'filter': filter,
             'sorted': sorted,
             'reversed': reversed,
+            'all': all,
+            'any': any,
             # String functions
             'chr': chr,
             'ord': ord,
+            # Type checking
+            'isinstance': isinstance,
+            'issubclass': issubclass,
+            'type': type,
+            'hasattr': hasattr,
+            'getattr': getattr,
+            'setattr': setattr,
             # Constants
             'True': True,
             'False': False,
@@ -122,6 +131,23 @@ class InProcessSandbox:
             'ZeroDivisionError': ZeroDivisionError,
         }
 
+        # Allow controlled __import__ for specific modules
+        import builtins
+        original_import = builtins.__import__
+
+        def safe_import(name, globals=None, locals=None, fromlist=(), level=0):
+            """Allow importing only safe modules."""
+            # Allow pg_mathobjects and its submodules
+            if name.startswith('pg_mathobjects'):
+                return original_import(name, globals, locals, fromlist, level)
+            # Allow math and random (already in namespace but allow re-import)
+            if name in ('math', 'random'):
+                return original_import(name, globals, locals, fromlist, level)
+            # Block everything else
+            raise ImportError(f"Import of '{name}' is not allowed in sandbox")
+
+        safe_builtins['__import__'] = safe_import
+
         # Restricted builtins dict
         self.namespace['__builtins__'] = safe_builtins
 
@@ -131,10 +157,51 @@ class InProcessSandbox:
         self.namespace['math'] = math
         self.namespace['random'] = random
 
+        # Load MathObjects
+        self._load_mathobjects()
+
         # Load core PG macros by default
         self._load_pg_core()
         self._load_pg_basic_macros()
         self._load_pg_answer_macros()
+
+    def _load_mathobjects(self) -> None:
+        """Load MathObjects framework into namespace."""
+        try:
+            # Import MathObjects
+            from pg_mathobjects import Context, Formula, Real, Compute
+
+            # Make available in namespace
+            self.namespace['Context'] = Context
+            self.namespace['Formula'] = Formula
+            self.namespace['Real'] = Real
+            self.namespace['Compute'] = Compute
+
+        except ImportError:
+            # Fallback: provide minimal stubs
+            def Context(name=None):
+                """Stub Context function."""
+                return None
+
+            def Formula(expr):
+                """Stub Formula function - returns string."""
+                return str(expr)
+
+            def Real(value):
+                """Stub Real function - returns float."""
+                return float(value)
+
+            def Compute(expr):
+                """Stub Compute function - tries to eval."""
+                try:
+                    return eval(str(expr))
+                except:
+                    return str(expr)
+
+            self.namespace['Context'] = Context
+            self.namespace['Formula'] = Formula
+            self.namespace['Real'] = Real
+            self.namespace['Compute'] = Compute
 
     def load_macros(self, *macro_names: str) -> None:
         """

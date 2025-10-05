@@ -26,19 +26,26 @@ class Real(MathValue):
 
     type_precedence = TypePrecedence.REAL
 
-    def __init__(self, value: float | int):
+    def __init__(self, value: float | int, context=None):
         """
         Initialize a Real number.
 
         Args:
             value: Numeric value (will be converted to float)
+            context: The Context (None = use current default)
         """
         self.value = float(value)
+        if context is not None:
+            self.context = context
+        else:
+            # Import here to avoid circular dependency
+            from .context import get_current_context
+            self.context = get_current_context()
 
     def promote(self, other: MathValue) -> MathValue:
         """Promote Real to another type."""
         if isinstance(other, Complex):
-            return Complex(self.value, 0.0)
+            return Complex(self.value, 0.0, self.context)
         elif isinstance(other, Infinity):
             # Real doesn't promote to Infinity
             return self
@@ -59,6 +66,70 @@ class Real(MathValue):
             return False
 
         return fuzzy_compare(self.value, other.value, tolerance, mode)
+
+    def __eq__(self, other: Any) -> bool:
+        """
+        Equality comparison with context-aware tolerance.
+        
+        Uses tolerance and tolType from context for fuzzy comparison.
+        Reference: lib/Value/Real.pm lines 138-177
+        """
+        # Get other value
+        if isinstance(other, (int, float)):
+            other_value = float(other)
+        elif isinstance(other, Real):
+            other_value = other.value
+        else:
+            return False
+
+        # Get tolerance settings from context
+        tolerance = self.context.flags.get('tolerance')
+        if tolerance is None:
+            tolerance = 0.001  # Default tolerance
+        
+        tol_type = self.context.flags.get('tolType')
+        if tol_type is None:
+            tol_type = 'relative'  # Default to relative
+        
+        zero_level = self.context.flags.get('zeroLevel')
+        if zero_level is None:
+            zero_level = 1e-14  # Default zero level
+        
+        zero_level_tol = self.context.flags.get('zeroLevelTol')
+        if zero_level_tol is None:
+            zero_level_tol = 1e-12  # Default zero level tolerance
+
+        # Exact equality
+        if self.value == other_value:
+            return True
+
+        # Use epsilon for floating point comparisons
+        EPSILON = 1e-12
+
+        if tol_type == 'absolute':
+            # Absolute tolerance
+            return abs(self.value - other_value) <= tolerance + EPSILON
+        
+        elif tol_type == 'relative':
+            # Relative tolerance with special handling near zero
+            # Reference: pg_mathobjects/real.py lines 135-137
+            # If self is near zero, check if other is within tolerance of zero
+            if abs(self.value) < zero_level:
+                return abs(other_value) < tolerance
+            
+            # Otherwise use relative tolerance
+            return abs(self.value - other_value) / abs(self.value) < tolerance
+        
+        else:
+            # Unknown tolerance type, fall back to relative
+            max_abs = max(abs(self.value), abs(other_value))
+            if max_abs == 0:
+                return abs(self.value - other_value) <= tolerance + EPSILON
+            return abs(self.value - other_value) / max_abs <= tolerance + EPSILON
+
+    def __ne__(self, other: Any) -> bool:
+        """Not equal."""
+        return not self.__eq__(other)
 
     def to_string(self) -> str:
         """Convert to string."""
@@ -84,9 +155,9 @@ class Real(MathValue):
     def __add__(self, other: Any) -> MathValue:
         """Addition."""
         if isinstance(other, (int, float)):
-            return Real(self.value + other)
+            return Real(self.value + other, self.context)
         elif isinstance(other, Real):
-            return Real(self.value + other.value)
+            return Real(self.value + other.value, self.context)
         elif isinstance(other, MathValue):
             # Promote and retry
             self_promoted, other_promoted = self.promote_types(other)
@@ -103,9 +174,9 @@ class Real(MathValue):
     def __sub__(self, other: Any) -> MathValue:
         """Subtraction."""
         if isinstance(other, (int, float)):
-            return Real(self.value - other)
+            return Real(self.value - other, self.context)
         elif isinstance(other, Real):
-            return Real(self.value - other.value)
+            return Real(self.value - other.value, self.context)
         elif isinstance(other, MathValue):
             self_promoted, other_promoted = self.promote_types(other)
             if self_promoted is not self:
@@ -117,16 +188,16 @@ class Real(MathValue):
     def __rsub__(self, other: Any) -> MathValue:
         """Right subtraction."""
         if isinstance(other, (int, float)):
-            return Real(other - self.value)
+            return Real(other - self.value, self.context)
         else:
             return NotImplemented
 
     def __mul__(self, other: Any) -> MathValue:
         """Multiplication."""
         if isinstance(other, (int, float)):
-            return Real(self.value * other)
+            return Real(self.value * other, self.context)
         elif isinstance(other, Real):
-            return Real(self.value * other.value)
+            return Real(self.value * other.value, self.context)
         elif isinstance(other, MathValue):
             self_promoted, other_promoted = self.promote_types(other)
             if self_promoted is not self:
@@ -144,12 +215,12 @@ class Real(MathValue):
         if isinstance(other, (int, float)):
             if other == 0:
                 # Division by zero -> infinity
-                return Infinity(1 if self.value > 0 else -1 if self.value < 0 else 0)
-            return Real(self.value / other)
+                return Infinity(1 if self.value > 0 else -1 if self.value < 0 else 0, self.context)
+            return Real(self.value / other, self.context)
         elif isinstance(other, Real):
             if other.value == 0:
-                return Infinity(1 if self.value > 0 else -1 if self.value < 0 else 0)
-            return Real(self.value / other.value)
+                return Infinity(1 if self.value > 0 else -1 if self.value < 0 else 0, self.context)
+            return Real(self.value / other.value, self.context)
         elif isinstance(other, MathValue):
             self_promoted, other_promoted = self.promote_types(other)
             if self_promoted is not self:
@@ -162,8 +233,8 @@ class Real(MathValue):
         """Right division."""
         if isinstance(other, (int, float)):
             if self.value == 0:
-                return Infinity(1 if other > 0 else -1 if other < 0 else 0)
-            return Real(other / self.value)
+                return Infinity(1 if other > 0 else -1 if other < 0 else 0, self.context)
+            return Real(other / self.value, self.context)
         else:
             return NotImplemented
 
@@ -173,13 +244,13 @@ class Real(MathValue):
             result = self.value**other
             # Check if result is complex (e.g., (-1)^0.5)
             if isinstance(result, complex):
-                return Complex(result.real, result.imag)
-            return Real(result)
+                return Complex(result.real, result.imag, self.context)
+            return Real(result, self.context)
         elif isinstance(other, Real):
             result = self.value ** other.value
             if isinstance(result, complex):
-                return Complex(result.real, result.imag)
-            return Real(result)
+                return Complex(result.real, result.imag, self.context)
+            return Real(result, self.context)
         elif isinstance(other, MathValue):
             self_promoted, other_promoted = self.promote_types(other)
             if self_promoted is not self:
@@ -193,22 +264,22 @@ class Real(MathValue):
         if isinstance(other, (int, float)):
             result = other**self.value
             if isinstance(result, complex):
-                return Complex(result.real, result.imag)
-            return Real(result)
+                return Complex(result.real, result.imag, self.context)
+            return Real(result, self.context)
         else:
             return NotImplemented
 
     def __neg__(self) -> Real:
         """Unary negation."""
-        return Real(-self.value)
+        return Real(-self.value, self.context)
 
     def __pos__(self) -> Real:
         """Unary positive."""
-        return Real(self.value)
+        return Real(self.value, self.context)
 
     def __abs__(self) -> Real:
         """Absolute value."""
-        return Real(abs(self.value))
+        return Real(abs(self.value), self.context)
 
     # Comparison operators (with tolerance)
 
@@ -238,6 +309,19 @@ class Real(MathValue):
         """Greater than or equal."""
         return self.__eq__(other) or self.__gt__(other)
 
+    def answer_checker(self, **options):
+        """
+        Create an answer checker for this Real number.
+        
+        Args:
+            **options: Checker options (tolerance, tolType)
+        
+        Returns:
+            RealAnswerChecker that can check student answers
+        """
+        from .answer_checker import RealAnswerChecker
+        return RealAnswerChecker(self, **options)
+
 
 class Complex(MathValue):
     """
@@ -250,16 +334,22 @@ class Complex(MathValue):
 
     type_precedence = TypePrecedence.COMPLEX
 
-    def __init__(self, real: float | int, imag: float | int = 0.0):
+    def __init__(self, real: float | int, imag: float | int = 0.0, context=None):
         """
         Initialize a Complex number.
 
         Args:
             real: Real part
             imag: Imaginary part (default 0)
+            context: The Context (None = use current default)
         """
         self.real = float(real)
         self.imag = float(imag)
+        if context is not None:
+            self.context = context
+        else:
+            from .context import get_current_context
+            self.context = get_current_context()
 
     def promote(self, other: MathValue) -> MathValue:
         """Complex is high in hierarchy, doesn't promote to much."""
@@ -272,7 +362,7 @@ class Complex(MathValue):
         """Fuzzy comparison of complex numbers."""
         if isinstance(other, Real):
             # Promote Real to Complex
-            other = Complex(other.value, 0.0)
+            other = Complex(other.value, 0.0, self.context)
 
         if not isinstance(other, Complex):
             return False
@@ -314,11 +404,11 @@ class Complex(MathValue):
     def __add__(self, other: Any) -> MathValue:
         """Addition."""
         if isinstance(other, (int, float)):
-            return Complex(self.real + other, self.imag)
+            return Complex(self.real + other, self.imag, self.context)
         elif isinstance(other, Real):
-            return Complex(self.real + other.value, self.imag)
+            return Complex(self.real + other.value, self.imag, self.context)
         elif isinstance(other, Complex):
-            return Complex(self.real + other.real, self.imag + other.imag)
+            return Complex(self.real + other.real, self.imag + other.imag, self.context)
         else:
             return NotImplemented
 
@@ -329,34 +419,34 @@ class Complex(MathValue):
     def __sub__(self, other: Any) -> MathValue:
         """Subtraction."""
         if isinstance(other, (int, float)):
-            return Complex(self.real - other, self.imag)
+            return Complex(self.real - other, self.imag, self.context)
         elif isinstance(other, Real):
-            return Complex(self.real - other.value, self.imag)
+            return Complex(self.real - other.value, self.imag, self.context)
         elif isinstance(other, Complex):
-            return Complex(self.real - other.real, self.imag - other.imag)
+            return Complex(self.real - other.real, self.imag - other.imag, self.context)
         else:
             return NotImplemented
 
     def __rsub__(self, other: Any) -> MathValue:
         """Right subtraction."""
         if isinstance(other, (int, float)):
-            return Complex(other - self.real, -self.imag)
+            return Complex(other - self.real, -self.imag, self.context)
         elif isinstance(other, Real):
-            return Complex(other.value - self.real, -self.imag)
+            return Complex(other.value - self.real, -self.imag, self.context)
         else:
             return NotImplemented
 
     def __mul__(self, other: Any) -> MathValue:
         """Multiplication."""
         if isinstance(other, (int, float)):
-            return Complex(self.real * other, self.imag * other)
+            return Complex(self.real * other, self.imag * other, self.context)
         elif isinstance(other, Real):
-            return Complex(self.real * other.value, self.imag * other.value)
+            return Complex(self.real * other.value, self.imag * other.value, self.context)
         elif isinstance(other, Complex):
             # (a + bi)(c + di) = (ac - bd) + (ad + bc)i
             real_part = self.real * other.real - self.imag * other.imag
             imag_part = self.real * other.imag + self.imag * other.real
-            return Complex(real_part, imag_part)
+            return Complex(real_part, imag_part, self.context)
         else:
             return NotImplemented
 
@@ -370,11 +460,11 @@ class Complex(MathValue):
             if other == 0:
                 # Division by zero
                 raise ZeroDivisionError("Complex division by zero")
-            return Complex(self.real / other, self.imag / other)
+            return Complex(self.real / other, self.imag / other, self.context)
         elif isinstance(other, Real):
             if other.value == 0:
                 raise ZeroDivisionError("Complex division by zero")
-            return Complex(self.real / other.value, self.imag / other.value)
+            return Complex(self.real / other.value, self.imag / other.value, self.context)
         elif isinstance(other, Complex):
             # (a + bi) / (c + di) = [(a + bi)(c - di)] / (c^2 + d^2)
             denom = other.real**2 + other.imag**2
@@ -384,16 +474,16 @@ class Complex(MathValue):
                          self.imag * other.imag) / denom
             imag_part = (self.imag * other.real -
                          self.real * other.imag) / denom
-            return Complex(real_part, imag_part)
+            return Complex(real_part, imag_part, self.context)
         else:
             return NotImplemented
 
     def __rtruediv__(self, other: Any) -> MathValue:
         """Right division."""
         if isinstance(other, (int, float)):
-            return Complex(other, 0.0) / self
+            return Complex(other, 0.0, self.context) / self
         elif isinstance(other, Real):
-            return Complex(other.value, 0.0) / self
+            return Complex(other.value, 0.0, self.context) / self
         else:
             return NotImplemented
 
@@ -401,14 +491,14 @@ class Complex(MathValue):
         """Exponentiation (using Python's complex power)."""
         if isinstance(other, (int, float)):
             result = complex(self.real, self.imag) ** other
-            return Complex(result.real, result.imag)
+            return Complex(result.real, result.imag, self.context)
         elif isinstance(other, Real):
             result = complex(self.real, self.imag) ** other.value
-            return Complex(result.real, result.imag)
+            return Complex(result.real, result.imag, self.context)
         elif isinstance(other, Complex):
             result = complex(
                 self.real, self.imag) ** complex(other.real, other.imag)
-            return Complex(result.real, result.imag)
+            return Complex(result.real, result.imag, self.context)
         else:
             return NotImplemented
 
@@ -416,24 +506,24 @@ class Complex(MathValue):
         """Right exponentiation."""
         if isinstance(other, (int, float)):
             result = other ** complex(self.real, self.imag)
-            return Complex(result.real, result.imag)
+            return Complex(result.real, result.imag, self.context)
         elif isinstance(other, Real):
             result = other.value ** complex(self.real, self.imag)
-            return Complex(result.real, result.imag)
+            return Complex(result.real, result.imag, self.context)
         else:
             return NotImplemented
 
     def __neg__(self) -> Complex:
         """Unary negation."""
-        return Complex(-self.real, -self.imag)
+        return Complex(-self.real, -self.imag, self.context)
 
     def __pos__(self) -> Complex:
         """Unary positive."""
-        return Complex(self.real, self.imag)
+        return Complex(self.real, self.imag, self.context)
 
     def __abs__(self) -> Real:
         """Absolute value (magnitude)."""
-        return Real(math.sqrt(self.real**2 + self.imag**2))
+        return Real(math.sqrt(self.real**2 + self.imag**2), self.context)
 
 
 class Infinity(MathValue):
@@ -447,12 +537,13 @@ class Infinity(MathValue):
 
     type_precedence = TypePrecedence.INFINITY
 
-    def __init__(self, sign: int = 1):
+    def __init__(self, sign: int = 1, context=None):
         """
         Initialize Infinity.
 
         Args:
             sign: 1 for +inf, -1 for -inf, 0 for undefined
+            context: The Context (None = use current default)
         """
         if sign > 0:
             self.sign = 1
@@ -460,6 +551,12 @@ class Infinity(MathValue):
             self.sign = -1
         else:
             self.sign = 0
+        
+        if context is not None:
+            self.context = context
+        else:
+            from .context import get_current_context
+            self.context = get_current_context()
 
     def promote(self, other: MathValue) -> MathValue:
         """Infinity doesn't promote."""
@@ -511,7 +608,7 @@ class Infinity(MathValue):
                 return self
             else:
                 # inf + (-inf) = undefined
-                return Infinity(0)
+                return Infinity(0, self.context)
         else:
             return NotImplemented
 
@@ -528,7 +625,7 @@ class Infinity(MathValue):
                 return self
             else:
                 # inf - inf = undefined
-                return Infinity(0)
+                return Infinity(0, self.context)
         else:
             return NotImplemented
 
@@ -540,14 +637,14 @@ class Infinity(MathValue):
         """Multiplication."""
         if isinstance(other, (int, float)):
             if other == 0:
-                return Infinity(0)  # 0 * inf = undefined
-            return Infinity(self.sign * (1 if other > 0 else -1))
+                return Infinity(0, self.context)  # 0 * inf = undefined
+            return Infinity(self.sign * (1 if other > 0 else -1), self.context)
         elif isinstance(other, Real):
             if other.value == 0:
-                return Infinity(0)
-            return Infinity(self.sign * (1 if other.value > 0 else -1))
+                return Infinity(0, self.context)
+            return Infinity(self.sign * (1 if other.value > 0 else -1), self.context)
         elif isinstance(other, Infinity):
-            return Infinity(self.sign * other.sign)
+            return Infinity(self.sign * other.sign, self.context)
         else:
             return NotImplemented
 
@@ -560,14 +657,14 @@ class Infinity(MathValue):
         if isinstance(other, (int, float, Real)):
             return self
         elif isinstance(other, Infinity):
-            return Infinity(0)  # inf / inf = undefined
+            return Infinity(0, self.context)  # inf / inf = undefined
         else:
             return NotImplemented
 
     def __rtruediv__(self, other: Any) -> MathValue:
         """Right division."""
         # n / inf = 0
-        return Real(0.0)
+        return Real(0.0, self.context)
 
     def __pow__(self, other: Any) -> MathValue:
         """Exponentiation."""
@@ -581,9 +678,9 @@ class Infinity(MathValue):
             if exp > 0:
                 return self
             elif exp < 0:
-                return Real(0.0)
+                return Real(0.0, self.context)
             else:
-                return Infinity(0)  # undefined
+                return Infinity(0, self.context)  # undefined
         else:
             return NotImplemented
 
@@ -595,15 +692,15 @@ class Infinity(MathValue):
             if abs(base) > 1:
                 return self
             elif abs(base) < 1:
-                return Real(0.0)
+                return Real(0.0, self.context)
             else:
-                return Infinity(0)  # undefined
+                return Infinity(0, self.context)  # undefined
         else:
             return NotImplemented
 
     def __neg__(self) -> Infinity:
         """Unary negation."""
-        return Infinity(-self.sign)
+        return Infinity(-self.sign, self.context)
 
     def __pos__(self) -> Infinity:
         """Unary positive."""
@@ -613,7 +710,7 @@ class Infinity(MathValue):
         """Absolute value."""
         if self.sign == 0:
             return self
-        return Infinity(1)
+        return Infinity(1, self.context)
 
 
 # Helper function for fuzzy comparison

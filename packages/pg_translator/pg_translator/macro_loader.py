@@ -61,11 +61,15 @@ class MacroLoader:
             self.search_paths.append(macros_dir)
             self.search_paths.append(macros_dir / "core")
 
-        # Python macro directory
-        pg_macros_dir = repo_root / "packages" / "pg_macros"
-        if pg_macros_dir.exists():
-            self.search_paths.append(pg_macros_dir)
-            self.search_paths.append(pg_macros_dir / "core")
+        # Python macro directory (nested structure: packages/pg_macros/pg_macros)
+        pg_macros_pkg = repo_root / "packages" / "pg_macros" / "pg_macros"
+        if pg_macros_pkg.exists():
+            self.search_paths.append(pg_macros_pkg)
+            self.search_paths.append(pg_macros_pkg / "core")
+            self.search_paths.append(pg_macros_pkg / "answers")
+            self.search_paths.append(pg_macros_pkg / "choice")
+            self.search_paths.append(pg_macros_pkg / "parsers")
+            self.search_paths.append(pg_macros_pkg / "ui")
 
     def find_macro(self, macro_name: str) -> Path | None:
         """

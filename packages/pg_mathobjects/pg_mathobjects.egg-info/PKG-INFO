@@ -1,0 +1,15 @@
+Metadata-Version: 2.4
+Name: pg_mathobjects
+Version: 0.1.0
+Summary: MathObjects implementation for PG problems
+Author: WeBWorK Project
+Requires-Python: >=3.8
+Requires-Dist: sympy>=1.12
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0.0; extra == "dev"
+Requires-Dist: pytest-cov>=4.0.0; extra == "dev"
+Dynamic: author
+Dynamic: provides-extra
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary

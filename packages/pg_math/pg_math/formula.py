@@ -118,6 +118,30 @@ class Formula(MathValue):
                 self._sympy_expr = None
         else:
             self._sympy_expr = expression if SYMPY_AVAILABLE and isinstance(expression, sp.Expr) else None
+        
+        # Validate polynomial form if context requires it
+        if self.context is not None and hasattr(self.context, 'flags'):
+            self._validate_polynomial()
+
+    def _validate_polynomial(self):
+        """Validate polynomial form if required by context."""
+        # Check for LimitedPolynomial validation
+        if self.context.flags.get('limitedPolynomial'):
+            # Import here to avoid circular dependency
+            from .limited_polynomial import validate_polynomial_formula
+            
+            is_valid, error = validate_polynomial_formula(self)
+            if not is_valid:
+                raise ValueError(error)
+        
+        # Check for PolynomialFactors validation
+        if self.context.flags.get('polynomialFactors'):
+            # Import here to avoid circular dependency
+            from .polynomial_factors import validate_factored_polynomial
+            
+            is_valid, error = validate_factored_polynomial(self)
+            if not is_valid:
+                raise ValueError(error)
 
     def eval(self, **bindings: float | MathValue) -> MathValue:
         """
@@ -205,29 +229,52 @@ class Formula(MathValue):
             # No simplification without SymPy
             return self
 
-    def substitute(self, var: str, value: MathValue | float) -> Formula:
+    def substitute(self, **substitutions) -> 'Formula':
         """
-        Substitute a variable with a value.
+        Substitute expressions for variables.
 
         Args:
-            var: Variable name
-            value: Value to substitute
+            **substitutions: Variable substitutions (e.g., x='2*y', y='t+1')
 
         Returns:
-            New Formula with substitution
+            New Formula with substitutions applied
 
         Example:
-            >>> f = Formula("x^2 + y")
-            >>> f.substitute("x", 2)
-            Formula("4 + y")
+            >>> f = Formula("x^2 + y", ['x', 'y'])
+            >>> f.substitute(x='2*t', y='t+1')
+            Formula("4*t^2 + t + 1")
         """
         if self._sympy_expr is not None:
-            python_value = value.to_python() if isinstance(value, MathValue) else value
-            substituted = self._sympy_expr.subs(sp.Symbol(var), python_value)
+            subs_dict = {}
+            for var, expr in substitutions.items():
+                # Parse substitution expression
+                if isinstance(expr, str):
+                    # Parse using Compute() to handle string expressions
+                    from .compute import Compute
+                    sub_formula = Compute(expr, self.context)
+                    subs_dict[sp.Symbol(var)] = sub_formula._sympy_expr
+                elif isinstance(expr, Formula):
+                    subs_dict[sp.Symbol(var)] = expr._sympy_expr
+                elif isinstance(expr, (int, float)):
+                    subs_dict[sp.Symbol(var)] = expr
+                else:
+                    # Try to get python value
+                    from .math_value import MathValue
+                    if isinstance(expr, MathValue):
+                        python_value = expr.to_python()
+                        subs_dict[sp.Symbol(var)] = python_value
+                    else:
+                        subs_dict[sp.Symbol(var)] = expr
 
-            # Update variable list
-            new_vars = [v for v in self.variables if v != var]
+            substituted = self._sympy_expr.subs(subs_dict)
 
+            # Update variable list - remove substituted vars, add new vars
+            new_vars = [v for v in self.variables if v not in substitutions]
+            # Add variables from substituted expressions
+            for expr in substitutions.values():
+                if isinstance(expr, Formula):
+                    new_vars.extend(v for v in expr.variables if v not in new_vars)
+            
             return Formula(substituted, new_vars, self.context)
         else:
             # Fallback: can't substitute without SymPy
@@ -256,6 +303,17 @@ class Formula(MathValue):
             return Formula(derivative, self.variables, self.context)
         else:
             raise RuntimeError("Cannot differentiate: expression not parsed")
+
+    def D(self, var: str) -> 'Formula':
+        """Alias for diff() for Perl API compatibility.
+        
+        Args:
+            var: Variable to differentiate with respect to
+            
+        Returns:
+            Derivative as Formula
+        """
+        return self.diff(var)
 
     def integrate(self, var: str) -> Formula:
         """
@@ -742,46 +800,24 @@ class Formula(MathValue):
         Returns an answer evaluator configured for this formula.
         
         Args:
-            **options: Options to pass to FormulaEvaluator:
-                - tolerance: Comparison tolerance (default: 0.001)
-                - tol_type: Tolerance mode ('relative', 'absolute', 'sigfigs')
+            **options: Options to pass to FormulaAnswerChecker:
+                - tolerance: Comparison tolerance (default: 0.01)
                 - num_points: Number of test points (default: 5)
-                - test_at: Specific points to test at
-                - limits: Variable limits {var: (min, max)}
-                - check_undefined: Check undefined points (default: False)
         
         Returns:
-            FormulaEvaluator configured for this formula
+            FormulaAnswerChecker configured for this formula
             
         Example:
             >>> f = Formula("x^2", variables=["x"])
-            >>> evaluator = f.cmp()
-            >>> result = evaluator.evaluate("x*x")
-            >>> result.correct  # True
+            >>> checker = f.cmp()
+            >>> result = checker.check("x*x")
+            >>> result['correct']  # True
             
         Reference: lib/Value/Formula.pm::cmp (lines 430-470)
         """
-        from pg_answer.evaluators.formula import FormulaEvaluator
+        from .answer_checker import FormulaAnswerChecker
         
-        # Extract Formula-specific options
-        num_points = options.pop('num_points', self._num_test_points)
-        test_at = options.pop('test_at', None)
-        limits = options.pop('limits', self._limits)
-        check_undefined = options.pop('check_undefined', self.check_undefined_points)
-        
-        # Create configured evaluator
-        evaluator = FormulaEvaluator(
-            correct_answer=self,
-            variables=self.variables,
-            context=self.context,
-            num_test_points=num_points,
-            test_points=test_at,
-            limits=limits,
-            check_undefined_points=check_undefined,
-            **options
-        )
-        
-        return evaluator
+        return FormulaAnswerChecker(self, **options)
     
     def adapt_parameters(self, student_formula, *param_names):
         """Adaptive parameter finding (advanced)."""

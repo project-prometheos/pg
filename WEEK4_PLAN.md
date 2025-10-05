@@ -125,7 +125,7 @@ checker.check("43")  # incorrect
 
 class Context:
     """Context controls parser behavior and available operations."""
-    
+
     def __init__(self, name='Numeric'):
         self.name = name
         self.variables = VariableManager()
@@ -133,7 +133,7 @@ class Context:
         self.functions = FunctionManager()
         self.operators = OperatorManager()
         self.flags = ContextFlags()
-    
+
     def copy(self, name=None):
         """Create a copy of this context."""
         pass
@@ -160,17 +160,17 @@ def Context(name=None):
 
 class Real(Value):
     """Real number MathObject."""
-    
+
     def __init__(self, value, context=None):
         super().__init__(context)
         self.value = float(value)
-    
+
     def __add__(self, other):
         return Real(self.value + other.value)
-    
+
     def __eq__(self, other):
         return abs(self.value - other.value) < self.context.tolerance
-    
+
     def cmp(self, **options):
         """Return answer checker."""
         return RealAnswerChecker(self, **options)
@@ -183,26 +183,26 @@ class Real(Value):
 
 class Formula(Value):
     """Symbolic formula MathObject."""
-    
+
     def __init__(self, expression, context=None):
         super().__init__(context)
         self.expression = expression
         self.tree = self.context.parser.parse(expression)
-    
+
     def eval(self, **vars):
         """Evaluate formula with given variables."""
         return self.tree.eval(vars, self.context)
-    
+
     def substitute(self, **vars):
         """Substitute variables, return new Formula."""
         new_tree = self.tree.substitute(vars)
         return Formula(new_tree.to_string(), self.context)
-    
+
     def reduce(self):
         """Simplify formula."""
         simplified = self.tree.reduce(self.context)
         return Formula(simplified.to_string(), self.context)
-    
+
     def cmp(self, **options):
         """Return answer checker."""
         return FormulaAnswerChecker(self, **options)
@@ -216,21 +216,21 @@ class Formula(Value):
 def Compute(expression, context=None):
     """
     Parse and evaluate expression.
-    
+
     Returns Real for constant expressions,
     Formula for symbolic expressions.
     """
     if context is None:
         context = Context()
-    
+
     # Parse expression
     tree = context.parser.parse(expression)
-    
+
     # Try to evaluate as constant
     if tree.is_constant():
         result = tree.eval({}, context)
         return Real(result, context)
-    
+
     # Return as Formula
     return Formula(expression, context)
 ```
@@ -243,9 +243,9 @@ def Compute(expression, context=None):
 def _load_pg_core():
     """Load PG core functions including MathObjects."""
     from pg_mathobjects import Context, Real, Formula, Compute
-    
+
     # ... existing code ...
-    
+
     pg_core = type('PGCore', (), {
         # ... existing functions ...
         'Context': Context,
@@ -253,7 +253,7 @@ def _load_pg_core():
         'Formula': Formula,
         'Compute': Compute,
     })()
-    
+
     return pg_core
 ```
 
@@ -438,6 +438,6 @@ After Week 4 completion:
 
 ---
 
-**Status**: 📋 **PLANNING COMPLETE - READY TO START**  
-**Date**: 2025-01-08  
+**Status**: 📋 **PLANNING COMPLETE - READY TO START**
+**Date**: 2025-01-08
 **Prerequisites**: Week 3 complete (PGML 45/45 tests passing)

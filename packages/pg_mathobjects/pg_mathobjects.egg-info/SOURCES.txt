@@ -1,0 +1,16 @@
+setup.py
+pg_mathobjects/__init__.py
+pg_mathobjects/answer_checker.py
+pg_mathobjects/compute.py
+pg_mathobjects/context.py
+pg_mathobjects/formula.py
+pg_mathobjects/real.py
+pg_mathobjects/value.py
+pg_mathobjects.egg-info/PKG-INFO
+pg_mathobjects.egg-info/SOURCES.txt
+pg_mathobjects.egg-info/dependency_links.txt
+pg_mathobjects.egg-info/requires.txt
+pg_mathobjects.egg-info/top_level.txt
+tests/__init__.py
+tests/test_context.py
+tests/test_real_and_compute.py
