@@ -5,6 +5,7 @@
 import sys
 import re
 
+
 def clean_latex(latex_str):
     """Clean up LaTeX for terminal display with mathematical notation."""
     # Remove \! (thin space) and \displaystyle
@@ -94,12 +95,14 @@ def clean_latex(latex_str):
     latex_str = re.sub(r'\s+', ' ', latex_str).strip()
     return latex_str
 
+
 def format_math(text):
     """Convert LaTeX math delimiters for terminal display."""
     # Inline math: \(...\) - use proper escaping
     text = re.sub(r'\\\((.+?)\\\)',
                   lambda m: f'[ {clean_latex(m.group(1))} ]', text)
     return text
+
 
 # Test cases
 test_inputs = [

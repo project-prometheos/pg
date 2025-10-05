@@ -1,5 +1,5 @@
 DOCUMENT(); loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl"); TEXT(beginproblem());
-Context("Numeric");
+Context("Numeric"); Context()->flags->set(reduceConstants=>0);
 $A = Compute("pi/6"); $B = Compute("11pi/6");
 BEGIN_PGML
 **Problem 3.** Bestäm alla lösningar till \(\cos(x)=\sqrt3/2\) i \([0,2\pi[\). Växande ordning:

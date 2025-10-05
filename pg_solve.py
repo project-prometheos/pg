@@ -406,7 +406,7 @@ Examples:
                 print("-"*70)
                 print("  SOLUTION")
                 print("-"*70 + "\n")
-                
+
                 # Show correct answers
                 if result.answer_blanks:
                     print("Correct answer(s):")
@@ -414,7 +414,7 @@ Examples:
                         label = f"Answer {i}"
                         if len(result.answer_blanks) > 1:
                             label += f" ({blank_name})"
-                        
+
                         # Extract correct answer from evaluator
                         # The structure is: blank_info = {"evaluator": {"ans_eval": <MathValue>}}
                         evaluator = blank_info.get("evaluator")
@@ -428,19 +428,20 @@ Examples:
                                     correct_ans = ans_eval.value
                                 else:
                                     correct_ans = str(ans_eval)
-                                
+
                                 # Format LaTeX math to readable ASCII (same as problem text)
                                 correct_ans_str = str(correct_ans)
                                 # Wrap in inline math delimiters for format_math to process
-                                formatted = format_math(f"\\({correct_ans_str}\\)")
+                                formatted = format_math(
+                                    f"\\({correct_ans_str}\\)")
                                 # Remove the [ ] brackets that format_math adds for inline math
                                 formatted = formatted.strip()
                                 if formatted.startswith('[') and formatted.endswith(']'):
                                     formatted = formatted[1:-1].strip()
-                                
+
                                 print(f"  {label}: {formatted}")
                     print()
-                
+
                 # Show solution text if available
                 if result.solution_html:
                     solution = strip_html(result.solution_html)
@@ -464,7 +465,7 @@ Examples:
             print("="*70)
             print("  SOLUTION")
             print("="*70 + "\n")
-            
+
             # Show correct answers
             if result.answer_blanks:
                 print("Correct answer(s):")
@@ -472,7 +473,7 @@ Examples:
                     label = f"Answer {i}"
                     if len(result.answer_blanks) > 1:
                         label += f" ({blank_name})"
-                    
+
                     # Extract correct answer from evaluator
                     # The structure is: blank_info = {"evaluator": {"ans_eval": <MathValue>}}
                     evaluator = blank_info.get("evaluator")
@@ -486,7 +487,7 @@ Examples:
                                 correct_ans = ans_eval.value
                             else:
                                 correct_ans = str(ans_eval)
-                            
+
                             # Format LaTeX math to readable ASCII (same as problem text)
                             correct_ans_str = str(correct_ans)
                             # Wrap in inline math delimiters for format_math to process
@@ -495,10 +496,10 @@ Examples:
                             formatted = formatted.strip()
                             if formatted.startswith('[') and formatted.endswith(']'):
                                 formatted = formatted[1:-1].strip()
-                            
+
                             print(f"  {label}: {formatted}")
                 print()
-            
+
             # Show solution text if available
             if result.solution_html:
                 solution = strip_html(result.solution_html)
