@@ -226,7 +226,8 @@ class PGTranslator:
                                 correct=check_result.get('correct', False),
                                 student_answer=student_answer,
                                 answer_message=check_result.get('message', ''),
-                                correct_answer=check_result.get('correct_answer', str(evaluator)),
+                                correct_answer=check_result.get(
+                                    'correct_answer', str(evaluator)),
                             )
                             answer_results[name] = result
                             scores.append(result.score)
@@ -405,8 +406,10 @@ class PGTranslator:
                                     score=check_result.get('score', 0.0),
                                     correct=check_result.get('correct', False),
                                     student_answer=student_answer,
-                                    answer_message=check_result.get('message', ''),
-                                    correct_answer=check_result.get('correct_answer', str(evaluator)) if hasattr(evaluator, '__str__') else '',
+                                    answer_message=check_result.get(
+                                        'message', ''),
+                                    correct_answer=check_result.get('correct_answer', str(
+                                        evaluator)) if hasattr(evaluator, '__str__') else '',
                                 )
                                 answer_results[name] = result
                                 scores.append(result.score)

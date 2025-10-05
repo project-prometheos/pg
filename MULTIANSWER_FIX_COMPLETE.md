@@ -34,7 +34,7 @@
 - When multiple blanks share same evaluator, pass all student answers together
 - Implemented default checker that uses `.cmp().check()` on each Formula
 
-**Files**: 
+**Files**:
 - `packages/pg_translator/pg_translator/in_process_sandbox.py` lines 716-770
 - `packages/pg_translator/pg_translator/translator.py` lines 305-385
 
@@ -69,13 +69,13 @@ Wrong answer: x^2
 def convert_string_interpolation(match):
     quote_char = match.group(1)  # " or '
     content = match.group(2)
-    
+
     # Only convert double-quoted strings (Perl interpolates these)
     if quote_char == '"' and '$' in content:
         # Convert $var to {var}
         new_content = re.sub(r'\$([a-zA-Z_][a-zA-Z0-9_]*)', r'{\1}', content)
         return f'f"{new_content}"'
-    
+
     return match.group(0)
 ```
 
@@ -103,22 +103,22 @@ def check(self, *student_answers):
     if checker_func:
         results = checker_func(self.answers, student_answers, self)
         return {'results': results, ...}
-    
+
     # Default: check each answer individually using .cmp().check()
     results = []
     for correct, student in zip(self.answers, student_answers):
         checker = correct.cmp()
         result = checker.check(student)
         results.append(result['score'])
-    
+
     return {'results': results, ...}
 ```
 
 ## Impact
 
-✅ **Variable Interpolation**: All PGML `[$var]` syntax now displays correct values  
-✅ **String Interpolation**: Formula and other constructors get correct numeric values  
-✅ **MultiAnswer**: Problems with multiple related answer blanks now work correctly  
+✅ **Variable Interpolation**: All PGML `[$var]` syntax now displays correct values
+✅ **String Interpolation**: Formula and other constructors get correct numeric values
+✅ **MultiAnswer**: Problems with multiple related answer blanks now work correctly
 ✅ **Backward Compatibility**: Single-answer problems continue to work as before
 
 ## Known Limitations

@@ -31,6 +31,13 @@ class PGMLRenderer:
         # Must start with a letter (not underscore) to avoid matching [_] answer blanks
         html = re.sub(r'\[\$?([a-zA-Z]\w*)\]', self._interpolate_var, html)
 
+        # 1.5. Convert LaTeX-style math delimiters to Markdown/KaTeX format
+        # Some PGML content uses \(...\) and \[...\] instead of [` ... `]
+        # Convert inline math \(...\) to $...$
+        html = re.sub(r'\\\((.*?)\\\)', r'$\1$', html, flags=re.DOTALL)
+        # Convert display math \[...\] to $$...$$
+        html = re.sub(r'\\\[(.*?)\\\]', r'$$\1$$', html, flags=re.DOTALL)
+
         # 2. Remove PGML table constructs (simplify for MVP)
         # These are advanced layout features: [# ... #] and [. ... .]
         html = self._simplify_tables(html)

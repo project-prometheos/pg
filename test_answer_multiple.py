@@ -4,7 +4,8 @@ from packages.pg_translator.pg_translator.in_process_sandbox import InProcessSan
 from packages.pg_translator.pg_translator.preprocessor import PGPreprocessor
 from pathlib import Path
 
-pg_src = Path('tutorial/sample-problems/Algebra/AnswerUpToMultiple.pg').read_text()
+pg_src = Path(
+    'tutorial/sample-problems/Algebra/AnswerUpToMultiple.pg').read_text()
 
 # Preprocess
 preprocessor = PGPreprocessor()
