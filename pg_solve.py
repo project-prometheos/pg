@@ -114,7 +114,7 @@ def format_math(text):
         latex_str = latex_str.replace(r'\right]', ']')
         latex_str = latex_str.replace(r'\left\{', '{')
         latex_str = latex_str.replace(r'\right\}', '}')
-        
+
         # Convert LaTeX bracket commands
         latex_str = latex_str.replace(r'\lbrack', '[')
         latex_str = latex_str.replace(r'\rbrack', ']')

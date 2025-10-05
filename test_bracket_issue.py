@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 """Test to find the missing bracket."""
 
+import re
 from pg_translator import PGTranslator
 import sys
 sys.path.insert(0, '.')
@@ -17,7 +18,7 @@ print(result.statement_html)
 print()
 
 # Now process it through our functions
-import re
+
 
 def strip_html(html_text):
     """Remove HTML tags for terminal display."""
@@ -26,7 +27,7 @@ def strip_html(html_text):
     html_text = html_text.replace('\\\\)', '\\)')
     html_text = html_text.replace('\\\\[', '\\[')
     html_text = html_text.replace('\\\\]', '\\]')
-    
+
     print("After unescape:")
     print(repr(html_text))
     print()
@@ -36,11 +37,11 @@ def strip_html(html_text):
 
     # Remove HTML tags
     text = re.sub(r'<[^>]+>', '', html_text)
-    
+
     print("After HTML removal:")
     print(repr(text))
     print()
-    
+
     # Decode common HTML entities
     text = text.replace('&lt;', '<')
     text = text.replace('&gt;', '>')
@@ -49,6 +50,7 @@ def strip_html(html_text):
     # Clean up multiple spaces and newlines
     text = re.sub(r'\n\s*\n', '\n\n', text)
     return text.strip()
+
 
 text = strip_html(result.statement_html)
 print("="*70)
