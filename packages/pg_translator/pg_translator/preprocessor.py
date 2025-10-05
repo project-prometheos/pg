@@ -202,33 +202,35 @@ class PGPreprocessor:
             do_until_match = re.match(r'^\s*do\s*\{', original_line)
             if do_until_match:
                 # Check if this is a single-line do-until
-                single_line_until = re.search(r'\}\s*until\s*\(([^)]+)\)', original_line)
-                
+                single_line_until = re.search(
+                    r'\}\s*until\s*\(([^)]+)\)', original_line)
+
                 if single_line_until:
                     # Single-line do-until: do { body } until (condition)
                     condition = single_line_until.group(1)
-                    
+
                     # Transform condition
                     condition = self._transform_line(condition)
-                    
+
                     # Extract body between { and }
                     body_match = re.search(r'do\s*\{([^}]+)\}', original_line)
                     if body_match:
                         body = body_match.group(1).strip()
                         transformed_body = self._transform_line(body)
-                        
+
                         # Generate Python while loop
                         output_lines.append(f'while True:')
                         output_lines.append(f'    {transformed_body}')
                         output_lines.append(f'    if not ({condition}):')
                         output_lines.append(f'        break')
-                        
+
                         i += 1
                         continue
-                
+
                 # Multi-line do-until: collect the block
                 block_lines = [original_line]
-                brace_depth = original_line.count('{') - original_line.count('}')
+                brace_depth = original_line.count(
+                    '{') - original_line.count('}')
                 i += 1
 
                 # Collect lines until we find the matching }
@@ -406,11 +408,48 @@ class PGPreprocessor:
         # Match: 'str' . 'str' or var . 'str' or 'str' . var
         line = re.sub(r'(\)|\'|\"|\w)\s+\.\s+(\(|\'|\"|\w)', r'\1 + \2', line)
 
-        # Transform Perl fat comma (hash key-value): key => value → key = value
-        # BUT: avoid converting when it's part of array/list syntax like ] => [
-        # Only convert when it's clearly a named parameter: word => value
+        # Transform Perl fat comma (hash key-value): key => value
+        # Context-aware conversion:
+        # - Inside { ... }: key => value → key: value (Python dict)
+        # - In function args: key => value → key = value (named parameter)
+        # Avoid array refs: ] => [
+        
         if '] =>' not in line and '} =>' not in line:
-            line = re.sub(r'\b(\w+)\s*=>\s*', r'\1 = ', line)
+            # Strategy: Find all occurrences of => and determine context
+            # by checking if we're inside curly braces
+            result = []
+            i = 0
+            brace_depth = 0
+            paren_depth = 0
+            
+            while i < len(line):
+                ch = line[i]
+                
+                # Track brace/paren depth
+                if ch == '{':
+                    brace_depth += 1
+                elif ch == '}':
+                    brace_depth -= 1
+                elif ch == '(':
+                    paren_depth += 1
+                elif ch == ')':
+                    paren_depth -= 1
+                
+                # Check for =>
+                if i < len(line) - 1 and line[i:i+2] == '=>':
+                    # Decide what to replace with based on context
+                    if brace_depth > 0:
+                        # Inside braces: use colon for dict
+                        result.append(':')
+                    else:
+                        # Outside braces (function params): use equals
+                        result.append(' =')
+                    i += 2  # Skip both characters
+                else:
+                    result.append(ch)
+                    i += 1
+            
+            line = ''.join(result)
 
         # Remove trailing semicolons (optional in Python)
         line = re.sub(r';\s*$', '', line)
