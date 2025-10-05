@@ -163,7 +163,11 @@ class PGExecutor:
         Args:
             timeout: Maximum execution time in seconds
         """
-        self.sandbox = Sandbox(timeout=timeout)
+        # Use InProcessSandbox if available (better for macro integration)
+        if HAS_IN_PROCESS_SANDBOX:
+            self.sandbox = InProcessSandbox(timeout=timeout)
+        else:
+            self.sandbox = Sandbox(timeout=timeout)
 
     def execute(self, code: str, seed: int, context: Context | None = None) -> PGEnvironment:
         """

@@ -8,6 +8,9 @@ This tests the complete grading pipeline:
 3. Scores and feedback are generated
 """
 
+from pg_macros.answers.pg_answer_macros import num_cmp
+from pg_macros.core.pg_basic_macros import ans_rule
+from pg_macros.core.pg_core import DOCUMENT, TEXT, ANS, ENDDOCUMENT, get_environment
 import sys
 from pathlib import Path
 
@@ -16,9 +19,6 @@ repo_root = Path(__file__).parent
 for pkg in ["pg_macros", "pg_math", "pg_answer"]:
     sys.path.insert(0, str(repo_root / "packages" / pkg))
 
-from pg_macros.core.pg_core import DOCUMENT, TEXT, ANS, ENDDOCUMENT, get_environment
-from pg_macros.core.pg_basic_macros import ans_rule
-from pg_macros.answers.pg_answer_macros import num_cmp
 
 print("=" * 70)
 print("TEST: Answer Evaluation - Grading Student Submissions")
@@ -75,11 +75,11 @@ print("=" * 70)
 for student_answer, description in test_cases:
     print(f"\n{description}:")
     print(f"  Student answer: '{student_answer}'")
-    
+
     try:
         # Call the evaluator's evaluate method
         result = registered_eval.evaluate(student_answer)
-        
+
         # Display results (AnswerResult object)
         if hasattr(result, 'score'):
             status = "✅ CORRECT" if result.correct else "❌ INCORRECT"
@@ -93,7 +93,7 @@ for student_answer, description in test_cases:
             score = result.get('score', 0)
             correct = result.get('correct', False)
             message = result.get('message', '')
-            
+
             status = "✅ CORRECT" if correct else "❌ INCORRECT"
             print(f"  Status: {status}")
             print(f"  Score: {score}")
@@ -101,7 +101,7 @@ for student_answer, description in test_cases:
                 print(f"  Message: {message}")
         else:
             print(f"  Result: {result}")
-            
+
     except Exception as e:
         print(f"  ⚠️  Error: {type(e).__name__}: {e}")
 

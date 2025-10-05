@@ -446,6 +446,7 @@ class InProcessSandbox:
                 'NAMED_ANS_BOX': pg_basic_macros.NAMED_ANS_BOX,
                 'NAMED_ANS_RADIO_BUTTONS': pg_basic_macros.NAMED_ANS_RADIO_BUTTONS,
                 'NAMED_POP_UP_LIST': pg_basic_macros.NAMED_POP_UP_LIST,
+                'beginproblem': pg_basic_macros.beginproblem,
                 'PAR': pg_basic_macros.PAR,
                 'BR': pg_basic_macros.BR,
                 'BBOLD': pg_basic_macros.BBOLD,
@@ -480,6 +481,7 @@ class InProcessSandbox:
             name = env.new_ans_name()
             return f'<textarea name="{name}" rows="{rows}" cols="{cols}"></textarea>'
 
+        def beginproblem(): return ""
         def PAR(): return '<p>'
         def BR(): return '<br/>'
         def BBOLD(): return '<strong>'
@@ -500,6 +502,7 @@ class InProcessSandbox:
         self.namespace.update({
             'ans_rule': ans_rule,
             'ans_box': ans_box,
+            'beginproblem': beginproblem,
             'PAR': PAR,
             'BR': BR,
             'BBOLD': BBOLD,
@@ -667,12 +670,12 @@ class InProcessSandbox:
         # Try to get environment from pg_core global
         try:
             if hasattr(self, '_pg_core'):
-                from pg_macros.core import pg_core
-                pg_env = pg_core.get_environment() if pg_core._pg_environment else None
+                # Use the SAME pg_core instance that was loaded in namespace
+                pg_env = self._pg_core.get_environment() if self._pg_core._pg_environment else None
             else:
                 pg_env = self._pg_environment if hasattr(
                     self, '_pg_environment') else None
-        except:
+        except Exception as ex:
             pg_env = None
 
         if pg_env:

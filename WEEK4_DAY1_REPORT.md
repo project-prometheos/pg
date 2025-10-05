@@ -22,7 +22,7 @@ Successfully validated the macro system (pg_macros) works end-to-end for **direc
 
 ### Task 1: Test Macro Loading ✅
 **File**: Fixed `packages/pg_translator/pg_translator/macro_loader.py`
-- **Issue**: Search paths pointed to `packages/pg_macros/core` 
+- **Issue**: Search paths pointed to `packages/pg_macros/core`
 - **Fix**: Updated to `packages/pg_macros/pg_macros/core` (and answers, choice, parsers, ui)
 - **Result**: All macro files now loadable
 

@@ -56,12 +56,13 @@ class PGPreprocessor:
         "PGML_HINT": (r"BEGIN_PGML_HINT\s*$", r"^END_PGML_HINT"),
     }
 
-    def preprocess(self, pg_source: str) -> PreprocessResult:
+    def preprocess(self, pg_source: str, use_sandbox_macros: bool = True) -> PreprocessResult:
         """
         Preprocess PG source code.
 
         Args:
             pg_source: Raw PG file content
+            use_sandbox_macros: If True, skip generating imports (sandbox provides them)
 
         Returns:
             PreprocessResult with transformed code and metadata
@@ -71,6 +72,24 @@ class PGPreprocessor:
         text_blocks: list[tuple[str, str]] = []
         line_map: dict[int, int] = {}
 
+        # First pass: collect all loadMacros() calls to generate imports
+        import_lines: list[str] = []
+        loaded_macros_comment = None
+        
+        if not use_sandbox_macros:
+            # Generate imports only if not using sandbox macros
+            for line in lines:
+                if "loadMacros" in line:
+                    # Extract macro file names
+                    match = re.search(r'loadMacros\((.*?)\)', line, re.DOTALL)
+                    if match:
+                        imports, comment = self._transform_load_macros(match.group(1))
+                        import_lines.extend(imports)
+                        loaded_macros_comment = comment
+        
+        # Track if we've inserted imports yet
+        imports_inserted = False
+        
         i = 0
         while i < len(lines):
             original_line = lines[i]
@@ -78,6 +97,20 @@ class PGPreprocessor:
 
             # Track line mapping
             line_map[output_line_num] = i + 1
+            
+            # Check if this is DOCUMENT() - insert imports right after it (if needed)
+            if not imports_inserted and re.match(r'^\s*DOCUMENT\(\s*\)', original_line):
+                output_lines.append(original_line)
+                # Insert imports after DOCUMENT() only if not using sandbox
+                if import_lines:
+                    output_lines.append("")  # Blank line
+                    output_lines.extend(import_lines)
+                    if loaded_macros_comment:
+                        output_lines.append(loaded_macros_comment)
+                    output_lines.append("")  # Blank line
+                imports_inserted = True
+                i += 1
+                continue
 
             # Check for block markers
             block_found = False
@@ -147,13 +180,32 @@ class PGPreprocessor:
         Transform a single line of PG code.
 
         Handles:
+        - loadMacros() → skip (handled in first pass)
         - Perl variable syntax: $var → var
+        - Array syntax: @array → array
+        - Hash access: $hash{key} → hash['key']
         - Comment removal (# comments)
         - Semicolon removal (optional in Python)
         """
-        # Transform Perl variables: $var → var
-        # Use regex to handle variable names (letters, numbers, underscores)
         import re
+        
+        # Skip loadMacros() - already handled in first pass
+        if 'loadMacros' in line:
+            return ""
+        
+        # Handle DOCUMENT() and ENDDOCUMENT() - keep as-is
+        if re.match(r'^\s*(DOCUMENT|ENDDOCUMENT)\(\s*\)', line):
+            return line
+        
+        # Transform hash access: $hash{key} → hash['key']
+        # Match $var{...} and convert to var['...']
+        line = re.sub(r'\$([a-zA-Z_][a-zA-Z0-9_]*)\{([^}]+)\}', r"\1['\2']", line)
+        
+        # Transform Perl array variables: @array → array
+        line = re.sub(r'@([a-zA-Z_][a-zA-Z0-9_]*)', r'\1', line)
+        
+        # Transform Perl scalar variables: $var → var
+        # Use negative lookbehind to avoid matching in strings
         line = re.sub(r'\$([a-zA-Z_][a-zA-Z0-9_]*)', r'\1', line)
 
         # Remove trailing semicolons (optional in Python)
@@ -241,3 +293,50 @@ class PGPreprocessor:
         text = text.replace("'''", r"\'\'\'")
         text = text.replace('"""', r'\"\"\"')
         return text
+
+    def _transform_load_macros(self, macro_list_str: str) -> tuple[list[str], str]:
+        """
+        Transform loadMacros() call to Python imports.
+        
+        Args:
+            macro_list_str: The content inside loadMacros(...), e.g., '"PG.pl", "PGML.pl"'
+        
+        Returns:
+            Tuple of (import_lines, comment)
+        
+        Example:
+            Input: '"PGstandard.pl", "MathObjects.pl", "PGML.pl"'
+            Output: (['from pg_macros.core.pg_core import *', ...],
+                    '# loadMacros("PGstandard.pl", "MathObjects.pl", "PGML.pl") - loaded')
+        """
+        import re
+        
+        # Extract quoted strings
+        macros = re.findall(r'["\']([^"\']+)["\']', macro_list_str)
+        
+        # Mapping of .pl files to Python imports
+        macro_imports = {
+            "PG.pl": "from pg_macros.core.pg_core import DOCUMENT, TEXT, ANS, ENDDOCUMENT, SOLUTION, HINT",
+            "PGstandard.pl": "from pg_macros.answers.pg_answer_macros import num_cmp, str_cmp, fun_cmp",
+            "PGbasicmacros.pl": "from pg_macros.core.pg_basic_macros import ans_rule, beginproblem, PAR",
+            "MathObjects.pl": "from pg_math import Context, Real, Complex, Formula, Interval",
+            "PGML.pl": "from pg_pgml import PGML",
+            "contextFraction.pl": "from pg_math import Fraction",
+            "PGcourse.pl": "# PGcourse.pl - course-specific (skipped)",
+        }
+        
+        # Generate import lines
+        import_lines = []
+        loaded_macros = []
+        
+        for macro in macros:
+            if macro in macro_imports:
+                import_line = macro_imports[macro]
+                if not import_line.startswith("#"):
+                    import_lines.append(import_line)
+                loaded_macros.append(macro)
+        
+        # Create comment showing what was loaded
+        comment = f'# loadMacros({", ".join(repr(m) for m in loaded_macros)}) - loaded' if loaded_macros else "# loadMacros() - no recognized macros"
+        
+        return (import_lines, comment)

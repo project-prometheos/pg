@@ -231,6 +231,16 @@ def E() -> float:
     return math.e
 
 
+def beginproblem() -> str:
+    """
+    Traditional PG problem header (often empty in modern problems).
+    
+    Reference: PGbasicmacros.pl::beginproblem
+    Returns empty string by default.
+    """
+    return ""
+
+
 # ============================================================================
 # ANSWER BLANK FUNCTIONS
 # ============================================================================

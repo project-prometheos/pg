@@ -11,6 +11,8 @@ This tests:
 6. ENDDOCUMENT() - problem finalization
 """
 
+from pg_macros.core.pg_basic_macros import ans_rule
+from pg_macros.core.pg_core import DOCUMENT, TEXT, ANS, ENDDOCUMENT, get_environment
 import sys
 from pathlib import Path
 
@@ -24,8 +26,6 @@ print("TEST: Complete PG Problem with Answer Evaluation")
 print("=" * 70)
 
 # Import macros
-from pg_macros.core.pg_core import DOCUMENT, TEXT, ANS, ENDDOCUMENT, get_environment
-from pg_macros.core.pg_basic_macros import ans_rule
 
 print("\n✅ Imported core macros")
 
@@ -39,29 +39,29 @@ except ImportError as e:
     try:
         from pg_answer.evaluators.numeric import NumericEvaluator
         print("✅ Imported NumericEvaluator from pg_answer")
-        
+
         # Create wrapper for num_cmp
         def num_cmp(correct, **options):
             """Wrapper for NumericEvaluator."""
             return NumericEvaluator(correct_answer=correct, **options)
-        
+
         print("✅ Created num_cmp wrapper")
     except ImportError as e2:
         print(f"❌ Could not import from pg_answer: {e2}")
         print("   Creating mock num_cmp for testing...")
-        
+
         # Mock evaluator for testing
         class MockEvaluator:
             def __init__(self, correct_answer, **options):
                 self.correct_answer = correct_answer
                 self.options = options
-            
+
             def __repr__(self):
                 return f"MockEvaluator(correct={self.correct_answer})"
-        
+
         def num_cmp(correct, **options):
             return MockEvaluator(correct, **options)
-        
+
         print("✅ Created mock num_cmp")
 
 # Setup environment

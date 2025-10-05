@@ -32,7 +32,7 @@ ENDDOCUMENT()
 ```html
 <h3>Simple Arithmetic Problem</h3>
 <p>What is 2 + 2?</p>
-<p>Answer: <input type="text" name="AnSwEr0001" id="AnSwEr0001" 
+<p>Answer: <input type="text" name="AnSwEr0001" id="AnSwEr0001"
    class="codeshard" size="20" value="" aria-label="answer blank"/></p>
 ```
 

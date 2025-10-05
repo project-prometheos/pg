@@ -53,14 +53,15 @@ print("=" * 70)
 # Get first answer name
 if result.answer_blanks:
     first_answer_name = list(result.answer_blanks.keys())[0]
-    
+
     # Test with correct answer
     test_inputs = {
         first_answer_name: "5"  # correct answer (2 + 3 = 5)
     }
-    
-    result_with_answers = translator.translate(pg_file, seed=123, inputs=test_inputs)
-    
+
+    result_with_answers = translator.translate(
+        pg_file, seed=123, inputs=test_inputs)
+
     if result_with_answers.answer_results:
         for name, ans_result in result_with_answers.answer_results.items():
             print(f"\nAnswer: {name}")
@@ -69,7 +70,7 @@ if result.answer_blanks:
             print(f"  Score: {ans_result.score}")
             if hasattr(ans_result, 'message') and ans_result.message:
                 print(f"  Message: {ans_result.message}")
-        
+
         print(f"\n🎉 Overall score: {result_with_answers.score}")
     else:
         print(f"\n⚠️ No answer results")
