@@ -24,6 +24,16 @@ from pg_pgml import HTMLRenderer, PGMLParser
 from .sandbox import Sandbox, SandboxResult
 
 
+# Import in-process sandbox if available
+try:
+    from .in_process_sandbox import InProcessSandbox, ExecutionResult
+    HAS_IN_PROCESS_SANDBOX = True
+except ImportError:
+    HAS_IN_PROCESS_SANDBOX = False
+    InProcessSandbox = None  # type: ignore
+    ExecutionResult = None  # type: ignore
+
+
 @dataclass
 class PGEnvironment:
     """
@@ -170,21 +180,42 @@ class PGExecutor:
         if context is None:
             context = Context("Numeric")
 
-        # Execute in sandbox
-        result = self.sandbox.execute(code, seed, context)
-
-        # Create environment from results
-        env = PGEnvironment(seed=seed, context=context)
-
-        if result.success:
-            env.text_segments = result.text_segments
-            env.pgml_segments = result.pgml_segments
-            env.solution_segments = result.solution_segments
-            env.hint_segments = result.hint_segments
-            # Note: answers are serialized strings, not actual evaluators
-            # This is a temporary limitation - will need to reconstruct evaluators
-            env.errors = result.errors
+        # Check if using InProcessSandbox
+        if HAS_IN_PROCESS_SANDBOX and isinstance(self.sandbox, InProcessSandbox):
+            # Use in-process sandbox (returns ExecutionResult)
+            result = self.sandbox.execute(code, seed, context)
+            
+            # Create environment from results
+            env = PGEnvironment(seed=seed, context=context)
+            
+            if result.success:
+                env.text_segments = [result.output_text] if result.output_text else []
+                env.solution_segments = [result.solution_text] if result.solution_text else []
+                env.hint_segments = [result.hint_text] if result.hint_text else []
+                # Direct access to answer evaluators (no serialization!)
+                env.answers = result.answers
+                env.variables = result.variables
+                env.errors = result.errors
+            else:
+                env.errors = result.errors
+            
+            return env
         else:
-            env.errors = result.errors
+            # Use subprocess sandbox (returns SandboxResult)
+            result = self.sandbox.execute(code, seed, context)
 
-        return env
+            # Create environment from results
+            env = PGEnvironment(seed=seed, context=context)
+
+            if result.success:
+                env.text_segments = result.text_segments
+                env.pgml_segments = result.pgml_segments
+                env.solution_segments = result.solution_segments
+                env.hint_segments = result.hint_segments
+                # Note: answers are serialized strings, not actual evaluators
+                # This is a temporary limitation - will need to reconstruct evaluators
+                env.errors = result.errors
+            else:
+                env.errors = result.errors
+
+            return env

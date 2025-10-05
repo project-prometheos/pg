@@ -5,7 +5,7 @@ Tests for Macro Loader system.
 import pytest
 from pathlib import Path
 from pg_translator.macro_loader import MacroLoader, OpcodeMask
-from pg_translator.sandbox import PGSandbox
+# from pg_translator.sandbox import PGSandbox  # Not needed - using mock
 
 
 def test_opcode_mask():
@@ -50,7 +50,7 @@ def test_load_python_macro(mock_sandbox, tmp_path):
     loader = MacroLoader(mock_sandbox)
 
     # Create test macro
-    test_macro = tmp_path / "simple_macro.py")
+    test_macro = tmp_path / "simple_macro.py"
     test_macro.write_text("""
 def test_function():
     return 42

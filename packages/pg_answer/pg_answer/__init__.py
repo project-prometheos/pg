@@ -11,6 +11,7 @@ Reference: lib/AnswerHash.pm and lib/AnswerEvaluator.pm in legacy Perl codebase
 """
 
 from .answer_hash import AnswerResult
+from .cmp import fun_cmp, num_cmp, str_cmp
 from .evaluator import AnswerEvaluator, EvaluatorRegistry
 from .graders import AverageGrader, Grader, StandardGrader
 
@@ -21,4 +22,8 @@ __all__ = [
     "Grader",
     "StandardGrader",
     "AverageGrader",
+    # Convenience functions
+    "num_cmp",
+    "str_cmp",
+    "fun_cmp",
 ]

@@ -188,7 +188,13 @@ class PGTranslator:
 
                 for name, student_answer in inputs.items():
                     if name in env.answers:
-                        evaluator = env.answers[name]
+                        # Extract evaluator from answer hash entry
+                        ans_entry = env.answers[name]
+                        if isinstance(ans_entry, dict) and "ans_eval" in ans_entry:
+                            evaluator = ans_entry["ans_eval"]
+                        else:
+                            evaluator = ans_entry
+                        
                         # Get correct answer from evaluator
                         correct_answer = getattr(evaluator, "correct_answer", "")
                         result = evaluator.evaluate(student_answer)
@@ -282,7 +288,12 @@ class PGTranslator:
 
                 for name, student_answer in inputs.items():
                     if name in env.answers:
-                        evaluator = env.answers[name]
+                        # Extract evaluator from answer hash entry
+                        ans_entry = env.answers[name]
+                        if isinstance(ans_entry, dict) and "ans_eval" in ans_entry:
+                            evaluator = ans_entry["ans_eval"]
+                        else:
+                            evaluator = ans_entry
                         result = evaluator.evaluate(student_answer)
                         answer_results[name] = result
                         scores.append(result.score)

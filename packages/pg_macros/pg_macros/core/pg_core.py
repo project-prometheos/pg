@@ -37,6 +37,8 @@ class PGEnvironment:
         self.output_array: list[str] = []
         self.header_array: list[str] = []
         self.post_header_array: list[str] = []
+        self.solution_array: list[str] = []
+        self.hint_array: list[str] = []
         
         # Answer tracking
         self.answers_hash: dict[str, Any] = {}
@@ -458,9 +460,9 @@ def SOLUTION(*args: Any) -> None:
     env = get_environment()
     env.flags["solutionExists"] = 1
     
-    # Solution text is typically wrapped in display logic
-    # For now, just mark that solution exists
-    # Full implementation would handle display conditions
+    # Collect solution text
+    solution_text = "".join(str(arg) for arg in args)
+    env.solution_array.append(solution_text)
 
 
 def HINT(*args: Any) -> None:
@@ -475,8 +477,9 @@ def HINT(*args: Any) -> None:
     env = get_environment()
     env.flags["hintExists"] = 1
     
-    # Hint text is typically wrapped in display logic
-    # For now, just mark that hint exists
+    # Collect hint text
+    hint_text = "".join(str(arg) for arg in args)
+    env.hint_array.append(hint_text)
 
 
 def COMMENT(*args: Any) -> None:

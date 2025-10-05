@@ -633,14 +633,19 @@ def fuzzy_compare(a: float, b: float, tolerance: float, mode: str) -> bool:
     if a == b:
         return True
 
+    # Use epsilon for floating point comparisons to avoid precision issues
+    EPSILON = 1e-12
+
     if mode == ToleranceMode.ABSOLUTE:
-        return abs(a - b) < tolerance
+        return abs(a - b) <= tolerance + EPSILON
 
     elif mode == ToleranceMode.RELATIVE:
-        # Avoid division by zero
-        if b == 0:
-            return abs(a) < tolerance
-        return abs((a - b) / b) < tolerance
+        # Avoid division by zero - use larger magnitude for relative comparison
+        # PG uses: abs(a-b) / max(abs(a), abs(b)) <= tolerance
+        max_abs = max(abs(a), abs(b))
+        if max_abs == 0:
+            return abs(a - b) <= tolerance + EPSILON
+        return abs(a - b) / max_abs <= tolerance + EPSILON
 
     elif mode == ToleranceMode.SIGFIGS:
         # Significant figures mode

@@ -13,7 +13,7 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any, Callable
 
-from .sandbox import PGSandbox
+from .sandbox import Sandbox
 
 
 class OpcodeMask:
@@ -36,7 +36,7 @@ class MacroLoader:
     Equivalent to Translator.pm unrestricted_load() and PG_macro_file_eval()
     """
 
-    def __init__(self, sandbox: PGSandbox):
+    def __init__(self, sandbox: Sandbox):
         """
         Initialize macro loader.
 
@@ -288,7 +288,7 @@ class MacroLoader:
 def PG_macro_file_eval(
     code: str,
     filepath: str,
-    sandbox: PGSandbox
+    sandbox: Sandbox
 ) -> tuple[Any, str, str]:
     """
     Evaluate macro file code with strict mode.
@@ -370,7 +370,7 @@ __eval_id__ = {eval_id!r}
     return (output, errors, full_error_report)
 
 
-def evaluate_modules(*module_names: str, sandbox: PGSandbox | None = None) -> None:
+def evaluate_modules(*module_names: str, sandbox: Sandbox | None = None) -> None:
     """
     Load Python modules into sandbox.
 
@@ -404,7 +404,7 @@ def evaluate_modules(*module_names: str, sandbox: PGSandbox | None = None) -> No
             raise RuntimeError(f"Failed to import module {module_name}: {e}")
 
 
-def load_extra_packages(*package_names: str, sandbox: PGSandbox | None = None) -> None:
+def load_extra_packages(*package_names: str, sandbox: Sandbox | None = None) -> None:
     """
     Load extra packages from already-imported modules.
 
