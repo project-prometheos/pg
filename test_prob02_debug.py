@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Debug prob02."""
 
+from pg_translator.preprocessor import PGPreprocessor
 import sys
 sys.path.insert(0, "packages/pg_translator")
-from pg_translator.preprocessor import PGPreprocessor
 
 with open("webwork_ps1_pg/ps1-prob02.pg") as f:
     content = f.read()

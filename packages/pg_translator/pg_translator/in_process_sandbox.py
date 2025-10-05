@@ -237,13 +237,13 @@ class InProcessSandbox:
                 """Render PGML markup to HTML."""
                 from pg_pgml import PGMLParser, HTMLRenderer
                 from pg_pgml.parser import AnswerBlank
-                
+
                 # Get current namespace for variable access
                 context = self.namespace
 
                 # Parse PGML text using the proper tokenizer/parser
                 doc = PGMLParser.parse_text(pgml_text)
-                
+
                 # Collect answer blanks from the document tree
                 answer_blanks = []
                 visited = set()  # Track visited nodes to prevent infinite loops
@@ -252,17 +252,17 @@ class InProcessSandbox:
                     """Recursively collect AnswerBlank nodes."""
                     if depth > 50:  # Prevent stack overflow
                         return
-                    
+
                     # Prevent revisiting the same node
                     node_id = id(node)
                     if node_id in visited:
                         return
                     visited.add(node_id)
-                    
+
                     if isinstance(node, AnswerBlank):
                         answer_blanks.append(node)
                         return  # Don't recurse into AnswerBlank itself
-                    
+
                     # Check for children in various node types
                     if hasattr(node, 'blocks') and node.blocks:
                         for child in node.blocks:
@@ -368,21 +368,15 @@ class InProcessSandbox:
         # PGML rendering function
         def PGML(pgml_text):
             """Render PGML markup to HTML (fallback mode without pg_core)."""
-            # DEBUG
-            print(f"[PGML DEBUG] Called with {len(pgml_text)} chars")
-            
             from pg_pgml import PGMLParser, HTMLRenderer
             from pg_pgml.parser import AnswerBlank
-            
+
             # Get current namespace for variable access
             context = self.namespace
 
             # Parse PGML text using the proper tokenizer/parser
             doc = PGMLParser.parse_text(pgml_text)
-            
-            # DEBUG
-            print(f"[PGML DEBUG] Parsed document: {doc}")
-            
+
             # Collect answer blanks from the document tree
             answer_blanks = []
             visited = set()  # Track visited nodes to prevent infinite loops
@@ -391,17 +385,17 @@ class InProcessSandbox:
                 """Recursively collect AnswerBlank nodes."""
                 if depth > 50:  # Prevent stack overflow
                     return
-                
+
                 # Prevent revisiting the same node
                 node_id = id(node)
                 if node_id in visited:
                     return
                 visited.add(node_id)
-                
+
                 if isinstance(node, AnswerBlank):
                     answer_blanks.append(node)
                     return  # Don't recurse into AnswerBlank itself
-                
+
                 # Check for children in various node types
                 if hasattr(node, 'blocks') and node.blocks:
                     for child in node.blocks:
@@ -432,12 +426,7 @@ class InProcessSandbox:
 
             # Render PGML to HTML using proper renderer
             renderer = HTMLRenderer(context=context)
-            result = renderer.render(doc)
-            
-            # DEBUG
-            print(f"[PGML DEBUG] Rendered {len(result)} chars: {result[:50]}")
-            
-            return result
+            return renderer.render(doc)
 
         # Random functions (don't shadow random module)
         import random as _random_module
@@ -648,10 +637,16 @@ class InProcessSandbox:
         # This prevents variable pollution between problems
         self.namespace.clear()
         self._setup_safe_namespace()
-        
-        # DEBUG: Check if TEXT and PGML are in namespace
-        print(f"[INIT DEBUG] Namespace has TEXT: {'TEXT' in self.namespace}, PGML: {'PGML' in self.namespace}")
-        
+
+        # IMPORTANT: Reset Context to prevent variable pollution
+        # Context is a global singleton that persists between problems
+        try:
+            from pg_mathobjects import Context
+            # Force creation of fresh Numeric context
+            Context('Numeric')
+        except ImportError:
+            pass  # pg_mathobjects not available
+
         # Set random seed
         import random as _random_module
         _random_module.seed(seed)
@@ -671,13 +666,9 @@ class InProcessSandbox:
         # Don't initialize PGEnvironment here - DOCUMENT() will do it
         # Just clear any previous environment
         self._pg_environment = None
-        
+
         # Also clear pg_core's global environment if we're using it
         if hasattr(self, '_pg_core') and hasattr(self._pg_core, '_pg_environment'):
-            # DEBUG
-            old_env = self._pg_core._pg_environment
-            if old_env:
-                print(f"[INIT DEBUG] Clearing pg_core environment (had {len(old_env.output_array)} texts)")
             self._pg_core._pg_environment = None
 
     @contextmanager
@@ -728,32 +719,19 @@ class InProcessSandbox:
                 # Compile code with restricted mode
                 compiled = compile(code, '<problem>', 'exec')
 
-                # DEBUG
-                print(f"[EXEC DEBUG] Compiled successfully, executing...")
-                
                 # Execute in namespace
                 exec(compiled, self.namespace)
-                
-                # DEBUG
-                print(f"[EXEC DEBUG] Execution completed")
 
         except TimeoutError as e:
             errors = str(e)
         except Exception as e:
             import traceback
-            errors = f"{type(e).__name__}: {e}\n{traceback.format_exc()}"
-
-        # Collect results from PG environment
+            errors = f"{type(e).__name__}: {e}\n{traceback.format_exc()}"        # Collect results from PG environment
         # Try to get environment from pg_core global
         try:
             if hasattr(self, '_pg_core'):
                 # Use the SAME pg_core instance that was loaded in namespace
                 pg_env = self._pg_core.get_environment() if self._pg_core._pg_environment else None
-                # DEBUG
-                if pg_env:
-                    print(f"[COLLECT DEBUG] Got pg_core environment with {len(pg_env.output_array)} texts")
-                else:
-                    print(f"[COLLECT DEBUG] pg_core._pg_environment is None")
             elif hasattr(self, '_stub_env'):
                 # Use stub environment if pg_core not available
                 pg_env = self._stub_env
@@ -761,7 +739,6 @@ class InProcessSandbox:
                 pg_env = self._pg_environment if hasattr(
                     self, '_pg_environment') else None
         except Exception as ex:
-            print(f"[COLLECT DEBUG] Exception getting environment: {ex}")
             pg_env = None
 
         if pg_env:

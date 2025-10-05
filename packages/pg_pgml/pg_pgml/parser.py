@@ -197,7 +197,8 @@ class Table(PGMLNode):
 class TableRow(PGMLNode):
     """Table row with cells."""
 
-    cells: list[list[PGMLNode]] = field(default_factory=list)  # Each cell contains inline content
+    # Each cell contains inline content
+    cells: list[list[PGMLNode]] = field(default_factory=list)
 
     def accept(self, visitor: Any) -> Any:
         return visitor.visit_table_row(self)
@@ -298,33 +299,33 @@ class PGMLParser:
         # List
         if self._check(TokenType.LIST_ITEM) or self._check(TokenType.ORDERED_ITEM):
             return self._parse_list()
-        
+
         # NEW FOR PARITY: Additional block types
-        
+
         # Heading
         if self._check(TokenType.HEADING):
             return self._parse_heading()
-        
+
         # Rule
         if self._check(TokenType.RULE):
             return self._parse_rule()
-        
+
         # Table
         if self._check(TokenType.TABLE_ROW_START):
             return self._parse_table()
-        
+
         # Pre-formatted block
         if self._check(TokenType.PRE_BLOCK):
             return self._parse_pre_block()
-        
+
         # Alignment block
         if self._check(TokenType.ALIGN_RIGHT) or self._check(TokenType.ALIGN_LEFT):
             return self._parse_align_block()
-        
+
         # Solution/Hint
         if self._check(TokenType.SOLUTION_START):
             return self._parse_solution()
-        
+
         if self._check(TokenType.HINT_START):
             return self._parse_hint()
 
@@ -375,26 +376,26 @@ class PGMLParser:
             self._match(TokenType.NEWLINE)
 
         return List(items=items, ordered=ordered)
-    
+
     def _parse_table(self) -> Table:
         """Parse a table with pipe-delimited cells: | cell1 | cell2 |"""
         rows: list[TableRow] = []
-        
+
         # Parse all consecutive table rows
         while self._check(TokenType.TABLE_ROW_START) and not self._is_at_end():
             rows.append(self._parse_table_row())
             # Skip newline after row
             self._match(TokenType.NEWLINE)
-        
+
         return Table(rows=rows)
-    
+
     def _parse_table_row(self) -> TableRow:
         """Parse a single table row."""
         self._advance()  # consume TABLE_ROW_START (|)
-        
+
         cells: list[list[PGMLNode]] = []
         current_cell: list[PGMLNode] = []
-        
+
         # Parse cells until end of row
         while not self._check(TokenType.TABLE_ROW_END) and not self._is_at_end():
             if self._check(TokenType.TABLE_CELL_SEP):
@@ -408,7 +409,8 @@ class PGMLParser:
             else:
                 # Add inline content to current cell
                 if self._check(TokenType.TEXT):
-                    current_cell.append(Text(content=self._advance().value.strip()))
+                    current_cell.append(
+                        Text(content=self._advance().value.strip()))
                 elif self._check(TokenType.VAR_START):
                     current_cell.append(self._parse_variable())
                 elif self._check(TokenType.CODE_START):
@@ -418,21 +420,21 @@ class PGMLParser:
                 else:
                     # Unknown token, skip
                     self._advance()
-        
+
         # Add last cell
         if current_cell or cells:  # Don't add empty cell if no cells parsed
             cells.append(current_cell)
-        
+
         # Consume TABLE_ROW_END if present
         if self._check(TokenType.TABLE_ROW_END):
             self._advance()
-        
+
         return TableRow(cells=cells)
-    
+
     def _parse_heading(self) -> Heading:
         """Parse heading: # Heading, ## Subheading, etc."""
         token = self._advance()  # consume heading token
-        
+
         # Count # characters to determine level
         level = 0
         for char in token.value:
@@ -441,66 +443,66 @@ class PGMLParser:
             else:
                 break
         level = min(level, 6)  # Cap at 6
-        
+
         # Extract heading text (remove leading # and whitespace)
         heading_text = token.value.lstrip('#').strip()
-        
+
         # Parse heading content as inline elements
         content = [Text(content=heading_text)]
-        
+
         return Heading(level=level, content=content)
-    
+
     def _parse_rule(self) -> Rule:
         """Parse horizontal rule: --- or ==="""
         self._advance()  # consume rule token
         return Rule()
-    
+
     def _parse_solution(self) -> Solution:
         """Parse solution section: BEGIN_PGML_SOLUTION ... END_PGML_SOLUTION"""
         self._advance()  # consume SOLUTION_START
-        
+
         # Parse blocks until SOLUTION_END
         blocks: list[PGMLNode] = []
         while not self._check(TokenType.SOLUTION_END) and not self._is_at_end():
             # Skip blank lines
             while self._match(TokenType.BLANK_LINE, TokenType.NEWLINE):
                 pass
-            
+
             if self._check(TokenType.SOLUTION_END) or self._is_at_end():
                 break
-            
+
             block = self._parse_block()
             if block:
                 blocks.append(block)
-        
+
         # Consume SOLUTION_END
         if self._check(TokenType.SOLUTION_END):
             self._advance()
-        
+
         return Solution(content=blocks)
-    
+
     def _parse_hint(self) -> Hint:
         """Parse hint section: BEGIN_PGML_HINT ... END_PGML_HINT"""
         self._advance()  # consume HINT_START
-        
+
         # Parse blocks until HINT_END
         blocks: list[PGMLNode] = []
         while not self._check(TokenType.HINT_END) and not self._is_at_end():
             # Skip blank lines
             while self._match(TokenType.BLANK_LINE, TokenType.NEWLINE):
                 pass
-            
+
             if self._check(TokenType.HINT_END) or self._is_at_end():
                 break
-            
+
             block = self._parse_block()
             if block:
                 blocks.append(block)
-        
+
         # Consume HINT_END
         if self._check(TokenType.HINT_END):
             self._advance()
-        
+
         return Hint(content=blocks)
 
     def _parse_paragraph(self) -> Paragraph:
@@ -570,7 +572,7 @@ class PGMLParser:
 
         # Count underscores for width
         width = token.value.count("_")
-        
+
         # Check for evaluator syntax: {$ans} or {evaluator_code}
         evaluator_code = ""
         if self._check(TokenType.TEXT):
@@ -580,7 +582,7 @@ class PGMLParser:
                 brace_depth = 0
                 eval_text = ""
                 found_opening = False
-                
+
                 for char in next_text:
                     if char == "{":
                         brace_depth += 1
@@ -591,10 +593,10 @@ class PGMLParser:
                             # Consume this text token
                             self._advance()
                             break
-                    
+
                     if found_opening and char not in "{}":
                         eval_text += char
-                
+
                 evaluator_code = eval_text.strip()
 
         return AnswerBlank(width=width, evaluator_code=evaluator_code)

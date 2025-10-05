@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Debug environment collection."""
 
+from pg_translator.in_process_sandbox import InProcessSandbox
+from pg_translator.preprocessor import PGPreprocessor
 import sys
 sys.path.insert(0, 'packages/pg_translator')
 sys.path.insert(0, 'packages/pg_pgml')
 
-from pg_translator.preprocessor import PGPreprocessor
-from pg_translator.in_process_sandbox import InProcessSandbox
 
 problem_path = 'tutorial/sample-problems/Algebra/AlgebraicFractionAnswer.pg'
 

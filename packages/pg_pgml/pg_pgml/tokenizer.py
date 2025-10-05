@@ -130,7 +130,8 @@ class PGMLTokenizer:
         if self._match("\n"):
             # Check if this is a blank line (previous was also newline)
             if self.tokens and self.tokens[-1].type == TokenType.NEWLINE:
-                self.tokens[-1] = Token(TokenType.BLANK_LINE, "\n\n", start_line - 1, 1)
+                self.tokens[-1] = Token(TokenType.BLANK_LINE,
+                                        "\n\n", start_line - 1, 1)
             else:
                 self._add_token(TokenType.NEWLINE, "\n", start_line, start_col)
             return
@@ -141,42 +142,46 @@ class PGMLTokenizer:
             if self._peek_ahead("BEGIN_PGML_SOLUTION"):
                 for _ in range(19):  # len("BEGIN_PGML_SOLUTION")
                     self._advance()
-                self._add_token(TokenType.SOLUTION_START, "BEGIN_PGML_SOLUTION", start_line, start_col)
+                self._add_token(TokenType.SOLUTION_START,
+                                "BEGIN_PGML_SOLUTION", start_line, start_col)
                 return
-            
+
             if self._peek_ahead("END_PGML_SOLUTION"):
                 for _ in range(17):  # len("END_PGML_SOLUTION")
                     self._advance()
-                self._add_token(TokenType.SOLUTION_END, "END_PGML_SOLUTION", start_line, start_col)
+                self._add_token(TokenType.SOLUTION_END,
+                                "END_PGML_SOLUTION", start_line, start_col)
                 return
-            
+
             if self._peek_ahead("BEGIN_PGML_HINT"):
                 for _ in range(15):  # len("BEGIN_PGML_HINT")
                     self._advance()
-                self._add_token(TokenType.HINT_START, "BEGIN_PGML_HINT", start_line, start_col)
+                self._add_token(TokenType.HINT_START,
+                                "BEGIN_PGML_HINT", start_line, start_col)
                 return
-            
+
             if self._peek_ahead("END_PGML_HINT"):
                 for _ in range(13):  # len("END_PGML_HINT")
                     self._advance()
-                self._add_token(TokenType.HINT_END, "END_PGML_HINT", start_line, start_col)
+                self._add_token(TokenType.HINT_END,
+                                "END_PGML_HINT", start_line, start_col)
                 return
-            
+
             # Heading: # Header, ## Subheader, etc.
             if self._peek() == "#":
                 self._scan_heading()
                 return
-            
+
             # Rule: --- or ===
             if self._peek() in ("-", "="):
                 if self._scan_rule():
                     return
-            
+
             # Table row: | cell | cell |
             if self._peek() == "|":
                 self._scan_table_row()
                 return
-            
+
             # Pre-formatted block: :   (colon + spaces)
             if self._peek() == ":" and self._peek_ahead("   "):
                 self._scan_pre_block()
@@ -187,14 +192,16 @@ class PGMLTokenizer:
             if self._peek_ahead(">>"):
                 self._advance()
                 self._advance()
-                self._add_token(TokenType.ALIGN_RIGHT, ">>", start_line, start_col)
+                self._add_token(TokenType.ALIGN_RIGHT,
+                                ">>", start_line, start_col)
                 return
-        
+
         if self._peek() == "<":
             if self._peek_ahead("<<"):
                 self._advance()
                 self._advance()
-                self._add_token(TokenType.ALIGN_LEFT, "<<", start_line, start_col)
+                self._add_token(TokenType.ALIGN_LEFT, "<<",
+                                start_line, start_col)
                 return
 
         # Check for bracket constructs
@@ -226,9 +233,11 @@ class PGMLTokenizer:
             self._add_token(TokenType.VAR_START, "[$", start_line, start_col)
             # Scan variable name
             var_name = self._scan_until("]")
-            self._add_token(TokenType.TEXT, var_name, self.line, self.column - len(var_name))
+            self._add_token(TokenType.TEXT, var_name, self.line,
+                            self.column - len(var_name))
             if self._match("]"):
-                self._add_token(TokenType.VAR_END, "]", self.line, self.column - 1)
+                self._add_token(TokenType.VAR_END, "]",
+                                self.line, self.column - 1)
             return
 
         # Code execution: [@code@] or [@code@]*
@@ -237,13 +246,15 @@ class PGMLTokenizer:
             self._add_token(TokenType.CODE_START, "[@", start_line, start_col)
             # Scan code until @]
             code = self._scan_until("@]")
-            self._add_token(TokenType.TEXT, code, self.line, self.column - len(code))
+            self._add_token(TokenType.TEXT, code, self.line,
+                            self.column - len(code))
             if self._match("@]"):
                 # Check for trailing * (means display result)
                 display_marker = ""
                 if self._peek() == "*":
                     display_marker = self._advance()
-                self._add_token(TokenType.CODE_END, f"@]{display_marker}", self.line, self.column - len(f"@]{display_marker}"))
+                self._add_token(
+                    TokenType.CODE_END, f"@]{display_marker}", self.line, self.column - len(f"@]{display_marker}"))
             return
 
         # Math display block: [```...```]
@@ -251,24 +262,30 @@ class PGMLTokenizer:
             self._advance()  # consume `
             self._advance()  # consume `
             self._advance()  # consume `
-            self._add_token(TokenType.MATH_BLOCK_START, "[```", start_line, start_col)
+            self._add_token(TokenType.MATH_BLOCK_START,
+                            "[```", start_line, start_col)
             # Scan math until ```]
             math = self._scan_until("```]")
-            self._add_token(TokenType.TEXT, math, self.line, self.column - len(math))
+            self._add_token(TokenType.TEXT, math, self.line,
+                            self.column - len(math))
             if self._match("```]"):
-                self._add_token(TokenType.MATH_BLOCK_END, "```]", self.line, self.column - 4)
+                self._add_token(TokenType.MATH_BLOCK_END,
+                                "```]", self.line, self.column - 4)
             return
 
         # Inline math: [``...``]
         if self._peek_ahead("``"):
             self._advance()  # consume `
             self._advance()  # consume `
-            self._add_token(TokenType.MATH_INLINE_START, "[``", start_line, start_col)
+            self._add_token(TokenType.MATH_INLINE_START,
+                            "[``", start_line, start_col)
             # Scan math until ``]
             math = self._scan_until("``]")
-            self._add_token(TokenType.TEXT, math, self.line, self.column - len(math))
+            self._add_token(TokenType.TEXT, math, self.line,
+                            self.column - len(math))
             if self._match("``]"):
-                self._add_token(TokenType.MATH_INLINE_END, "``]", self.line, self.column - 3)
+                self._add_token(TokenType.MATH_INLINE_END,
+                                "``]", self.line, self.column - 3)
             return
 
         # Answer blank: [_____]
@@ -290,9 +307,10 @@ class PGMLTokenizer:
             self._advance()  # consume *
             # Scan until newline (list items don't have closing bracket)
             content = self._scan_until("\n")
-            self._add_token(TokenType.LIST_ITEM, f"[*{content}", start_line, start_col)
+            self._add_token(TokenType.LIST_ITEM,
+                            f"[*{content}", start_line, start_col)
             return
-        
+
         # NEW FOR PARITY: Check for special markers inside brackets
         # [!text!] - emphasized text (not commonly used, but supported)
         # [::marker::] ... [:::marker] - custom blocks
@@ -356,11 +374,11 @@ class PGMLTokenizer:
 
         while self.pos < len(self.text):
             char = self._peek()
-            
+
             # Stop at newlines and brackets
             if char in ("\n", "["):
                 break
-            
+
             # For < and >, only stop if they're part of << or >>
             if char == "<":
                 if self._peek_ahead("<<"):
@@ -370,63 +388,64 @@ class PGMLTokenizer:
                 if self._peek_ahead(">>"):
                     break
                 # Otherwise consume it as text
-            
+
             text += self._advance()
 
         if text:
             self._add_token(TokenType.TEXT, text, start_line, start_col)
-    
+
     # NEW FOR PARITY: Scanning methods for new token types
-    
+
     def _scan_heading(self) -> None:
         """Scan heading: # Heading, ## Subheading, etc."""
         start_line = self.line
         start_col = self.column
-        
+
         level = 0
         while self._peek() == "#" and level < 6:
             self._advance()
             level += 1
-        
+
         # Skip optional space after #
         if self._peek() == " ":
             self._advance()
-        
+
         # Scan heading text until newline
         heading_text = self._scan_until("\n")
-        
-        self._add_token(TokenType.HEADING, f"{'#' * level} {heading_text}", start_line, start_col)
-    
+
+        self._add_token(TokenType.HEADING,
+                        f"{'#' * level} {heading_text}", start_line, start_col)
+
     def _scan_rule(self) -> bool:
         """Scan horizontal rule: --- or ===. Returns True if rule found."""
         start_line = self.line
         start_col = self.column
-        
+
         ch = self._peek()
         if ch not in ("-", "="):
             return False
-        
+
         rule_chars = ""
         while self._peek() == ch:
             rule_chars += self._advance()
-        
+
         # Rule requires at least 3 characters
         if len(rule_chars) >= 3:
             self._add_token(TokenType.RULE, rule_chars, start_line, start_col)
             return True
-        
+
         # Not a rule, backtrack by adding as text
         self._add_token(TokenType.TEXT, rule_chars, start_line, start_col)
         return False
-    
+
     def _scan_table_row(self) -> None:
         """Scan table row: | cell1 | cell2 | cell3 |"""
         start_line = self.line
         start_col = self.column
-        
+
         self._advance()  # consume leading |
         self._add_token(TokenType.TABLE_ROW_START, "|", start_line, start_col)
-        
+
         # Scan cells until end of line
         while self.pos < len(self.text) and self._peek() != "\n":
             # Check for cell separator or end first
@@ -434,42 +453,46 @@ class PGMLTokenizer:
                 sep_line = self.line
                 sep_col = self.column
                 self._advance()
-                
+
                 # Check if this is the last | (end of row)
                 if self._peek() == "\n" or self.pos >= len(self.text):
-                    self._add_token(TokenType.TABLE_ROW_END, "|", sep_line, sep_col)
+                    self._add_token(TokenType.TABLE_ROW_END,
+                                    "|", sep_line, sep_col)
                 else:
-                    self._add_token(TokenType.TABLE_CELL_SEP, "|", sep_line, sep_col)
-            
+                    self._add_token(TokenType.TABLE_CELL_SEP,
+                                    "|", sep_line, sep_col)
+
             # Check for bracket constructs in cell content
             elif self._peek() == "[":
                 self._scan_bracket_construct()
-            
+
             # Regular text in cell
             else:
                 # Scan until | or newline or [
                 cell_content = ""
                 while self._peek() not in ("|", "\n", "[") and self.pos < len(self.text):
                     cell_content += self._advance()
-                
+
                 if cell_content.strip():
-                    self._add_token(TokenType.TEXT, cell_content, self.line, self.column - len(cell_content))
-    
+                    self._add_token(TokenType.TEXT, cell_content,
+                                    self.line, self.column - len(cell_content))
+
     def _scan_pre_block(self) -> None:
         """Scan pre-formatted block: :   followed by content."""
         start_line = self.line
         start_col = self.column
-        
+
         # Consume :   (colon + 3 spaces)
         self._advance()  # :
         for _ in range(3):
             if self._peek() == " ":
                 self._advance()
-        
+
         # Scan content until newline
         content = self._scan_until("\n")
-        
-        self._add_token(TokenType.PRE_BLOCK, f":   {content}", start_line, start_col)
+
+        self._add_token(TokenType.PRE_BLOCK,
+                        f":   {content}", start_line, start_col)
 
     def _scan_until(self, delimiter: str) -> str:
         """Scan text until delimiter is found."""
@@ -488,7 +511,7 @@ class PGMLTokenizer:
 
     def _peek_ahead(self, s: str) -> bool:
         """Check if upcoming text matches string s."""
-        return self.text[self.pos : self.pos + len(s)] == s
+        return self.text[self.pos: self.pos + len(s)] == s
 
     def _match(self, s: str) -> bool:
         """Try to match and consume string s."""

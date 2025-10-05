@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Test tokenizing prob02 PGML."""
 
+from pg_pgml.tokenizer import PGMLTokenizer
 import sys
 sys.path.insert(0, "packages/pg_pgml")
-from pg_pgml.tokenizer import PGMLTokenizer
 
 text = r'''
 **Problem 2.** Bestäm alla lösningar till \(\cot(x)=\sqrt3\) i intervallet \([0,2\pi[\). Placera svaren i växande ordning:
@@ -21,9 +21,11 @@ try:
     tokens = tokenizer.tokenize()
     print(f"Got {len(tokens)} tokens")
     for i, tok in enumerate(tokens[:20]):
-        print(f"  {i}: {tok.type} = {repr(tok.value[:50] if len(tok.value) > 50 else tok.value)}")
+        print(
+            f"  {i}: {tok.type} = {repr(tok.value[:50] if len(tok.value) > 50 else tok.value)}")
 except KeyboardInterrupt:
-    print(f"\nHANG! Stopped at pos={tokenizer.pos}, char={repr(text[tokenizer.pos:tokenizer.pos+20])}")
+    print(
+        f"\nHANG! Stopped at pos={tokenizer.pos}, char={repr(text[tokenizer.pos:tokenizer.pos+20])}")
 except Exception as e:
     print(f"ERROR: {e}")
     import traceback

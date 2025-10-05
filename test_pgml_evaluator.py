@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Test PGML evaluator extraction."""
 
+from pg_translator.preprocessor import PGPreprocessor
 from pathlib import Path
 import sys
 sys.path.insert(0, "packages/pg_translator")
-from pg_translator.preprocessor import PGPreprocessor
 
 with open("webwork_ps1_pg/ps1-prob01.pg") as f:
     content = f.read()

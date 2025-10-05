@@ -196,9 +196,6 @@ def DOCUMENT() -> None:
 
     Reference: PG.pl::DOCUMENT (line 112)
     """
-    # DEBUG
-    print(f"[DOCUMENT DEBUG] Called DOCUMENT()")
-    
     # Get environment from global or create default
     import sys
     frame = sys._getframe(1)
@@ -227,9 +224,6 @@ def ENDDOCUMENT() -> tuple[str, str, str, dict[str, Any], dict[str, Any]]:
 
     Reference: PG.pl::ENDDOCUMENT (line 951)
     """
-    # DEBUG
-    print(f"[ENDDOCUMENT DEBUG] Called")
-    
     env = get_environment()
 
     # Finalize flags
@@ -270,10 +264,6 @@ def TEXT(*args: Any) -> None:
 
     # Join arguments with spaces between them
     text = " ".join(str(arg) for arg in args)
-    
-    # DEBUG
-    print(f"[TEXT DEBUG] Appending {len(text)} chars: {text[:50]}")
-    
     env.append_text(text)
 
 

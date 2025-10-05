@@ -48,11 +48,6 @@ def test_problem(file_path: Path, seed: int = 1234, verbose: bool = False) -> di
         translator = PGTranslator()
         pg_result = translator.translate(str(file_path), seed=seed)
 
-        # DEBUG
-        if 'IndefiniteIntegrals' in str(file_path):
-            print(f"  [DEBUG] statement_html: {len(pg_result.statement_html) if pg_result.statement_html else 0} chars")
-            print(f"  [DEBUG] answer_blanks: {len(pg_result.answer_blanks) if pg_result.answer_blanks else 0}")
-        
         result['success'] = True
         result['has_statement'] = bool(pg_result.statement_html)
         result['has_answers'] = bool(pg_result.answer_blanks)
