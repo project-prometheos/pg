@@ -217,6 +217,19 @@ class PGTranslator:
                                 )
                                 answer_results[name] = result
                                 scores.append(result.score)
+                        elif hasattr(evaluator, 'check') and not hasattr(evaluator, 'cmp'):
+                            # It's an AnswerChecker object (like FormulaAnswerChecker from .cmp() call)
+                            check_result = evaluator.check(student_answer)
+                            # Convert dict to AnswerResult
+                            result = AnswerResult(
+                                score=check_result.get('score', 0.0),
+                                correct=check_result.get('correct', False),
+                                student_answer=student_answer,
+                                answer_message=check_result.get('message', ''),
+                                correct_answer=check_result.get('correct_answer', str(evaluator)),
+                            )
+                            answer_results[name] = result
+                            scores.append(result.score)
                         elif hasattr(evaluator, 'evaluate'):
                             # It's already an answer checker - call evaluate directly
                             result = evaluator.evaluate(student_answer)
@@ -384,8 +397,21 @@ class PGTranslator:
                     else:
                         # Single answer or regular evaluator - check individually
                         for name, student_answer in group_items:
+                            # Check if it's already a checker (has check method directly)
+                            if hasattr(evaluator, 'check') and not hasattr(evaluator, 'cmp'):
+                                # It's an AnswerChecker object (from .cmp() call)
+                                check_result = evaluator.check(student_answer)
+                                result = AnswerResult(
+                                    score=check_result.get('score', 0.0),
+                                    correct=check_result.get('correct', False),
+                                    student_answer=student_answer,
+                                    answer_message=check_result.get('message', ''),
+                                    correct_answer=check_result.get('correct_answer', str(evaluator)) if hasattr(evaluator, '__str__') else '',
+                                )
+                                answer_results[name] = result
+                                scores.append(result.score)
                             # Check if it's a MathObject (Formula, Real, etc.) - need to call .cmp() first
-                            if hasattr(evaluator, 'cmp'):
+                            elif hasattr(evaluator, 'cmp'):
                                 checker = evaluator.cmp()
                                 # Now call check() method
                                 if hasattr(checker, 'check'):

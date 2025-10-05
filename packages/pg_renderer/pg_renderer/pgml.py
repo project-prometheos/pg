@@ -157,7 +157,7 @@ class PGMLRenderer:
         # Don't convert evaluator objects to strings!
         if isinstance(correct_value, dict):
             self.answer_blanks[answer_id] = correct_value
-        elif hasattr(correct_value, 'cmp') or hasattr(correct_value, 'evaluate'):
+        elif hasattr(correct_value, 'cmp') or hasattr(correct_value, 'evaluate') or hasattr(correct_value, 'check'):
             # It's an evaluator object - keep it as-is
             self.answer_blanks[answer_id] = correct_value
         else:
@@ -184,7 +184,7 @@ class PGMLRenderer:
         if expr.isidentifier() and expr in self.variables:
             result = self.variables[expr]
             # If it's an evaluator object, return it directly
-            if hasattr(result, 'evaluate') or hasattr(result, 'cmp'):
+            if hasattr(result, 'evaluate') or hasattr(result, 'cmp') or hasattr(result, 'check'):
                 return result
 
         # If it starts with $, it may be a variable or a method call like $var->cmp(...)
@@ -273,7 +273,7 @@ class PGMLRenderer:
             result = self.variables.get(var_name, expr)
 
             # If result is an evaluator object (has evaluate method), return it directly
-            if hasattr(result, 'evaluate') or hasattr(result, 'cmp'):
+            if hasattr(result, 'evaluate') or hasattr(result, 'cmp') or hasattr(result, 'check'):
                 return result
 
             # MultiAnswer group variable: expand to per-blank spec

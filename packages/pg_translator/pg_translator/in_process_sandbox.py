@@ -663,11 +663,11 @@ class InProcessSandbox:
         variables = {}
         for key, value in self.namespace.items():
             if not key.startswith('_') and key not in ('__builtins__',):
-                # Include simple types AND answer evaluators (objects with evaluate method)
+                # Include simple types AND answer evaluators (objects with evaluate/cmp/check methods)
                 if isinstance(value, (int, float, str, bool, list, tuple, dict)):
                     variables[key] = value
-                elif hasattr(value, 'evaluate') or hasattr(value, 'cmp'):
-                    # This is likely an answer evaluator (Formula, Real, etc.)
+                elif hasattr(value, 'evaluate') or hasattr(value, 'cmp') or hasattr(value, 'check'):
+                    # This is likely an answer evaluator (Formula, Real, AnswerChecker, etc.)
                     variables[key] = value
 
         return ExecutionResult(
