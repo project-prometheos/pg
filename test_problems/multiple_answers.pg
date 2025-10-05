@@ -1,0 +1,31 @@
+## Multiple answer blanks
+DOCUMENT();
+
+loadMacros("PG.pl", "PGstandard.pl", "PGbasicmacros.pl");
+
+TEXT(beginproblem());
+
+$a = random(1, 5, 1);
+$b = random(1, 5, 1);
+$c = random(1, 5, 1);
+
+$sum = $a + $b;
+$product = $a * $b;
+$diff = $a - $c;
+
+BEGIN_TEXT
+$PAR
+Answer the following:
+$PAR
+1. What is \($a + $b\)?  Answer: \{ans_rule(10)\}
+$PAR
+2. What is \($a \times $b\)?  Answer: \{ans_rule(10)\}
+$PAR
+3. What is \($a - $c\)?  Answer: \{ans_rule(10)\}
+END_TEXT
+
+ANS(num_cmp($sum));
+ANS(num_cmp($product));
+ANS(num_cmp($diff));
+
+ENDDOCUMENT();
