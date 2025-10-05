@@ -1,0 +1,353 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+PG Problem Solver - Interactive command-line tool for solving PG problems.
+
+Usage:
+    python pg_solve.py <problem_file> [options]
+    
+Options:
+    --seed N        Set random seed (default: random)
+    --solution      Show solution after answering
+    --hint          Show hint if available
+    
+Example:
+    python pg_solve.py webwork_ps1_pg/ps1-prob01.pg --seed 1234 --solution
+"""
+
+import argparse
+import sys
+import os
+from pathlib import Path
+
+# Ensure UTF-8 encoding for Windows terminals
+if sys.platform == 'win32':
+    import codecs
+    sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'strict')
+    sys.stderr = codecs.getwriter('utf-8')(sys.stderr.buffer, 'strict')
+
+# Add packages to path
+sys.path.insert(0, str(Path(__file__).parent / "packages" / "pg_translator"))
+sys.path.insert(0, str(Path(__file__).parent / "packages" / "pg_macros"))
+sys.path.insert(0, str(Path(__file__).parent / "packages" / "pg_math"))
+sys.path.insert(0, str(Path(__file__).parent / "packages" / "pg_pgml"))
+
+# Disable logging
+os.environ['PYPG_DISABLE_LOGGING'] = '1'
+
+from pg_translator import PGTranslator
+import random
+
+
+def strip_html(html_text):
+    """Remove HTML tags for terminal display."""
+    import re
+    # Unescape LaTeX delimiters that were escaped for HTML
+    html_text = html_text.replace('\\\\(', '\\(')
+    html_text = html_text.replace('\\\\)', '\\)')
+    html_text = html_text.replace('\\\\[', '\\[')
+    html_text = html_text.replace('\\\\]', '\\]')
+    
+    # Clean up LaTeX placeholder notation for answer blanks BEFORE removing HTML tags
+    # Convert [\,\_\,] or similar patterns to just ___ for readability
+    # These are visual placeholders in the problem text, not actual answer blanks
+    # Match just the bracket pattern, not the surrounding \( \)
+    # Use [^\].]* to ensure we don't match across sentences (periods)
+    html_text = re.sub(r'\[[^\].]*\\_[^\].]*\]', '___', html_text)
+    
+    # Remove HTML tags
+    text = re.sub(r'<[^>]+>', '', html_text)
+    # Decode common HTML entities
+    text = text.replace('&lt;', '<')
+    text = text.replace('&gt;', '>')
+    text = text.replace('&amp;', '&')
+    text = text.replace('&nbsp;', ' ')
+    # Clean up multiple spaces and newlines
+    text = re.sub(r'\n\s*\n', '\n\n', text)
+    return text.strip()
+
+
+def format_math(text):
+    """Convert LaTeX math delimiters for terminal display."""
+    import re
+    
+    def clean_latex(latex_str):
+        """Clean up LaTeX for terminal display with mathematical notation."""
+        # Remove \! (thin space) and \displaystyle
+        latex_str = latex_str.replace(r'\!', '')
+        latex_str = latex_str.replace(r'\displaystyle', '')
+        
+        # Convert \left( and \right) to just ( and )
+        latex_str = latex_str.replace(r'\left(', '(')
+        latex_str = latex_str.replace(r'\right)', ')')
+        latex_str = latex_str.replace(r'\left[', '[')
+        latex_str = latex_str.replace(r'\right]', ']')
+        latex_str = latex_str.replace(r'\left\{', '{')
+        latex_str = latex_str.replace(r'\right\}', '}')
+        
+        # Convert fractions: frac{num}{den} → (num)/(den)
+        # Use regex to find nested fractions
+        while 'frac{' in latex_str or r'\frac{' in latex_str:
+            # Match \frac{...}{...} where ... can contain nested braces
+            match = re.search(r'\\?frac\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}', latex_str)
+            if match:
+                num = match.group(1).strip()
+                den = match.group(2).strip()
+                # Format as (num)/(den)
+                replacement = f'({num})/({den})'
+                latex_str = latex_str[:match.start()] + replacement + latex_str[match.end():]
+            else:
+                # Fallback: simple replacement
+                latex_str = latex_str.replace(r'\frac', 'frac')
+                break
+        
+        # Convert Greek letters
+        latex_str = latex_str.replace(r'\pi', 'π')
+        latex_str = latex_str.replace(r'\theta', 'θ')
+        latex_str = latex_str.replace(r'\alpha', 'α')
+        latex_str = latex_str.replace(r'\beta', 'β')
+        latex_str = latex_str.replace(r'\gamma', 'γ')
+        latex_str = latex_str.replace(r'\delta', 'δ')
+        
+        # Convert trig functions
+        latex_str = latex_str.replace(r'\sin', 'sin')
+        latex_str = latex_str.replace(r'\cos', 'cos')
+        latex_str = latex_str.replace(r'\tan', 'tan')
+        
+        # Convert sqrt
+        latex_str = latex_str.replace(r'\sqrt', '√')
+        
+        # Convert operators and symbols
+        latex_str = latex_str.replace(r'\infty', '∞')
+        latex_str = latex_str.replace(r'\cdot', '·')
+        latex_str = latex_str.replace(r'\times', '×')
+        latex_str = latex_str.replace(r'\div', '÷')
+        latex_str = latex_str.replace(r'\pm', '±')
+        latex_str = latex_str.replace(r'\leq', '≤')
+        latex_str = latex_str.replace(r'\le', '≤')  # Short form
+        latex_str = latex_str.replace(r'\geq', '≥')
+        latex_str = latex_str.replace(r'\ge', '≥')  # Short form
+        latex_str = latex_str.replace(r'\neq', '≠')
+        latex_str = latex_str.replace(r'\approx', '≈')
+        
+        # Handle interval notation: [a,b[ → [a,b)  (half-open intervals)
+        # Only convert the closing bracket if preceded by a comma (to avoid breaking other bracket uses)
+        latex_str = re.sub(r'([0-9π]),\s*([0-9π]+)\[', r'\1, \2)', latex_str)
+        
+        # Clean up extra spaces
+        latex_str = re.sub(r'\s+', ' ', latex_str).strip()
+        return latex_str
+    
+    # Inline math: \(...\) - use proper escaping
+    text = re.sub(r'\\\((.+?)\\\)', lambda m: f'[ {clean_latex(m.group(1))} ]', text)
+    # Inline math: $...$  (but not $$)
+    text = re.sub(r'(?<!\$)\$(?!\$)([^$]+)\$', lambda m: f'[ {clean_latex(m.group(1))} ]', text)
+    # Display math: \[...\]
+    text = re.sub(r'\\\[(.+?)\\\]', lambda m: f'\n\n  {clean_latex(m.group(1))}\n\n', text, flags=re.DOTALL)
+    # Display math: $$...$$
+    text = re.sub(r'\$\$(.+?)\$\$', lambda m: f'\n\n  {clean_latex(m.group(1))}\n\n', text, flags=re.DOTALL)
+    
+    return text
+
+
+def display_problem(result, show_solution=False, show_hint=False):
+    """Display the problem statement in a readable format."""
+    print("\n" + "="*70)
+    print("  PROBLEM")
+    print("="*70 + "\n")
+    
+    if result.statement_html:
+        statement = strip_html(result.statement_html)
+        statement = format_math(statement)
+        print(statement)
+    else:
+        print("(No problem statement)")
+    
+    print()
+    
+    # Show answer blanks
+    if result.answer_blanks:
+        print(f"This problem has {len(result.answer_blanks)} answer blank(s).")
+    else:
+        print("(No answer blanks detected)")
+    
+    # Show hint if requested and available
+    if show_hint and result.hint_html:
+        print("\n" + "-"*70)
+        print("  HINT")
+        print("-"*70 + "\n")
+        hint = strip_html(result.hint_html)
+        hint = format_math(hint)
+        print(hint)
+    
+    # Show solution if requested
+    if show_solution and result.solution_html:
+        print("\n" + "-"*70)
+        print("  SOLUTION")
+        print("-"*70 + "\n")
+        solution = strip_html(result.solution_html)
+        solution = format_math(solution)
+        print(solution)
+    
+    print()
+
+
+def get_user_answers(result):
+    """Prompt user for answers to all answer blanks."""
+    answers = {}
+    
+    if not result.answer_blanks:
+        return answers
+    
+    print("="*70)
+    print("  ENTER YOUR ANSWERS")
+    print("="*70 + "\n")
+    
+    for i, (blank_name, blank_info) in enumerate(result.answer_blanks.items(), 1):
+        prompt = f"Answer {i}"
+        if len(result.answer_blanks) > 1:
+            prompt += f" ({blank_name})"
+        prompt += ": "
+        
+        answer = input(prompt).strip()
+        answers[blank_name] = answer
+    
+    return answers
+
+
+def check_answers(translator, problem_file, seed, user_answers):
+    """Check user's answers against the problem."""
+    # Re-translate with user answers
+    result = translator.translate(problem_file, seed=seed, inputs=user_answers)
+    
+    if not result.answer_results:
+        print("\n❌ Unable to check answers (answer checking not available)")
+        return
+    
+    print("\n" + "="*70)
+    print("  RESULTS")
+    print("="*70 + "\n")
+    
+    total_score = 0
+    max_score = len(result.answer_results)
+    
+    for i, (blank_name, answer_result) in enumerate(result.answer_results.items(), 1):
+        correct = answer_result.get('score', 0) == 1
+        user_answer = user_answers.get(blank_name, '')
+        
+        if correct:
+            print(f"✓ Answer {i}: CORRECT")
+            total_score += 1
+        else:
+            print(f"✗ Answer {i}: INCORRECT")
+        
+        print(f"  Your answer: {user_answer}")
+        
+        # Show feedback if available
+        if answer_result.get('ans_message'):
+            print(f"  Feedback: {answer_result['ans_message']}")
+        
+        print()
+    
+    # Overall score
+    percentage = (total_score / max_score * 100) if max_score > 0 else 0
+    print(f"Score: {total_score}/{max_score} ({percentage:.0f}%)")
+    print()
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Interactive PG problem solver",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  python pg_solve.py webwork_ps1_pg/ps1-prob01.pg
+  python pg_solve.py tutorial/sample-problems/Algebra/ExpandedPolynomial.pg --seed 1234
+  python pg_solve.py webwork_ps1_pg/ps1-prob02.pg --solution --hint
+        """
+    )
+    
+    parser.add_argument('problem_file', help='Path to PG problem file')
+    parser.add_argument('--seed', type=int, default=None,
+                        help='Random seed for problem generation (default: random)')
+    parser.add_argument('--solution', action='store_true',
+                        help='Show solution after answering')
+    parser.add_argument('--hint', action='store_true',
+                        help='Show hint before answering')
+    parser.add_argument('--no-check', action='store_true',
+                        help='Skip answer checking (just display problem)')
+    
+    args = parser.parse_args()
+    
+    # Validate problem file
+    problem_path = Path(args.problem_file)
+    if not problem_path.exists():
+        print(f"Error: Problem file not found: {args.problem_file}")
+        sys.exit(1)
+    
+    # Set seed
+    seed = args.seed if args.seed is not None else random.randint(1, 99999)
+    
+    # Header
+    print("\n" + "="*70)
+    print(f"  PG PROBLEM SOLVER")
+    print("="*70)
+    print(f"\nProblem: {problem_path.name}")
+    print(f"Seed: {seed}")
+    if args.solution:
+        print("Mode: Solution will be shown")
+    
+    try:
+        # Translate problem
+        translator = PGTranslator()
+        result = translator.translate(str(problem_path), seed=seed)
+        
+        # Check for errors
+        if result.errors:
+            print(f"\n⚠️  Problem has errors:")
+            for error in result.errors[:3]:
+                print(f"  - {error}")
+            print()
+        
+        # Display problem
+        display_problem(result, show_solution=False, show_hint=args.hint)
+        
+        # If no answer blanks or --no-check, just show and exit
+        if args.no_check or not result.answer_blanks:
+            if args.solution and result.solution_html:
+                print("-"*70)
+                print("  SOLUTION")
+                print("-"*70 + "\n")
+                solution = strip_html(result.solution_html)
+                solution = format_math(solution)
+                print(solution)
+                print()
+            return
+        
+        # Get user answers
+        user_answers = get_user_answers(result)
+        
+        # Check answers (if answer checking is implemented)
+        if user_answers:
+            check_answers(translator, str(problem_path), seed, user_answers)
+        
+        # Show solution if requested
+        if args.solution and result.solution_html:
+            print("="*70)
+            print("  SOLUTION")
+            print("="*70 + "\n")
+            solution = strip_html(result.solution_html)
+            solution = format_math(solution)
+            print(solution)
+            print()
+    
+    except Exception as e:
+        print(f"\n❌ Error: {e}")
+        if '--debug' in sys.argv:
+            import traceback
+            traceback.print_exc()
+        sys.exit(1)
+
+
+if __name__ == '__main__':
+    main()
