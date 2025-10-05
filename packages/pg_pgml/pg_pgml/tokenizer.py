@@ -313,10 +313,23 @@ class PGMLTokenizer:
                 )
                 return
 
-        # Not a recognized pattern, treat as text
-        self.pos -= 1  # back up
+        # Not a recognized PGML bracket construct, treat opening bracket as plain text
+        # Back up and consume the [ as ordinary text
+        self.pos -= 1
         self.column -= 1
-        self._scan_text()
+        text = self._advance()  # Consume the [
+        # Continue scanning text after the [
+        while self.pos < len(self.text):
+            char = self._peek()
+            if char in ("\n", "["):
+                break
+            if char == "<" and self._peek_ahead("<<"):
+                break
+            if char == ">" and self._peek_ahead(">>"):
+                break
+            text += self._advance()
+        if text:
+            self._add_token(TokenType.TEXT, text, start_line, start_col)
 
     def _scan_emphasis(self) -> None:
         """Scan emphasis markers (* or _)."""
@@ -343,9 +356,21 @@ class PGMLTokenizer:
 
         while self.pos < len(self.text):
             char = self._peek()
-            # Stop at special characters (brackets, newlines, alignment markers)
-            if char in ("\n", "[", ">", "<"):
+            
+            # Stop at newlines and brackets
+            if char in ("\n", "["):
                 break
+            
+            # For < and >, only stop if they're part of << or >>
+            if char == "<":
+                if self._peek_ahead("<<"):
+                    break
+                # Otherwise consume it as text
+            elif char == ">":
+                if self._peek_ahead(">>"):
+                    break
+                # Otherwise consume it as text
+            
             text += self._advance()
 
         if text:

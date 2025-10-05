@@ -125,6 +125,10 @@ class PGEnvironment:
             pgml_text = "\n\n".join(self.pgml_segments)
             doc = PGMLParser.parse_text(pgml_text)
             renderer = HTMLRenderer(context=self.variables)
+            
+            # Allow renderer to register answers
+            renderer._register_answer = lambda name, ev: self.answers.update({name: ev})
+            
             pgml_html = renderer.render(doc)
 
         # Combine

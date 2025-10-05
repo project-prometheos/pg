@@ -91,6 +91,10 @@ class PGPreprocessor:
         # Track if we've inserted imports yet
         imports_inserted = False
 
+        # Track if we're inside a multiline loadMacros() call
+        in_load_macros = False
+        paren_depth = 0
+
         i = 0
         while i < len(lines):
             original_line = lines[i]
@@ -99,9 +103,90 @@ class PGPreprocessor:
             # Track line mapping
             line_map[output_line_num] = i + 1
 
+            # Handle compound statements (e.g., DOCUMENT(); loadMacros(...); TEXT(...))
+            # Split by semicolon but preserve the parts that aren't loadMacros
+            if ';' in original_line and 'loadMacros' in original_line:
+                parts = original_line.split(';')
+                non_loadmacros_parts = []
+                skip_rest_of_line = False
+
+                for part in parts:
+                    part = part.strip()
+                    if 'loadMacros' in part:
+                        # Check if this is a complete loadMacros call or start of multi-line
+                        if '(' in part and part.count('(') == part.count(')'):
+                            # Complete on this part, skip it
+                            continue
+                        else:
+                            # Multi-line loadMacros starts here
+                            in_load_macros = True
+                            paren_depth = part.count('(') - part.count(')')
+                            skip_rest_of_line = True
+                            break
+                    else:
+                        # Keep non-loadMacros parts
+                        if part:
+                            non_loadmacros_parts.append(part)
+
+                # If we have non-loadMacros parts, output them
+                if non_loadmacros_parts:
+                    combined = '; '.join(non_loadmacros_parts)
+                    if combined:
+                        # Process the combined line through normal transformation
+                        transformed = self._transform_line(combined)
+                        output_lines.append(transformed)
+
+                i += 1
+                continue
+
+            # Check if we're entering a standalone loadMacros() call
+            if 'loadMacros' in original_line and '(' in original_line:
+                in_load_macros = True
+                # Count opening and closing parens on this line
+                paren_depth = original_line.count(
+                    '(') - original_line.count(')')
+
+                # If balanced on same line, skip it and move on
+                if paren_depth == 0:
+                    in_load_macros = False
+                    i += 1
+                    continue
+                else:
+                    # Multi-line loadMacros - skip this line and continue tracking
+                    i += 1
+                    continue
+
+            # If we're inside a loadMacros() call, track parentheses
+            if in_load_macros:
+                paren_depth += original_line.count('(') - \
+                    original_line.count(')')
+                if paren_depth <= 0:
+                    # End of loadMacros() call
+                    in_load_macros = False
+                i += 1
+                continue
+
             # Check if this is DOCUMENT() - insert imports right after it (if needed)
             if not imports_inserted and re.match(r'^\s*DOCUMENT\(\s*\)', original_line):
-                output_lines.append(original_line)
+                # Handle compound statements like: DOCUMENT(); loadMacros(...); TEXT(...)
+                # Split by semicolon and process each part
+                if ';' in original_line:
+                    parts = original_line.split(';')
+                    for part in parts:
+                        part = part.strip()
+                        if not part:
+                            continue
+                        # Skip loadMacros parts (macros pre-loaded in sandbox)
+                        if 'loadMacros' in part:
+                            continue
+                        # Transform and add other parts
+                        if part:
+                            transformed = self._transform_line(part)
+                            if transformed:
+                                output_lines.append(transformed)
+                else:
+                    output_lines.append(original_line)
+
                 # Insert imports after DOCUMENT() only if not using sandbox
                 if import_lines:
                     output_lines.append("")  # Blank line
@@ -112,6 +197,65 @@ class PGPreprocessor:
                 imports_inserted = True
                 i += 1
                 continue
+
+            # Check for do { ... } until (condition) loops
+            do_until_match = re.match(r'^\s*do\s*\{', original_line)
+            if do_until_match:
+                # Collect the do-until block
+                block_lines = [original_line]
+                brace_depth = 1  # We've seen the opening {
+                i += 1
+
+                # Collect lines until we find the matching }
+                while i < len(lines) and brace_depth > 0:
+                    line = lines[i]
+                    block_lines.append(line)
+                    brace_depth += line.count('{') - line.count('}')
+                    i += 1
+
+                # Now check if the last line has "until (condition)"
+                last_line = block_lines[-1] if block_lines else ""
+                until_match = re.search(r'\}\s*until\s*\(([^)]+)\)', last_line)
+
+                if until_match:
+                    condition = until_match.group(1)
+
+                    # Transform condition (convert Perl operators)
+                    condition = self._transform_line(condition)
+
+                    # Extract the body (everything between do { and } until)
+                    body_lines = []
+                    # First line: remove "do {"
+                    first = block_lines[0].replace(
+                        'do', '').replace('{', '').strip()
+                    if first:
+                        body_lines.append(first)
+
+                    # Middle lines: add as-is
+                    for line in block_lines[1:-1]:
+                        body_lines.append(line)
+
+                    # Last line: remove "} until (...)"
+                    last = re.sub(
+                        r'\}\s*until\s*\([^)]+\)', '', block_lines[-1]).strip()
+                    if last:
+                        body_lines.append(last)
+
+                    # Transform body lines
+                    transformed_body = []
+                    for line in body_lines:
+                        transformed = self._transform_line(line.rstrip())
+                        if transformed:
+                            transformed_body.append('    ' + transformed)
+
+                    # Generate Python while loop: while not (condition):
+                    output_lines.append(f'while not ({condition}):')
+                    output_lines.extend(transformed_body)
+
+                    continue
+                else:
+                    # Not a proper do-until, fall through to normal processing
+                    i = i - len(block_lines) + 1
 
             # Check for block markers
             block_found = False
@@ -192,7 +336,20 @@ class PGPreprocessor:
 
         # Skip loadMacros() - already handled in first pass
         if 'loadMacros' in line:
-            return ""
+            # If it's on the same line as other code, remove just the loadMacros call
+            if ';' in line:
+                # Split by semicolon, remove loadMacros parts
+                parts = line.split(';')
+                cleaned_parts = [p for p in parts if 'loadMacros' not in p]
+                if cleaned_parts:
+                    line = ';'.join(cleaned_parts).strip()
+                    if not line:
+                        return ""
+                else:
+                    return ""
+            else:
+                # Entire line is loadMacros
+                return ""
 
         # Handle DOCUMENT() and ENDDOCUMENT() - keep as-is
         if re.match(r'^\s*(DOCUMENT|ENDDOCUMENT)\(\s*\)', line):
@@ -209,6 +366,26 @@ class PGPreprocessor:
         # Transform Perl scalar variables: $var → var
         # Use negative lookbehind to avoid matching in strings
         line = re.sub(r'\$([a-zA-Z_][a-zA-Z0-9_]*)', r'\1', line)
+
+        # Transform Perl method call operator: -> → .
+        # Special case: ->with( becomes .with_params( to avoid Python keyword
+        line = line.replace('->with(', '.with_params(')
+        line = line.replace('->', '.')
+
+        # Transform Perl namespace separator: Package::Function → Package.Function
+        line = re.sub(
+            r'([a-zA-Z_][a-zA-Z0-9_]*)::([a-zA-Z_][a-zA-Z0-9_]*)', r'\1.\2', line)
+
+        # Transform Perl string concatenation operator: ' . ' → ' + '
+        # Only when surrounded by spaces or between string literals/variables
+        # Match: 'str' . 'str' or var . 'str' or 'str' . var
+        line = re.sub(r'(\)|\'|\"|\w)\s+\.\s+(\(|\'|\"|\w)', r'\1 + \2', line)
+
+        # Transform Perl fat comma (hash key-value): key => value → key = value
+        # BUT: avoid converting when it's part of array/list syntax like ] => [
+        # Only convert when it's clearly a named parameter: word => value
+        if '] =>' not in line and '} =>' not in line:
+            line = re.sub(r'\b(\w+)\s*=>\s*', r'\1 = ', line)
 
         # Remove trailing semicolons (optional in Python)
         line = re.sub(r';\s*$', '', line)

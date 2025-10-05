@@ -2,6 +2,7 @@
 Test real .pg files with pg_translator.
 """
 
+from pg_translator import PGTranslator
 import sys
 from pathlib import Path
 
@@ -11,40 +12,39 @@ sys.path.insert(0, str(Path(__file__).parent / "packages" / "pg_macros"))
 sys.path.insert(0, str(Path(__file__).parent / "packages" / "pg_answer"))
 sys.path.insert(0, str(Path(__file__).parent / "packages" / "pg_math"))
 
-from pg_translator import PGTranslator
 
 def test_pg_file(file_path: str, seed: int = 123):
     """Test a single .pg file."""
     print("=" * 70)
     print(f"Testing: {file_path}")
     print("=" * 70)
-    
+
     translator = PGTranslator()
-    
+
     try:
         # Translate the problem
         result = translator.translate(file_path, seed=seed)
-        
+
         if result.errors:
             print(f"\n[ERROR] Translation failed:")
             for error in result.errors:
                 print(f"  {error}")
             return False
-        
+
         # Display statement
         print("\n[STATEMENT]")
         print(result.statement_html)
-        
+
         # Display solution
         if result.solution_html:
             print("\n[SOLUTION]")
             print(result.solution_html)
-        
+
         # Display hint
         if result.hint_html:
             print("\n[HINT]")
             print(result.hint_html)
-        
+
         # Display answers
         print("\n[ANSWERS]")
         if result.answer_blanks:
@@ -59,41 +59,42 @@ def test_pg_file(file_path: str, seed: int = 123):
                             print(f"    Correct: {evaluator.correct_answer}")
         else:
             print("  (none)")
-        
+
         # Test answer checking
         print("\n[ANSWER CHECK]")
         if result.answer_blanks:
             # Get first answer blank
             first_name = list(result.answer_blanks.keys())[0]
             first_blank = result.answer_blanks[first_name]
-            
+
             # Extract evaluator
             evaluator = None
             if isinstance(first_blank, dict) and 'evaluator' in first_blank:
                 eval_info = first_blank['evaluator']
                 if isinstance(eval_info, dict) and 'ans_eval' in eval_info:
                     evaluator = eval_info['ans_eval']
-            
+
             if evaluator and hasattr(evaluator, 'correct_answer'):
                 correct = str(evaluator.correct_answer)
                 print(f"  Testing with correct answer: {correct}")
-                
+
                 # Translate again with inputs
                 result_with_check = translator.translate(
-                    file_path, 
+                    file_path,
                     seed=seed,
                     inputs={first_name: correct}
                 )
-                
+
                 if result_with_check.answer_results:
                     for name, ans_result in result_with_check.answer_results.items():
-                        print(f"  {name}: {ans_result.correct} (score: {ans_result.score})")
+                        print(
+                            f"  {name}: {ans_result.correct} (score: {ans_result.score})")
                 else:
                     print("  (no results)")
-        
+
         print("\n[OK] Test passed!")
         return True
-        
+
     except Exception as e:
         print(f"\n[ERROR] Exception: {type(e).__name__}: {e}")
         import traceback
@@ -107,10 +108,10 @@ if __name__ == "__main__":
         ("Multiple answers", "test_problems/multiple_answers.pg"),
         ("With solution", "test_problems/with_solution.pg"),
     ]
-    
+
     passed = 0
     failed = 0
-    
+
     for name, path in problems:
         print(f"\n{'='*70}")
         print(f"TEST: {name}")
@@ -120,13 +121,13 @@ if __name__ == "__main__":
         else:
             failed += 1
         print()
-    
+
     print("\n" + "="*70)
     print("SUMMARY")
     print("="*70)
     print(f"Passed: {passed}/{len(problems)}")
     print(f"Failed: {failed}/{len(problems)}")
-    
+
     if failed == 0:
         print("\n[OK] All tests passed!")
     else:

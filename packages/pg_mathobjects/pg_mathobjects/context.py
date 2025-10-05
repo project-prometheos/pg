@@ -16,9 +16,21 @@ class VariableManager:
     def __init__(self):
         self._variables: Dict[str, str] = {}  # name -> type
 
-    def add(self, name: str, type_: str = 'Real'):
-        """Add a variable to the context."""
-        self._variables[name] = type_
+    def add(self, name: str = None, type_: str = 'Real', **kwargs):
+        """
+        Add a variable to the context.
+
+        Supports both forms:
+        - add('k', 'Real') - positional
+        - add(k='Real') - keyword (from Perl-style code)
+        """
+        if name is not None:
+            # Positional form: add('k', 'Real')
+            self._variables[name] = type_
+        elif kwargs:
+            # Keyword form: add(k='Real')
+            for var_name, var_type in kwargs.items():
+                self._variables[var_name] = var_type
 
     def remove(self, name: str):
         """Remove a variable from the context."""
@@ -276,6 +288,32 @@ class ContextClass:
         new_context.operators = self.operators.copy()
         new_context.flags = self.flags.copy()
         return new_context
+
+    def withUnitsFor(self, *unit_types):
+        """
+        Configure context for unit types (stub for Units context).
+
+        Args:
+            *unit_types: Unit type names like 'length', 'time', 'volume', etc.
+
+        Returns:
+            self for method chaining
+        """
+        # In real PG, this would configure which unit types are available
+        # For now, we just accept and ignore the unit types
+        # This allows method chaining like: Context('Units').withUnitsFor('length').variables.are(...)
+        return self
+
+    def assignUnits(self, **kwargs):
+        """
+        Assign units to variables (stub).
+
+        Args:
+            **kwargs: variable=unit pairs like t='s', x='m', etc.
+        """
+        # In real PG, this assigns units to variables
+        # For now, just accept and ignore
+        pass
 
     def __repr__(self):
         return f"Context('{self.name}')"

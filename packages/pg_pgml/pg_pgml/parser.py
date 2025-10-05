@@ -112,6 +112,7 @@ class AnswerBlank(PGMLNode):
 
     width: int = 20  # Number of underscores or explicit width
     name: str = ""  # Optional answer name
+    evaluator_code: str = ""  # Code for evaluator (from {$ans} syntax)
 
     def accept(self, visitor: Any) -> Any:
         return visitor.visit_answer_blank(self)
@@ -564,13 +565,39 @@ class PGMLParser:
         return Variable(name=var_name)
 
     def _parse_answer_blank(self) -> AnswerBlank:
-        """Parse answer blank [_____]."""
+        """Parse answer blank [_____] with optional {evaluator}."""
         token = self._advance()
 
         # Count underscores for width
         width = token.value.count("_")
+        
+        # Check for evaluator syntax: {$ans} or {evaluator_code}
+        evaluator_code = ""
+        if self._check(TokenType.TEXT):
+            next_text = self.current_token.value
+            if next_text.strip().startswith("{"):
+                # Find matching closing brace
+                brace_depth = 0
+                eval_text = ""
+                found_opening = False
+                
+                for char in next_text:
+                    if char == "{":
+                        brace_depth += 1
+                        found_opening = True
+                    elif char == "}":
+                        brace_depth -= 1
+                        if brace_depth == 0 and found_opening:
+                            # Consume this text token
+                            self._advance()
+                            break
+                    
+                    if found_opening and char not in "{}":
+                        eval_text += char
+                
+                evaluator_code = eval_text.strip()
 
-        return AnswerBlank(width=width)
+        return AnswerBlank(width=width, evaluator_code=evaluator_code)
 
     def _parse_code(self) -> Code:
         """Parse code execution [@code@] or [@code@]*."""

@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Debug PGML translation."""
 
+import tempfile
+from pg_translator.preprocessor import PGPreprocessor
+from pg_translator import PGTranslator
 import sys
 from pathlib import Path
 
@@ -11,7 +14,6 @@ sys.path.insert(0, str(Path(__file__).parent / "packages" / "pg_answer"))
 sys.path.insert(0, str(Path(__file__).parent / "packages" / "pg_math"))
 sys.path.insert(0, str(Path(__file__).parent / "packages" / "pg_pgml"))
 
-from pg_translator import PGTranslator
 
 # Test real PGML file
 with open("webwork_ps1_pg/ps1-prob01.pg", "r", encoding="utf-8") as f:
@@ -24,7 +26,6 @@ print("\n" + "="*60 + "\n")
 translator = PGTranslator()
 
 # Step 1: Preprocess
-from pg_translator.preprocessor import PGPreprocessor
 preprocessor = PGPreprocessor()
 prep_result = preprocessor.preprocess(pg_code, use_sandbox_macros=True)
 
@@ -34,7 +35,6 @@ print("\n" + "="*60 + "\n")
 
 # Step 2: Translate
 # Save to temp file first (translator expects file path)
-import tempfile
 with tempfile.NamedTemporaryFile(mode='w', suffix='.pg', delete=False, encoding='utf-8') as f:
     f.write(pg_code)
     temp_file = f.name

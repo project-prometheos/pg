@@ -188,6 +188,17 @@ class HTMLRenderer(Renderer):
         width_chars = node.width if node.width > 0 else 20
         # Approximate character width in pixels
         width_px = width_chars * 10
+        
+        # Register evaluator if we have code and context
+        if node.evaluator_code and hasattr(self, '_register_answer'):
+            try:
+                # Remove Perl $ sigil if present
+                eval_code = node.evaluator_code.lstrip('$')
+                # Evaluate the evaluator code in the context
+                evaluator = eval(eval_code, {}, self.context)
+                self._register_answer(answer_name, evaluator)
+            except Exception:
+                pass  # Silently skip if evaluator can't be resolved
 
         return (
             f'<input type="text" '

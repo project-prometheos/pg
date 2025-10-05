@@ -129,7 +129,7 @@ if "PGML" in block_type:
     block_var = f"pgml_block_{len(text_blocks) - 1}"
     escaped_content = self._escape_triple_quotes(block_content)
     output_lines.append(f"{block_var} = '''\\n{escaped_content}\\n'''")
-    
+
     # Call PGML renderer (will be available in sandbox)
     if "SOLUTION" in block_type:
         output_lines.append(f"SOLUTION(PGML({block_var}))")
@@ -152,14 +152,14 @@ The sandbox provides a `PGML()` function that:
 def PGML(pgml_text):
     """Parse and render PGML markup."""
     from .pgml_parser import PGMLParser, PGMLRenderer, AnswerBlankNode
-    
+
     # Get current context (variables)
     context = self._pg_core.get_environment().context
-    
+
     # Parse PGML
     parser = PGMLParser()
     doc = parser.parse(pgml_text, context=context)
-    
+
     # Extract answer blanks and register evaluators
     for node in doc.nodes:
         if isinstance(node, AnswerBlankNode):
@@ -167,11 +167,11 @@ def PGML(pgml_text):
             evaluator = eval(node.evaluator_expr, context)
             # Register with ANS()
             ANS(evaluator)
-    
+
     # Render to HTML
     renderer = PGMLRenderer(context=context)
     html = renderer.render(doc)
-    
+
     return html
 ```
 
@@ -214,7 +214,7 @@ self.patterns = {
 **Sample Output**:
 ```
 [STATEMENT]
-<p><b>Problem 1.</b> Beräkna \(\tan\!\left(\frac{23\pi}{6}\right)\). 
+<p><b>Problem 1.</b> Beräkna \(\tan\!\left(\frac{23\pi}{6}\right)\).
 Svaret får innehålla rötter men inte trigonometriska funktioner.
 <p><input type="text" name="AnSwEr0001" size="20" />
 ```
@@ -337,6 +337,6 @@ This is a **major win** - we support the future (PGML) while maintaining compati
 
 ---
 
-**Date**: October 5, 2025  
-**Status**: ✅ COMPLETE - Both Traditional PG and PGML Validated  
+**Date**: October 5, 2025
+**Status**: ✅ COMPLETE - Both Traditional PG and PGML Validated
 **Next**: Deploy to staging, user acceptance testing

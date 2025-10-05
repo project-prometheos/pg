@@ -157,6 +157,10 @@ class InProcessSandbox:
         self.namespace['math'] = math
         self.namespace['random'] = random
 
+        # Add common mathematical constants
+        self.namespace['pi'] = math.pi
+        self.namespace['e'] = math.e
+
         # Load MathObjects
         self._load_mathobjects()
 
@@ -165,17 +169,22 @@ class InProcessSandbox:
         self._load_pg_basic_macros()
         self._load_pg_answer_macros()
 
+        # Load additional context macros (stubs)
+        self._load_context_macros()
+
     def _load_mathobjects(self) -> None:
         """Load MathObjects framework into namespace."""
         try:
             # Import MathObjects
             from pg_mathobjects import Context, Formula, Real, Compute
+            from pg_mathobjects.formula_up_to_constant import FormulaUpToConstant
 
             # Make available in namespace
             self.namespace['Context'] = Context
             self.namespace['Formula'] = Formula
             self.namespace['Real'] = Real
             self.namespace['Compute'] = Compute
+            self.namespace['FormulaUpToConstant'] = FormulaUpToConstant
 
         except ImportError:
             # Fallback: provide minimal stubs
@@ -226,48 +235,64 @@ class InProcessSandbox:
             # Define PGML function (not in pg_core)
             def PGML(pgml_text):
                 """Render PGML markup to HTML."""
-                from .pgml_parser import PGMLParser, PGMLRenderer, AnswerBlankNode
+                from pg_pgml import PGMLParser, HTMLRenderer
+                from pg_pgml.parser import AnswerBlank
+                
                 # Get current namespace for variable access
-                import inspect
-                frame = inspect.currentframe()
-                if frame and frame.f_back:
-                    context = frame.f_back.f_locals
-                    globals_context = frame.f_back.f_globals
-                else:
-                    context = {}
-                    globals_context = {}
+                context = self.namespace
 
-                parser = PGMLParser()
-                doc = parser.parse(pgml_text, context=context)
-
-                # Collect answer blanks and evaluate their evaluators
+                # Parse PGML text using the proper tokenizer/parser
+                doc = PGMLParser.parse_text(pgml_text)
+                
+                # Collect answer blanks from the document tree
                 answer_blanks = []
+                visited = set()  # Track visited nodes to prevent infinite loops
 
-                def collect_answer_blanks(node):
-                    if isinstance(node, AnswerBlankNode):
+                def collect_answer_blanks(node, depth=0):
+                    """Recursively collect AnswerBlank nodes."""
+                    if depth > 50:  # Prevent stack overflow
+                        return
+                    
+                    # Prevent revisiting the same node
+                    node_id = id(node)
+                    if node_id in visited:
+                        return
+                    visited.add(node_id)
+                    
+                    if isinstance(node, AnswerBlank):
                         answer_blanks.append(node)
-                    if hasattr(node, 'children'):
-                        for child in node.children:
-                            collect_answer_blanks(child)
+                        return  # Don't recurse into AnswerBlank itself
+                    
+                    # Check for children in various node types
+                    if hasattr(node, 'blocks') and node.blocks:
+                        for child in node.blocks:
+                            collect_answer_blanks(child, depth + 1)
+                    if hasattr(node, 'content') and isinstance(node.content, list):
+                        for child in node.content:
+                            collect_answer_blanks(child, depth + 1)
+                    if hasattr(node, 'items') and node.items:
+                        for item in node.items:
+                            collect_answer_blanks(item, depth + 1)
 
-                for node in doc.nodes:
-                    collect_answer_blanks(node)
+                # Start collection from document root
+                collect_answer_blanks(doc)
 
                 # Evaluate evaluator expressions and register answers
                 for blank in answer_blanks:
-                    if blank.evaluator_expr:
+                    if blank.evaluator_code:
                         try:
-                            # Evaluate in caller's context
-                            evaluator = eval(
-                                blank.evaluator_expr, globals_context, context)
+                            # Remove Perl $ sigil before evaluation
+                            eval_expr = blank.evaluator_code.lstrip('$')
+                            # Evaluate in current namespace
+                            evaluator = eval(eval_expr, {}, context)
                             # Register with ANS()
                             pg_core.ANS(evaluator)
-                        except Exception as e:
+                        except Exception:
                             # If evaluation fails, skip this answer blank
                             pass
 
-                # Render PGML
-                renderer = PGMLRenderer(context=context)
+                # Render PGML to HTML using proper renderer
+                renderer = HTMLRenderer(context=context)
                 return renderer.render(doc)
 
             # Register core functions
@@ -342,50 +367,77 @@ class InProcessSandbox:
 
         # PGML rendering function
         def PGML(pgml_text):
-            """Render PGML markup to HTML."""
-            from .pgml_parser import PGMLParser, PGMLRenderer, AnswerBlankNode
+            """Render PGML markup to HTML (fallback mode without pg_core)."""
+            # DEBUG
+            print(f"[PGML DEBUG] Called with {len(pgml_text)} chars")
+            
+            from pg_pgml import PGMLParser, HTMLRenderer
+            from pg_pgml.parser import AnswerBlank
+            
             # Get current namespace for variable access
-            import inspect
-            frame = inspect.currentframe()
-            if frame and frame.f_back:
-                context = frame.f_back.f_locals
-                globals_context = frame.f_back.f_globals
-            else:
-                context = {}
-                globals_context = {}
+            context = self.namespace
 
-            parser = PGMLParser()
-            doc = parser.parse(pgml_text, context=context)
-
-            # Collect answer blanks and evaluate their evaluators
+            # Parse PGML text using the proper tokenizer/parser
+            doc = PGMLParser.parse_text(pgml_text)
+            
+            # DEBUG
+            print(f"[PGML DEBUG] Parsed document: {doc}")
+            
+            # Collect answer blanks from the document tree
             answer_blanks = []
+            visited = set()  # Track visited nodes to prevent infinite loops
 
-            def collect_answer_blanks(node):
-                if isinstance(node, AnswerBlankNode):
+            def collect_answer_blanks(node, depth=0):
+                """Recursively collect AnswerBlank nodes."""
+                if depth > 50:  # Prevent stack overflow
+                    return
+                
+                # Prevent revisiting the same node
+                node_id = id(node)
+                if node_id in visited:
+                    return
+                visited.add(node_id)
+                
+                if isinstance(node, AnswerBlank):
                     answer_blanks.append(node)
-                if hasattr(node, 'children'):
-                    for child in node.children:
-                        collect_answer_blanks(child)
+                    return  # Don't recurse into AnswerBlank itself
+                
+                # Check for children in various node types
+                if hasattr(node, 'blocks') and node.blocks:
+                    for child in node.blocks:
+                        collect_answer_blanks(child, depth + 1)
+                if hasattr(node, 'content') and isinstance(node.content, list):
+                    for child in node.content:
+                        collect_answer_blanks(child, depth + 1)
+                if hasattr(node, 'items') and node.items:
+                    for item in node.items:
+                        collect_answer_blanks(item, depth + 1)
 
-            for node in doc.nodes:
-                collect_answer_blanks(node)
+            # Start collection from document root
+            collect_answer_blanks(doc)
 
             # Evaluate evaluator expressions and register answers
             for blank in answer_blanks:
-                if blank.evaluator_expr:
+                if blank.evaluator_code:
                     try:
-                        # Evaluate in caller's context
-                        evaluator = eval(blank.evaluator_expr,
-                                         globals_context, context)
+                        # Remove Perl $ sigil before evaluation
+                        eval_expr = blank.evaluator_code.lstrip('$')
+                        # Evaluate in current namespace
+                        evaluator = eval(eval_expr, {}, context)
                         # Register with ANS()
                         ANS(evaluator)
-                    except Exception as e:
+                    except Exception:
                         # If evaluation fails, skip this answer blank
                         pass
 
-            # Render PGML
-            renderer = PGMLRenderer(context=context)
-            return renderer.render(doc)
+            # Render PGML to HTML using proper renderer
+            renderer = HTMLRenderer(context=context)
+            result = renderer.render(doc)
+            
+            # DEBUG
+            print(f"[PGML DEBUG] Rendered {len(result)} chars: {result[:50]}")
+            
+            return result
 
         # Random functions (don't shadow random module)
         import random as _random_module
@@ -427,6 +479,9 @@ class InProcessSandbox:
             'loadMacros': loadMacros,
             'get_environment': get_environment,
             'set_environment': set_environment,
+            # Add a dummy macro loader to suppress warnings
+            # Macros are pre-loaded, so this just prevents the warning
+            '_macro_loader': type('DummyLoader', (), {'load_macro': lambda self, x: None})(),
         })
 
         self._stub_env = _env
@@ -589,6 +644,14 @@ class InProcessSandbox:
             seed: Random seed
             context: Mathematical context
         """
+        # IMPORTANT: Clear namespace and reinitialize for each problem
+        # This prevents variable pollution between problems
+        self.namespace.clear()
+        self._setup_safe_namespace()
+        
+        # DEBUG: Check if TEXT and PGML are in namespace
+        print(f"[INIT DEBUG] Namespace has TEXT: {'TEXT' in self.namespace}, PGML: {'PGML' in self.namespace}")
+        
         # Set random seed
         import random as _random_module
         _random_module.seed(seed)
@@ -608,6 +671,14 @@ class InProcessSandbox:
         # Don't initialize PGEnvironment here - DOCUMENT() will do it
         # Just clear any previous environment
         self._pg_environment = None
+        
+        # Also clear pg_core's global environment if we're using it
+        if hasattr(self, '_pg_core') and hasattr(self._pg_core, '_pg_environment'):
+            # DEBUG
+            old_env = self._pg_core._pg_environment
+            if old_env:
+                print(f"[INIT DEBUG] Clearing pg_core environment (had {len(old_env.output_array)} texts)")
+            self._pg_core._pg_environment = None
 
     @contextmanager
     def _timeout_context(self):
@@ -657,8 +728,14 @@ class InProcessSandbox:
                 # Compile code with restricted mode
                 compiled = compile(code, '<problem>', 'exec')
 
+                # DEBUG
+                print(f"[EXEC DEBUG] Compiled successfully, executing...")
+                
                 # Execute in namespace
                 exec(compiled, self.namespace)
+                
+                # DEBUG
+                print(f"[EXEC DEBUG] Execution completed")
 
         except TimeoutError as e:
             errors = str(e)
@@ -672,10 +749,19 @@ class InProcessSandbox:
             if hasattr(self, '_pg_core'):
                 # Use the SAME pg_core instance that was loaded in namespace
                 pg_env = self._pg_core.get_environment() if self._pg_core._pg_environment else None
+                # DEBUG
+                if pg_env:
+                    print(f"[COLLECT DEBUG] Got pg_core environment with {len(pg_env.output_array)} texts")
+                else:
+                    print(f"[COLLECT DEBUG] pg_core._pg_environment is None")
+            elif hasattr(self, '_stub_env'):
+                # Use stub environment if pg_core not available
+                pg_env = self._stub_env
             else:
                 pg_env = self._pg_environment if hasattr(
                     self, '_pg_environment') else None
         except Exception as ex:
+            print(f"[COLLECT DEBUG] Exception getting environment: {ex}")
             pg_env = None
 
         if pg_env:
@@ -708,6 +794,77 @@ class InProcessSandbox:
             errors=errors,
             variables=variables
         )
+
+    def _load_context_macros(self) -> None:
+        """Load context-related macro stubs (LimitedPowers, etc.)."""
+        # Stub class for LimitedPowers
+        class LimitedPowersStub:
+            """Stub for LimitedPowers macro package."""
+            @staticmethod
+            def OnlyIntegers(**kwargs):
+                """Stub for LimitedPowers::OnlyIntegers - accepts but ignores parameters."""
+                # In real PG, this restricts allowed powers in polynomial contexts
+                # For now, we just accept the call and do nothing
+                pass
+
+            @staticmethod
+            def OnlyPositiveIntegers(**kwargs):
+                """Stub for LimitedPowers::OnlyPositiveIntegers."""
+                pass
+
+        # Stub class for MultiAnswer
+        class MultiAnswerStub:
+            """Stub for MultiAnswer - used for checking multiple related answer blanks together."""
+
+            def __init__(self, *args, **kwargs):
+                self.answers = args
+                self.options = kwargs
+
+            def with_params(self, **kwargs):
+                """Method for setting options (works around 'with' keyword)."""
+                self.options.update(kwargs)
+                return self
+
+        # Add .with() method using setattr to work around Python keyword
+        setattr(MultiAnswerStub, 'with', MultiAnswerStub.with_params)
+
+        # Stub for AnswerHints - provides custom hints for specific incorrect answers
+        def AnswerHintsStub(*args, **kwargs):
+            """Stub for AnswerHints macro - returns a filter function."""
+            # In real PG, this creates a filter that shows hints for specific wrong answers
+            # For now, just return a dummy filter
+            def filter_func(answer_hash):
+                return answer_hash
+            return filter_func
+
+        # Stub for parser package
+        class ParserStub:
+            """Stub for parser package."""
+            class Assignment:
+                """Stub for parser::Assignment."""
+                @staticmethod
+                def Allow():
+                    """Stub for parser::Assignment->Allow."""
+                    pass
+
+        # Stub for helpLink - provides links to help documentation
+        def helpLinkStub(topic):
+            """Stub for helpLink - returns a help link."""
+            return f'<a href="/help/{topic}" target="_blank">Help</a>'
+
+        # Stub for LayoutTable - creates formatted table layouts
+        def LayoutTableStub(rows, **kwargs):
+            """Stub for LayoutTable - returns a simple table representation."""
+            # In real PG, this creates nicely formatted tables
+            # For now, just return a simple string representation
+            return f"[Table with {len(rows)} rows]"
+
+        self.namespace['LimitedPowers'] = LimitedPowersStub
+        self.namespace['MultiAnswer'] = MultiAnswerStub
+        self.namespace['AnswerHints'] = AnswerHintsStub
+        self.namespace['parser'] = ParserStub
+        self.namespace['helpLink'] = helpLinkStub
+        self.namespace['LayoutTable'] = LayoutTableStub
 
 
 def create_in_process_sandbox(timeout: int = 30) -> InProcessSandbox:
