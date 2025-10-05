@@ -6,7 +6,7 @@ The webwork_ps1_pg examples were showing raw LaTeX delimiters instead of rendere
 
 **Before**:
 ```
-Problem 1. Beräkna \(\tan\!\left(\frac{23\pi}{6}\right)\). 
+Problem 1. Beräkna \(\tan\!\left(\frac{23\pi}{6}\right)\).
 ```
 
 The `\(...\)` delimiters were being passed through unchanged, resulting in raw LaTeX visible to users.
@@ -18,7 +18,7 @@ The PGML renderer only supported PGML-style math delimiters:
 - PGML display: `` [``...``] `` → `$$...$$`
 
 But many PG problems use standard LaTeX-style delimiters:
-- LaTeX inline: `\(...\)` 
+- LaTeX inline: `\(...\)`
 - LaTeX display: `\[...\]`
 
 The PS1 problems (and likely other imported WeBWorK problems) use LaTeX delimiters within PGML blocks, and these were not being converted to Markdown/KaTeX format.
@@ -70,13 +70,13 @@ All PS1 problems now render correctly without raw LaTeX:
 
 **Before**:
 ```
-**Problem 1.** Beräkna \(\tan\!\left(\frac{23\pi}{6}\right)\). 
+**Problem 1.** Beräkna \(\tan\!\left(\frac{23\pi}{6}\right)\).
 Svaret får innehålla rötter men inte trigonometriska funktioner.
 ```
 
 **After**:
 ```
-**Problem 1.** Beräkna $\tan\!\left(\frac{23\pi}{6}\right)$. 
+**Problem 1.** Beräkna $\tan\!\left(\frac{23\pi}{6}\right)$.
 Svaret får innehålla rötter men inte trigonometriska funktioner.
 ```
 
