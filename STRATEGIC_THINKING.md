@@ -1,7 +1,7 @@
 # Strategic Thinking: Implementation Approach
 ## 1:1 100% Parity Achievement Strategy
 
-**Date**: October 5, 2025  
+**Date**: October 5, 2025
 **Author**: Analysis of Perl codebase vs Python port
 
 ---
@@ -96,26 +96,26 @@ From Translator.pm:
 sub unrestricted_load {
     my $self = shift;
     my $macro_file = shift;
-    
+
     # Save permission mask
     my $stored_mask = $self->{safe_compartment}->mask();
-    
+
     # Set unrestricted (empty mask)
     $self->{safe_compartment}->mask(0);
-    
+
     # Load file
     my $errors = $self->rdo($macro_file);
-    
+
     # Call init function if exists
     my $name = get_name($macro_file);
     my $init = "_${name}_init";
     if (defined &{$init}) {
         &{$init}();
     }
-    
+
     # Restore mask
     $self->{safe_compartment}->mask($stored_mask);
-    
+
     return $errors;
 }
 ```
@@ -258,7 +258,7 @@ Can't verify anything works
 
 2. **Week 6: Essential PGML Features**
    - Tables
-   - Headings  
+   - Headings
    - Answer blanks with evaluators
    - Solution sections
 
@@ -439,18 +439,18 @@ With macros done first:
 
 ### What NOT To Do
 
-❌ **Don't** jump to Formula enhancements  
-❌ **Don't** refactor existing code extensively  
-❌ **Don't** try to do everything at once  
-❌ **Don't** skip testing with real problems  
-❌ **Don't** implement features without macro support  
+❌ **Don't** jump to Formula enhancements
+❌ **Don't** refactor existing code extensively
+❌ **Don't** try to do everything at once
+❌ **Don't** skip testing with real problems
+❌ **Don't** implement features without macro support
 
 ### Success Metrics
 
-**Week 1**: Macro loader loads Python macros and calls init functions  
-**Week 2**: TEXT() and ANS() work in test problems  
-**Week 3**: ans_rule() generates input fields  
-**Week 4**: 10 simple problems render correctly  
+**Week 1**: Macro loader loads Python macros and calls init functions
+**Week 2**: TEXT() and ANS() work in test problems
+**Week 3**: ans_rule() generates input fields
+**Week 4**: 10 simple problems render correctly
 
 ---
 
@@ -463,13 +463,13 @@ The path to 100% parity is clear:
 3. **Incremental Progress** - Deliver value each week
 4. **Stay Focused** - Don't get distracted by "nice to haves"
 
-**The plans (01-04) provide the detailed roadmap.**  
-**This document provides the strategic thinking.**  
+**The plans (01-04) provide the detailed roadmap.**
+**This document provides the strategic thinking.**
 **Now: Execute.**
 
 ---
 
-**Key Message**: 
+**Key Message**:
 
 > The macro system is not "just another component" - it's the foundation that everything else is built on. Port it first, port it completely, and the rest will follow naturally.
 

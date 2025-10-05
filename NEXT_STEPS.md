@@ -1,8 +1,8 @@
 # Next Steps: Macro System Implementation
 ## Immediate Action Plan
 
-**Date**: October 5, 2025  
-**Priority**: CRITICAL  
+**Date**: October 5, 2025
+**Priority**: CRITICAL
 **Estimated Time**: 4 weeks (1 developer) | 2 weeks (2 developers)
 
 ---
@@ -46,7 +46,7 @@ This unlocks everything else - without macros, nothing works.
 
 ### Day 4-5: Namespace Integration
 
-**Files**: 
+**Files**:
 - `packages/pg_translator/pg_translator/sandbox.py`
 - `packages/pg_translator/pg_translator/environment.py`
 
@@ -84,7 +84,7 @@ def END_TEXT() -> str:
 
 **Reference**: PG.pl lines 400-600
 
-**Test**: 
+**Test**:
 ```python
 TEXT("Hello ", "world")
 assert env.get_text() == "Hello world"
@@ -213,15 +213,15 @@ def pop_up_list(options: list | dict) -> str:
 ```python
 class DisplayConstants:
     """Display mode-specific constants."""
-    
+
     @staticmethod
     def PAR(mode: str = "HTML") -> str:
         return {"HTML": "<p>", "TeX": "\\n\\n", "PTX": "<p>"}[mode]
-    
+
     @staticmethod
     def BR(mode: str = "HTML") -> str:
         return {"HTML": "<br/>", "TeX": "\\\\", "PTX": "<br/>"}[mode]
-    
+
     # ... 50+ more constants
 
 def _PGbasicmacros_init():
@@ -439,18 +439,18 @@ def PG_errorMessage(return_type: str = "traceback", *messages: str) -> str:
 ## 🎯 FOCUS AREAS
 
 ### DO:
-✅ Implement one function at a time  
-✅ Test each function immediately  
-✅ Use real problem examples  
-✅ Document as you go  
-✅ Stay focused on core macros  
+✅ Implement one function at a time
+✅ Test each function immediately
+✅ Use real problem examples
+✅ Document as you go
+✅ Stay focused on core macros
 
 ### DON'T:
-❌ Try to implement everything at once  
-❌ Skip testing  
-❌ Refactor existing code extensively  
-❌ Add features not in plans  
-❌ Get distracted by "nice to haves"  
+❌ Try to implement everything at once
+❌ Skip testing
+❌ Refactor existing code extensively
+❌ Add features not in plans
+❌ Get distracted by "nice to haves"
 
 ---
 
