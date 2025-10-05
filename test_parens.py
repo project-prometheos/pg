@@ -4,6 +4,7 @@
 
 import re
 
+
 def needs_parens(term):
     """Check if a term needs parentheses"""
     # Keep parens if term contains operators (but not just negative sign at start)
@@ -20,19 +21,21 @@ def needs_parens(term):
         return True
     return False
 
+
 def simplify_fraction_parens(match):
     num = match.group(1)
     den = match.group(2)
-    
+
     # Simplify numerator and denominator
     num_simple = num if needs_parens(num) else num
     den_simple = den if needs_parens(den) else den
-    
+
     # Add back parens only if needed
     num_display = f'({num_simple})' if needs_parens(num) else num_simple
     den_display = f'({den_simple})' if needs_parens(den) else den_simple
-    
+
     return f'{num_display}/{den_display}'
+
 
 # Test cases
 test_cases = [
@@ -50,6 +53,7 @@ print("Testing Parentheses Simplification")
 print("="*70)
 
 for input_expr, expected in test_cases:
-    result = re.sub(r'\(([^)]+)\)/\(([^)]+)\)', simplify_fraction_parens, input_expr)
+    result = re.sub(r'\(([^)]+)\)/\(([^)]+)\)',
+                    simplify_fraction_parens, input_expr)
     status = "✓" if result == expected else "✗"
     print(f"{status} {input_expr:20} → {result:20} (expected: {expected})")
