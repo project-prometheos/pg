@@ -2,7 +2,7 @@ DOCUMENT(); loadMacros("PGstandard.pl","MathObjects.pl","PGML.pl"); TEXT(beginpr
 Context("Numeric");
 $A = Compute("0"); $B = Compute("pi/2"); $C = Compute("pi");
 BEGIN_PGML
-**Problem 8.** Bestäm lösningarna till \(\sin x = \sin^2 x\) i \([0,2\pi[\). Växande ordning:
+**Problem 8.** Bestäm lösningarna till \(\sin x = \sin^2 x\) i \(\lbrack0,2\pi[\). Växande ordning:
 \([\,\_\,] \le [\,\_\,] \le [\,\_\,]\).
 
 [_]{$A} <= [_]{$B} <= [_]{$C}
