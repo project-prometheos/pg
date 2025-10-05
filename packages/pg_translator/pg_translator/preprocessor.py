@@ -309,6 +309,9 @@ class PGPreprocessor:
                     if "PGML" in block_type:
                         # PGML blocks - render at runtime with context
                         # Store the PGML content and render it during execution
+                        # BUT FIRST: Transform Perl syntax to Python in evaluator expressions
+                        block_content = self._transform_pgml_evaluators(block_content)
+                        
                         block_var = f"pgml_block_{len(text_blocks) - 1}"
                         escaped_content = self._escape_triple_quotes(
                             block_content)
@@ -536,6 +539,61 @@ class PGPreprocessor:
         text = text.replace("'''", r"\'\'\'")
         text = text.replace('"""', r'\"\"\"')
         return text
+
+    def _transform_pgml_evaluators(self, pgml_content: str) -> str:
+        """
+        Transform Perl syntax to Python in PGML evaluator expressions.
+        
+        PGML allows inline evaluators like: [_]{$answer->cmp()}
+        We need to convert Perl method calls (->)  to Python (.).
+        
+        Args:
+            pgml_content: PGML markup text
+            
+        Returns:
+            Transformed PGML with Python syntax in evaluator expressions
+        """
+        import re
+        
+        # Pattern to match {$var->method(...)} or {$var.method(...)}
+        # We want to convert -> to . inside {...} that comes after [_]
+        # Use a more careful approach: find all {code} blocks and transform them
+        
+        result = []
+        i = 0
+        while i < len(pgml_content):
+            # Look for { that might start an evaluator
+            if pgml_content[i] == '{':
+                # Find the matching closing brace
+                brace_depth = 1
+                j = i + 1
+                while j < len(pgml_content) and brace_depth > 0:
+                    if pgml_content[j] == '{':
+                        brace_depth += 1
+                    elif pgml_content[j] == '}':
+                        brace_depth -= 1
+                    j += 1
+                
+                if brace_depth == 0:
+                    # Found matching closing brace
+                    code_block = pgml_content[i+1:j-1]
+                    
+                    # Transform Perl syntax to Python
+                    # Convert -> to .
+                    transformed = code_block.replace('->', '.')
+                    # Remove Perl $ sigils from variables (keep $ in $$ for LaTeX)
+                    transformed = re.sub(r'\$([a-zA-Z_]\w*)', r'\1', transformed)
+                    
+                    result.append('{')
+                    result.append(transformed)
+                    result.append('}')
+                    i = j
+                    continue
+            
+            result.append(pgml_content[i])
+            i += 1
+        
+        return ''.join(result)
 
     def _transform_load_macros(self, macro_list_str: str) -> tuple[list[str], str]:
         """

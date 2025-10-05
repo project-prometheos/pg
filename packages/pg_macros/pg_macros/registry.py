@@ -64,6 +64,7 @@ class MacroRegistry:
             "PGchoicemacros.pl": "pg_macros.ui.choice_macros",
             "niceTables.pl": "pg_macros.ui.nice_tables",
             "scaffold.pl": "pg_macros.ui.scaffold",
+            "contextFraction.pl": "pg_macros.contexts",
         }
         
         python_module = module_map.get(filename)
