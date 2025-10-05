@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """Debug LinearApprox.pg"""
 
+from pg_translator.in_process_sandbox import InProcessSandbox
+from pg_translator.preprocessor import PGPreprocessor
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent / "packages" / "pg_translator"))
 sys.path.insert(0, str(Path(__file__).parent / "packages" / "pg_pgml"))
 sys.path.insert(0, str(Path(__file__).parent / "packages" / "pg_macros"))
 
-from pg_translator.preprocessor import PGPreprocessor
-from pg_translator.in_process_sandbox import InProcessSandbox
 
 with open('tutorial/sample-problems/DiffCalc/LinearApprox.pg') as f:
     content = f.read()

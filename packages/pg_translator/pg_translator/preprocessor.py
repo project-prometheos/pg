@@ -201,9 +201,34 @@ class PGPreprocessor:
             # Check for do { ... } until (condition) loops
             do_until_match = re.match(r'^\s*do\s*\{', original_line)
             if do_until_match:
-                # Collect the do-until block
+                # Check if this is a single-line do-until
+                single_line_until = re.search(r'\}\s*until\s*\(([^)]+)\)', original_line)
+                
+                if single_line_until:
+                    # Single-line do-until: do { body } until (condition)
+                    condition = single_line_until.group(1)
+                    
+                    # Transform condition
+                    condition = self._transform_line(condition)
+                    
+                    # Extract body between { and }
+                    body_match = re.search(r'do\s*\{([^}]+)\}', original_line)
+                    if body_match:
+                        body = body_match.group(1).strip()
+                        transformed_body = self._transform_line(body)
+                        
+                        # Generate Python while loop
+                        output_lines.append(f'while True:')
+                        output_lines.append(f'    {transformed_body}')
+                        output_lines.append(f'    if not ({condition}):')
+                        output_lines.append(f'        break')
+                        
+                        i += 1
+                        continue
+                
+                # Multi-line do-until: collect the block
                 block_lines = [original_line]
-                brace_depth = 1  # We've seen the opening {
+                brace_depth = original_line.count('{') - original_line.count('}')
                 i += 1
 
                 # Collect lines until we find the matching }

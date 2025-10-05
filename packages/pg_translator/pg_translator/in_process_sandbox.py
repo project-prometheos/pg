@@ -448,14 +448,11 @@ class InProcessSandbox:
         def loadMacros(*args): pass
         def get_environment(): return _env
         def set_environment(env): pass
-        
+
         def parserFunction(name=None, formula=None):
             """Stub for parserFunction - defines named function in context."""
             # Just a placeholder - real implementation would add to Context
             pass
-
-        # DEBUG: Verify parserFunction is defined
-        assert parserFunction is not None, "parserFunction should be defined"
 
         self.namespace.update({
             'DOCUMENT': DOCUMENT,
@@ -481,9 +478,6 @@ class InProcessSandbox:
             # Macros are pre-loaded, so this just prevents the warning
             '_macro_loader': type('DummyLoader', (), {'load_macro': lambda self, x: None})(),
         })
-        
-        # DEBUG: Check if parserFunction was actually added
-        assert 'parserFunction' in self.namespace, "parserFunction should be in namespace after update"
 
         self._stub_env = _env
 
@@ -682,10 +676,6 @@ class InProcessSandbox:
         # Also clear pg_core's global environment if we're using it
         if hasattr(self, '_pg_core') and hasattr(self._pg_core, '_pg_environment'):
             self._pg_core._pg_environment = None
-        
-        # DEBUG: Verify parserFunction is still in namespace at end of initialize_environment
-        if 'parserFunction' not in self.namespace:
-            raise AssertionError(f"parserFunction missing from namespace at end of initialize_environment! Keys: {list(self.namespace.keys())}")
 
     @contextmanager
     def _timeout_context(self):
@@ -859,14 +849,14 @@ class InProcessSandbox:
         self.namespace['parser'] = ParserStub
         self.namespace['helpLink'] = helpLinkStub
         self.namespace['LayoutTable'] = LayoutTableStub
-        
+
         # Stub for parserFunction - defines named function in context
         def parserFunctionStub(*args, **kwargs):
             """Stub for parserFunction from parserFunction.pl macro."""
             # In real PG, this would add a named function to the Context
             # For now, just a placeholder
             pass
-        
+
         self.namespace['parserFunction'] = parserFunctionStub
 
 

@@ -29,7 +29,8 @@ class Real(Value):
                 formula = Formula(value, context)
                 result = formula.eval()
                 # Extract numeric value from result
-                value = result.value if hasattr(result, 'value') else float(result)
+                value = result.value if hasattr(
+                    result, 'value') else float(result)
             except:
                 # Fall back to direct float conversion
                 value = float(value)

@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """Test remaining problems."""
 
+from pg_translator import PGTranslator
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path('.') / 'packages' / 'pg_translator'))
 sys.path.insert(0, str(Path('.') / 'packages' / 'pg_pgml'))
 sys.path.insert(0, str(Path('.') / 'packages' / 'pg_macros'))
 
-from pg_translator import PGTranslator
 
 problems = {
     'DoubleIntegral.pg': 'tutorial/sample-problems/IntegralCalc/DoubleIntegral.pg',
@@ -21,16 +21,16 @@ for name, path in problems.items():
     try:
         from pg_translator.preprocessor import PGPreprocessor
         from pg_translator.in_process_sandbox import InProcessSandbox
-        
+
         with open(path) as f:
             content = f.read()
-        
+
         prep = PGPreprocessor()
         prep_result = prep.preprocess(content)
-        
+
         sandbox = InProcessSandbox()
         exec_result = sandbox.execute(prep_result.code, 1234)
-        
+
         print(f"Execution success: {exec_result.success}")
         print(f"Output: {len(exec_result.output_text)} chars")
         print(f"Answers: {len(exec_result.answers)}")

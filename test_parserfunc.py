@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Test parserFunction stub."""
 
+from pg_translator.preprocessor import PGPreprocessor
+from pg_translator.in_process_sandbox import InProcessSandbox
 import sys
 sys.path.insert(0, 'packages/pg_translator')
 sys.path.insert(0, 'packages/pg_mathobjects')
 
-from pg_translator.in_process_sandbox import InProcessSandbox
-from pg_translator.preprocessor import PGPreprocessor
 
 # Load RecursiveSequence.pg
 with open('tutorial/sample-problems/Sequences/RecursiveSequence.pg') as f:
