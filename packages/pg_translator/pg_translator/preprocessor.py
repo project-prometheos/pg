@@ -75,7 +75,7 @@ class PGPreprocessor:
         # First pass: collect all loadMacros() calls to generate imports
         import_lines: list[str] = []
         loaded_macros_comment = None
-        
+
         if not use_sandbox_macros:
             # Generate imports only if not using sandbox macros
             for line in lines:
@@ -83,13 +83,14 @@ class PGPreprocessor:
                     # Extract macro file names
                     match = re.search(r'loadMacros\((.*?)\)', line, re.DOTALL)
                     if match:
-                        imports, comment = self._transform_load_macros(match.group(1))
+                        imports, comment = self._transform_load_macros(
+                            match.group(1))
                         import_lines.extend(imports)
                         loaded_macros_comment = comment
-        
+
         # Track if we've inserted imports yet
         imports_inserted = False
-        
+
         i = 0
         while i < len(lines):
             original_line = lines[i]
@@ -97,7 +98,7 @@ class PGPreprocessor:
 
             # Track line mapping
             line_map[output_line_num] = i + 1
-            
+
             # Check if this is DOCUMENT() - insert imports right after it (if needed)
             if not imports_inserted and re.match(r'^\s*DOCUMENT\(\s*\)', original_line):
                 output_lines.append(original_line)
@@ -188,22 +189,23 @@ class PGPreprocessor:
         - Semicolon removal (optional in Python)
         """
         import re
-        
+
         # Skip loadMacros() - already handled in first pass
         if 'loadMacros' in line:
             return ""
-        
+
         # Handle DOCUMENT() and ENDDOCUMENT() - keep as-is
         if re.match(r'^\s*(DOCUMENT|ENDDOCUMENT)\(\s*\)', line):
             return line
-        
+
         # Transform hash access: $hash{key} → hash['key']
         # Match $var{...} and convert to var['...']
-        line = re.sub(r'\$([a-zA-Z_][a-zA-Z0-9_]*)\{([^}]+)\}', r"\1['\2']", line)
-        
+        line = re.sub(
+            r'\$([a-zA-Z_][a-zA-Z0-9_]*)\{([^}]+)\}', r"\1['\2']", line)
+
         # Transform Perl array variables: @array → array
         line = re.sub(r'@([a-zA-Z_][a-zA-Z0-9_]*)', r'\1', line)
-        
+
         # Transform Perl scalar variables: $var → var
         # Use negative lookbehind to avoid matching in strings
         line = re.sub(r'\$([a-zA-Z_][a-zA-Z0-9_]*)', r'\1', line)
@@ -297,23 +299,23 @@ class PGPreprocessor:
     def _transform_load_macros(self, macro_list_str: str) -> tuple[list[str], str]:
         """
         Transform loadMacros() call to Python imports.
-        
+
         Args:
             macro_list_str: The content inside loadMacros(...), e.g., '"PG.pl", "PGML.pl"'
-        
+
         Returns:
             Tuple of (import_lines, comment)
-        
+
         Example:
             Input: '"PGstandard.pl", "MathObjects.pl", "PGML.pl"'
             Output: (['from pg_macros.core.pg_core import *', ...],
                     '# loadMacros("PGstandard.pl", "MathObjects.pl", "PGML.pl") - loaded')
         """
         import re
-        
+
         # Extract quoted strings
         macros = re.findall(r'["\']([^"\']+)["\']', macro_list_str)
-        
+
         # Mapping of .pl files to Python imports
         macro_imports = {
             "PG.pl": "from pg_macros.core.pg_core import DOCUMENT, TEXT, ANS, ENDDOCUMENT, SOLUTION, HINT",
@@ -324,19 +326,19 @@ class PGPreprocessor:
             "contextFraction.pl": "from pg_math import Fraction",
             "PGcourse.pl": "# PGcourse.pl - course-specific (skipped)",
         }
-        
+
         # Generate import lines
         import_lines = []
         loaded_macros = []
-        
+
         for macro in macros:
             if macro in macro_imports:
                 import_line = macro_imports[macro]
                 if not import_line.startswith("#"):
                     import_lines.append(import_line)
                 loaded_macros.append(macro)
-        
+
         # Create comment showing what was loaded
         comment = f'# loadMacros({", ".join(repr(m) for m in loaded_macros)}) - loaded' if loaded_macros else "# loadMacros() - no recognized macros"
-        
+
         return (import_lines, comment)

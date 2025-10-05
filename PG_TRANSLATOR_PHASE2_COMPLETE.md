@@ -36,7 +36,7 @@ ENDDOCUMENT();
 ```html
 <h2>Simple Addition Problem</h2>
 <p>Calculate  7  +  3 .</p>
-<p>Answer:  <input type="text" name="AnSwEr0001" id="AnSwEr0001" 
+<p>Answer:  <input type="text" name="AnSwEr0001" id="AnSwEr0001"
     class="codeshard" size="20" value="" aria-label="answer blank"/> </p>
 ```
 
@@ -79,18 +79,18 @@ Key insight: The executed code shares the SAME PGEnvironment instance:
 ## Issues Fixed
 
 ### Issue 1: beginproblem() Not in Namespace ✅
-**Problem**: NameError: name 'beginproblem' is not defined  
-**Cause**: Function not loaded in InProcessSandbox namespace  
+**Problem**: NameError: name 'beginproblem' is not defined
+**Cause**: Function not loaded in InProcessSandbox namespace
 **Fix**: Added `'beginproblem': pg_basic_macros.beginproblem` to namespace (line 449 of in_process_sandbox.py)
 
 ### Issue 2: Imports Before DOCUMENT() ✅
-**Problem**: Code tried to import functions before DOCUMENT() initialized environment  
-**Cause**: Preprocessor generated imports at top of code  
+**Problem**: Code tried to import functions before DOCUMENT() initialized environment
+**Cause**: Preprocessor generated imports at top of code
 **Fix**: Added `use_sandbox_macros=True` parameter to skip generating imports (preprocessor.py line 59)
 
 ### Issue 3: Environment Not Shared Between Functions ✅
-**Problem**: TEXT() calls didn't populate output_array  
-**Cause**: Initially tried to import pg_core again instead of using same instance  
+**Problem**: TEXT() calls didn't populate output_array
+**Cause**: Initially tried to import pg_core again instead of using same instance
 **Fix**: Changed to use `self._pg_core.get_environment()` (in_process_sandbox.py line 681)
 
 ## Code Changes
@@ -132,7 +132,7 @@ Key insight: The executed code shares the SAME PGEnvironment instance:
 STATEMENT HTML:
 <h2>Simple Addition Problem</h2>
 <p>Calculate  7  +  3 .</p>
-<p>Answer:  <input type="text" name="AnSwEr0001" id="AnSwEr0001" 
+<p>Answer:  <input type="text" name="AnSwEr0001" id="AnSwEr0001"
     class="codeshard" size="20" value="" aria-label="answer blank"/> </p>
 
 ANSWER BLANKS:

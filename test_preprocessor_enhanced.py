@@ -113,7 +113,8 @@ print("\nOutput:")
 print(result5.code)
 
 assert "options = " in result5.code
-assert "@" not in result5.code or "@" in str(result5.code.count("@"))  # @ removed
+# @ removed
+assert "@" not in result5.code or "@" in str(result5.code.count("@"))
 print("✅ Array syntax correctly transformed")
 
 # Test 6: Complete problem
@@ -165,7 +166,7 @@ print("""
 Summary:
 ✅ loadMacros() → Python imports
 ✅ $var → var
-✅ @array → array  
+✅ @array → array
 ✅ $hash{key} → hash['key']
 ✅ BEGIN_TEXT...END_TEXT → TEXT(...)
 ✅ Variable interpolation in TEXT blocks
