@@ -19,7 +19,7 @@ for input_text, expected in test_cases:
     # Normalize whitespace
     result = result.strip()
     expected = expected.strip()
-    
+
     status = '✅' if result == expected else '❌'
     print(f"{status} Input:    {input_text}")
     print(f"   Expected: {expected}")
