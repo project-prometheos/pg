@@ -24,7 +24,7 @@ for each character:
     if char == '}': brace_depth--
     if char == '(': paren_depth++
     if char == ')': paren_depth--
-    
+
     if found '=>':
         if brace_depth > 0:
             replace with ':' (dict syntax)

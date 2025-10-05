@@ -4,10 +4,11 @@ Test that verifies the improved context-aware fat comma conversion.
 """
 from packages.pg_translator.pg_translator.preprocessor import PGPreprocessor
 
+
 def test_dict_syntax():
     """Test various fat comma (=>) conversion scenarios."""
     processor = PGPreprocessor()
-    
+
     test_cases = [
         {
             'name': 'Simple dict literal',
@@ -37,24 +38,26 @@ def test_dict_syntax():
         {
             'name': 'Avoid array refs (skips entire line)',
             'input': "hints => [ $fx ] => [ 'message' ]",
-            'expected': "hints => [ fx ] => [ 'message' ]",  # No conversion (protected by ] =>)
+            # No conversion (protected by ] =>)
+            'expected': "hints => [ fx ] => [ 'message' ]",
         },
     ]
-    
+
     all_passed = True
     for test in test_cases:
         result = processor._transform_line(test['input'])
         passed = result == test['expected']
         status = '✓' if passed else '✗'
-        
+
         print(f"{status} {test['name']}")
         if not passed:
             print(f"  Input:    {test['input']}")
             print(f"  Expected: {test['expected']}")
             print(f"  Got:      {result}")
             all_passed = False
-    
+
     return all_passed
+
 
 if __name__ == '__main__':
     import sys

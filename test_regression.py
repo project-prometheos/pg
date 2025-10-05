@@ -1,8 +1,8 @@
+from pathlib import Path
+from pg_translator import PGTranslator
 import os
 os.environ['PYPG_DISABLE_LOGGING'] = '1'
 
-from pg_translator import PGTranslator
-from pathlib import Path
 
 test_dir = Path('webwork_ps1_pg')
 results = []
@@ -10,11 +10,11 @@ results = []
 for pg_file in sorted(test_dir.glob('*.pg')):
     translator = PGTranslator()
     result = translator.translate(str(pg_file), seed=1234)
-    
+
     has_stmt = len(result.statement_html or '') > 0
     has_ans = len(result.answer_blanks or {}) > 0
     has_error = bool(result.errors)
-    
+
     results.append({
         'file': pg_file.name,
         'stmt': has_stmt,
@@ -25,7 +25,8 @@ for pg_file in sorted(test_dir.glob('*.pg')):
 
 for r in results:
     marker = '***' if r['error'] else '   '
-    print(f"{marker} {r['file']:40s} stmt:{r['stmt']:<5} ans:{r['ans']:<5} err:{r['error']}")
+    print(
+        f"{marker} {r['file']:40s} stmt:{r['stmt']:<5} ans:{r['ans']:<5} err:{r['error']}")
     if r['error'] and r['errors']:
         print(f"    ERROR: {r['errors'][0][:100]}")
 

@@ -54,15 +54,15 @@ After thorough research and analysis:
    - Perl closures with `my ($a, $b) = @_;` unpacking
    - Access to outer scope variables
    - Different return value semantics
-   
+
 2. **Complex Data Structures** (1 problem)
    - Array references as hash keys
    - Requires reference equality (not possible in Python dicts)
-   
+
 3. **Package System** (1 problem)
    - `package Name; our @ISA = ...` inheritance
    - Dynamic class registration with Context
-   
+
 4. **Missing Macros** (1 problem)
    - `specialTrigValues.pl` not yet ported
 
@@ -96,7 +96,7 @@ Feature coverage:
 ### What Works Excellently
 - ✅ PGML markup rendering
 - ✅ MathObject contexts and formulas
-- ✅ Variable interpolation  
+- ✅ Variable interpolation
 - ✅ Standard answer blanks
 - ✅ Solutions and hints
 - ✅ Complex mathematical expressions

@@ -413,7 +413,7 @@ class PGPreprocessor:
         # - Inside { ... }: key => value → key: value (Python dict)
         # - In function args: key => value → key = value (named parameter)
         # Avoid array refs: ] => [
-        
+
         if '] =>' not in line and '} =>' not in line:
             # Strategy: Find all occurrences of => and determine context
             # by checking if we're inside curly braces
@@ -421,10 +421,10 @@ class PGPreprocessor:
             i = 0
             brace_depth = 0
             paren_depth = 0
-            
+
             while i < len(line):
                 ch = line[i]
-                
+
                 # Track brace/paren depth
                 if ch == '{':
                     brace_depth += 1
@@ -434,7 +434,7 @@ class PGPreprocessor:
                     paren_depth += 1
                 elif ch == ')':
                     paren_depth -= 1
-                
+
                 # Check for =>
                 if i < len(line) - 1 and line[i:i+2] == '=>':
                     # Decide what to replace with based on context
@@ -448,7 +448,7 @@ class PGPreprocessor:
                 else:
                     result.append(ch)
                     i += 1
-            
+
             line = ''.join(result)
 
         # Remove trailing semicolons (optional in Python)

@@ -136,7 +136,7 @@ Python requires different syntax for each case, so we need context awareness.
 All have fundamental Perl compatibility issues:
 
 1. **AlgebraicFractionAnswer.pg** - Anonymous Perl subroutines
-2. **LinearApprox.pg** - Array refs as hash keys  
+2. **LinearApprox.pg** - Array refs as hash keys
 3. **LimitsOfIntegration.pg** - Formula objects as hash keys
 4. **DoubleIntegral.pg** - Anonymous Perl subroutines
 5. **SpecialTrigValues.pg** - Missing macro library
@@ -172,13 +172,13 @@ These would require major architectural changes and are not planned for implemen
 4. 🔍 Create macro coverage matrix
 
 ### Not Recommended
-❌ Don't attempt full Perl compatibility  
-❌ Don't rewrite preprocessor with tree-sitter  
-❌ Don't implement Perl closure semantics  
+❌ Don't attempt full Perl compatibility
+❌ Don't rewrite preprocessor with tree-sitter
+❌ Don't implement Perl closure semantics
 
 ## Conclusion
 
-The fat comma conversion fix demonstrates the value of proper parsing techniques for syntax transformation. The system now handles a wider range of PG problems correctly, achieving 70-80% coverage on diverse real-world problems. 
+The fat comma conversion fix demonstrates the value of proper parsing techniques for syntax transformation. The system now handles a wider range of PG problems correctly, achieving 70-80% coverage on diverse real-world problems.
 
 The preprocessor is stable, well-tested, and performing as expected. The remaining 20-30% of problems use advanced Perl features that are fundamentally incompatible with Python's execution model, which is an acceptable limitation.
 
