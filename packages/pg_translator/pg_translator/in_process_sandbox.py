@@ -178,7 +178,7 @@ class InProcessSandbox:
         """Load MathObjects framework into namespace."""
         try:
             # Import MathObjects
-            from pg_mathobjects import Context, Formula, Real, Compute
+            from pg_mathobjects import Context, Formula, Real, Compute, List, Interval
             from pg_mathobjects.formula_up_to_constant import FormulaUpToConstant
 
             # Make available in namespace
@@ -187,6 +187,8 @@ class InProcessSandbox:
             self.namespace['Real'] = Real
             self.namespace['Compute'] = Compute
             self.namespace['FormulaUpToConstant'] = FormulaUpToConstant
+            self.namespace['List'] = List
+            self.namespace['Interval'] = Interval
 
         except ImportError:
             # Fallback: provide minimal stubs
@@ -208,11 +210,21 @@ class InProcessSandbox:
                     return eval(str(expr))
                 except:
                     return str(expr)
+            
+            def List(*items):
+                """Stub List function - returns list."""
+                return list(items)
+            
+            def Interval(interval_str):
+                """Stub Interval function - returns string."""
+                return interval_str
 
             self.namespace['Context'] = Context
             self.namespace['Formula'] = Formula
             self.namespace['Real'] = Real
             self.namespace['Compute'] = Compute
+            self.namespace['List'] = List
+            self.namespace['Interval'] = Interval
 
     def load_macros(self, *macro_names: str) -> None:
         """
@@ -269,6 +281,10 @@ class InProcessSandbox:
 
             # Store reference for initialization
             self._pg_core = pg_core
+            
+            # Clean up stub environment if switching from stubs to real macros
+            if hasattr(self, '_stub_env'):
+                del self._stub_env
 
         except ImportError:
             # Fallback: provide stub implementations
@@ -532,10 +548,43 @@ class InProcessSandbox:
             seed: Random seed
             context: Mathematical context
         """
-        # IMPORTANT: Clear namespace and reinitialize for each problem
-        # This prevents variable pollution between problems
+        # IMPORTANT: Preserve loaded macros while clearing problem variables
+        # Save items we want to keep across problems
+        preserved_items = {}
+        for key, value in list(self.namespace.items()):
+            # Preserve: callables (macros), modules, builtins, private vars
+            # These are safe to preserve across problems
+            if (callable(value) or 
+                key in ('__builtins__', 'math', 'random') or 
+                key.startswith('_') or
+                hasattr(value, '__module__')):  # Keep module references
+                preserved_items[key] = value
+
+        # Clear and reinitialize namespace
         self.namespace.clear()
         self._setup_safe_namespace()
+        
+        # Restore preserved items (macros, modules, etc.)
+        self.namespace.update(preserved_items)
+        
+        # IMPORTANT: Reset environment references for each problem
+        # Even if functions are preserved, the environment needs to be fresh
+        if hasattr(self, '_pg_core') and self._pg_core:
+            # Reset pg_core's global environment
+            self._pg_core._pg_environment = None
+        
+        # Recreate stub environment if using stubs (not if real macros loaded)
+        if hasattr(self, '_stub_env'):
+            # Using stubs - need to recreate for fresh environment
+            del self._stub_env
+            self._load_pg_core_stubs()
+            self._load_pg_basic_macros()
+            self._load_pg_answer_macros()
+        elif 'DOCUMENT' not in self.namespace:
+            # First run - load stubs
+            self._load_pg_core_stubs()
+            self._load_pg_basic_macros()
+            self._load_pg_answer_macros()
 
         # IMPORTANT: Reset Context to prevent variable pollution
         # Context is a global singleton that persists between problems

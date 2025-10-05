@@ -89,8 +89,8 @@ def get_status():
     errors = loader.unrestricted_load("init_macro.py")
     assert errors == ""
 
-    # Check init was called
-    assert test_macro.stem + "_init" in loader.init_functions
+    # Check init was called (stored by filepath, not name)
+    assert str(test_macro) in loader.init_functions
 
 
 def test_load_macros_multiple(mock_sandbox, tmp_path):

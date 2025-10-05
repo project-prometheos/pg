@@ -248,6 +248,44 @@ class PGPreprocessor:
                 i += 1
                 continue
 
+            # Detect Perl closures: sub { ... } and stub them out
+            # These are typically used for custom answer checkers
+            # Example: checker => sub { ... }
+            sub_match = re.search(r'(=>|=)\s*sub\s*\{', original_line)
+            if sub_match:
+                # Found start of a sub {} closure
+                # Track brace depth to find the end
+                brace_depth = original_line.count('{') - original_line.count('}')
+                
+                # Extract the parameter name before the =>
+                prefix_match = re.match(r'^(\s*)(\w+)\s*=>\s*sub\s*\{', original_line)
+                if prefix_match:
+                    indent = prefix_match.group(1)
+                    param_name = prefix_match.group(2)
+                    # Stub out the closure with a lambda that returns None
+                    output_lines.append(
+                        f"{indent}{param_name} = lambda *args, **kwargs: None  # Stubbed Perl closure")
+                else:
+                    # Assignment form: $var = sub { ... }
+                    assign_match = re.match(r'^(\s*)(\w+)\s*=\s*sub\s*\{', original_line)
+                    if assign_match:
+                        indent = assign_match.group(1)
+                        var_name = assign_match.group(2)
+                        output_lines.append(
+                            f"{indent}{var_name} = lambda *args, **kwargs: None  # Stubbed Perl closure")
+                    else:
+                        # Unknown form, comment it out
+                        output_lines.append(f"# {original_line}  # Skipped Perl closure")
+                
+                # Skip the rest of the closure block
+                i += 1
+                while i < len(lines) and brace_depth > 0:
+                    current_line = lines[i]
+                    brace_depth += current_line.count('{') - current_line.count('}')
+                    i += 1
+                
+                continue
+
             # Detect do { ... } until loops (single or multi line)
             do_until_single = re.match(r'^\s*do\s*\{([^}]*)\}\s*until\s*\(([^)]+)\)', original_line)
             if do_until_single:
@@ -257,10 +295,11 @@ class PGPreprocessor:
                 body_lines = self._compile_line(body)
                 # Flatten to a single statement; indent body lines
                 compiled_cond = self._compile_expr(condition)
-                output_lines.append(f'while True:')
+                # do-until executes body first, then checks condition
+                output_lines.append('while True:')
                 for bl in body_lines:
                     output_lines.append('    ' + bl)
-                output_lines.append(f'    if not ({compiled_cond}):')
+                output_lines.append(f'    if ({compiled_cond}):')
                 output_lines.append('        break')
                 i += 1
                 continue
@@ -295,12 +334,16 @@ class PGPreprocessor:
                     # Compile body lines
                     compiled_body: List[str] = []
                     for ln in inner_lines:
-                        compiled_body.extend(self._compile_line(ln))
+                        # Strip original indentation since we'll re-indent for the while loop
+                        compiled_body.extend(self._compile_line(ln.lstrip()))
                     compiled_cond = self._compile_expr(condition)
-                    # Emit Python loop
-                    output_lines.append(f'while not ({compiled_cond}):')
+                    # Emit Python loop - do-until executes body first, then checks condition
+                    # So we use: while True: body; if condition: break
+                    output_lines.append('while True:')
                     for cb in compiled_body:
                         output_lines.append('    ' + cb)
+                    output_lines.append(f'    if ({compiled_cond}):')
+                    output_lines.append('        break')
                     continue
                 else:
                     # Not a proper do-until, fall through: rewind index to process lines normally
@@ -317,12 +360,16 @@ class PGPreprocessor:
                         i += 1
                     block_content = "\n".join(block_content_lines)
                     text_blocks.append((block_type, block_content))
-                    # PGML blocks require evaluator transformation before storing
+                    block_index = len(text_blocks) - 1
+
                     if "PGML" in block_type:
-                        transformed_pgml = self._transform_pgml_evaluators(block_content)
-                        block_var = f"pgml_block_{len(text_blocks) - 1}"
-                        escaped_content = self._escape_triple_quotes(transformed_pgml)
+                        # PGML blocks - transform evaluators but keep as string for runtime rendering
+                        stored_content = self._transform_pgml_evaluators(block_content)
+                        block_var = f"pgml_block_{block_index}"
+                        escaped_content = self._escape_triple_quotes(stored_content)
                         output_lines.append(f"{block_var} = '''\n{escaped_content}\n'''")
+                        
+                        # PGML blocks use TEXT(PGML(...)), SOLUTION(PGML(...)), HINT(PGML(...))
                         if "SOLUTION" in block_type:
                             output_lines.append(f"SOLUTION(PGML({block_var}))")
                         elif "HINT" in block_type:
@@ -330,13 +377,17 @@ class PGPreprocessor:
                         else:
                             output_lines.append(f"TEXT(PGML({block_var}))")
                     else:
+                        # Plain TEXT blocks - transform into Python function calls
                         transformed_content = self._transform_text_block(block_content)
+                        
+                        # Plain TEXT blocks use TEXT(...), SOLUTION(...), HINT(...)
                         if "SOLUTION" in block_type:
                             output_lines.append(f"SOLUTION({transformed_content})")
                         elif "HINT" in block_type:
                             output_lines.append(f"HINT({transformed_content})")
                         else:
                             output_lines.append(f"TEXT({transformed_content})")
+
                     block_found = True
                     break
             if block_found:
@@ -491,12 +542,14 @@ class PGPreprocessor:
         is rewritten using a Pygments based fallback which performs
         conservative token replacement.
         """
+        # Preserve leading whitespace for proper indentation
+        leading_space = line[:len(line) - len(line.lstrip())]
         stripped = line.strip()
         if not stripped:
             return [""]
         # Keep comments verbatim
         if stripped.startswith('#'):
-            return [stripped]
+            return [line]  # Return with original indentation
         # If a Lark parser is available, try to parse.  Fall back to
         # manual parsing and Pygments rewriting on failure.
         if self._parser is not None:
@@ -509,7 +562,7 @@ class PGPreprocessor:
                 for ir in ir_list:
                     out = self._emit_ir(ir)
                     if out is not None:
-                        result_lines.append(out)
+                        result_lines.append(leading_space + out)
                 return result_lines if result_lines else [""]
             except LarkError:
                 pass
@@ -517,29 +570,37 @@ class PGPreprocessor:
         manual_ir = self._manual_parse_line(stripped)
         if manual_ir is not None:
             out = self._emit_ir(manual_ir)
-            return [out] if out is not None else [""]
+            return [leading_space + out] if out is not None else [""]
         # Fall back to Pygments rewrite
         rewritten = self._rewrite_with_pygments(stripped)
-        return [rewritten]
+        return [leading_space + rewritten]
 
     def _compile_expr(self, expr: str) -> str:
         """Compile a small expression using the grammar or fallback rewrite.
 
         Returns a string containing Python code representing the expression.
         """
-        try:
-            tree = self._parser.parse(expr)
-            ir_list = self._transformer.transform(tree)
-            # Find first expr or assign
-            if not isinstance(ir_list, list):
-                ir_list = [ir_list]
-            for ir in ir_list:
-                if ir[0] in ("assign", "expr", "bin", "var", "call"):
-                    return self._expr_to_py(ir)
-            # Fallback: use pygments rewrite
-        except LarkError:
-            pass
-        return self._rewrite_with_pygments(expr)
+        stripped = expr.strip()
+        if not stripped:
+            return ""
+
+        if self._parser is not None and self._transformer is not None:
+            try:
+                tree = self._parser.parse(stripped)
+                ir_list = self._transformer.transform(tree)
+                if not isinstance(ir_list, list):
+                    ir_list = [ir_list]
+                for ir in ir_list:
+                    if isinstance(ir, tuple) and ir and ir[0] in ("assign", "expr", "bin", "var", "call"):
+                        return self._expr_to_py(ir)
+            except LarkError:
+                pass
+
+        manual_ir = self._manual_parse_line(stripped)
+        if manual_ir is not None:
+            return self._expr_to_py(manual_ir)
+
+        return self._rewrite_with_pygments(stripped)
 
     # ------------------------------------------------------------------
     # IR emission
@@ -560,6 +621,8 @@ class PGPreprocessor:
             # Special case: skip empty loadMacros calls
             if name == "loadMacros":
                 return None
+            # Convert Perl namespace separator :: to Python .
+            name = name.replace('::', '.')
             py_args = []
             for a in args:
                 py_args.append(self._expr_to_py(a))
@@ -614,6 +677,36 @@ class PGPreprocessor:
             return name[1:]
         return name
 
+    def _interpolate_string(self, string_token: str) -> str:
+        """
+        Convert Perl string interpolation to Python f-strings.
+        
+        Perl interpolates variables in double-quoted strings but not single-quoted.
+        E.g., "$var text" becomes f"{var} text"
+        """
+        # Extract quote character and content
+        if len(string_token) < 2:
+            return string_token
+        
+        quote_char = string_token[0]
+        
+        # Only interpolate double-quoted strings (Perl behavior)
+        if quote_char != '"':
+            return string_token
+        
+        # Extract content (between quotes)
+        content = string_token[1:-1]
+        
+        # Check if contains $var
+        if '$' not in content:
+            return string_token
+        
+        # Convert $var to {var} for f-string
+        # Handle $varname (word characters only)
+        new_content = re.sub(r'\$([a-zA-Z_][a-zA-Z0-9_]*)', r'{\1}', content)
+        
+        return f'f"{new_content}"'
+
     def _rewrite_with_pygments(self, code: str) -> str:
         """Fallback rewrite using Pygments for conservative token replacement."""
         tokens = list(self._perl_lexer.get_tokens_unprocessed(code))
@@ -626,14 +719,20 @@ class PGPreprocessor:
                 result.append(text)
                 i += 1
                 continue
-            # Strings are left untouched
+            # Strings: apply interpolation for double-quoted strings with $vars
             if ttype in Token.Literal.String:
-                result.append(text)
+                result.append(self._interpolate_string(text))
                 i += 1
                 continue
             # Variables: remove sigil
             if ttype in Token.Name.Variable:
                 result.append(self._desigil(text))
+                i += 1
+                continue
+            # Namespace: convert Perl :: to Python .
+            # Pygments treats "Namespace::" as a single Token.Name.Namespace
+            if ttype == Token.Name.Namespace:
+                result.append(text.replace('::', '.'))
                 i += 1
                 continue
             # Hash access: $h{key} -> h['key']
@@ -665,8 +764,22 @@ class PGPreprocessor:
             # for '=>', and ':' and ':' for '::'.  Detect these pairs
             # here.
             if ttype in Token.Operator or ttype in Token.Punctuation:
-                # Handle method arrow '->'
+                # Handle method arrow '->' with special case for ->with(
                 if text == '-' and i + 1 < len(tokens) and tokens[i+1][2] == '>':
+                    # Check if this is ->with( which needs to become .with_params(
+                    # Look ahead to see if next non-empty token is 'with'
+                    j = i + 2
+                    while j < len(tokens) and not tokens[j][2]:  # Skip empty tokens
+                        j += 1
+                    if j < len(tokens) and tokens[j][2] == 'with':
+                        # Check if followed by '('
+                        k = j + 1
+                        while k < len(tokens) and not tokens[k][2]:  # Skip empty tokens
+                            k += 1
+                        if k < len(tokens) and tokens[k][2] == '(':
+                            result.append('.with_params')
+                            i = j + 1  # Skip '-', '>', and 'with'
+                            continue
                     result.append('.')
                     i += 2
                     continue

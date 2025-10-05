@@ -11,6 +11,8 @@ from .real import Real
 from .formula import Formula
 from .formula_up_to_constant import FormulaUpToConstant
 from .compute import Compute
+from .list import List
+from .interval import Interval
 
 __all__ = [
     "Context",
@@ -20,6 +22,8 @@ __all__ = [
     "Formula",
     "FormulaUpToConstant",
     "Compute",
+    "List",
+    "Interval",
 ]
 
 __version__ = "0.1.0"

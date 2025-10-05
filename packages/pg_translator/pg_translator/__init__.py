@@ -6,7 +6,7 @@ Executes .pg problem files safely, collecting problem text, answers, solutions, 
 Reference: lib/WeBWorK/PG/Translator.pm in legacy Perl codebase
 """
 
-from .preprocessor import PGPreprocessor
+from .pg_preprocessor_pygment import PGPreprocessor
 from .executor import PGExecutor, PGEnvironment
 from .translator import PGTranslator, ProblemResult
 

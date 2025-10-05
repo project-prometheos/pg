@@ -26,7 +26,7 @@ from .grading import (
 )
 from .macro_loader import MacroLoader
 from .post_processor import ContentPostProcessor
-from .preprocessor import PGPreprocessor
+from .pg_preprocessor_pygment import PGPreprocessor
 from .translator import PGTranslator, ProblemResult
 
 
@@ -218,7 +218,8 @@ class EnhancedPGTranslator(PGTranslator):
             warnings = []
             if hasattr(env, "_warning_tracker"):
                 has_debug = getattr(env, "view_problem_debugging_info", False)
-                warning_text = env._warning_tracker.get_formatted_warnings(has_debug)  # type: ignore
+                warning_text = env._warning_tracker.get_formatted_warnings(
+                    has_debug)  # type: ignore
                 if warning_text:
                     warnings.append(warning_text)
 
@@ -230,7 +231,8 @@ class EnhancedPGTranslator(PGTranslator):
                 solution_html=solution_html,
                 hint_html=hint_html,
                 answer_results=answer_results,
-                score=problem_result_dict.get("score") if problem_result_dict else None,
+                score=problem_result_dict.get(
+                    "score") if problem_result_dict else None,
                 problem_result=problem_result_dict,
                 problem_state=problem_state,
                 metadata={
@@ -278,7 +280,8 @@ class EnhancedPGTranslator(PGTranslator):
                 student_response = inputs[ans_name]
 
                 # Process checkbox/radio format
-                student_response = process_checkbox_radio_input(student_response)
+                student_response = process_checkbox_radio_input(
+                    student_response)
 
                 # Evaluate
                 try:

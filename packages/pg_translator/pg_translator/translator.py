@@ -32,7 +32,7 @@ from .grading import (
 )
 from .macro_loader import MacroLoader
 from .post_processor import ContentPostProcessor
-from .preprocessor import PGPreprocessor
+from .pg_preprocessor_pygment import PGPreprocessor
 
 
 @dataclass

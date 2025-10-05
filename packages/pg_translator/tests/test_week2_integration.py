@@ -18,9 +18,11 @@ def test_simple_numeric_problem_renders():
 DOCUMENT()
 loadMacros("PG.pl", "PGbasicmacros.pl")
 
-TEXT("What is 2 + 2?")
-TEXT(BR())
-TEXT("Answer: ", ans_rule(20))
+BEGIN_TEXT
+What is 2 + 2?
+$BR
+Answer: \\{ans_rule(20)\\}
+END_TEXT
 
 ANS(num_cmp(4))
 
@@ -53,8 +55,9 @@ def test_simple_numeric_grading_correct():
 DOCUMENT()
 loadMacros("PG.pl", "PGbasicmacros.pl")
 
-TEXT("What is 2 + 2?")
-TEXT(ans_rule(20))
+BEGIN_TEXT
+What is 2 + 2? \\{ans_rule(20)\\}
+END_TEXT
 
 ANS(num_cmp(4))
 
@@ -95,8 +98,9 @@ def test_simple_numeric_grading_incorrect():
 DOCUMENT()
 loadMacros("PG.pl", "PGbasicmacros.pl")
 
-TEXT("What is 2 + 2?")
-TEXT(ans_rule(20))
+BEGIN_TEXT
+What is 2 + 2? \\{ans_rule(20)\\}
+END_TEXT
 
 ANS(num_cmp(4))
 
@@ -141,8 +145,10 @@ $a = random(1, 10, 1)
 $b = random(1, 10, 1)
 $ans = $a + $b
 
-TEXT("What is ", $a, " + ", $b, "?")
-TEXT(ans_rule(20))
+BEGIN_TEXT
+What is $a + $b?
+\\{ans_rule(20)\\}
+END_TEXT
 
 ANS(num_cmp($ans))
 
@@ -178,9 +184,11 @@ def test_multiple_answer_blanks():
 DOCUMENT()
 loadMacros("PG.pl", "PGbasicmacros.pl")
 
-TEXT("Answer 1: ", ans_rule(10))
-TEXT(BR())
-TEXT("Answer 2: ", ans_rule(10))
+BEGIN_TEXT
+Answer 1: \\{ans_rule(10)\\}
+$BR
+Answer 2: \\{ans_rule(10)\\}
+END_TEXT
 
 ANS(num_cmp(10))
 ANS(num_cmp(20))
@@ -245,9 +253,11 @@ def test_named_answer_blanks():
 DOCUMENT()
 loadMacros("PG.pl", "PGbasicmacros.pl")
 
-TEXT("First: ", NAMED_ANS_RULE("first", 10))
-TEXT(BR())
-TEXT("Second: ", NAMED_ANS_RULE("second", 10))
+BEGIN_TEXT
+First: \\{NAMED_ANS_RULE("first", 10)\\}
+$BR
+Second: \\{NAMED_ANS_RULE("second", 10)\\}
+END_TEXT
 
 NAMED_ANS("first", num_cmp(100))
 NAMED_ANS("second", num_cmp(200))
@@ -289,8 +299,9 @@ def test_solution_and_hint():
 DOCUMENT()
 loadMacros("PG.pl", "PGbasicmacros.pl")
 
-TEXT("What is 2 + 2?")
-TEXT(ans_rule(20))
+BEGIN_TEXT
+What is 2 + 2? \\{ans_rule(20)\\}
+END_TEXT
 
 ANS(num_cmp(4))
 

@@ -14,13 +14,14 @@ def Compute(expression: Union[str, int, float], context=None) -> Value:
 
     If the expression is constant, returns a Real number.
     If the expression contains variables, returns a Formula.
+    If in Interval context and expression is interval notation, returns Interval.
 
     Args:
         expression: Expression to parse
         context: Context to use (None = current)
 
     Returns:
-        Real or Formula
+        Real, Formula, or Interval
 
     Examples:
         >>> Compute("2+2")
@@ -31,6 +32,10 @@ def Compute(expression: Union[str, int, float], context=None) -> Value:
 
         >>> Compute("sin(pi/2)")
         Real(1.0)
+        
+        >>> Context('Interval')
+        >>> Compute("[1, 5)")
+        Interval("[1, 5)")
     """
     if context is None:
         from .context import get_current_context
@@ -42,6 +47,17 @@ def Compute(expression: Union[str, int, float], context=None) -> Value:
 
     # Convert to string
     expr_str = str(expression).strip()
+    
+    # Check if we're in Interval context and expression looks like interval notation
+    if context.name == 'Interval' and _looks_like_interval(expr_str):
+        from .interval import Interval
+        return Interval(expr_str, context)
+    
+    # Check if we're in Inequalities-Only context and expression looks like inequality
+    if 'Inequalities' in context.name and ('>' in expr_str or '<' in expr_str or '>=' in expr_str or '<=' in expr_str):
+        # For now, return as Formula - proper implementation would create Inequality object
+        from .formula import Formula
+        return Formula(expr_str, context)
 
     # Try to parse as a simple number
     try:
@@ -72,6 +88,18 @@ def Compute(expression: Union[str, int, float], context=None) -> Value:
     # Otherwise, return as Formula
     from .formula import Formula
     return Formula(expr_str, context)
+
+
+def _looks_like_interval(expr: str) -> bool:
+    """Check if expression looks like interval notation."""
+    expr = expr.strip()
+    # Interval patterns: [a, b], (a, b), {a, b}, contains "inf", or contains "U"/"union"
+    return (
+        (expr.startswith('[') or expr.startswith('(') or expr.startswith('{'))
+        or 'inf' in expr.lower()
+        or ' U ' in expr
+        or ' union ' in expr.lower()
+    )
 
 
 def _is_constant_expression(expr: str, context) -> bool:

@@ -213,8 +213,10 @@ class TestIntegration:
 DOCUMENT()
 loadMacros("PG.pl", "PGbasicmacros.pl")
 
-TEXT("What is the capital of France?")
-TEXT(ans_rule(20))
+BEGIN_TEXT
+What is the capital of France?
+\\{ans_rule(20)\\}
+END_TEXT
 
 ANS(str_cmp("Paris", case_sensitive=False))
 
@@ -261,8 +263,10 @@ ENDDOCUMENT()
 DOCUMENT()
 loadMacros("PG.pl", "PGbasicmacros.pl")
 
-TEXT("Simplify: (x+1)^2")
-TEXT(ans_rule(20))
+BEGIN_TEXT
+Simplify: (x+1)^2
+\\{ans_rule(20)\\}
+END_TEXT
 
 ANS(fun_cmp("x^2 + 2*x + 1", var="x"))
 
