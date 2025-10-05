@@ -1,0 +1,28 @@
+## DESCRIPTION
+## Simple arithmetic problem
+## ENDDESCRIPTION
+
+DOCUMENT();
+
+loadMacros(
+    "PGstandard.pl",
+    "MathObjects.pl",
+);
+
+TEXT(beginproblem());
+
+Context("Numeric");
+
+$a = 2;
+$b = 3;
+$answer = $a + $b;
+
+BEGIN_TEXT
+Compute \($a + $b\).
+$PAR
+Answer: \{ans_rule(20)\}
+END_TEXT
+
+ANS(num_cmp($answer));
+
+ENDDOCUMENT();
