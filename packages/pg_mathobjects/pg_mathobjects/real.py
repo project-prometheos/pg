@@ -18,12 +18,24 @@ class Real(Value):
         Create a Real number.
 
         Args:
-            value: The numeric value
+            value: The numeric value (if str with variables, evaluates as Formula)
             context: The Context (None = use current)
         """
         super().__init__(context)
         if isinstance(value, str):
-            value = float(value)
+            # Try to evaluate as Formula first (for expressions like 'pi / 2')
+            try:
+                from .formula import Formula
+                formula = Formula(value, context)
+                result = formula.eval()
+                # Extract numeric value from result
+                value = result.value if hasattr(result, 'value') else float(result)
+            except:
+                # Fall back to direct float conversion
+                value = float(value)
+        elif hasattr(value, 'value'):
+            # Handle Real objects
+            value = value.value
         self.value = float(value)
 
     def __str__(self) -> str:
