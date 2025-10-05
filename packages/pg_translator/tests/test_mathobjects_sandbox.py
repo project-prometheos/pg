@@ -12,7 +12,7 @@ class TestMathObjectsBasic:
     def test_context_available(self):
         """Test that Context is available in sandbox."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 result = Context is not None
 """
@@ -23,7 +23,7 @@ result = Context is not None
     def test_real_creation(self):
         """Test creating Real numbers in sandbox."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Real
 
@@ -37,7 +37,7 @@ result = r.value
     def test_formula_creation(self):
         """Test creating Formulas in sandbox."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Formula
 
@@ -52,7 +52,7 @@ result = str(f)
     def test_compute_constant(self):
         """Test Compute with constant expression."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Compute
 
@@ -66,7 +66,7 @@ result = c.value
     def test_compute_formula(self):
         """Test Compute with variable expression."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Compute, Formula
 
@@ -84,7 +84,7 @@ class TestMathObjectsInProblem:
     def test_simple_problem_with_formula(self):
         """Test a simple problem using Formula."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 DOCUMENT()
 
@@ -111,7 +111,7 @@ ENDDOCUMENT()
     def test_problem_with_compute(self):
         """Test problem using Compute."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 DOCUMENT()
 
@@ -134,7 +134,7 @@ ENDDOCUMENT()
     def test_problem_with_context(self):
         """Test problem using Context."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 DOCUMENT()
 
@@ -161,7 +161,7 @@ class TestFormulaEvaluation:
     def test_formula_eval(self):
         """Test evaluating a formula."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Formula
 
@@ -176,7 +176,7 @@ value = result.value
     def test_formula_substitute(self):
         """Test formula substitution."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Formula
 
@@ -191,7 +191,7 @@ has_y = 'y' in str(g)
     def test_formula_differentiate(self):
         """Test formula differentiation."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Formula
 
@@ -211,7 +211,7 @@ class TestMathObjectsAnswerChecking:
     def test_real_answer_checker(self):
         """Test Real answer checker."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Real
 
@@ -227,7 +227,7 @@ is_correct = result['correct']
     def test_formula_answer_checker(self):
         """Test Formula answer checker."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Formula
 
@@ -243,7 +243,7 @@ is_correct = result['correct']
     def test_formula_equivalence_checking(self):
         """Test formula equivalence."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Formula
 
@@ -263,7 +263,7 @@ class TestMathObjectsPGML:
     def test_pgml_with_compute(self):
         """Test using Compute in PGML."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 DOCUMENT()
 
@@ -289,7 +289,7 @@ ENDDOCUMENT()
     def test_pgml_with_formula(self):
         """Test using Formula in PGML."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 DOCUMENT()
 

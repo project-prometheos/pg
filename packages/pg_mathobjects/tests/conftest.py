@@ -12,13 +12,13 @@ def reset_context():
     # Save original state
     original_contexts = ctx_module._contexts.copy()
     original_current = ctx_module._current_context
-    
+
     # Reset
     ctx_module._contexts = {}
     ctx_module._current_context = None
-    
+
     yield
-    
+
     # Restore
     ctx_module._contexts = original_contexts
     ctx_module._current_context = original_current

@@ -3,6 +3,9 @@
 Test macro search paths and loading
 """
 
+import pg_macros
+from pg_translator.macro_loader import MacroLoader
+from pg_translator.sandbox import Sandbox
 import sys
 from pathlib import Path
 
@@ -11,8 +14,6 @@ repo_root = Path(__file__).parent
 sys.path.insert(0, str(repo_root / "packages" / "pg_macros"))
 sys.path.insert(0, str(repo_root / "packages" / "pg_translator"))
 
-from pg_translator.sandbox import Sandbox
-from pg_translator.macro_loader import MacroLoader
 
 # Create sandbox and loader
 sandbox = Sandbox()
@@ -43,5 +44,4 @@ for name in ["pg_core", "core/pg_core", "core/pg_core.py"]:
 
 # Show where pg_macros is actually installed
 print("\nActual pg_macros location:")
-import pg_macros
 print(f"  {Path(pg_macros.__file__).parent}")

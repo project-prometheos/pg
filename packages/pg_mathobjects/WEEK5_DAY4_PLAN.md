@@ -1,7 +1,7 @@
 # Week 5 Day 4: Context Flag System - Implementation Plan
 
-**Goal**: Enhance and test the context flag system  
-**Estimated Time**: 2-3 hours  
+**Goal**: Enhance and test the context flag system
+**Estimated Time**: 2-3 hours
 **Date**: October 5, 2025
 
 ## Overview
@@ -30,25 +30,25 @@ From specialized contexts:
 ## Flags to Add/Enhance
 
 ### 1. formatStudentAnswer (Medium Priority)
-**Purpose**: Control how student answers are displayed in feedback  
-**Values**: 'evaluated', 'parsed', 'reduced', etc.  
-**Default**: 'evaluated'  
+**Purpose**: Control how student answers are displayed in feedback
+**Values**: 'evaluated', 'parsed', 'reduced', etc.
+**Default**: 'evaluated'
 **Use**: Answer checker formatting
 
 ### 2. limits (Low Priority - Formula evaluation)
-**Purpose**: Bounds for test point generation in Formula checking  
-**Values**: Dictionary/list of [min, max] for each variable  
-**Default**: None (use default ranges)  
+**Purpose**: Bounds for test point generation in Formula checking
+**Values**: Dictionary/list of [min, max] for each variable
+**Default**: None (use default ranges)
 **Use**: Formula answer checker
 
 ### 3. num_points (Low Priority - Formula evaluation)
-**Purpose**: Number of test points for Formula comparison  
-**Default**: 5  
+**Purpose**: Number of test points for Formula comparison
+**Default**: 5
 **Use**: Formula answer checker
 
 ### 4. showTypeWarnings (Low Priority)
-**Purpose**: Whether to warn about type mismatches  
-**Default**: True  
+**Purpose**: Whether to warn about type mismatches
+**Default**: True
 **Use**: Error messages
 
 ## Implementation Strategy

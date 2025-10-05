@@ -3,14 +3,14 @@
 Proper test: Use pg_macros with correct API
 """
 
+from pg_macros.core.pg_basic_macros import ans_rule
+from pg_macros.core.pg_core import PGEnvironment, get_environment, set_environment, TEXT, DOCUMENT, ENDDOCUMENT
 import sys
 from pathlib import Path
 
 repo_root = Path(__file__).parent
 sys.path.insert(0, str(repo_root / "packages" / "pg_macros"))
 
-from pg_macros.core.pg_core import PGEnvironment, get_environment, set_environment, TEXT, DOCUMENT, ENDDOCUMENT
-from pg_macros.core.pg_basic_macros import ans_rule
 
 print("=" * 70)
 print("TEST: Creating a Simple PG Problem with Macros")

@@ -10,11 +10,11 @@ from pg_translator.in_process_sandbox import InProcessSandbox
 
 class TestExpandedPolynomial:
     """Test the ExpandedPolynomial.pg tutorial problem."""
-    
+
     def test_expanded_polynomial_basic(self):
         """Test basic expanded polynomial problem."""
         sandbox = InProcessSandbox()
-        
+
         # Simplified version of ExpandedPolynomial.pg
         code = """
 from pg_mathobjects import Context, Formula, Compute
@@ -28,17 +28,17 @@ vertexform = Compute(f"(x-{h})^2-{k}")
 # Result check - vertex form created
 result = vertexform
 """
-        
+
         result = sandbox.execute(code, seed=123)
         assert result.success
         # Vertex form Formula should be created
         vertex = sandbox.namespace.get('result')
         assert vertex is not None
-    
+
     def test_expanded_polynomial_context_switch(self):
         """Test context switching in polynomial problem."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Context, Formula
 
@@ -54,17 +54,17 @@ context2 = "Numeric"
 
 result = {"f1": f1, "f2": f2, "context1": context1, "context2": context2}
 """
-        
+
         result = sandbox.execute(code, seed=123)
         assert result.success
         result_dict = sandbox.namespace.get('result')
         assert result_dict['f1'] is not None
         assert result_dict['f2'] is not None
-    
+
     def test_polynomial_reduce_method(self):
         """Test Formula.reduce() method."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Formula
 
@@ -78,7 +78,7 @@ has_reduce = hasattr(f, 'reduce')
 # For now, just check it's callable
 result = has_reduce
 """
-        
+
         result = sandbox.execute(code, seed=123)
         assert result.success
         assert sandbox.namespace.get('result') == True
@@ -86,11 +86,11 @@ result = has_reduce
 
 class TestSimpleAlgebra:
     """Test simple algebraic formulas."""
-    
+
     def test_quadratic_formula(self):
         """Test quadratic formula creation and evaluation."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Formula, Compute
 
@@ -105,16 +105,16 @@ val = f.eval(x=0)  # Should give c = 4
 
 result = {"formula": f, "value": val}
 """
-        
+
         result = sandbox.execute(code, seed=123)
         assert result.success
         result_dict = sandbox.namespace.get('result')
         assert result_dict['value'].value == 4
-    
+
     def test_polynomial_expansion(self):
         """Test polynomial expansion from factored form."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Formula
 
@@ -127,17 +127,17 @@ val2 = factored.eval(x=0)  # (0-3)^2-5 = 9-5 = 4
 
 result = {"val1": val1, "val2": val2}
 """
-        
+
         result = sandbox.execute(code, seed=123)
         assert result.success
         result_dict = sandbox.namespace.get('result')
         assert result_dict['val1'].value == -5
         assert result_dict['val2'].value == 4
-    
+
     def test_formula_with_parameters(self):
         """Test formulas with Perl-style parameter substitution."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Formula
 
@@ -164,7 +164,7 @@ val_e = expanded.eval(x=5)
 # 25 + (-6)*5 + 4 = 25 - 30 + 4 = -1
 result = {"vertex_val": val_v, "expanded_val": val_e, "match": val_v.value == val_e.value}
 """
-        
+
         result = sandbox.execute(code, seed=123)
         assert result.success
         result_dict = sandbox.namespace.get('result')
@@ -175,11 +175,11 @@ result = {"vertex_val": val_v, "expanded_val": val_e, "match": val_v.value == va
 
 class TestFormulaOperations:
     """Test Formula operations needed for tutorial problems."""
-    
+
     def test_formula_arithmetic(self):
         """Test arithmetic operations on formulas."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Formula
 
@@ -194,15 +194,15 @@ val = sum_fg.eval(x=3)  # 9 + 6 = 15
 
 result = val
 """
-        
+
         result = sandbox.execute(code, seed=123)
         assert result.success
         assert sandbox.namespace.get('result').value == 15
-    
+
     def test_formula_substitution_simple(self):
         """Test simple formula substitution."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Formula
 
@@ -212,17 +212,17 @@ f = Formula("x^2 + 1")
 # Substitute x=5
 result = f.substitute(x=5)  # Should give Formula("5^2 + 1") = "26"
 """
-        
+
         result = sandbox.execute(code, seed=123)
         assert result.success
         # Substitution returns a Formula or value
         res = sandbox.namespace.get('result')
         assert res is not None
-    
+
     def test_formula_differentiation(self):
         """Test formula differentiation."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Formula
 
@@ -237,7 +237,7 @@ val = df.eval(x=1)
 
 result = {"derivative": df, "value": val}
 """
-        
+
         result = sandbox.execute(code, seed=123)
         assert result.success
         result_dict = sandbox.namespace.get('result')
@@ -246,11 +246,11 @@ result = {"derivative": df, "value": val}
 
 class TestComputeFunction:
     """Test Compute function for dynamic values."""
-    
+
     def test_compute_with_string_interpolation(self):
         """Test Compute with Python string interpolation."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Compute
 
@@ -261,15 +261,15 @@ b = 3
 # Compute with interpolation
 result = Compute(f"{a} + {b}")  # Should be Real(5)
 """
-        
+
         result = sandbox.execute(code, seed=123)
         assert result.success
         assert sandbox.namespace.get('result').value == 5
-    
+
     def test_compute_vs_formula(self):
         """Test difference between Compute and Formula."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Compute, Formula
 
@@ -283,7 +283,7 @@ is_formula = type(c2).__name__
 
 result = {"type1": is_real, "type2": is_formula}
 """
-        
+
         result = sandbox.execute(code, seed=123)
         assert result.success
         result_dict = sandbox.namespace.get('result')
@@ -293,11 +293,11 @@ result = {"type1": is_real, "type2": is_formula}
 
 class TestAnswerChecking:
     """Test answer checking features."""
-    
+
     def test_formula_answer_checker(self):
         """Test Formula.cmp() answer checker."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Formula
 
@@ -314,16 +314,16 @@ result = checker.check(student_ans)
 # Should be correct (equivalent formulas)
 is_correct = result['score'] == 1
 """
-        
+
         result = sandbox.execute(code, seed=123)
         assert result.success
         # Answer checking should recognize equivalence
         assert sandbox.namespace['is_correct'] == True
-    
+
     def test_real_answer_checker(self):
         """Test Real.cmp() answer checker."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Real
 
@@ -342,7 +342,7 @@ is_correct2 = result2['score'] == 1
 
 result = {"exact": is_correct1, "close": is_correct2}
 """
-        
+
         result = sandbox.execute(code, seed=123)
         assert result.success
         result_dict = sandbox.namespace.get('result')

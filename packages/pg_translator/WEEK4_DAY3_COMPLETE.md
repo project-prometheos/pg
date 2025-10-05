@@ -57,7 +57,7 @@ from pg_mathobjects import Context, Real, Formula, Compute
 #### TestMathObjectsBasic (5 tests)
 - Context available in sandbox
 - Real number creation
-- Formula creation  
+- Formula creation
 - Compute with constants
 - Compute with formulas (returns Formula type)
 
@@ -177,7 +177,7 @@ $ pytest tests/test_mathobjects_sandbox.py -q
 - ✅ Compute function (constants vs formulas)
 - ✅ Formula evaluation with variables
 - ✅ Formula substitution
-- ✅ Formula differentiation  
+- ✅ Formula differentiation
 - ✅ Real answer checking
 - ✅ Formula answer checking
 - ✅ Formula equivalence checking
@@ -217,7 +217,7 @@ This ensures problems won't crash even if package missing.
 - ✅ Real numbers with tolerance
 - ✅ Formula parsing (x^2, sin(x), etc.)
 - ✅ Formula evaluation
-- ✅ Formula substitution  
+- ✅ Formula substitution
 - ✅ Formula reduction/simplification
 - ✅ Formula differentiation
 - ✅ Arithmetic operations

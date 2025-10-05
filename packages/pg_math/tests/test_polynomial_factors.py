@@ -96,11 +96,11 @@ class TestPolynomialFactorsSingleFactors:
         """Reject repeated factors when singleFactors is set"""
         ctx = Context('PolynomialFactors')
         ctx.flags.set(singleFactors=True)
-        
+
         # (x+1)^2 is OK (power notation)
         f1 = Formula('(x+1)**2', ['x'], ctx)
         assert str(f1)
-        
+
         # Note: (x+1)^2*(x+1) gets auto-simplified by sympy to (x+1)^3
         # so we can't test that case. Test with explicit multiplication instead.
         # Try (x+1)*(x+1) which might not simplify immediately
@@ -217,13 +217,13 @@ class TestPolynomialFactorsContextSwitch:
         # Expanded form OK in Numeric
         f1 = Formula('x**2 + x - 2', ['x'], ctx1)
         assert str(f1)
-        
+
         # Switch to PolynomialFactors
         ctx2 = Context('PolynomialFactors')
         # Now expanded form should fail
         with pytest.raises(ValueError, match="factored form"):
             Formula('x**2 + x - 2', ['x'], ctx2)
-        
+
         # But factored form OK
         f2 = Formula('(x-1)*(x+2)', ['x'], ctx2)
         assert str(f2)
@@ -233,7 +233,7 @@ class TestPolynomialFactorsContextSwitch:
         ctx1 = Context('PolynomialFactors')
         f1 = Formula('(x-1)*(x+2)', ['x'], ctx1)
         assert str(f1)
-        
+
         # Switch back
         ctx2 = Context('Numeric')
         # Expanded form OK again
@@ -278,7 +278,7 @@ class TestPolynomialFactorsAnswerChecking:
         ctx = Context('PolynomialFactors')
         correct = Formula('(x-1)*(x+2)', ['x'], ctx)
         checker = correct.cmp()
-        
+
         result = checker.check('(x-1)*(x+2)')
         assert result['correct'] is True
 
@@ -287,7 +287,7 @@ class TestPolynomialFactorsAnswerChecking:
         ctx = Context('PolynomialFactors')
         correct = Formula('(x-1)*(x+2)', ['x'], ctx)
         checker = correct.cmp()
-        
+
         result = checker.check('(x-2)*(x+1)')
         assert result['correct'] is False
 
@@ -296,7 +296,7 @@ class TestPolynomialFactorsAnswerChecking:
         ctx = Context('PolynomialFactors')
         correct = Formula('(x-1)*(x+2)', ['x'], ctx)
         checker = correct.cmp()
-        
+
         # Reverse order
         result = checker.check('(x+2)*(x-1)')
         assert result['correct'] is True

@@ -79,11 +79,11 @@ class FactoredPolynomialValidator:
         # For now, just check basic polynomial validity
         # The actual LimitedPolynomial validator needs a Formula object
         # So we'll do basic checks here inline
-        
+
         # Check for functions on variables
         functions = expr.atoms(sp.Function)
         var_syms = {sp.Symbol(v) for v in self.variables}
-        
+
         for func in functions:
             # Check if function arguments contain our variables
             func_args = func.args
@@ -94,19 +94,19 @@ class FactoredPolynomialValidator:
                     name_map = {'log': 'ln'}
                     display_name = name_map.get(func_name, func_name)
                     return False, f"function '{display_name}' not allowed in a polynomial"
-        
+
         # Check powers
         powers = expr.atoms(sp.Pow)
         for pow_expr in powers:
             base, exponent = pow_expr.as_base_exp()
-            
+
             # If base contains variables, check exponent
             if base.free_symbols & var_syms:
                 if not exponent.is_Integer:
                     return False, "Exponent must be integer in a polynomial"
                 if exponent < 0:
                     return False, "Exponents must be non-negative in a polynomial"
-        
+
         # Check if polynomial in all variables
         for var_name in self.variables:
             var = sp.Symbol(var_name)
@@ -116,7 +116,7 @@ class FactoredPolynomialValidator:
                         return False, f"Not a polynomial in {var_name}"
                 except:
                     return False, f"Not a polynomial in {var_name}"
-        
+
         return True, None
 
     def _check_factored_form(self, expr: sp.Expr) -> Tuple[bool, Optional[str]]:
@@ -178,7 +178,7 @@ class FactoredPolynomialValidator:
     def _is_simple_linear_factor(self, expr: sp.Expr) -> bool:
         """
         Check if expression is a simple linear factor (degree 1 in each variable).
-        
+
         Accept: x+1, 2*x+3, x+y
         Reject: x^2+1, x^2+x-2
         """
@@ -195,7 +195,7 @@ class FactoredPolynomialValidator:
                         return False  # Higher than linear, reject
                 except:
                     return False
-        
+
         return True
 
     def _check_multiplication_factors(self, expr: sp.Mul) -> Tuple[bool, Optional[str]]:
@@ -368,7 +368,7 @@ def validate_factored_polynomial(formula_obj) -> None:
     strict_powers = flags.get("strictPowers")
     if strict_powers is None:
         strict_powers = True
-    
+
     validator = FactoredPolynomialValidator(
         variables=set(ctx.variables.list()),
         single_factors=flags.get("singleFactors") or False,

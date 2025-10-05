@@ -7,7 +7,7 @@ Implement Formula class for symbolic mathematical expressions with full function
 
 ### Implementation
 - **Formula class** (319 lines): Full symbolic math with sympy backend
-- **Formula parsing**: ^ to **, implicit multiplication, context integration  
+- **Formula parsing**: ^ to **, implicit multiplication, context integration
 - **Formula operations**: eval(), substitute(), reduce(), D() (differentiation)
 - **Formula arithmetic**: +, -, *, /, **, negation
 - **FormulaAnswerChecker**: Point-based testing with tolerance

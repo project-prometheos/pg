@@ -1,7 +1,7 @@
 # Week 5 Day 3: PolynomialFactors Context - Progress Report
 
-**Date**: October 5, 2025  
-**Status**: 🟡 **IN PROGRESS** (85% tests passing)  
+**Date**: October 5, 2025
+**Status**: 🟡 **IN PROGRESS** (85% tests passing)
 **Time Spent**: ~2 hours
 
 ## Current Status
@@ -66,33 +66,33 @@
 ## Issues to Fix
 
 ### 1. Addition at Top Level (Low Priority)
-**Test**: `test_reject_addition_at_top`  
-**Problem**: `(x-1) + (x+2)` is being accepted  
-**Cause**: My `_is_simple_linear_factor` might be returning True for sum of two factors  
+**Test**: `test_reject_addition_at_top`
+**Problem**: `(x-1) + (x+2)` is being accepted
+**Cause**: My `_is_simple_linear_factor` might be returning True for sum of two factors
 **Fix**: Need to check if expression is genuinely a single linear polynomial vs sum of factors
 
 ### 2. Repeated Factor Detection (Medium Priority)
-**Test**: `test_reject_repeated_factor`  
-**Problem**: `(x+1)^2*(x+1)` should be rejected with singleFactors flag  
-**Cause**: `_check_single_factors` not working correctly  
+**Test**: `test_reject_repeated_factor`
+**Problem**: `(x+1)^2*(x+1)` should be rejected with singleFactors flag
+**Cause**: `_check_single_factors` not working correctly
 **Fix**: Need to properly extract and compare factor strings
 
 ### 3. Product Power Detection (Medium Priority)
-**Test**: `test_reject_product_power`  
-**Problem**: `(x*(x+1))^2` should be rejected by default (strictPowers=True)  
-**Cause**: Detection in `_check_factored_form` not triggering  
+**Test**: `test_reject_product_power`
+**Problem**: `(x*(x+1))^2` should be rejected by default (strictPowers=True)
+**Cause**: Detection in `_check_factored_form` not triggering
 **Fix**: Need to verify the check is being called
 
 ### 4. Product Division Detection (Medium Priority)
-**Test**: `test_reject_product_division_strict`  
-**Problem**: `(x*(x+1))/3` should be rejected with strictDivision  
-**Cause**: `_check_factor_restrictions` not detecting this case  
+**Test**: `test_reject_product_division_strict`
+**Problem**: `(x*(x+1))/3` should be rejected with strictDivision
+**Cause**: `_check_factor_restrictions` not detecting this case
 **Fix**: Need to properly identify multi-factor numerator in division
 
 ### 5. Strict Mode Domain Error (High Priority)
-**Test**: `test_strict_accept_simple_coefficients`  
-**Problem**: `3*(x+1)*(x-2)` throws "expected a valid domain specification, got ZZ[]"  
-**Cause**: Something in strict mode polynomial checking triggers sympy domain error  
+**Test**: `test_strict_accept_simple_coefficients`
+**Problem**: `3*(x+1)*(x-2)` throws "expected a valid domain specification, got ZZ[]"
+**Cause**: Something in strict mode polynomial checking triggers sympy domain error
 **Fix**: Need to investigate where this occurs and handle gracefully
 
 ## Implementation Summary
@@ -172,8 +172,8 @@ validate_factored_polynomial()
 
 ## Success Metrics
 
-**Target**: 30/33 tests passing (91%)  
-**Current**: 28/33 tests passing (85%)  
+**Target**: 30/33 tests passing (91%)
+**Current**: 28/33 tests passing (85%)
 **Stretch**: 33/33 tests passing (100%)
 
 ## Lessons Learned

@@ -94,7 +94,7 @@ $ pytest tests/test_tutorial_problems.py -q
 ### Test Coverage Summary
 
 - **ExpandedPolynomial patterns**: 3/3 passing
-- **Simple algebra**: 3/3 passing  
+- **Simple algebra**: 3/3 passing
 - **Formula operations**: 3/3 passing
 - **Compute function**: 2/2 passing
 - **Answer checking**: 2/2 passing
@@ -189,7 +189,7 @@ vertex = Compute(f"(x-{h})^2-{k}")
 
 # Expanded form
 b = -2 * h
-c = h**2 - k  
+c = h**2 - k
 expanded = Formula(f"x^2 + {b}*x + {c}")
 
 html = PGML('''

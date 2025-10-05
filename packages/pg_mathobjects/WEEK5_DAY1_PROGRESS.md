@@ -1,7 +1,7 @@
 # Week 5 Day 1: FormulaUpToConstant - Progress Report
 
-**Date**: October 5, 2025  
-**Status**: 🟡 IN PROGRESS (54% complete)  
+**Date**: October 5, 2025
+**Status**: 🟡 IN PROGRESS (54% complete)
 **Time Invested**: ~4 hours
 
 ## What Was Accomplished
@@ -114,7 +114,7 @@ tex = f.TeX()  # Not f.tex()
 2. Compute() doesn't create FormulaUpToConstant
 3. Comparison logic needs refinement
 
-**Solution**: 
+**Solution**:
 - Fix tolerance
 - Improve cmp() checker logic
 - Handle string parsing better
@@ -205,16 +205,16 @@ result = checker('e^x + K')  # Should pass
 
 ## Comparison with Plan
 
-**Planned Time**: 5-6 hours  
-**Actual Time**: ~4.5 hours  
+**Planned Time**: 5-6 hours
+**Actual Time**: ~4.5 hours
 **Status**: ✅ ON TRACK
 
-**Planned Tests**: 20+  
-**Actual Tests**: 39  
+**Planned Tests**: 20+
+**Actual Tests**: 39
 **Status**: ✅ EXCEEDED
 
-**Pass Rate Target**: Not specified  
-**Actual Pass Rate**: 54%  
+**Pass Rate Target**: Not specified
+**Actual Pass Rate**: 54%
 **Status**: 🟡 NEEDS IMPROVEMENT (target 90%+)
 
 ## Conclusion

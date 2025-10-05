@@ -10,11 +10,11 @@ from pg_translator.in_process_sandbox import InProcessSandbox
 
 class TestDifferentiation:
     """Test derivative problems from DifferentiateFunction.pg."""
-    
+
     def test_basic_derivative(self):
         """Test basic derivative with D() method."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Formula
 
@@ -27,15 +27,15 @@ df = f.D('x')
 # Evaluate derivative (conceptually df should be a Formula)
 result = df
 """
-        
+
         result = sandbox.execute(code, seed=123)
         assert result.success
         assert sandbox.namespace.get('df') is not None
-    
+
     def test_derivative_with_substitution(self):
         """Test derivative with variable substitution."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Formula
 
@@ -50,17 +50,17 @@ ans2 = fx.substitute(k=3)  # Should give Formula("2*3*x") or similar
 
 result = {"fx": fx, "ans2": ans2}
 """
-        
+
         result = sandbox.execute(code, seed=123)
         assert result.success
         result_dict = sandbox.namespace.get('result')
         assert result_dict['fx'] is not None
         assert result_dict['ans2'] is not None
-    
+
     def test_derivative_with_evaluation(self):
         """Test derivative evaluation at a point."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Formula
 
@@ -74,16 +74,16 @@ val = df.eval(x=2)  # Should be 12
 
 result = val
 """
-        
+
         result = sandbox.execute(code, seed=123)
         assert result.success
         val = sandbox.namespace.get('result')
         assert val.value == 12
-    
+
     def test_derivative_power_rule(self):
         """Test power rule for derivatives."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Formula
 
@@ -98,7 +98,7 @@ val2 = df2.eval(x=1)  # 4*x^3 at x=1 = 4
 
 result = {"val1": val1, "val2": val2}
 """
-        
+
         result = sandbox.execute(code, seed=123)
         assert result.success
         result_dict = sandbox.namespace.get('result')
@@ -108,11 +108,11 @@ result = {"val1": val1, "val2": val2}
 
 class TestIndefiniteIntegrals:
     """Test indefinite integral problems."""
-    
+
     def test_antiderivative_creation(self):
         """Test creating antiderivative formulas."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Formula
 
@@ -125,16 +125,16 @@ val = specific.eval(x=0)  # e^0 = 1
 
 result = {"specific": specific, "val": val}
 """
-        
+
         result = sandbox.execute(code, seed=123)
         assert result.success
         result_dict = sandbox.namespace.get('result')
         assert result_dict['val'].value == pytest.approx(1.0, rel=1e-10)
-    
+
     def test_polynomial_antiderivative(self):
         """Test polynomial antiderivative."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Formula
 
@@ -147,16 +147,16 @@ val = f.eval(x=3)  # 2*3 = 6
 
 result = val
 """
-        
+
         result = sandbox.execute(code, seed=123)
         assert result.success
         val = sandbox.namespace.get('result')
         assert val.value == 6
-    
+
     def test_antiderivative_equivalence(self):
         """Test that antiderivatives differing by constant are equivalent."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Formula
 
@@ -174,7 +174,7 @@ val2 = df2.eval(x=3)
 
 result = {"val1": val1, "val2": val2, "equal": val1.value == val2.value}
 """
-        
+
         result = sandbox.execute(code, seed=123)
         assert result.success
         result_dict = sandbox.namespace.get('result')
@@ -183,11 +183,11 @@ result = {"val1": val1, "val2": val2, "equal": val1.value == val2.value}
 
 class TestTrigFunctions:
     """Test trigonometric functions."""
-    
+
     def test_sin_cos_formula(self):
         """Test sin and cos in formulas."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Formula
 import math
@@ -200,16 +200,16 @@ val = f.eval(x=math.pi/2)
 
 result = val
 """
-        
+
         result = sandbox.execute(code, seed=123)
         assert result.success
         val = sandbox.namespace.get('result')
         assert val.value == pytest.approx(1.0, rel=1e-10)
-    
+
     def test_trig_derivative(self):
         """Test derivatives of trig functions."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Formula
 import math
@@ -223,16 +223,16 @@ val = df.eval(x=0)
 
 result = val
 """
-        
+
         result = sandbox.execute(code, seed=123)
         assert result.success
         val = sandbox.namespace.get('result')
         assert val.value == pytest.approx(1.0, rel=1e-10)
-    
+
     def test_cos_derivative(self):
         """Test derivative of cos(x)."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Formula
 import math
@@ -246,7 +246,7 @@ val = df.eval(x=0)
 
 result = val
 """
-        
+
         result = sandbox.execute(code, seed=123)
         assert result.success
         val = sandbox.namespace.get('result')
@@ -255,18 +255,18 @@ result = val
 
 class TestPolynomialFactoring:
     """Test polynomial factoring (basic support)."""
-    
+
     def test_expanded_to_factored(self):
         """Test that factored and expanded forms evaluate the same."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Formula
 
 # Expanded: 8x^2 + 28x + 12
 expanded = Formula("8*x^2 + 28*x + 12")
 
-# Factored: 4(2x+1)(x+3) 
+# Factored: 4(2x+1)(x+3)
 # = 4(2x^2 + 6x + x + 3)
 # = 4(2x^2 + 7x + 3)
 # = 8x^2 + 28x + 12
@@ -278,17 +278,17 @@ val_fac = factored.eval(x=2)  # 4*(4+1)*(2+3) = 4*5*5 = 100
 
 result = {"val_exp": val_exp, "val_fac": val_fac, "equal": val_exp.value == val_fac.value}
 """
-        
+
         result = sandbox.execute(code, seed=123)
         assert result.success
         result_dict = sandbox.namespace.get('result')
         assert result_dict['equal'] == True
         assert result_dict['val_exp'].value == 100
-    
+
     def test_simple_factoring(self):
         """Test simple factoring pattern."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Formula
 
@@ -305,7 +305,7 @@ for x_val in [0, 2, -1, 3]:
 
 result = all(vals)  # All should be True
 """
-        
+
         result = sandbox.execute(code, seed=123)
         assert result.success
         assert sandbox.namespace.get('result') == True
@@ -313,11 +313,11 @@ result = all(vals)  # All should be True
 
 class TestContextFlags:
     """Test context flag usage from tutorial problems."""
-    
+
     def test_reduce_constants_flag(self):
         """Test reduceConstants context flag."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Context, Formula
 
@@ -331,16 +331,16 @@ val = f.eval(x=5)  # 2*5 + 3 = 13
 
 result = val
 """
-        
+
         result = sandbox.execute(code, seed=123)
         assert result.success
         val = sandbox.namespace.get('result')
         assert val.value == 13
-    
+
     def test_variables_add(self):
         """Test adding variables to context."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Context, Formula
 
@@ -354,7 +354,7 @@ Context('Numeric')
 f = Formula("k*x^2")
 result = f
 """
-        
+
         result = sandbox.execute(code, seed=123)
         assert result.success
         assert sandbox.namespace.get('result') is not None
@@ -362,11 +362,11 @@ result = f
 
 class TestExponentialFunctions:
     """Test exponential and logarithmic functions."""
-    
+
     def test_exp_function(self):
         """Test e^x in formulas."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Formula
 import math
@@ -382,17 +382,18 @@ val1 = f.eval(x=1)
 
 result = {"val0": val0, "val1": val1}
 """
-        
+
         result = sandbox.execute(code, seed=123)
         assert result.success
         result_dict = sandbox.namespace.get('result')
         assert result_dict['val0'].value == pytest.approx(1.0, rel=1e-10)
-        assert result_dict['val1'].value == pytest.approx(2.718281828, rel=1e-8)
-    
+        assert result_dict['val1'].value == pytest.approx(
+            2.718281828, rel=1e-8)
+
     def test_exp_derivative(self):
         """Test derivative of e^x is e^x."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Formula
 
@@ -407,16 +408,16 @@ val_df = df.eval(x=2)
 # Should be equal (e^x derivative is e^x)
 result = {"val_f": val_f, "val_df": val_df, "equal": abs(val_f.value - val_df.value) < 1e-10}
 """
-        
+
         result = sandbox.execute(code, seed=123)
         assert result.success
         result_dict = sandbox.namespace.get('result')
         assert result_dict['equal'] == True
-    
+
     def test_log_function(self):
         """Test natural logarithm."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Formula
 import math
@@ -432,7 +433,7 @@ val_e = f.eval(x=math.e)
 
 result = {"val1": val1, "val_e": val_e}
 """
-        
+
         result = sandbox.execute(code, seed=123)
         assert result.success
         result_dict = sandbox.namespace.get('result')
@@ -442,11 +443,11 @@ result = {"val1": val1, "val_e": val_e}
 
 class TestComplexFormulas:
     """Test more complex formula patterns."""
-    
+
     def test_product_rule_setup(self):
         """Test formula setup for product rule problems."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Formula
 
@@ -461,16 +462,16 @@ val = df.eval(x=0)
 
 result = val
 """
-        
+
         result = sandbox.execute(code, seed=123)
         assert result.success
         val = sandbox.namespace.get('result')
         assert abs(val.value) < 1e-10
-    
+
     def test_chain_rule_setup(self):
         """Test formula setup for chain rule problems."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Formula
 
@@ -483,15 +484,15 @@ df = f.D('x')
 # Just verify derivative exists
 result = df
 """
-        
+
         result = sandbox.execute(code, seed=123)
         assert result.success
         assert sandbox.namespace.get('result') is not None
-    
+
     def test_quotient_formula(self):
         """Test formulas with division."""
         sandbox = InProcessSandbox()
-        
+
         code = """
 from pg_mathobjects import Formula
 
@@ -503,7 +504,7 @@ val = f.eval(x=5)
 
 result = val
 """
-        
+
         result = sandbox.execute(code, seed=123)
         assert result.success
         val = sandbox.namespace.get('result')

@@ -65,12 +65,12 @@ class TestFormulaUpToConstantCreation:
         """Test that FormulaUpToConstant uses a private context."""
         ctx = Context("Numeric")
         original_vars = set(ctx.variables.list())
-        
+
         f = FormulaUpToConstant("x^2 + C", ctx)
-        
+
         # Original context should not be modified
         assert set(ctx.variables.list()) == original_vars
-        
+
         # Formula's private context should have C
         assert "C" in f.context.variables.list()
 
@@ -145,7 +145,7 @@ class TestFormulaUpToConstantAnswerChecker:
         """Test that checker accepts different constants."""
         f = FormulaUpToConstant("sin(x) + C")
         checker = f.cmp()
-        
+
         # Try various constants
         for constant in ["K", "A", "B", "D"]:
             result = checker(f"sin(x) + {constant}")
@@ -248,7 +248,7 @@ class TestIntegrationWithRealProblems:
         # Problem: integrate e^x
         correct = FormulaUpToConstant("e^x + C")
         checker = correct.cmp()
-        
+
         # Student answers
         assert checker("e^x + K")['correct']
         assert checker("e^x + A")['correct']
@@ -259,7 +259,7 @@ class TestIntegrationWithRealProblems:
         # integrate x^2 dx = x^3/3 + C
         correct = FormulaUpToConstant("x^3/3 + C")
         checker = correct.cmp()
-        
+
         assert checker("x^3/3 + K")['correct']
         assert checker("x**3/3 + D")['correct']
         assert not checker("x^3/3")['correct']
@@ -269,7 +269,7 @@ class TestIntegrationWithRealProblems:
         # integrate sin(x) dx = -cos(x) + C
         correct = FormulaUpToConstant("-cos(x) + C")
         checker = correct.cmp()
-        
+
         assert checker("-cos(x) + K")['correct']
         assert not checker("-cos(x)")['correct']
         assert not checker("cos(x) + K")['correct']  # Wrong sign
@@ -278,7 +278,7 @@ class TestIntegrationWithRealProblems:
         """Test integration with multiple terms."""
         correct = FormulaUpToConstant("x^3/3 + x^2/2 + x + C")
         checker = correct.cmp()
-        
+
         # Various orderings should work
         assert checker("x + x^2/2 + x^3/3 + K")['correct']
         assert checker("x^3/3 + x + x^2/2 + A")['correct']
@@ -322,19 +322,19 @@ class TestEdgeCases:
         ctx = Context("Numeric")
         ctx.variables.add("a")
         original_vars = list(ctx.variables.list())
-        
+
         f = FormulaUpToConstant("a*x + C", ctx)
-        
+
         # Original context should be unchanged
         assert list(ctx.variables.list()) == original_vars
-        
+
         # But formula's context should have C
         assert "C" in f.context.variables.list()
 
     def test_comparison_with_non_formula(self):
         """Test comparison with non-formula values."""
         f = FormulaUpToConstant("x + C")
-        
+
         # Should return False with helpful message
         equal, msg = f.compare(5)
         assert not equal

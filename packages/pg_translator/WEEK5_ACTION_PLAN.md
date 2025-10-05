@@ -1,7 +1,7 @@
 # Week 5 Action Plan: Advanced MathObjects
 
-**Start Date**: Next Session  
-**Goal**: Implement FormulaUpToConstant and additional contexts  
+**Start Date**: Next Session
+**Goal**: Implement FormulaUpToConstant and additional contexts
 **Priority**: High - Completes Calculus 2 support
 
 ## Week 5 Overview
@@ -9,7 +9,7 @@
 ### Primary Objectives
 
 1. **FormulaUpToConstant** - Antiderivatives with required constant
-2. **LimitedPolynomial Context** - Restrict student input format  
+2. **LimitedPolynomial Context** - Restrict student input format
 3. **PolynomialFactors Context** - Require factored form
 4. **Context Flag System** - Full flag implementation
 
@@ -68,12 +68,12 @@ result = checker.check("x^2/2")      # Should fail (no constant)
 ```python
 class FormulaUpToConstant(Formula):
     """Formula that is only unique up to a constant."""
-    
+
     def __init__(self, expr: str, context: Context | None = None):
         # Parse expression
         # Identify constant variable
         # Set up for equivalence checking
-        
+
     def cmp(self, **options):
         # Custom answer checker
         # Accept any single-letter constant
@@ -86,7 +86,7 @@ class FormulaUpToConstant(Formula):
 
 **Test Cases** (20+ tests):
 1. Creation with C
-2. Creation with K  
+2. Creation with K
 3. Creation with other letters
 4. Error if no constant
 5. Answer checking - accept C
@@ -144,7 +144,7 @@ ANS($general->cmp())
 ```python
 class LimitedPolynomialContext(Context):
     """Context that only allows polynomial expressions."""
-    
+
     def __init__(self, strict: bool = False):
         super().__init__('Numeric')
         self.name = 'LimitedPolynomial'
@@ -208,14 +208,14 @@ class LimitedPolynomialContext(Context):
 class Context:
     def __init__(self):
         self.flags = ContextFlags()
-        
+
 class ContextFlags:
     def __init__(self):
         self.reduceConstants = True
         self.reduceConstantFunctions = True
         self.formatStudentAnswer = 'evaluated'
         # ... more flags
-        
+
     def set(self, **kwargs):
         for key, value in kwargs.items():
             setattr(self, key, value)
@@ -225,7 +225,7 @@ class ContextFlags:
 
 **Implement Common Flags**:
 - reduceConstants
-- reduceConstantFunctions  
+- reduceConstantFunctions
 - formatStudentAnswer
 - tolerance
 - tolType

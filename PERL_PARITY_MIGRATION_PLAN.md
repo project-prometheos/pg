@@ -2,7 +2,7 @@
 
 **Goal**: Achieve complete Perl MathObjects parity by migrating to `pg_math` as the single source of truth.
 
-**Date**: October 5, 2025  
+**Date**: October 5, 2025
 **Status**: Planning Phase
 
 ## Executive Summary
@@ -174,7 +174,7 @@ packages/pg_math/tests/
 # Port from pg_mathobjects/context.py
 # Key features:
 - VariableManager
-- ConstantManager  
+- ConstantManager
 - FunctionManager
 - OperatorManager
 - ContextFlags
@@ -230,12 +230,12 @@ packages/pg_math/tests/
 def __eq__(self, other: Any) -> bool:
     """
     Compare formulas for equality using Perl's numeric test point strategy.
-    
+
     Reference: lib/Value/Formula.pm::compare (lines 169-235)
     """
     if not isinstance(other, Formula):
         return False
-    
+
     # Use existing compare() method which implements Perl strategy
     return self.compare(other, tolerance=0.001, mode=ToleranceMode.RELATIVE)
 ```
@@ -272,7 +272,7 @@ from pathlib import Path
 
 def migrate_file(filepath: Path):
     content = filepath.read_text()
-    
+
     # Replace imports
     content = re.sub(
         r'from pg_mathobjects import',
@@ -284,7 +284,7 @@ def migrate_file(filepath: Path):
         'import pg_math',
         content
     )
-    
+
     filepath.write_text(content)
 
 # Migrate all Python files
@@ -438,6 +438,6 @@ cp ../pg_mathobjects/tests/test_formula_up_to_constant.py tests/
 
 ---
 
-**Author**: GitHub Copilot  
-**Review Status**: Awaiting approval  
+**Author**: GitHub Copilot
+**Review Status**: Awaiting approval
 **Target Completion**: October 12, 2025 (1 week from today)

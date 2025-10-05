@@ -12,39 +12,39 @@ from typing import Union
 def Compute(expression: Union[str, int, float], context=None):
     """
     Parse and evaluate a mathematical expression.
-    
+
     If the expression is constant, returns a Real number.
     If the expression contains variables, returns a Formula.
-    
+
     Args:
         expression: Expression to parse
         context: Context to use (None = current)
-    
+
     Returns:
         Real or Formula
-    
+
     Examples:
         >>> Compute("2+2")
         Real(4)
-        
+
         >>> Compute("x^2")
         Formula("x^2")
-        
+
         >>> Compute("sin(pi/2)")
         Real(1.0)
     """
     if context is None:
         from .context import get_current_context
         context = get_current_context()
-    
+
     # If it's already a number, just return Real
     if isinstance(expression, (int, float)):
         from .numeric import Real
         return Real(expression)
-    
+
     # Convert to string
     expr_str = str(expression).strip()
-    
+
     # Try to parse as a simple number
     try:
         value = float(expr_str)
@@ -52,7 +52,7 @@ def Compute(expression: Union[str, int, float], context=None):
         return Real(value)
     except ValueError:
         pass
-    
+
     # Check if it's a constant expression (no variables)
     if _is_constant_expression(expr_str, context):
         # Evaluate as constant
@@ -62,13 +62,13 @@ def Compute(expression: Union[str, int, float], context=None):
             return Real(value)
         except Exception:
             pass
-    
+
     # Otherwise, return as Formula
     from .formula import Formula
-    
+
     # Get variables from context
     variables = context.variables.list()
-    
+
     return Formula(expr_str, variables, context)
 
 
@@ -76,25 +76,25 @@ def _is_constant_expression(expr: str, context) -> bool:
     """Check if expression contains only constants (no variables)."""
     # Get list of variables from context
     variables = context.variables.list()
-    
+
     # Remove constants, numbers, operators, functions, and parentheses
     stripped = expr
-    
+
     # Remove function calls
     for func in context.functions.list():
         stripped = re.sub(rf'\b{func}\s*\(', '', stripped)
-    
+
     # Remove constants
     for const in context.constants.list():
         stripped = stripped.replace(const, '')
-    
+
     # Remove numbers (including decimals and scientific notation)
     stripped = re.sub(r'\b\d+\.?\d*([eE][+-]?\d+)?\b', '', stripped)
-    
+
     # Remove operators and parentheses
     for char in '+-*/^()[], \t\n':
         stripped = stripped.replace(char, '')
-    
+
     # If anything remains, it might be a variable
     if stripped:
         # Check if any remaining parts are variables
@@ -102,14 +102,14 @@ def _is_constant_expression(expr: str, context) -> bool:
         for part in parts:
             if part in variables:
                 return False
-    
+
     return True
 
 
 def _evaluate_constant(expr: str, context) -> float:
     """
     Evaluate a constant expression.
-    
+
     This is a simple evaluator for constant expressions.
     Uses Python's eval() with a restricted namespace.
     """
@@ -141,10 +141,10 @@ def _evaluate_constant(expr: str, context) -> float:
         # Add context constants
         **{name: context.constants.get(name) for name in context.constants.list()},
     }
-    
+
     # Convert ^ to **
     expr = expr.replace('^', '**')
-    
+
     # Evaluate safely
     try:
         result = eval(expr, {"__builtins__": {}}, namespace)

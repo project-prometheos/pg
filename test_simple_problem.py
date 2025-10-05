@@ -3,6 +3,11 @@
 Test: Can we use pg_macros directly to create a problem?
 """
 
+from pg_macros.answers import num_cmp
+from pg_macros.core import (
+    TEXT, ANS, DOCUMENT, ENDDOCUMENT,
+    ans_rule, PGEnvironment, set_environment
+)
 import sys
 from pathlib import Path
 
@@ -12,11 +17,6 @@ for pkg in ["pg_macros", "pg_math", "pg_answer"]:
     sys.path.insert(0, str(repo_root / "packages" / pkg))
 
 # Import macros directly
-from pg_macros.core import (
-    TEXT, ANS, DOCUMENT, ENDDOCUMENT,
-    ans_rule, PGEnvironment, set_environment
-)
-from pg_macros.answers import num_cmp
 
 print("=" * 60)
 print("TEST: Simple PG Problem Using Macros Directly")

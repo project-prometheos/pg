@@ -3,6 +3,8 @@
 Quick test: Can we load macros and render a simple problem?
 """
 
+from pg_translator.macro_loader import MacroLoader
+from pg_translator.sandbox import Sandbox
 import sys
 from pathlib import Path
 
@@ -13,8 +15,6 @@ sys.path.insert(0, str(repo_root / "packages" / "pg_translator"))
 sys.path.insert(0, str(repo_root / "packages" / "pg_math"))
 sys.path.insert(0, str(repo_root / "packages" / "pg_answer"))
 
-from pg_translator.sandbox import Sandbox
-from pg_translator.macro_loader import MacroLoader
 
 # Create sandbox
 sandbox = Sandbox()
@@ -47,26 +47,26 @@ try:
     if TEXT is None:
         print("❌ TEXT not found in namespace")
         sys.exit(1)
-    
+
     print("✅ TEXT function found")
-    
+
     # Try to call it
     get_environment = sandbox.namespace.get("get_environment")
     if get_environment is None:
         print("❌ get_environment not found")
         sys.exit(1)
-    
+
     env = get_environment()
     print(f"✅ Environment created: {env}")
-    
+
     # Call TEXT
     TEXT("Hello from PG!")
     TEXT(" This is a test.")
-    
+
     # Get the accumulated text
     body = env.get_body_text()
     print(f"\n✅ Generated text: {body}")
-    
+
 except Exception as e:
     print(f"❌ Error: {e}")
     import traceback
@@ -80,12 +80,12 @@ try:
     if ans_rule is None:
         print("❌ ans_rule not found")
         sys.exit(1)
-    
+
     print("✅ ans_rule function found")
-    
+
     html = ans_rule(20)
     print(f"✅ Generated HTML: {html}")
-    
+
 except Exception as e:
     print(f"❌ Error: {e}")
     import traceback

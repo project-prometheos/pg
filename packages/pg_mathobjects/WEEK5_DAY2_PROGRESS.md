@@ -1,6 +1,6 @@
 # Week 5 Day 2: LimitedPolynomial - Progress Report
 
-**Status**: 🟡 IN PROGRESS (46% complete)  
+**Status**: 🟡 IN PROGRESS (46% complete)
 **Tests**: 12/26 passing
 
 ## What's Working ✅
@@ -16,7 +16,7 @@
 - ✅ Negative coefficients: `-x^2 + 3*x - 5`
 
 **Reject Invalid** (2/9):
-- ✅ Negative power: `x^(-1)` 
+- ✅ Negative power: `x^(-1)`
 - ✅ Division by variable: `1/x`
 
 **Context Switching** (2/2):
@@ -100,8 +100,8 @@ Get to 20+ tests passing (77%)
 - First test run: 15 min ✅
 - **Remaining**: ~1.5 hours to completion
 
-**Total so far**: ~2.5 hours  
-**Target**: 3.5-4 hours  
+**Total so far**: ~2.5 hours
+**Target**: 3.5-4 hours
 **On track**: ✅
 
 ## Architecture Notes

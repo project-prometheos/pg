@@ -36,24 +36,24 @@ Instead of reimplementing the complex Perl operator checking system, we can:
 ```python
 def is_polynomial_expression(expr, variables, strict=False):
     """Check if sympy expression is polynomial form."""
-    
+
     # Check 1: Is it a polynomial in the given variables?
     for var in variables:
         if not expr.is_polynomial(var):
             return False, f"Not polynomial in {var}"
-    
+
     # Check 2: No non-polynomial functions
     for func in expr.atoms(sp.Function):
         if not is_allowed_function(func, strict):
             return False, f"Function {func.func} not allowed"
-    
+
     # Check 3: All powers are non-negative integers
     for pow_expr in expr.atoms(sp.Pow):
         base, exp = pow_expr.as_base_exp()
         if base in variables:
             if not (exp.is_Integer and exp >= 0):
                 return False, f"Exponent must be non-negative integer"
-    
+
     return True, None
 ```
 
@@ -66,13 +66,13 @@ def is_polynomial_expression(expr, variables, strict=False):
 ```python
 class LimitedPolynomialContext(Context):
     """Context for polynomial expressions only."""
-    
+
     def __init__(self, strict=False, single_powers=False):
         super().__init__('Numeric')
         self.name = 'LimitedPolynomial' + ('-Strict' if strict else '')
         self.flags.set('strictCoefficients', strict)
         self.flags.set('singlePowers', single_powers)
-        
+
         # Configure parser to validate polynomial form
         self._polynomial_validator = PolynomialValidator(strict, single_powers)
 ```
@@ -95,10 +95,10 @@ Override Formula parsing to validate:
 ```python
 class LimitedPolynomialFormula(Formula):
     """Formula that validates polynomial form."""
-    
+
     def __init__(self, expr, context):
         super().__init__(expr, context)
-        
+
         # Validate after parsing
         validator = context._polynomial_validator
         is_valid, error = validator.validate(self)
@@ -126,7 +126,7 @@ Test categories:
    - Complex operations: `e^x`
 
 3. **Strict Mode** (3 tests)
-   - Reject operations in coefficients: `(2+3)*x` 
+   - Reject operations in coefficients: `(2+3)*x`
    - Accept simple coefficients: `5*x`
    - Reject nested operations: `x^(1+1)`
 

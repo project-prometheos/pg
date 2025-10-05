@@ -70,7 +70,7 @@ class Real(MathValue):
     def __eq__(self, other: Any) -> bool:
         """
         Equality comparison with context-aware tolerance.
-        
+
         Uses tolerance and tolType from context for fuzzy comparison.
         Reference: lib/Value/Real.pm lines 138-177
         """
@@ -86,15 +86,15 @@ class Real(MathValue):
         tolerance = self.context.flags.get('tolerance')
         if tolerance is None:
             tolerance = 0.001  # Default tolerance
-        
+
         tol_type = self.context.flags.get('tolType')
         if tol_type is None:
             tol_type = 'relative'  # Default to relative
-        
+
         zero_level = self.context.flags.get('zeroLevel')
         if zero_level is None:
             zero_level = 1e-14  # Default zero level
-        
+
         zero_level_tol = self.context.flags.get('zeroLevelTol')
         if zero_level_tol is None:
             zero_level_tol = 1e-12  # Default zero level tolerance
@@ -109,17 +109,17 @@ class Real(MathValue):
         if tol_type == 'absolute':
             # Absolute tolerance
             return abs(self.value - other_value) <= tolerance + EPSILON
-        
+
         elif tol_type == 'relative':
             # Relative tolerance with special handling near zero
             # Reference: pg_mathobjects/real.py lines 135-137
             # If self is near zero, check if other is within tolerance of zero
             if abs(self.value) < zero_level:
                 return abs(other_value) < tolerance
-            
+
             # Otherwise use relative tolerance
             return abs(self.value - other_value) / abs(self.value) < tolerance
-        
+
         else:
             # Unknown tolerance type, fall back to relative
             max_abs = max(abs(self.value), abs(other_value))
@@ -312,10 +312,10 @@ class Real(MathValue):
     def answer_checker(self, **options):
         """
         Create an answer checker for this Real number.
-        
+
         Args:
             **options: Checker options (tolerance, tolType)
-        
+
         Returns:
             RealAnswerChecker that can check student answers
         """
@@ -551,7 +551,7 @@ class Infinity(MathValue):
             self.sign = -1
         else:
             self.sign = 0
-        
+
         if context is not None:
             self.context = context
         else:

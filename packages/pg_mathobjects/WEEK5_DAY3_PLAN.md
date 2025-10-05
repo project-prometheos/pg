@@ -1,7 +1,7 @@
 # Week 5 Day 3: PolynomialFactors Context - Implementation Plan
 
-**Goal**: Implement context that allows only factored polynomials  
-**Estimated Time**: 3-4 hours  
+**Goal**: Implement context that allows only factored polynomials
+**Estimated Time**: 3-4 hours
 **Date**: October 5, 2025
 
 ## Overview
@@ -135,13 +135,13 @@ def is_factored_form(expr, vars):
     # Top level should be Mul, Pow, or Div
     if isinstance(expr, sp.Add):
         return False, "Polynomial must be in factored form (use parentheses)"
-    
+
     # Extract factors from multiplication
     if isinstance(expr, sp.Mul):
         factors = expr.as_ordered_factors()
         # Each factor should be polynomial
         # Track for uniqueness checking
-    
+
     # Powers and division OK if operand is polynomial
     return True, None
 ```
@@ -152,14 +152,14 @@ def is_factored_form(expr, vars):
 def extract_factors(expr):
     """Get list of factor strings for uniqueness checking"""
     factors = []
-    
+
     if isinstance(expr, sp.Mul):
         for factor in expr.as_ordered_factors():
             # Skip constants
             if not factor.is_number:
                 # Use canonical string form
                 factors.append(str(factor))
-    
+
     return factors
 ```
 
