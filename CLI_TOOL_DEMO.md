@@ -68,7 +68,7 @@ Seed: 1234
   PROBLEM
 ======================================================================
 
-**Problem 1.** Beräkna [ tan((23π)/(6)) ]. Svaret får innehålla 
+**Problem 1.** Beräkna [ tan((23π)/(6)) ]. Svaret får innehålla
 rötter men inte trigonometriska funktioner.
 
 This problem has 1 answer blank(s).
@@ -88,7 +88,7 @@ Seed: 85161
   PROBLEM
 ======================================================================
 
-**Problem 6.** Hur många lösningar har [ cos(x)=-1/√3 ] i 
+**Problem 6.** Hur många lösningar har [ cos(x)=-1/√3 ] i
 intervallet [ [-(π)/(2),(π)/(2)] ]?
 
 This problem has 1 answer blank(s).
@@ -147,7 +147,7 @@ This problem has 1 answer blank(s).
 The formatting is achieved through a two-step process:
 
 1. **LaTeX Parsing**: Regex-based extraction of mathematical expressions
-2. **Symbol Conversion**: 
+2. **Symbol Conversion**:
    - Fraction conversion: `\frac{a}{b}` → `(a)/(b)`
    - Unicode substitution for Greek letters and operators
    - Removal of LaTeX commands (e.g., `\left`, `\right`, `\!`)

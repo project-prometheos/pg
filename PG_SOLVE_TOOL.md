@@ -146,7 +146,7 @@ Seed: 45036
   PROBLEM
 ======================================================================
 
-**Problem 1.** Beräkna [ tan(π/8) ]. Svaret får innehålla rötter 
+**Problem 1.** Beräkna [ tan(π/8) ]. Svaret får innehålla rötter
 men inte trigonometriska funktioner.
 
 This problem has 1 answer blank(s).
@@ -179,7 +179,7 @@ Seed: 1234
   PROBLEM
 ======================================================================
 
-**Problem 5.** Beräkna [ tan(π/8) ]. Svaret får innehålla rötter 
+**Problem 5.** Beräkna [ tan(π/8) ]. Svaret får innehålla rötter
 men inte trigonometriska funktioner.
 
 This problem has 1 answer blank(s).

@@ -4,14 +4,16 @@
 import re
 
 # Simulate the full processing pipeline
+
+
 def clean_latex(latex_str):
     """Clean up LaTeX for terminal display with mathematical notation."""
     print(f"  clean_latex input: {repr(latex_str)}")
-    
+
     # Remove \! (thin space) and \displaystyle
     latex_str = latex_str.replace(r'\!', '')
     latex_str = latex_str.replace(r'\displaystyle', '')
-    
+
     # Convert \left( and \right) to just ( and )
     latex_str = latex_str.replace(r'\left(', '(')
     latex_str = latex_str.replace(r'\right)', ')')
@@ -19,20 +21,21 @@ def clean_latex(latex_str):
     latex_str = latex_str.replace(r'\right]', ']')
     latex_str = latex_str.replace(r'\left\{', '{')
     latex_str = latex_str.replace(r'\right\}', '}')
-    
+
     print(f"  After left/right: {repr(latex_str)}")
-    
+
     # Handle interval notation: [a,b[ → [a,b)  (half-open intervals)
     latex_str = re.sub(r'([0-9π]),\s*([0-9π]+)\[', r'\1, \2)', latex_str)
-    
+
     print(f"  After interval: {repr(latex_str)}")
-    
+
     return latex_str
+
 
 def format_math(text):
     """Convert LaTeX math delimiters for terminal display."""
     print(f"format_math input: {repr(text)}")
-    
+
     # Inline math: \(...\)
     def process_inline(match):
         content = match.group(1)
@@ -41,11 +44,12 @@ def format_math(text):
         result = f'[ {cleaned} ]'
         print(f"Inline result: {repr(result)}")
         return result
-    
+
     text = re.sub(r'\\\((.+?)\\\)', process_inline, text)
-    
+
     print(f"format_math output: {repr(text)}")
     return text
+
 
 # Test
 test_input = r'i \([0,2\pi[\).'

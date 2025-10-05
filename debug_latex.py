@@ -24,7 +24,7 @@ else:
 # Check actual pattern
 if '\\(' in text:
     print("Found literal \\(")
-    
+
 # Try the replacement
 text2 = text.replace('\\(', 'FOUND_IT')
 print("\nAfter replace:")
