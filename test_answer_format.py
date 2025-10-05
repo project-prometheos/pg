@@ -13,7 +13,7 @@ print("=" * 70)
 
 for i, (blank_name, blank_info) in enumerate(result.answer_blanks.items(), 1):
     print(f"\nAnswer {i} ({blank_name}):")
-    
+
     evaluator = blank_info.get("evaluator")
     if evaluator and isinstance(evaluator, dict):
         ans_eval = evaluator.get("ans_eval")
@@ -21,7 +21,7 @@ for i, (blank_name, blank_info) in enumerate(result.answer_blanks.items(), 1):
             print(f"  Type: {type(ans_eval).__name__}")
             print(f"  TeX(): {ans_eval.TeX()}")
             print(f"  string(): {ans_eval.string()}")
-            
+
             # Check if it has value attribute
             if hasattr(ans_eval, 'value'):
                 print(f"  value: {ans_eval.value}")
@@ -34,7 +34,7 @@ result2 = translator.translate('webwork_ps1_pg/ps1-prob02.pg', seed=1234)
 
 for i, (blank_name, blank_info) in enumerate(result2.answer_blanks.items(), 1):
     print(f"\nAnswer {i} ({blank_name}):")
-    
+
     evaluator = blank_info.get("evaluator")
     if evaluator and isinstance(evaluator, dict):
         ans_eval = evaluator.get("ans_eval")
@@ -42,7 +42,7 @@ for i, (blank_name, blank_info) in enumerate(result2.answer_blanks.items(), 1):
             print(f"  Type: {type(ans_eval).__name__}")
             print(f"  TeX(): {ans_eval.TeX()}")
             print(f"  string(): {ans_eval.string()}")
-            
+
             # Check if it has value attribute
             if hasattr(ans_eval, 'value'):
                 print(f"  value: {ans_eval.value}")

@@ -56,12 +56,12 @@ def Compute(expression: Union[str, int, float], context=None) -> Value:
         reduce_constants = context.flags.get('reduceConstants')
         if reduce_constants is None:
             reduce_constants = 1  # Default is on
-        
+
         if not reduce_constants:
             # Don't reduce - return as Formula to keep symbolic form
             from .formula import Formula
             return Formula(expr_str, context)
-        
+
         # Evaluate as constant
         try:
             value = _evaluate_constant(expr_str, context)
