@@ -56,3 +56,4 @@ def test_adapt_incompatible():
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
 
+
