@@ -209,6 +209,22 @@ class ContextClass:
         self.operators = OperatorManager()
         self.flags = ContextFlags()
 
+        # Import StringsManager from pg_parser
+        try:
+            from pg_parser.context import StringsManager
+            self.strings = StringsManager()
+        except ImportError:
+            # Fallback: create a minimal strings manager
+            class MinimalStringsManager:
+                def __init__(self):
+                    self._strings = {}
+
+                def add(self, **strings):
+                    for name, config in strings.items():
+                        self._strings[name] = config or {}
+
+            self.strings = MinimalStringsManager()
+
         # Initialize based on context name
         if name == 'Numeric':
             self._init_numeric()

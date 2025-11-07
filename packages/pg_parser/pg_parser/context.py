@@ -68,6 +68,65 @@ class ToleranceConfig:
 
 
 @dataclass
+class StringConfig:
+    """Configuration for a string value in the context."""
+
+    value: str
+    alias: str | None = None
+    case_sensitive: bool = False
+
+
+class StringsManager:
+    """Manager for string values in a context."""
+
+    def __init__(self):
+        self._strings: dict[str, StringConfig] = {}
+
+    def add(self, **strings: dict) -> None:
+        """
+        Add strings to the context.
+
+        Args:
+            **strings: String names with optional configuration dicts
+                      e.g., add(none={}, N={'alias': 'none'})
+        """
+        for name, config in strings.items():
+            if config is None:
+                config = {}
+
+            alias = config.get('alias')
+            case_sensitive = config.get('caseSensitive', False)
+
+            self._strings[name] = StringConfig(
+                value=name,
+                alias=alias,
+                case_sensitive=case_sensitive
+            )
+
+    def contains(self, value: str) -> bool:
+        """Check if a string value is in the context."""
+        for name, config in self._strings.items():
+            if config.case_sensitive:
+                if value == name or (config.alias and value == config.alias):
+                    return True
+            else:
+                if value.lower() == name.lower() or (config.alias and value.lower() == config.alias.lower()):
+                    return True
+        return False
+
+    def get_canonical(self, value: str) -> str | None:
+        """Get the canonical form of a string value."""
+        for name, config in self._strings.items():
+            if config.case_sensitive:
+                if value == name or (config.alias and value == config.alias):
+                    return name
+            else:
+                if value.lower() == name.lower() or (config.alias and value.lower() == config.alias.lower()):
+                    return name
+        return None
+
+
+@dataclass
 class Context:
     """
     Mathematical context defining the parsing and evaluation environment.
@@ -89,6 +148,7 @@ class Context:
     operators: dict[str, OperatorConfig] = field(default_factory=dict)
     tolerances: ToleranceConfig = field(default_factory=ToleranceConfig)
     flags: dict[str, Any] = field(default_factory=dict)
+    strings: StringsManager = field(default_factory=StringsManager)
 
     @classmethod
     def from_yaml(cls, path: str | Path) -> "Context":
