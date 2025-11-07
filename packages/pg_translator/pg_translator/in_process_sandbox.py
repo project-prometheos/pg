@@ -184,7 +184,7 @@ class InProcessSandbox:
             # Import MathObjects
             from pg_mathobjects import Context, Formula, Real, Compute
             from pg_mathobjects.formula_up_to_constant import FormulaUpToConstant
-            from pg_math import Complex as _Complex
+            from pg_math import Complex as _Complex, List as _List, Point, Vector, Interval, Set
 
             # Wrapper for Complex that handles list arguments (Perl compatibility)
             def Complex(real, imag=0, **kwargs):
@@ -211,6 +211,16 @@ class InProcessSandbox:
                         return _Complex(r, i, **kwargs)
                 return _Complex(real, imag, **kwargs)
 
+            # Wrapper for List that handles variadic arguments (Perl compatibility)
+            def List(*args, **kwargs):
+                """List wrapper that handles variadic arguments like Perl."""
+                if len(args) == 1 and isinstance(args[0], (list, tuple)):
+                    # Single list argument: List([1, 2, 3])
+                    return _List(list(args[0]), **kwargs)
+                else:
+                    # Multiple arguments: List(1, 2, 3)
+                    return _List(list(args), **kwargs)
+
             # Make available in namespace
             self.namespace['Context'] = Context
             self.namespace['Formula'] = Formula
@@ -218,6 +228,11 @@ class InProcessSandbox:
             self.namespace['Complex'] = Complex
             self.namespace['Compute'] = Compute
             self.namespace['FormulaUpToConstant'] = FormulaUpToConstant
+            self.namespace['List'] = List
+            self.namespace['Point'] = Point
+            self.namespace['Vector'] = Vector
+            self.namespace['Interval'] = Interval
+            self.namespace['Set'] = Set
 
             # Create imaginary unit i = Complex(0, 1)
             self.namespace['i'] = _Complex(0, 1)
