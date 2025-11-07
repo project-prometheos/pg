@@ -165,9 +165,7 @@ class InProcessSandbox:
         self._load_mathobjects()
 
         # Load core PG macros by default
-        # TEMP: Skip pg_core to use working stub implementations
-        # self._load_pg_core()
-        self._load_pg_core_stubs()  # Use stubs which work correctly with PGMLRenderer
+        self._load_pg_core()  # Load real pg_core (not stubs)
         self._load_pg_basic_macros()
         self._load_pg_answer_macros()
 

@@ -1,0 +1,12 @@
+##DESCRIPTION
+## Simplest possible test problem
+##ENDDESCRIPTION
+
+DOCUMENT()
+loadMacros("PG.pl", "PGbasicmacros.pl")
+
+TEXT("What is 2+2? ", ans_rule(20))
+
+ANS(num_cmp(4))
+
+ENDDOCUMENT()
