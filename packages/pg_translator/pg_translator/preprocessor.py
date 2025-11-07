@@ -98,6 +98,35 @@ class PGPreprocessor:
         i = 0
         while i < len(lines):
             original_line = lines[i]
+
+            # Join multi-line continuations (Perl allows implicit continuations)
+            # If line ends with = or , and next line is indented, join them
+            while i + 1 < len(lines):
+                stripped = original_line.rstrip()
+                next_line = lines[i + 1] if i + 1 < len(lines) else ""
+
+                # Check if this looks like a continuation
+                should_join = False
+
+                # Case 1: Line ends with = or , or ( or [
+                if stripped and stripped[-1] in '=,([':
+                    if next_line and next_line[0] in ' \t':
+                        should_join = True
+
+                # Case 2: Unmatched parentheses/brackets
+                if not should_join:
+                    open_count = stripped.count('(') + stripped.count('[') + stripped.count('{')
+                    close_count = stripped.count(')') + stripped.count(']') + stripped.count('}')
+                    if open_count > close_count:
+                        should_join = True
+
+                if should_join and next_line.strip():
+                    # Join the lines
+                    original_line = original_line.rstrip() + ' ' + next_line.lstrip()
+                    i += 1
+                else:
+                    break
+
             output_line_num = len(output_lines) + 1
 
             # Track line mapping
@@ -539,6 +568,22 @@ class PGPreprocessor:
 
         # Note: do-while/do-until loops are handled in main preprocess loop
         # to allow multi-line output
+
+        # Transform Perl map with blocks: map { EXPR } LIST
+        # map { random(1, 10) } 0 .. 7  →  [random(1, 10) for _ in range(0, 8)]
+        map_match = re.search(r'\bmap\s*\{\s*([^}]+)\}\s+(\d+)\s*\.\.\s*(\d+)', line)
+        if map_match:
+            expr = map_match.group(1).strip()
+            start = int(map_match.group(2))
+            end = int(map_match.group(3))
+            # Python range is exclusive on the right, Perl .. is inclusive
+            replacement = f'[{expr} for _ in range({start}, {end}+1)]'
+            line = line[:map_match.start()] + replacement + line[map_match.end():]
+
+        # Transform Perl range operator: START .. END → range(START, END+1)
+        # But only if not already handled by map
+        if '..' in line and 'range(' not in line:
+            line = re.sub(r'(\d+)\s*\.\.\s*(\d+)', lambda m: f'range({m.group(1)}, {int(m.group(2))+1})', line)
 
         # Transform Perl unless → if not
         line = re.sub(r'\bunless\s+', 'if not ', line)

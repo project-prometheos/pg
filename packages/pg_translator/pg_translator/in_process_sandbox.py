@@ -234,12 +234,29 @@ class InProcessSandbox:
 
             # Define PGML function (not in pg_core)
             def PGML(pgml_text):
-                """Store PGML markup by calling TEXT (which pg_core tracks)."""
-                print(f"[DEBUG pg_core PGML()] Called, calling TEXT() instead")
-                # Just call TEXT() with the PGML content
-                # TEXT() will append to pg_core environment's output_array
-                pg_core.TEXT(pgml_text)
-                return ''
+                """Render PGML markup and register answer blanks."""
+                from pg_renderer import PGMLRenderer
+
+                # Get current environment
+                env = pg_core.get_environment()
+
+                # Create renderer with access to namespace variables
+                renderer = PGMLRenderer(variables=self.namespace)
+
+                # Render PGML to HTML and extract answer blanks
+                rendered_html, answer_blanks = renderer.render(pgml_text)
+
+                # Register answer blanks in environment
+                for ans_name, ans_spec in answer_blanks.items():
+                    # Create answer evaluator entry
+                    if not isinstance(ans_spec, dict):
+                        # It's an evaluator object or value
+                        env.register_answer(ans_name, ans_spec)
+                    else:
+                        env.register_answer(ans_name, ans_spec)
+
+                # Return rendered HTML (which TEXT() will append)
+                return rendered_html
 
             # Add pg_core functions to namespace
             # Register core functions
