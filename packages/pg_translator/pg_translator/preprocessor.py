@@ -101,31 +101,38 @@ class PGPreprocessor:
 
             # Join multi-line continuations (Perl allows implicit continuations)
             # If line ends with = or , and next line is indented, join them
-            while i + 1 < len(lines):
-                stripped = original_line.rstrip()
-                next_line = lines[i + 1] if i + 1 < len(lines) else ""
+            # Skip this for comment lines
+            is_comment = original_line.lstrip(' \t').startswith('#')
+            if not is_comment:
+                while i + 1 < len(lines):
+                    stripped = original_line.rstrip()
+                    next_line = lines[i + 1] if i + 1 < len(lines) else ""
 
-                # Check if this looks like a continuation
-                should_join = False
+                    # Don't join if next line is a comment
+                    if next_line.lstrip(' \t').startswith('#'):
+                        break
 
-                # Case 1: Line ends with = or , or ( or [
-                if stripped and stripped[-1] in '=,([':
-                    if next_line and next_line[0] in ' \t':
-                        should_join = True
+                    # Check if this looks like a continuation
+                    should_join = False
 
-                # Case 2: Unmatched parentheses/brackets
-                if not should_join:
-                    open_count = stripped.count('(') + stripped.count('[') + stripped.count('{')
-                    close_count = stripped.count(')') + stripped.count(']') + stripped.count('}')
-                    if open_count > close_count:
-                        should_join = True
+                    # Case 1: Line ends with = or , or ( or [
+                    if stripped and stripped[-1] in '=,([':
+                        if next_line and next_line[0] in ' \t':
+                            should_join = True
 
-                if should_join and next_line.strip():
-                    # Join the lines
-                    original_line = original_line.rstrip() + ' ' + next_line.lstrip()
-                    i += 1
-                else:
-                    break
+                    # Case 2: Unmatched parentheses/brackets
+                    if not should_join:
+                        open_count = stripped.count('(') + stripped.count('[') + stripped.count('{')
+                        close_count = stripped.count(')') + stripped.count(']') + stripped.count('}')
+                        if open_count > close_count:
+                            should_join = True
+
+                    if should_join and next_line.strip():
+                        # Join the lines (preserve comment markers with lstrip(' \t'))
+                        original_line = original_line.rstrip() + ' ' + next_line.lstrip(' \t')
+                        i += 1
+                    else:
+                        break
 
             output_line_num = len(output_lines) + 1
 
@@ -234,39 +241,56 @@ class PGPreprocessor:
             if sub_match:
                 # Found start of a sub {} closure
                 # Track brace depth to find the end
-                brace_depth = original_line.count(
-                    '{') - original_line.count('}')
+                closure_start_idx = i
+                closure_lines = [original_line]
+                brace_depth = original_line.count('{') - original_line.count('}')
 
-                # Extract the parameter name before the =>
-                prefix_match = re.match(
-                    r'^(\s*)(\w+)\s*=>\s*sub\s*\{', original_line)
-                if prefix_match:
-                    indent = prefix_match.group(1)
-                    param_name = prefix_match.group(2)
-                    # Stub out the closure with a lambda that returns None
-                    output_lines.append(
-                        f"{indent}{param_name} = lambda *args, **kwargs: None  # Stubbed Perl closure")
-                else:
-                    # Assignment form: $var = sub { ... }
-                    assign_match = re.match(
-                        r'^(\s*)(\w+)\s*=\s*sub\s*\{', original_line)
-                    if assign_match:
-                        indent = assign_match.group(1)
-                        var_name = assign_match.group(2)
-                        output_lines.append(
-                            f"{indent}{var_name} = lambda *args, **kwargs: None  # Stubbed Perl closure")
-                    else:
-                        # Unknown form, comment it out
-                        output_lines.append(
-                            f"# {original_line}  # Skipped Perl closure")
-
-                # Skip the rest of the closure block
+                # Collect all lines of the closure
                 i += 1
                 while i < len(lines) and brace_depth > 0:
                     current_line = lines[i]
-                    brace_depth += current_line.count(
-                        '{') - current_line.count('}')
+                    closure_lines.append(current_line)
+                    brace_depth += current_line.count('{') - current_line.count('}')
                     i += 1
+
+                # Now replace the entire sub { ... } with lambda: None
+                first_line = closure_lines[0]
+
+                # Check if this is part of a function parameter (key => sub { ... })
+                param_match = re.search(r'(\w+)\s*=>\s*sub\s*\{', first_line)
+                if param_match:
+                    param_name = param_match.group(1)
+                    # Find where the sub starts
+                    sub_start = first_line.find('sub')
+                    # Keep everything before 'sub'
+                    prefix = first_line[:sub_start]
+                    # Replace sub { ... } with lambda: None
+                    # Check if there's more content after the closure on the last line
+                    last_line = closure_lines[-1] if closure_lines else ""
+
+                    # Find the closing } and any suffix
+                    suffix = ""
+                    close_brace_match = re.search(r'\}(.*)$', last_line)
+                    if close_brace_match:
+                        suffix = close_brace_match.group(1)
+
+                    # Create the stubbed line and transform it
+                    stubbed_line = f"{prefix}lambda *args, **kwargs: None{suffix}"
+                    transformed = self._transform_line(stubbed_line)
+                    output_lines.append(f"{transformed}  # Stubbed Perl closure")
+                else:
+                    # Assignment form: $var = sub { ... }
+                    assign_match = re.search(r'(\w+)\s*=\s*sub\s*\{', first_line)
+                    if assign_match:
+                        var_name = assign_match.group(1)
+                        indent = re.match(r'^(\s*)', first_line).group(1)
+                        stubbed_line = f"{indent}{var_name} = lambda *args, **kwargs: None"
+                        transformed = self._transform_line(stubbed_line)
+                        output_lines.append(f"{transformed}  # Stubbed Perl closure")
+                    else:
+                        # Unknown form, comment it out
+                        output_lines.append(
+                            f"# {first_line}  # Skipped Perl closure")
 
                 continue
 
