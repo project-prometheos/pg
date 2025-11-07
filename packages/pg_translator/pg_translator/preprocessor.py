@@ -394,9 +394,45 @@ class PGPreprocessor:
                     break
 
             if not block_found:
-                # Regular line - pass through with transformations
-                transformed = self._transform_line(original_line)
-                output_lines.append(transformed)
+                # Check if line contains do { } until/while mid-line (after semicolon)
+                if re.search(r'do\s*\{[^}]*\}\s*(until|while)\s+', original_line):
+                    # Split by semicolon, process do-until separately
+                    parts = original_line.split(';')
+                    for part_idx, part in enumerate(parts):
+                        part = part.strip()
+                        if not part:
+                            continue
+
+                        # Check if this part has do-until/do-while
+                        do_match = re.match(r'do\s*\{([^}]+)\}\s*(until|while)\s+(.+)', part)
+                        if do_match:
+                            body = do_match.group(1).strip()
+                            loop_type = do_match.group(2)
+                            condition = do_match.group(3).strip()
+
+                            # Transform body and condition
+                            transformed_body = self._transform_line(body)
+                            transformed_condition = self._transform_line(condition)
+
+                            # Generate while True loop with break
+                            output_lines.append('while True:')
+                            output_lines.append(f'    {transformed_body}')
+                            if loop_type == 'until':
+                                # until COND means: break if COND is true
+                                output_lines.append(f'    if ({transformed_condition}):')
+                            else:  # while
+                                # while COND means: break if COND is false
+                                output_lines.append(f'    if not ({transformed_condition}):')
+                            output_lines.append(f'        break')
+                        else:
+                            # Regular part - transform normally
+                            transformed = self._transform_line(part)
+                            if transformed:
+                                output_lines.append(transformed)
+                else:
+                    # Regular line - pass through with transformations
+                    transformed = self._transform_line(original_line)
+                    output_lines.append(transformed)
 
             i += 1
 
@@ -500,6 +536,31 @@ class PGPreprocessor:
         # Only when surrounded by spaces or between string literals/variables
         # Match: 'str' . 'str' or var . 'str' or 'str' . var
         line = re.sub(r'(\)|\'|\"|\w)\s+\.\s+(\(|\'|\"|\w)', r'\1 + \2', line)
+
+        # Note: do-while/do-until loops are handled in main preprocess loop
+        # to allow multi-line output
+
+        # Transform Perl unless → if not
+        line = re.sub(r'\bunless\s+', 'if not ', line)
+
+        # Transform Perl statement modifiers: STATEMENT if/unless CONDITION
+        # statement if condition → if condition: statement
+        # statement unless condition → if not condition: statement
+        # But be careful not to transform regular if/elsif/else blocks
+        if re.search(r'\S+.*\s+(if|unless)\s+\S+', line) and not re.match(r'^\s*(if|elsif|else|unless)', line):
+            # Check if this is a statement modifier (not a block if)
+            # Statement modifiers don't have colons or blocks after them
+            match = re.search(r'^(\s*)(.+?)\s+(if|unless)\s+(.+)$', line)
+            if match and '{' not in match.group(2):  # No block in statement
+                indent = match.group(1)
+                statement = match.group(2).strip()
+                modifier = match.group(3)
+                condition = match.group(4).strip()
+
+                if modifier == 'if':
+                    line = f"{indent}if {condition}: {statement}"
+                else:  # unless
+                    line = f"{indent}if not ({condition}): {statement}"
 
         # Transform Perl fat comma (hash key-value): key => value
         # Context-aware conversion:
