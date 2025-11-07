@@ -1,71 +1,111 @@
-"""
-parserPopUp.pl - Popup menu parser
+"""PopUp and DropDown menu objects for answer selection."""
 
-Python port of macros/parsers/parserPopUp.pl
-
-Reference: parserPopUp.pl
-"""
-
-from dataclasses import dataclass
-
-from pg_answer import AnswerEvaluator
-from pg_answer.evaluators.string import StringEvaluator
-
-__exports__ = ["PopUp"]
+from typing import Any
 
 
-@dataclass
 class PopUp:
-    """
-    Popup menu for answer selection.
+    """Legacy popup menu object."""
 
-    Reference: parserPopUp.pl::PopUp
-    """
-
-    choices: list[str]
-    correct_index: int = 0
-
-    def __init__(self, choices: list[str], correct: str | int | None = None):
+    def __init__(self, choices: list, correct: Any, **options):
         """
-        Create popup menu.
+        Create a popup menu.
 
         Args:
-            choices: List of choices
-            correct: Correct choice (index or string)
+            choices: List of choice strings
+            correct: Correct answer (string or index)
+            **options: Additional options
         """
-        self.choices = choices
+        self.choices = self._flatten_choices(choices)
+        self.correct = correct
+        self.options = options
 
-        if correct is None:
-            self.correct_index = 0
-        elif isinstance(correct, int):
-            self.correct_index = correct
+        # Resolve correct answer
+        if isinstance(correct, int) and not options.get('noindex', False):
+            self.correct_value = self.choices[correct] if correct < len(self.choices) else correct
         else:
-            try:
-                self.correct_index = choices.index(correct)
-            except ValueError:
-                raise ValueError(f"Choice '{correct}' not in list")
+            self.correct_value = correct
 
-    def menu(self) -> str:
-        """
-        Generate HTML select menu.
+    def _flatten_choices(self, choices: list) -> list:
+        """Flatten nested choice lists (randomization groups)."""
+        result = []
+        for item in choices:
+            if isinstance(item, list):
+                result.extend(item)
+            else:
+                result.append(item)
+        return result
 
-        Returns:
-            HTML select element
-        """
-        options = []
-        for i, choice in enumerate(self.choices):
-            selected = ' selected' if i == self.correct_index else ''
-            options.append(f'<option value="{i}"{selected}>{choice}</option>')
-
-        return f'<select name="answer">\n{chr(10).join(options)}\n</select>'
-
-    def cmp(self) -> AnswerEvaluator:
+    def cmp(self):
         """Return answer evaluator."""
-        return StringEvaluator(
-            correct_answer=str(self.correct_index),
-            case_sensitive=False,
-        )
+        def check_answer(student_answer: str) -> dict:
+            correct = str(student_answer) == str(self.correct_value)
+            return {
+                'correct': correct,
+                'score': 1.0 if correct else 0.0,
+                'message': ''
+            }
 
-    def correct_ans(self) -> str:
-        """Return correct answer text."""
-        return self.choices[self.correct_index]
+        class PopUpEvaluator:
+            def evaluate(self, answer: str) -> Any:
+                from dataclasses import dataclass
+
+                @dataclass
+                class AnswerResult:
+                    correct: bool
+                    score: float
+                    messages: list = None
+
+                result = check_answer(answer)
+                return AnswerResult(
+                    correct=result['correct'],
+                    score=result['score'],
+                    messages=[]
+                )
+
+        return PopUpEvaluator()
+
+    def __str__(self):
+        return f"PopUp({self.choices}, {self.correct_value})"
+
+
+class DropDown(PopUp):
+    """DropDown menu object (like PopUp but with placeholder)."""
+
+    def __init__(self, choices: list, correct: Any, **options):
+        """
+        Create a dropdown menu.
+
+        Args:
+            choices: List of choice strings
+            correct: Correct answer (string or index)
+            **options: Additional options (placeholder, etc.)
+        """
+        # Set default placeholder for DropDown
+        if 'placeholder' not in options:
+            options['placeholder'] = '?'
+
+        super().__init__(choices, correct, **options)
+
+
+def DropDownTF(correct: Any, **options) -> DropDown:
+    """
+    Create a True/False dropdown menu.
+
+    Args:
+        correct: Correct answer ('T', 'F', 1, 0, 'True', 'False')
+        **options: Additional options
+
+    Returns:
+        DropDown object with True/False choices
+    """
+    # Normalize correct answer
+    if correct in [1, '1', 'T', 't', 'True', 'true', 'TRUE']:
+        correct_value = 'True'
+    else:
+        correct_value = 'False'
+
+    # DropDownTF defaults to not showing in static output
+    if 'showInStatic' not in options:
+        options['showInStatic'] = 0
+
+    return DropDown(['True', 'False'], correct_value, **options)

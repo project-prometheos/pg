@@ -1,1 +1,1 @@
-"""Parser macros for UI elements."""
+"""Parser-related macros."""

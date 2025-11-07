@@ -615,8 +615,8 @@ class PGPreprocessor:
         # Transform Perl statement modifiers: STATEMENT if/unless CONDITION
         # statement if condition → if condition: statement
         # statement unless condition → if not condition: statement
-        # But be careful not to transform regular if/elsif/else blocks
-        if re.search(r'\S+.*\s+(if|unless)\s+\S+', line) and not re.match(r'^\s*(if|elsif|else|unless)', line):
+        # But be careful not to transform regular if/elsif/else blocks or comment lines
+        if re.search(r'\S+.*\s+(if|unless)\s+\S+', line) and not re.match(r'^\s*(if|elsif|else|unless|#)', line):
             # Check if this is a statement modifier (not a block if)
             # Statement modifiers don't have colons or blocks after them
             match = re.search(r'^(\s*)(.+?)\s+(if|unless)\s+(.+)$', line)

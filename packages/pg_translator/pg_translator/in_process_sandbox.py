@@ -172,19 +172,55 @@ class InProcessSandbox:
         # Load additional context macros (stubs)
         self._load_context_macros()
 
+        # Load parser macros (PopUp, DropDown, etc.)
+        self._load_parser_macros()
+
+        # Load statistics macros (stats_mean, stats_sd, stats_SX_SXX)
+        self._load_statistics_macros()
+
     def _load_mathobjects(self) -> None:
         """Load MathObjects framework into namespace."""
         try:
             # Import MathObjects
             from pg_mathobjects import Context, Formula, Real, Compute
             from pg_mathobjects.formula_up_to_constant import FormulaUpToConstant
+            from pg_math import Complex as _Complex
+
+            # Wrapper for Complex that handles list arguments (Perl compatibility)
+            def Complex(real, imag=0, **kwargs):
+                """Complex wrapper that handles list/array arguments like Perl."""
+                if isinstance(real, (list, tuple)):
+                    # Unpack list: Complex([a, b]) → Complex(a, b)
+                    if len(real) >= 2:
+                        return _Complex(real[0], real[1], **kwargs)
+                    elif len(real) == 1:
+                        return _Complex(real[0], 0, **kwargs)
+                    else:
+                        return _Complex(0, 0, **kwargs)
+                elif isinstance(real, str):
+                    # String form: Complex("2-4i") - parse it
+                    # For now, just pass to _Complex and let it handle or fail gracefully
+                    import re
+                    match = re.match(r'([+-]?\d+(?:\.\d+)?)\s*([+-])\s*(\d+(?:\.\d+)?)i', real.replace(' ', ''))
+                    if match:
+                        r = float(match.group(1))
+                        sign = match.group(2)
+                        i = float(match.group(3))
+                        if sign == '-':
+                            i = -i
+                        return _Complex(r, i, **kwargs)
+                return _Complex(real, imag, **kwargs)
 
             # Make available in namespace
             self.namespace['Context'] = Context
             self.namespace['Formula'] = Formula
             self.namespace['Real'] = Real
+            self.namespace['Complex'] = Complex
             self.namespace['Compute'] = Compute
             self.namespace['FormulaUpToConstant'] = FormulaUpToConstant
+
+            # Create imaginary unit i = Complex(0, 1)
+            self.namespace['i'] = _Complex(0, 1)
 
         except ImportError:
             # Fallback: provide minimal stubs
@@ -207,10 +243,16 @@ class InProcessSandbox:
                 except:
                     return str(expr)
 
+            def Complex(real, imag=0):
+                """Stub Complex function - returns Python complex."""
+                return complex(real, imag)
+
             self.namespace['Context'] = Context
             self.namespace['Formula'] = Formula
             self.namespace['Real'] = Real
+            self.namespace['Complex'] = Complex
             self.namespace['Compute'] = Compute
+            self.namespace['i'] = complex(0, 1)
 
     def load_macros(self, *macro_names: str) -> None:
         """
@@ -839,6 +881,65 @@ class InProcessSandbox:
             pass
 
         self.namespace['parserFunction'] = parserFunctionStub
+
+    def _load_parser_macros(self) -> None:
+        """Load parser macros (PopUp, DropDown, etc.)."""
+        try:
+            from pg_macros.parsers.parser_popup import PopUp, DropDown, DropDownTF
+
+            self.namespace['PopUp'] = PopUp
+            self.namespace['DropDown'] = DropDown
+            self.namespace['DropDownTF'] = DropDownTF
+        except ImportError:
+            # Provide fallback stubs if not available
+            class PopUpStub:
+                def __init__(self, choices, correct, **options):
+                    self.choices = choices
+                    self.correct = correct
+
+                def cmp(self):
+                    return lambda x: {'correct': True, 'score': 1.0}
+
+            self.namespace['PopUp'] = PopUpStub
+            self.namespace['DropDown'] = PopUpStub
+            self.namespace['DropDownTF'] = lambda correct, **opts: PopUpStub(['True', 'False'], correct)
+
+    def _load_statistics_macros(self) -> None:
+        """Load statistics functions (stats_mean, stats_sd, stats_SX_SXX)."""
+        try:
+            from pg_macros.statistics import stats_mean, stats_sd, stats_SX_SXX
+
+            self.namespace['stats_mean'] = stats_mean
+            self.namespace['stats_sd'] = stats_sd
+            self.namespace['stats_SX_SXX'] = stats_SX_SXX
+        except ImportError:
+            # Provide fallback stubs if not available
+            import math
+
+            def stats_mean_stub(*values):
+                if len(values) == 1 and isinstance(values[0], (list, tuple)):
+                    values = values[0]
+                return sum(values) / len(values) if values else 0.0
+
+            def stats_sd_stub(*values):
+                if len(values) == 1 and isinstance(values[0], (list, tuple)):
+                    values = values[0]
+                if len(values) < 2:
+                    return 0.0
+                mean = sum(values) / len(values)
+                variance = sum((x - mean) ** 2 for x in values) / (len(values) - 1)
+                return math.sqrt(variance)
+
+            def stats_SX_SXX_stub(*values):
+                if len(values) == 1 and isinstance(values[0], (list, tuple)):
+                    values = values[0]
+                sum_x = sum(values) if values else 0.0
+                sum_sq = sum(x ** 2 for x in values) if values else 0.0
+                return (sum_x, sum_sq)
+
+            self.namespace['stats_mean'] = stats_mean_stub
+            self.namespace['stats_sd'] = stats_sd_stub
+            self.namespace['stats_SX_SXX'] = stats_SX_SXX_stub
 
 
 def create_in_process_sandbox(timeout: int = 30) -> InProcessSandbox:
