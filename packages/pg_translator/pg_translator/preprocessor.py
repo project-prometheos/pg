@@ -298,12 +298,14 @@ class PGPreprocessor:
             do_until_match = re.match(r'^\s*do\s*\{', original_line)
             if do_until_match:
                 # Check if this is a single-line do-until
+                # Match with or without parentheses around condition
                 single_line_until = re.search(
-                    r'\}\s*until\s*\(([^)]+)\)', original_line)
+                    r'\}\s*until\s*(?:\(([^)]+)\)|(.+))$', original_line)
 
                 if single_line_until:
-                    # Single-line do-until: do { body } until (condition)
-                    condition = single_line_until.group(1)
+                    # Single-line do-until: do { body } until (condition) or do { body } until condition
+                    condition = single_line_until.group(1) or single_line_until.group(2)
+                    condition = condition.strip()
 
                     # Transform condition
                     condition = self._transform_line(condition)
@@ -337,12 +339,15 @@ class PGPreprocessor:
                     brace_depth += line.count('{') - line.count('}')
                     i += 1
 
-                # Now check if the last line has "until (condition)"
+                # Now check if the last line has "until (condition)" or "until condition"
                 last_line = block_lines[-1] if block_lines else ""
-                until_match = re.search(r'\}\s*until\s*\(([^)]+)\)', last_line)
+                # Match with or without parentheses around condition
+                until_match = re.search(r'\}\s*until\s*(?:\(([^)]+)\)|(.+))$', last_line)
 
                 if until_match:
-                    condition = until_match.group(1)
+                    # Get condition from either group 1 (with parens) or group 2 (without)
+                    condition = until_match.group(1) or until_match.group(2)
+                    condition = condition.strip()
 
                     # Transform condition (convert Perl operators)
                     condition = self._transform_line(condition)
@@ -359,9 +364,9 @@ class PGPreprocessor:
                     for line in block_lines[1:-1]:
                         body_lines.append(line)
 
-                    # Last line: remove "} until (...)"
+                    # Last line: remove "} until (...)" or "} until condition"
                     last = re.sub(
-                        r'\}\s*until\s*\([^)]+\)', '', block_lines[-1]).strip()
+                        r'\}\s*until\s*.*$', '', block_lines[-1]).strip()
                     if last:
                         body_lines.append(last)
 
@@ -673,6 +678,18 @@ class PGPreprocessor:
                     i += 1
 
             line = ''.join(result)
+
+        # Quote unquoted dictionary keys: { key: value } or { key : value } → { 'key': value }
+        # Match word keys followed by optional whitespace and colon
+        def quote_dict_key(match):
+            key = match.group(1)
+            spaces = match.group(2)  # Preserve whitespace before colon
+            # Check if key is already quoted or is a Python keyword/builtin
+            if key in ['True', 'False', 'None']:
+                return f'{key}{spaces}:'
+            return f"'{key}'{spaces}:"
+
+        line = re.sub(r'(?<=[{,\s])(\w+)(\s*):', quote_dict_key, line)
 
         # Remove trailing semicolons (optional in Python)
         line = re.sub(r';\s*$', '', line)

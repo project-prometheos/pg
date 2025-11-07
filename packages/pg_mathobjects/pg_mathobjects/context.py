@@ -14,7 +14,7 @@ class VariableManager:
     """Manages variables available in the context."""
 
     def __init__(self):
-        self._variables: Dict[str, str] = {}  # name -> type
+        self._variables: Dict[str, dict] = {}  # name -> {type, options}
 
     def add(self, name: str = None, type_: str = 'Real', **kwargs):
         """
@@ -26,11 +26,35 @@ class VariableManager:
         """
         if name is not None:
             # Positional form: add('k', 'Real')
-            self._variables[name] = type_
+            self._variables[name] = {'type': type_, 'options': {}}
         elif kwargs:
             # Keyword form: add(k='Real')
             for var_name, var_type in kwargs.items():
-                self._variables[var_name] = var_type
+                self._variables[var_name] = {'type': var_type, 'options': {}}
+
+    def set(self, name: str = None, **options):
+        """
+        Set variable options (e.g., limits).
+
+        Supports both forms:
+        - set('x', limits=[2, 3]) - positional name with keyword options
+        - set(x={'limits': [2, 3]}) - keyword form (from Perl-style code)
+        """
+        if name is not None:
+            # Positional form: set('x', limits=[2, 3])
+            if name in self._variables:
+                self._variables[name]['options'].update(options)
+            else:
+                # Create variable if it doesn't exist
+                self._variables[name] = {'type': 'Real', 'options': options}
+        elif options:
+            # Keyword form: set(x={'limits': [2, 3]})
+            for var_name, var_options in options.items():
+                if isinstance(var_options, dict):
+                    if var_name in self._variables:
+                        self._variables[var_name]['options'].update(var_options)
+                    else:
+                        self._variables[var_name] = {'type': 'Real', 'options': var_options}
 
     def remove(self, name: str):
         """Remove a variable from the context."""
@@ -39,10 +63,10 @@ class VariableManager:
 
     def are(self, **kwargs):
         """Set variables (replaces existing)."""
-        self._variables = dict(kwargs)
+        self._variables = {name: {'type': type_, 'options': {}} for name, type_ in kwargs.items()}
 
-    def get(self, name: str) -> Optional[str]:
-        """Get variable type."""
+    def get(self, name: str) -> Optional[dict]:
+        """Get variable info (type and options)."""
         return self._variables.get(name)
 
     def list(self) -> list:
@@ -52,7 +76,7 @@ class VariableManager:
     def copy(self):
         """Create a copy of this manager."""
         new_mgr = VariableManager()
-        new_mgr._variables = self._variables.copy()
+        new_mgr._variables = {k: v.copy() for k, v in self._variables.items()}
         return new_mgr
 
 
@@ -116,6 +140,11 @@ class FunctionManager:
         if name in self._functions:
             del self._functions[name]
 
+    def undefine(self, *names):
+        """Undefine (remove) one or more functions."""
+        for name in names:
+            self.remove(name)
+
     def list(self) -> list:
         """Get list of function names."""
         return list(self._functions.keys())
@@ -152,6 +181,11 @@ class OperatorManager:
         """Remove an operator from the context."""
         if name in self._operators:
             del self._operators[name]
+
+    def undefine(self, *names):
+        """Undefine (remove) one or more operators."""
+        for name in names:
+            self.remove(name)
 
     def list(self) -> list:
         """Get list of operator names."""
