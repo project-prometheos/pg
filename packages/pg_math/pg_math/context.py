@@ -148,6 +148,33 @@ class FunctionManager:
         for name in names:
             self.remove(name)
 
+    def disable(self, *names):
+        """
+        Disable one or more functions (alias for undefine).
+
+        In Perl MathObjects, disable() marks functions as unavailable
+        without removing their definitions. For simplicity, we treat
+        this as undefine() in Python.
+
+        Args:
+            *names: Function names to disable
+        """
+        self.undefine(*names)
+
+    def enable(self, *names):
+        """
+        Enable one or more functions (add them if not present).
+
+        Re-enables functions that were previously disabled. For simplicity,
+        we just add them with default options if they don't exist.
+
+        Args:
+            *names: Function names to enable
+        """
+        for name in names:
+            if name not in self._functions:
+                self.add(name)
+
     def list(self) -> list:
         """Get list of function names."""
         return list(self._functions.keys())
@@ -291,6 +318,57 @@ class ContextFlags:
         return new_flags
 
 
+class AutovivDict(dict):
+    """
+    Auto-vivifying dictionary (like Perl hashes).
+
+    Automatically creates nested dicts when accessing non-existent keys.
+    """
+    def __getitem__(self, key):
+        if key not in self:
+            self[key] = AutovivDict()
+        return super().__getitem__(key)
+
+
+class ParensManager:
+    """
+    Manages parentheses configuration in the context.
+
+    Controls how different types of parentheses are interpreted
+    (e.g., for points, vectors, intervals, lists).
+    """
+
+    def __init__(self):
+        self._parens: Dict[str, dict] = {}
+
+    def set(self, paren_type: str, **options):
+        """
+        Set options for a parenthesis type.
+
+        Args:
+            paren_type: Type of parentheses ('(', '[', '{', etc.)
+            **options: Configuration options
+        """
+        if paren_type not in self._parens:
+            self._parens[paren_type] = {}
+        self._parens[paren_type].update(options)
+
+    def get(self, paren_type: str) -> Optional[dict]:
+        """Get parenthesis configuration."""
+        return self._parens.get(paren_type)
+
+    def remove(self, paren_type: str):
+        """Remove a parenthesis type configuration."""
+        if paren_type in self._parens:
+            del self._parens[paren_type]
+
+    def copy(self):
+        """Create a copy of this manager."""
+        new_mgr = ParensManager()
+        new_mgr._parens = deepcopy(self._parens)
+        return new_mgr
+
+
 class Context:
     """
     Context for parsing and evaluating mathematical expressions.
@@ -316,6 +394,12 @@ class Context:
         self.operators = OperatorManager()
         self.strings = StringsManager()
         self.flags = ContextFlags()
+        self.parens = ParensManager()
+
+        # General storage for Perl-style hash access
+        # Allows Context()['key'] and nested Context()['error']['msg']
+        # Use AutovivDict for automatic nested dict creation
+        self._storage: Dict[str, Any] = AutovivDict()
 
         # Initialize based on context name
         if name == 'Numeric':
@@ -549,6 +633,8 @@ class Context:
         new_context.operators = self.operators.copy()
         new_context.strings = self.strings.copy()
         new_context.flags = self.flags.copy()
+        new_context.parens = self.parens.copy()
+        new_context._storage = deepcopy(self._storage)
         return new_context
 
     def withUnitsFor(self, *categories):
@@ -613,6 +699,39 @@ class Context:
     def __ne__(self, other):
         """Check if two contexts are different instances."""
         return not self.__eq__(other)
+
+    def __getitem__(self, key: str) -> Any:
+        """
+        Enable dict-like access to Context.
+
+        Supports Perl-style hash access patterns:
+        - Context()['error'] - returns nested AutovivDict
+        - Context()['error']['msg'] - chained access
+
+        Implements autovivification: accessing non-existent keys creates nested dicts.
+
+        Args:
+            key: Dictionary key
+
+        Returns:
+            Value at key (creates empty AutovivDict if not exists)
+        """
+        # AutovivDict handles creation automatically
+        return self._storage[key]
+
+    def __setitem__(self, key: str, value: Any) -> None:
+        """
+        Enable dict-like assignment to Context.
+
+        Supports Perl-style hash assignment:
+        - Context()['error'] = {}
+        - Context()['flag'] = True
+
+        Args:
+            key: Dictionary key
+            value: Value to store
+        """
+        self._storage[key] = value
 
     def __repr__(self):
         return f"Context('{self.name}')"
