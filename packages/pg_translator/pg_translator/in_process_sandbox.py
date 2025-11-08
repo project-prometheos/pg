@@ -408,6 +408,7 @@ class InProcessSandbox:
                 return type('Plot', (), {
                     'plot': lambda *a, **k: None,
                     'add_function': lambda *a, **k: None,
+                    'add_vectorfield': lambda *a, **k: None,
                 })()
 
             def COMPOSITION_ANS(*args, **kwargs):
@@ -836,6 +837,7 @@ class InProcessSandbox:
             return type('Plot', (), {
                 'plot': lambda *a, **k: None,
                 'add_function': lambda *a, **k: None,
+                'add_vectorfield': lambda *a, **k: None,
             })()
 
         # Special answer evaluation functions
