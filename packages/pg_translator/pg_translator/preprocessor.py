@@ -750,11 +750,18 @@ class PGPreprocessor:
 
         # Special case: 'string' = value (string literal can't be keyword arg)
         # This happens with parserFunction('f(x,y)' => 'definition')
+        # Also: "y'" = 'Real' in Context().variables.are() calls
         # Transform to comma-separated arguments: 'string', value
-        # Pattern: 'string' = value or "string" = value
+        # Pattern: quoted string = quoted value
+        # Use more general pattern that handles quotes inside strings
         line = re.sub(
-            r'(["\'])([^"\']*)\1\s*=\s*(["\'][^"\']*["\'])',
-            r'\1\2\1, \3',
+            r'"([^"]*?)"\s*=\s*(["\'][^"\']*["\'])',
+            r'"\1", \2',
+            line
+        )
+        line = re.sub(
+            r"'([^']*?)'\s*=\s*([\"'][^\"']*[\"'])",
+            r"'\1', \2",
             line
         )
 
@@ -825,6 +832,18 @@ class PGPreprocessor:
         # Use word boundaries to avoid matching variable named 'x'
         # Pattern: (value) x (number) where x is surrounded by spaces
         line = re.sub(r'(\)|\'|\"|\w)\s+x\s+(\d+|\w+)', r'\1 * \2', line)
+
+        # Transform Perl regex literals: qr/pattern/flags → r"pattern"
+        # Example: qr/[ty]'*/i → r"[ty]'*"
+        # Common flags: i (case insensitive), m (multiline), s (single line)
+        # For now, convert to raw string and ignore flags (most patterns don't need compilation)
+        def convert_qr_regex(match):
+            pattern = match.group(1)
+            # Escape any double quotes in the pattern
+            escaped_pattern = pattern.replace('"', '\\"')
+            return f'r"{escaped_pattern}"'
+
+        line = re.sub(r'qr/([^/]+)/\w*', convert_qr_regex, line)
 
         # Note: do-while/do-until loops are handled in main preprocess loop
         # to allow multi-line output

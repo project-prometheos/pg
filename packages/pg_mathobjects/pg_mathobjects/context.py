@@ -61,9 +61,26 @@ class VariableManager:
         if name in self._variables:
             del self._variables[name]
 
-    def are(self, **kwargs):
-        """Set variables (replaces existing)."""
-        self._variables = {name: {'type': type_, 'options': {}} for name, type_ in kwargs.items()}
+    def are(self, *args, **kwargs):
+        """
+        Set variables (replaces existing).
+
+        Supports both forms:
+        - are('x', 'Real', 'y', 'Real') - positional pairs
+        - are(x='Real', y='Real') - keyword arguments
+        """
+        if args:
+            # Positional arguments as pairs: 'x', 'Real', 'y', 'Real', ...
+            if len(args) % 2 != 0:
+                raise ValueError("are() requires an even number of positional arguments (name, type pairs)")
+            self._variables = {}
+            for i in range(0, len(args), 2):
+                name = args[i]
+                type_ = args[i + 1]
+                self._variables[name] = {'type': type_, 'options': {}}
+        elif kwargs:
+            # Keyword arguments
+            self._variables = {name: {'type': type_, 'options': {}} for name, type_ in kwargs.items()}
 
     def get(self, name: str) -> Optional[dict]:
         """Get variable info (type and options)."""
@@ -78,6 +95,34 @@ class VariableManager:
         new_mgr = VariableManager()
         new_mgr._variables = {k: v.copy() for k, v in self._variables.items()}
         return new_mgr
+
+    def __getitem__(self, key: str) -> Any:
+        """
+        Enable dict-like access to VariableManager properties.
+
+        Supports Perl-style hash access patterns:
+        - Context().variables['namePattern'] - access properties
+
+        Args:
+            key: Property name (e.g., 'namePattern')
+
+        Returns:
+            Property value
+        """
+        return getattr(self, key, None)
+
+    def __setitem__(self, key: str, value: Any) -> None:
+        """
+        Enable dict-like assignment to VariableManager properties.
+
+        Supports Perl-style hash assignment:
+        - Context().variables['namePattern'] = r"pattern"
+
+        Args:
+            key: Property name
+            value: Value to set
+        """
+        setattr(self, key, value)
 
 
 class ConstantManager:
