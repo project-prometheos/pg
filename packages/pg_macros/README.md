@@ -6,43 +6,41 @@ Provides compatibility layer for legacy .pg problems while maintaining modern Py
 
 ## Macro Categories
 
-### Core (pg_macros.core)
-- **PGstandard**: Basic PG functions (TEXT, ANS, image, etc.)
-- **MathObjects**: MathObject integration
-- **PGML**: PGML rendering support
+### Core (pg_macros)
+- **pg_standard** (PGstandard.pl): DOCUMENT/ENDDOCUMENT, TEXT, ANS, and PG basic macros.
+- **math_objects** (MathObjects.pl): Compute/Formula adapters and context helpers.
+- **pgml** (PGML.pl): PGML rendering, TeX/HTML sanitization.
+- **pg_graph** (PGgraphmacros.pl): Deterministic graph builders.
 
-### Answers (pg_macros.answers)
-- **PGanswermacros**: Answer evaluators (num_cmp, fun_cmp, str_cmp, etc.)
-- Answer formatting and checking utilities
+### Answers
+- **pg_answermacros** (PGanswermacros.pl): Numeric, formula, string evaluators.
+- **parser_multi_answer** (parserMultiAnswer.pl): MultiAnswer grouping.
+- **answer_format_help** (AnswerFormatHelp.pl): Inline help snippets.
 
-### Parsers (pg_macros.parsers)
-- **parserPopUp**: Popup menu parsers
-- **parserRadioButtons**: Radio button parsers
-- **parserCheckboxes**: Checkbox parsers
+### UI & Choice
+- **pg_choice** (PGchoicemacros.pl): Multiple choice, Match, Select utilities.
+- **parser_popup** (parserPopUp.pl): Popup and dropdown inputs.
 
-### Choice (pg_macros.choice)
-- **PGchoicemacros**: Multiple choice, true/false, matching
+### Contexts
+- **context_fraction** (contextFraction.pl): Fraction context variants and helpers.
+- Runtime helpers live under pg_macros.runtime.* (context stack, MathObject adapters, RNG, rendering, graph layer).
 
 ## Usage
 
-```python
-from pg_macros import loadMacros
+Load macros and inject exports:
 
-# Load macros into namespace
-loadMacros("PGstandard.pl", "MathObjects.pl", "PGML.pl")
-
-# Now use macro functions
-TEXT("Problem statement")
-ANS(num_cmp(42))
-```
+    from pg_macros import load_macros
+    exports = load_macros("PGstandard.pl", "MathObjects.pl", "PGML.pl")
+    TEXT = exports["TEXT"]
+    TEXT("Problem statement")
 
 ## Architecture
 
-Uses registry pattern for dynamic macro loading:
+Uses a registry pattern for dynamic macro loading:
 1. Macros register themselves on import
-2. `loadMacros()` loads from registry
+2. load_macros() resolves requested files
 3. Python implementations mirror Perl API
 
 ## Porting Guide
 
-See `PORTING.md` for guide on porting Perl macros to Python.
+See PORTING.md for detailed instructions on porting Perl macros to Python.
