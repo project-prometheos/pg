@@ -778,6 +778,16 @@ class PGPreprocessor:
         line = re.sub(r'(["\'])([^\1]*?)\1',
                       convert_string_interpolation, line)
 
+        # Transform Perl $#array (last index): $#arr → len(arr)-1
+        # Must do BEFORE stripping $ sigils
+        # Example: random(0, $#functions) → random(0, len(functions)-1)
+        line = re.sub(r'\$\#([a-zA-Z_][a-zA-Z0-9_]*)', r'len(\1)-1', line)
+
+        # Transform Perl reference operator: ~~&func → func
+        # Example: install_problem_grader(~~&custom_grader) → install_problem_grader(custom_grader)
+        # In Perl, ~~& creates a reference to a subroutine; in Python, just use the function name
+        line = re.sub(r'~~&([a-zA-Z_][a-zA-Z0-9_]*)', r'\1', line)
+
         # Transform Perl scalar variables: $var → var (outside of strings now)
         # Use negative lookbehind to avoid matching in strings
         line = re.sub(r'\$([a-zA-Z_][a-zA-Z0-9_]*)', r'\1', line)
