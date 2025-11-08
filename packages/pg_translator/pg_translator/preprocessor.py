@@ -602,6 +602,12 @@ class PGPreprocessor:
         # Use negative lookbehind to avoid matching in strings
         line = re.sub(r'\$([a-zA-Z_][a-zA-Z0-9_]*)', r'\1', line)
 
+        # Transform Perl logical operators: || → or, && → and
+        # These are used in conditionals: if (x != 0 || y != 0)
+        # Be careful not to match inside strings (already handled by string protection)
+        line = line.replace('||', ' or ')
+        line = line.replace('&&', ' and ')
+
         # Transform Perl method call operator: -> → .
         # Special case: ->with( becomes .with_params( to avoid Python keyword
         # But preserve method names like ->withPostFilter(, ->withUnitsFor(, etc.
@@ -847,6 +853,32 @@ class PGPreprocessor:
 
         # Note: do-while/do-until loops are handled in main preprocess loop
         # to allow multi-line output
+
+        # Transform Perl for-loops to Python for-in loops
+        # Patterns:
+        # 1. for VAR (EXPR) { → for VAR in EXPR:
+        # 2. for my VAR (EXPR) { → for VAR in EXPR:  (remove 'my' keyword)
+        # 3. Handle Perl range: (START .. END) → range(START, END+1)
+
+        # Convert for-loop syntax FIRST (before range conversion)
+        # This captures the expression and handles Perl range within it
+        def convert_for_loop(match):
+            var = match.group(1)
+            expr = match.group(2)
+            # Handle Perl range inside expression: START .. END → range(START, END+1)
+            expr = re.sub(r'(\d+|[a-zA-Z_]\w*)\s*\.\.\s*(\d+|[a-zA-Z_]\w*)',
+                         lambda m: f'range({m.group(1).strip()}, {m.group(2).strip()}+1)',
+                         expr)
+            return f'for {var} in {expr}:'
+
+        # Pattern: for my? VAR (EXPR) { → for VAR in EXPR:
+        line = re.sub(r'\bfor\s+my\s+([a-zA-Z_]\w*)\s*\(([^)]+)\)\s*\{', convert_for_loop, line)
+        line = re.sub(r'\bfor\s+([a-zA-Z_]\w*)\s*\(([^)]+)\)\s*\{', convert_for_loop, line)
+
+        # Clean up stray closing braces from converted for-loops and blocks
+        # These appear at the end of lines after inline for-loops
+        # Pattern: statements; } at end of line → statements (remove trailing brace)
+        line = re.sub(r';\s*}$', '', line)
 
         # Transform Perl map with blocks: map { EXPR } LIST
         # map { random(1, 10) } 0 .. 7  →  [random(1, 10) for _ in range(0, 8)]
