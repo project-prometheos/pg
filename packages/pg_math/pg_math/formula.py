@@ -238,16 +238,19 @@ class Formula(MathValue):
                 raise RuntimeError(
                     "Cannot evaluate Formula: neither SymPy nor pg_parser available")
 
+    @property
     def reduce(self) -> Formula:
         """
         Simplify/reduce the formula.
+
+        In Perl this is called as ->reduce (no parens), so we make it a property.
 
         Returns:
             Simplified Formula
 
         Example:
             >>> f = Formula("x + x")
-            >>> f.reduce()
+            >>> f.reduce
             Formula("2*x")
         """
         if self._sympy_expr is not None:

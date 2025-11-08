@@ -215,9 +215,12 @@ class Formula(Value):
         except Exception as e:
             raise ValueError(f"Error substituting in formula: {e}")
 
+    @property
     def reduce(self) -> 'Formula':
         """
         Simplify/reduce the formula.
+
+        In Perl this is called as ->reduce (no parens), so we make it a property.
 
         Returns:
             Simplified Formula
