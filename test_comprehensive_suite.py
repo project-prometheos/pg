@@ -41,19 +41,24 @@ test_problems = [
     "tutorial/sample-problems/ProblemTechniques/RestrictAnswerToFraction.pg",
 
     # More Trig
-    "tutorial/sample-problems/Trig/TrigFormula.pg",
+    "tutorial/sample-problems/Trig/PeriodicAnswers.pg",
+    "tutorial/sample-problems/Trig/SpecialTrigValues.pg",
+    "tutorial/sample-problems/Trig/TrigDegrees.pg",
 
-    # DiffCalc problems
-    "tutorial/sample-problems/DiffCalc/DerivativeFunction.pg",
-    "tutorial/sample-problems/DiffCalc/MeanValueTheorem.pg",
+    # More DiffCalc problems
+    "tutorial/sample-problems/DiffCalc/DifferenceQuotient.pg",
+    "tutorial/sample-problems/DiffCalc/LinearApprox.pg",
+    "tutorial/sample-problems/DiffCalc/AnswerWithUnits.pg",
 
-    # IntCalc problems
-    "tutorial/sample-problems/IntCalc/BasicAntiderivative.pg",
-    "tutorial/sample-problems/IntCalc/DefiniteIntegral.pg",
+    # IntegralCalc problems
+    "tutorial/sample-problems/IntegralCalc/IndefiniteIntegrals.pg",
+    "tutorial/sample-problems/IntegralCalc/LimitsOfIntegration.pg",
+    "tutorial/sample-problems/IntegralCalc/DoubleIntegral.pg",
 
-    # Misc
-    "tutorial/sample-problems/Misc/AnswerQuiz.pg",
-    "tutorial/sample-problems/Misc/ImageLink.pg",
+    # More Misc
+    "tutorial/sample-problems/Misc/EssayAnswer.pg",
+    "tutorial/sample-problems/Misc/MultipleChoicePopup.pg",
+    "tutorial/sample-problems/Misc/MultipleChoiceRadio.pg",
 ]
 
 results = []
