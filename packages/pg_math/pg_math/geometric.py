@@ -569,14 +569,66 @@ class Matrix(MathValue):
 
     # Matrix operations
 
+    @property
     def transpose(self) -> Matrix:
-        """Return the transpose of the matrix."""
+        """
+        Return the transpose of the matrix.
+
+        In Perl this is called as ->transpose (no parens), so we make it a property.
+        """
         if len(self.rows) == 0:
             return Matrix([])
 
         n_cols = len(self.rows[0])
         transposed = [[self.rows[i][j] for i in range(len(self.rows))] for j in range(n_cols)]
         return Matrix(transposed)
+
+    def column(self, index: int) -> Matrix:
+        """
+        Extract a column from the matrix as a column vector.
+
+        Args:
+            index: Column index (1-based, following Perl convention)
+
+        Returns:
+            Column vector as a Matrix
+        """
+        # Convert from 1-based to 0-based indexing
+        col_idx = index - 1
+        if col_idx < 0 or col_idx >= len(self.rows[0]) if self.rows else True:
+            raise IndexError(f"Column index {index} out of range")
+
+        # Extract column as a list of single-element rows
+        column_vector = [[self.rows[i][col_idx]] for i in range(len(self.rows))]
+        return Matrix(column_vector)
+
+    def row(self, index: int) -> Matrix:
+        """
+        Extract a row from the matrix as a row vector.
+
+        Args:
+            index: Row index (1-based, following Perl convention)
+
+        Returns:
+            Row vector as a Matrix
+        """
+        # Convert from 1-based to 0-based indexing
+        row_idx = index - 1
+        if row_idx < 0 or row_idx >= len(self.rows):
+            raise IndexError(f"Row index {index} out of range")
+
+        # Return the row as a single-row matrix
+        return Matrix([self.rows[row_idx]])
+
+    def copy(self) -> Matrix:
+        """
+        Create a deep copy of the matrix.
+
+        Returns:
+            New Matrix with copied data
+        """
+        import copy
+        return Matrix(copy.deepcopy(self.rows))
 
     def determinant(self) -> Real:
         """
