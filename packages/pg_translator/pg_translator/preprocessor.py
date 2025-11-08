@@ -1069,9 +1069,15 @@ class PGPreprocessor:
 
         # Transform Perl map with blocks: map { EXPR } LIST
         # map { random(1, 10) } 0 .. 7  →  [random(1, 10) for _ in range(0, 8)]
+        # map { $f->eval(x => $_) } 0 .. 2  →  [f.eval(x=_) for _ in range(0, 3)]
         map_match = re.search(r'\bmap\s*\{\s*([^}]+)\}\s+(\d+)\s*\.\.\s*(\d+)', line)
         if map_match:
             expr = map_match.group(1).strip()
+            # Fix: map { } blocks had => converted to : by replace_hash_arrow
+            # Inside map blocks, => should be = (keyword args), not : (dict)
+            # Convert : back to = for function arguments
+            # Pattern: identifier : expression (but not inside nested strings)
+            expr = re.sub(r'(\w+)\s*:\s*', r'\1=', expr)
             start = int(map_match.group(2))
             end = int(map_match.group(3))
             # Python range is exclusive on the right, Perl .. is inclusive
