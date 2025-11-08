@@ -62,6 +62,11 @@ def Compute(expression: Union[str, int, float], context=None):
     if context.name == 'Interval' and _is_interval_notation(expr_str):
         return _parse_interval(expr_str, context)
 
+    # Check for fraction notation in Fraction contexts
+    # Pattern: a/b, a b/c (mixed number)
+    if 'Fraction' in context.name and _is_fraction_notation(expr_str):
+        return _parse_fraction(expr_str, context)
+
     # Check if it's a constant expression (no variables)
     if _is_constant_expression(expr_str, context):
         # Evaluate as constant
@@ -291,3 +296,79 @@ def _parse_interval_endpoint(s: str, context) -> float:
         return value
     except Exception:
         raise ValueError(f"Interval endpoints must be numbers or infinity: {s}")
+
+
+def _is_fraction_notation(expr: str) -> bool:
+    """
+    Check if expression looks like fraction notation.
+
+    Patterns: a/b, a b/c (mixed number), -a/b
+
+    Reference: contextFraction.pl
+    """
+    import re
+    expr = expr.strip()
+
+    # Pattern: optional sign, optional whole number with space, fraction
+    # Examples: 1/2, -3/4, 2 1/2, -1 2/3
+    pattern = r'^-?\s*\d+\s*/\s*\d+$'  # Simple fraction
+    mixed_pattern = r'^-?\s*\d+\s+\d+\s*/\s*\d+$'  # Mixed number
+
+    return bool(re.match(pattern, expr) or re.match(mixed_pattern, expr))
+
+
+def _parse_fraction(expr: str, context) -> 'Fraction':
+    """
+    Parse fraction notation into a Fraction object.
+
+    Syntax: a/b, a b/c (mixed number if allowMixedNumbers), -a/b
+
+    Reference: contextFraction.pl
+    """
+    from .fraction import Fraction
+    import re
+
+    expr = expr.strip()
+
+    # Check for mixed number: "a b/c"
+    mixed_pattern = r'^(-?)\s*(\d+)\s+(\d+)\s*/\s*(\d+)$'
+    mixed_match = re.match(mixed_pattern, expr)
+
+    if mixed_match:
+        # Mixed number
+        sign = mixed_match.group(1)
+        whole = int(mixed_match.group(2))
+        frac_num = int(mixed_match.group(3))
+        frac_den = int(mixed_match.group(4))
+
+        # Check if mixed numbers are allowed
+        if not context.flags.get('allowMixedNumbers'):
+            raise ValueError("Mixed numbers are not allowed in this context")
+
+        # Convert to improper fraction: a b/c = (a*c + b)/c
+        total_num = whole * frac_den + frac_num
+        if sign == '-':
+            total_num = -total_num
+
+        return Fraction(total_num, frac_den, context)
+
+    # Simple fraction: "a/b"
+    simple_pattern = r'^(-?)\s*(\d+)\s*/\s*(\d+)$'
+    simple_match = re.match(simple_pattern, expr)
+
+    if simple_match:
+        sign = simple_match.group(1)
+        num = int(simple_match.group(2))
+        den = int(simple_match.group(3))
+
+        if sign == '-':
+            num = -num
+
+        # Check strictFractions flag - division only allowed between integers
+        if context.flags.get('strictFractions'):
+            # Already integers, so this is fine
+            pass
+
+        return Fraction(num, den, context)
+
+    raise ValueError(f"Invalid fraction notation: {expr}")

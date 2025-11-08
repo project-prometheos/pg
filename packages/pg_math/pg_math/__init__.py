@@ -15,6 +15,7 @@ from .compute import Compute
 from .context import Context, get_context, get_current_context
 from .formula import Formula
 from .formula_up_to_constant import FormulaUpToConstant
+from .fraction import Fraction
 from .geometric import Matrix, Point, Vector
 from .limited_polynomial import create_limited_polynomial_context, validate_polynomial_formula
 from .numeric import Complex, Infinity, Real
@@ -33,6 +34,7 @@ __all__ = [
     "Real",
     "Complex",
     "Infinity",
+    "Fraction",
     "Point",
     "Vector",
     "Matrix",

@@ -328,6 +328,14 @@ class Context:
             self._init_vector()
         elif name == 'Interval':
             self._init_interval()
+        elif name == 'Fraction':
+            self._init_fraction()
+        elif name == 'Fraction-NoDecimals':
+            self._init_fraction_no_decimals()
+        elif name == 'LimitedFraction':
+            self._init_limited_fraction()
+        elif name == 'LimitedProperFraction':
+            self._init_limited_proper_fraction()
         elif name.startswith('LimitedPolynomial'):
             self._init_limited_polynomial(strict=('-Strict' in name))
         elif name.startswith('PolynomialFactors'):
@@ -380,6 +388,87 @@ class Context:
         # Add infinity constant for interval endpoints
         self.constants.add('inf', float('inf'))
         self.constants.add('infinity', float('inf'))
+
+    def _init_fraction(self):
+        """
+        Initialize Fraction context.
+
+        General context allowing fractions mixed with reals.
+
+        Reference: contextFraction.pl::Init
+        """
+        # Start with Numeric base
+        self._init_numeric()
+
+        # Fraction-specific flags
+        self.flags.set(
+            reduceFractions=True,
+            strictFractions=False,
+            allowMixedNumbers=False,
+            requireProperFractions=False,
+            requirePureFractions=False,
+            showMixedNumbers=False,
+            fractionTolerance=1e-10,
+            contFracMaxDen=10**8,
+        )
+
+    def _init_fraction_no_decimals(self):
+        """
+        Initialize Fraction-NoDecimals context.
+
+        Like Fraction but decimal numbers cannot be typed explicitly.
+
+        Reference: contextFraction.pl::Init
+        """
+        self._init_fraction()
+        # Flag that decimals are not allowed
+        self.flags.set(noDecimals=True)
+
+    def _init_limited_fraction(self):
+        """
+        Initialize LimitedFraction context.
+
+        Only division and negation allowed, no other operations or functions.
+        Mixed numbers enabled (e.g., "2 1/2" = 2 + 1/2).
+
+        Reference: contextFraction.pl::Init
+        """
+        # Start with Numeric base
+        self._init_numeric()
+
+        # Strict fraction flags
+        self.flags.set(
+            reduceFractions=True,
+            strictFractions=True,
+            allowMixedNumbers=True,
+            requireProperFractions=False,
+            requirePureFractions=False,
+            showMixedNumbers=True,
+            fractionTolerance=1e-10,
+            contFracMaxDen=10**8,
+            reduceConstants=False,
+            noDecimals=True,
+        )
+
+        # Only allow division and negation operators
+        # Undefine all other operators
+        for op in ['+', '-', '*', '**', '^']:
+            self.operators.undefine(op)
+
+        # Undefine all functions
+        for func in self.functions.list():
+            self.functions.undefine(func)
+
+    def _init_limited_proper_fraction(self):
+        """
+        Initialize LimitedProperFraction context.
+
+        Like LimitedFraction but requires proper fractions.
+
+        Reference: contextFraction.pl::Init
+        """
+        self._init_limited_fraction()
+        self.flags.set(requireProperFractions=True)
 
     def _init_limited_polynomial(self, strict: bool = False):
         """Initialize LimitedPolynomial context (Week 5 feature)."""

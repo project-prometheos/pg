@@ -27,17 +27,18 @@ class TypePrecedence(IntEnum):
 
     NUMBER = 0  # Generic number
     REAL = 1  # Real number
-    INFINITY = 2  # Infinity (special)
-    COMPLEX = 3  # Complex number
-    POINT = 4  # Point in n-space
-    VECTOR = 5  # Vector
-    MATRIX = 6  # Matrix
-    LIST = 7  # List/sequence
-    INTERVAL = 8  # Interval
-    SET = 9  # Set
-    UNION = 10  # Union of intervals/sets
-    STRING = 11  # String
-    FORMULA = 12  # Formula (highest - contains expressions)
+    FRACTION = 2  # Fraction (between Real and Infinity per Perl)
+    INFINITY = 3  # Infinity (special)
+    COMPLEX = 4  # Complex number
+    POINT = 5  # Point in n-space
+    VECTOR = 6  # Vector
+    MATRIX = 7  # Matrix
+    LIST = 8  # List/sequence
+    INTERVAL = 9  # Interval
+    SET = 10  # Set
+    UNION = 11  # Union of intervals/sets
+    STRING = 12  # String
+    FORMULA = 13  # Formula (highest - contains expressions)
 
 
 class ToleranceMode:

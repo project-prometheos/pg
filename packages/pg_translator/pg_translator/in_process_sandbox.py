@@ -187,7 +187,7 @@ class InProcessSandbox:
             from pg_math.compute import Compute as _Compute
             from pg_mathobjects import Formula, Real
             from pg_mathobjects.formula_up_to_constant import FormulaUpToConstant
-            from pg_math import Complex as _Complex, List as _List, Point, Vector, Interval, Set
+            from pg_math import Complex as _Complex, List as _List, Point, Vector, Interval, Set, Fraction
 
             # Context function that delegates to pg_math
             def Context(name=None):
@@ -246,6 +246,7 @@ class InProcessSandbox:
             self.namespace['Vector'] = Vector
             self.namespace['Interval'] = Interval
             self.namespace['Set'] = Set
+            self.namespace['Fraction'] = Fraction
 
             # Create imaginary unit i = Complex(0, 1)
             self.namespace['i'] = _Complex(0, 1)

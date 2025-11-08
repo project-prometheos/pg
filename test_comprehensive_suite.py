@@ -37,6 +37,9 @@ test_problems = [
     "tutorial/sample-problems/Algebra/FactoredPolynomial.pg",
     "tutorial/sample-problems/Algebra/ExpandedPolynomial.pg",
 
+    # Fraction problems
+    "tutorial/sample-problems/ProblemTechniques/RestrictAnswerToFraction.pg",
+
     # More Trig
     "tutorial/sample-problems/Trig/TrigFormula.pg",
 
