@@ -638,6 +638,58 @@ def list_random(*items: Any) -> Any:
     return env.rng.choice(items)
 
 
+def random_coprime(*arrays) -> tuple:
+    """
+    Select random tuple of coprime numbers from arrays.
+
+    Usage:
+        (d, n) = random_coprime([2, 3, 4, 6], [1, 2, 3, ..., 12])
+
+    Returns a tuple of numbers, one from each array, where gcd of all numbers is 1.
+
+    Reference: PGauxiliaryFunctions.pl::random_coprime
+    """
+    import math
+
+    if not arrays:
+        raise ValueError("random_coprime requires at least one array")
+
+    # Handle single array - return random element
+    if len(arrays) == 1:
+        arr = list(arrays[0]) if not isinstance(arrays[0], list) else arrays[0]
+        return (list_random(*arr),) if len(arr) > 0 else ()
+
+    # Build all possible tuples
+    from itertools import product
+    all_tuples = list(product(*arrays))
+
+    # Filter to coprime tuples (gcd of all elements == 1)
+    def is_coprime(tup):
+        """Check if all elements in tuple are coprime (gcd == 1)."""
+        if len(tup) == 0:
+            return False
+        if len(tup) == 1:
+            return abs(tup[0]) == 1
+
+        # Compute gcd of all elements
+        result = abs(tup[0])
+        for val in tup[1:]:
+            result = math.gcd(result, abs(val))
+            if result == 1:  # Early exit optimization
+                return True
+        return result == 1
+
+    coprime_tuples = [t for t in all_tuples if is_coprime(t)]
+
+    if not coprime_tuples:
+        import warnings
+        warnings.warn("Unable to find a coprime tuple from input")
+        return tuple([0] * len(arrays))
+
+    # Return random coprime tuple
+    return list_random(*coprime_tuples)
+
+
 # ============================================================================
 # PERSISTENT DATA
 # ============================================================================

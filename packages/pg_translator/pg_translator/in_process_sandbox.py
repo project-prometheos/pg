@@ -347,6 +347,7 @@ class InProcessSandbox:
                 'random': pg_core.random,
                 'non_zero_random': pg_core.non_zero_random,
                 'list_random': pg_core.list_random,
+                'random_coprime': pg_core.random_coprime,
                 'loadMacros': pg_core.loadMacros,
                 'PGEnvironment': pg_core.PGEnvironment,
                 'set_environment': pg_core.set_environment,
@@ -424,6 +425,18 @@ class InProcessSandbox:
         def list_random(*items):
             return _random_module.choice(items)
 
+        def random_coprime(*arrays):
+            """Stub for random_coprime."""
+            import math
+            from itertools import product
+            if not arrays:
+                return ()
+            if len(arrays) == 1:
+                return (list_random(*arrays[0]),)
+            all_tuples = list(product(*arrays))
+            coprime = [t for t in all_tuples if math.gcd(*[abs(x) for x in t]) == 1]
+            return list_random(*coprime) if coprime else tuple([0] * len(arrays))
+
         def loadMacros(*args): pass
         def get_environment(): return _env
         def set_environment(env): pass
@@ -449,6 +462,7 @@ class InProcessSandbox:
             'random': pg_random,
             'non_zero_random': non_zero_random,
             'list_random': list_random,
+            'random_coprime': random_coprime,
             'loadMacros': loadMacros,
             'parserFunction': parserFunction,
             'get_environment': get_environment,
