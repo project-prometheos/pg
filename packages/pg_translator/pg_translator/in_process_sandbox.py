@@ -353,6 +353,13 @@ class InProcessSandbox:
                     return Point([pg_core.non_zero_random(-5, 5), pg_core.non_zero_random(-5, 5), pg_core.non_zero_random(-5, 5)])
                 return [pg_core.non_zero_random(-5, 5), pg_core.non_zero_random(-5, 5), pg_core.non_zero_random(-5, 5)]
 
+            def non_zero_vector3D(*args):
+                """Stub for non_zero_vector3D - generates non-zero 3D vector."""
+                Vector = self.namespace.get('Vector')
+                if Vector:
+                    return Vector([pg_core.non_zero_random(-5, 5), pg_core.non_zero_random(-5, 5), pg_core.non_zero_random(-5, 5)])
+                return [pg_core.non_zero_random(-5, 5), pg_core.non_zero_random(-5, 5), pg_core.non_zero_random(-5, 5)]
+
             def Matrix(*args, **kwargs):
                 """Matrix wrapper for compatibility."""
                 _Matrix = self.namespace.get('Matrix')
@@ -372,13 +379,17 @@ class InProcessSandbox:
                 """Stub for Graph3D - 3D graphing object."""
                 return type('Graph3D', (), {
                     'plotSurface': lambda *a, **k: None,
+                    'addSurface': lambda *a, **k: None,
                     'addCurve': lambda *a, **k: None,
                     'addPoint': lambda *a, **k: None,
                 })()
 
             def Plot(*args, **kwargs):
                 """Stub for Plot - 2D plotting function."""
-                return type('Plot', (), {'plot': lambda *a, **k: None})()
+                return type('Plot', (), {
+                    'plot': lambda *a, **k: None,
+                    'add_function': lambda *a, **k: None,
+                })()
 
             def COMPOSITION_ANS(*args, **kwargs):
                 """Stub for COMPOSITION_ANS - function composition answer checker."""
@@ -437,12 +448,36 @@ class InProcessSandbox:
                     return Formula(str(args[0]) if args else '0')
                 return str(args[0]) if args else '0'
 
+            def ParametricLine(*args, **kwargs):
+                """Stub for ParametricLine - parametric line parser."""
+                return type('ParametricLine', (), {
+                    '__str__': lambda self: 'ParametricLine',
+                })()
+
+            def ImplicitPlane(*args, **kwargs):
+                """Stub for ImplicitPlane - implicit plane parser."""
+                return type('ImplicitPlane', (), {
+                    '__str__': lambda self: 'ImplicitPlane',
+                })()
+
             def randomPerson():
                 """Stub for randomPerson - generates random person name."""
                 import random
                 first_names = ['Alice', 'Bob', 'Carol', 'David', 'Eve', 'Frank']
                 last_names = ['Smith', 'Jones', 'Brown', 'Davis', 'Miller', 'Wilson']
                 return f"{random.choice(first_names)} {random.choice(last_names)}"
+
+            # Additional graphics stubs
+            def VectorField3D(*args, **kwargs):
+                """Stub for VectorField3D - 3D vector field graphing."""
+                return type('VectorField3D', (), {
+                    'plot': lambda *a, **k: None,
+                })()
+
+            # Perl compatibility values
+            def undef():
+                """Stub for Perl's undef - returns None."""
+                return None
 
             # Add pg_core functions to namespace
             # Register core functions
@@ -471,9 +506,11 @@ class InProcessSandbox:
                 'SPACE': ' ',
                 # Additional stubs
                 'non_zero_point3D': non_zero_point3D,
+                'non_zero_vector3D': non_zero_vector3D,
                 'Matrix': Matrix,
                 'Graph3D': Graph3D,
                 'Plot': Plot,
+                'VectorField3D': VectorField3D,
                 'COMPOSITION_ANS': COMPOSITION_ANS,
                 'UNORDERED_ANS': UNORDERED_ANS,
                 'DraggableProof': DraggableProof,
@@ -484,7 +521,10 @@ class InProcessSandbox:
                 'NumberWithUnits': NumberWithUnits,
                 'ImplicitEquation': ImplicitEquation,
                 'SolutionFor': SolutionFor,
+                'ParametricLine': ParametricLine,
+                'ImplicitPlane': ImplicitPlane,
                 'randomPerson': randomPerson,
+                'undef': undef,
             })
 
             # Store reference for initialization
@@ -598,6 +638,13 @@ class InProcessSandbox:
             # Fallback: return list
             return [non_zero_random(-5, 5), non_zero_random(-5, 5), non_zero_random(-5, 5)]
 
+        def non_zero_vector3D(*args):
+            """Stub for non_zero_vector3D - generates non-zero 3D vector."""
+            Vector = self.namespace.get('Vector')
+            if Vector:
+                return Vector([non_zero_random(-5, 5), non_zero_random(-5, 5), non_zero_random(-5, 5)])
+            return [non_zero_random(-5, 5), non_zero_random(-5, 5), non_zero_random(-5, 5)]
+
         # Matrix constructor (wrap pg_math Matrix if available)
         def Matrix(*args, **kwargs):
             """Matrix wrapper for compatibility."""
@@ -624,13 +671,17 @@ class InProcessSandbox:
             # Minimal stub - just return a placeholder object
             return type('Graph3D', (), {
                 'plotSurface': lambda *a, **k: None,
+                'addSurface': lambda *a, **k: None,
                 'addCurve': lambda *a, **k: None,
                 'addPoint': lambda *a, **k: None,
             })()
 
         def Plot(*args, **kwargs):
             """Stub for Plot - 2D plotting function."""
-            return type('Plot', (), {'plot': lambda *a, **k: None})()
+            return type('Plot', (), {
+                'plot': lambda *a, **k: None,
+                'add_function': lambda *a, **k: None,
+            })()
 
         # Special answer evaluation functions
         def COMPOSITION_ANS(*args, **kwargs):
@@ -697,6 +748,18 @@ class InProcessSandbox:
                 return Formula(str(args[0]) if args else '0')
             return str(args[0]) if args else '0'
 
+        def ParametricLine(*args, **kwargs):
+            """Stub for ParametricLine - parametric line parser."""
+            return type('ParametricLine', (), {
+                '__str__': lambda self: 'ParametricLine',
+            })()
+
+        def ImplicitPlane(*args, **kwargs):
+            """Stub for ImplicitPlane - implicit plane parser."""
+            return type('ImplicitPlane', (), {
+                '__str__': lambda self: 'ImplicitPlane',
+            })()
+
         # Random utilities
         def randomPerson():
             """Stub for randomPerson - generates random person name."""
@@ -704,6 +767,18 @@ class InProcessSandbox:
             first_names = ['Alice', 'Bob', 'Carol', 'David', 'Eve', 'Frank']
             last_names = ['Smith', 'Jones', 'Brown', 'Davis', 'Miller', 'Wilson']
             return f"{random.choice(first_names)} {random.choice(last_names)}"
+
+        # Additional graphics stubs
+        def VectorField3D(*args, **kwargs):
+            """Stub for VectorField3D - 3D vector field graphing."""
+            return type('VectorField3D', (), {
+                'plot': lambda *a, **k: None,
+            })()
+
+        # Perl compatibility values
+        def undef():
+            """Stub for Perl's undef - returns None."""
+            return None
 
         self.namespace.update({
             'DOCUMENT': DOCUMENT,
@@ -728,10 +803,12 @@ class InProcessSandbox:
             'set_environment': set_environment,
             # Geometric stubs
             'non_zero_point3D': non_zero_point3D,
+            'non_zero_vector3D': non_zero_vector3D,
             'Matrix': Matrix,
             # Graphics
             'Graph3D': Graph3D,
             'Plot': Plot,
+            'VectorField3D': VectorField3D,
             # Special answer evaluation
             'COMPOSITION_ANS': COMPOSITION_ANS,
             'UNORDERED_ANS': UNORDERED_ANS,
@@ -748,8 +825,12 @@ class InProcessSandbox:
             # Parser utilities
             'ImplicitEquation': ImplicitEquation,
             'SolutionFor': SolutionFor,
+            'ParametricLine': ParametricLine,
+            'ImplicitPlane': ImplicitPlane,
             # Random utilities
             'randomPerson': randomPerson,
+            # Perl compatibility
+            'undef': undef,
             # Add a dummy macro loader to suppress warnings
             # Macros are pre-loaded, so this just prevents the warning
             '_macro_loader': type('DummyLoader', (), {'load_macro': lambda self, x: None})(),
