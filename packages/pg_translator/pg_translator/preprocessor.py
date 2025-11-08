@@ -677,8 +677,10 @@ class PGPreprocessor:
         # Pattern: CapitalizedWord(...) = "string" or CapitalizedWord(...) = number
         # Wrap in parens to make it a tuple element
         # String pattern handles both double and single quotes with any content
+        # IMPORTANT: Use negative lookbehind (?<![a-z]) to ensure we don't match
+        # capital letters that are part of a camelCase method name like withPostFilter
         line = re.sub(
-            r'([A-Z][a-zA-Z0-9_]*\([^)]*\))\s*=\s*("(?:[^"\\]|\\.)*"|\'(?:[^\'\\]|\\.)*\')',
+            r'(?<![a-z])([A-Z][a-zA-Z0-9_]*\([^)]*\))\s*=\s*("(?:[^"\\]|\\.)*"|\'(?:[^\'\\]|\\.)*\')',
             r'(\1, \2)',
             line
         )
