@@ -437,6 +437,84 @@ class PGPreprocessor:
                     # Not a proper do-until, fall through to normal processing
                     i = i - len(block_lines) + 1
 
+            # Check for inline for-loop statements: for VAR in EXPR: stmt1; stmt2; ...
+            # Python requires these on separate lines with indentation
+            inline_for_match = re.match(r'^(\s*)(for\s+\w+\s+in\s+[^:]+):\s*(.+)', original_line)
+            if inline_for_match:
+                indent = inline_for_match.group(1)
+                for_header = inline_for_match.group(2)
+                inline_body = inline_for_match.group(3)
+
+                # Split inline body by semicolon (respecting strings and parentheses)
+                def split_statements(text):
+                    """Split by semicolon but respect strings and parentheses."""
+                    statements = []
+                    current = []
+                    in_string = False
+                    string_char = None
+                    paren_depth = 0
+                    bracket_depth = 0
+
+                    j = 0
+                    while j < len(text):
+                        char = text[j]
+
+                        # Handle string boundaries
+                        if char in ('"', "'") and (j == 0 or text[j-1] != '\\'):
+                            if not in_string:
+                                in_string = True
+                                string_char = char
+                            elif char == string_char:
+                                in_string = False
+                                string_char = None
+
+                        # Track depths (not in strings)
+                        if not in_string:
+                            if char == '(':
+                                paren_depth += 1
+                            elif char == ')':
+                                paren_depth -= 1
+                            elif char == '[':
+                                bracket_depth += 1
+                            elif char == ']':
+                                bracket_depth -= 1
+                            elif char == ';' and paren_depth == 0 and bracket_depth == 0:
+                                # Found a statement boundary
+                                stmt = ''.join(current).strip()
+                                if stmt:
+                                    statements.append(stmt)
+                                current = []
+                                j += 1
+                                continue
+
+                        current.append(char)
+                        j += 1
+
+                    # Last statement
+                    stmt = ''.join(current).strip()
+                    if stmt:
+                        statements.append(stmt)
+
+                    return statements
+
+                statements = split_statements(inline_body)
+
+                # Only convert if there are multiple statements or semicolons
+                # (Single statement can stay on one line in Python)
+                if len(statements) > 1 or ';' in inline_body:
+                    # Transform the for header
+                    transformed_header = self._transform_line(for_header)
+                    output_lines.append(f'{indent}{transformed_header}:')
+
+                    # Transform each statement and add with indentation
+                    for stmt in statements:
+                        transformed_stmt = self._transform_line(stmt)
+                        if transformed_stmt:
+                            output_lines.append(f'{indent}    {transformed_stmt}')
+
+                    i += 1
+                    continue
+
             # Check for block markers
             block_found = False
             for block_type, (begin_pattern, end_pattern) in self.BLOCK_PATTERNS.items():
