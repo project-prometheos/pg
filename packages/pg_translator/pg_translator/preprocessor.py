@@ -641,6 +641,59 @@ class PGPreprocessor:
 
         line = replace_hash_arrow(line)
 
+        # Special case: ] => [ pattern (array fat comma in argument lists)
+        # This is Perl's way of creating pairs: [ arr1 ] => [ arr2 ]
+        # Transform to tuple syntax: ], [ which becomes ([ arr1 ], [ arr2 ]) in function args
+        # Must do this AFTER general => replacement to override it
+        line = re.sub(r'\]\s*=\s*\[', '], [', line)
+
+        # Special case: name = value inside array literals (from => in arrays)
+        # Perl: [ 'text', key => value ] becomes [ 'text', key = value ] (invalid Python)
+        # Fix: Transform to [ 'text', {'key': value} ]
+        # Pattern: , identifier = value inside [ ... ]
+        # First try: immediate before ] (single line)
+        line = re.sub(
+            r',\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*(\d+|\'[^\']*\'|\"[^\"]*\"|True|False)\s*\]',
+            r", {'\1': \2} ]",
+            line
+        )
+        # Second try: anywhere after comma (multi-line arrays)
+        # This catches cases like: ..., \n        replaceMessage = 1
+        # Only transform if line starts with whitespace (continuation) and has assignment
+        if line.strip() and not line[0].isalpha() and '=' in line:
+            # Look for pattern: leading whitespace, identifier = value
+            # Can be followed by comma, ], or end of line
+            line = re.sub(
+                r'^(\s+)([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*(\d+|True|False)(\s*[,\]]|\s*$)',
+                r"\1{'\2': \3}\4",
+                line
+            )
+
+        # Special case: Function(...) = value (expression can't be assigned to)
+        # This happens with AnswerHints( Formula(...) => "msg", ... )
+        # Transform to tuple pairs: (Formula(...), "msg")
+        # Pattern: CapitalizedWord(...) = "string" or CapitalizedWord(...) = number
+        # Wrap in parens to make it a tuple element
+        # String pattern handles both double and single quotes with any content
+        line = re.sub(
+            r'([A-Z][a-zA-Z0-9_]*\([^)]*\))\s*=\s*("(?:[^"\\]|\\.)*"|\'(?:[^\'\\]|\\.)*\')',
+            r'(\1, \2)',
+            line
+        )
+
+        # Special case: Wrap [ ... ], [ ... ] pairs in parens for function arguments
+        # After transforming ] => [ to ], [ we need to wrap in parens to make a tuple
+        # This is for AnswerHints( [ arr1 ], [ arr2 ] ) patterns
+        # Only wrap if it looks like a function argument context (after opening paren or comma)
+        if '], [' in line and '(' in line:
+            # Simple heuristic: wrap standalone [ ... ], [ ... ] patterns in parens
+            # Match: [ ... ], [ ... ] where arrays can span lines (use non-greedy)
+            line = re.sub(
+                r'(\(|\,)\s*(\[(?:[^\[\]]|\[[^\]]*\])*\])\s*,\s*(\[(?:[^\[\]]|\[[^\]]*\])*\])',
+                r'\1 (\2, \3)',
+                line
+            )
+
         # Transform Perl string comparison operators (must be done carefully)
         # eq → == (string equality)
         # ne → != (string inequality)

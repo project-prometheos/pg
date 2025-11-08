@@ -7,6 +7,7 @@ pg_math/context.py
 pg_math/formula.py
 pg_math/formula_enhanced.py
 pg_math/formula_up_to_constant.py
+pg_math/fraction.py
 pg_math/geometric.py
 pg_math/limited_polynomial.py
 pg_math/numeric.py

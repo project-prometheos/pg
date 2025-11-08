@@ -43,6 +43,23 @@ class AnswerChecker:
             context['tolerance'] = meta['tolerance']
         return context
 
+    def withPostFilter(self, filter_function):
+        """
+        Add post-processing filter (stub implementation).
+
+        In full implementation, this would apply a filter function after
+        answer checking to provide custom hints, modify scores, etc.
+
+        Args:
+            filter_function: Filter to apply (e.g., AnswerHints result)
+
+        Returns:
+            self (for method chaining)
+        """
+        # Stub: just store the filter but don't use it
+        self.post_filter = filter_function
+        return self
+
     def check(
         self,
         student_answer: str,

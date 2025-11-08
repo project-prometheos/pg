@@ -161,6 +161,22 @@ class InProcessSandbox:
         self.namespace['pi'] = math.pi
         self.namespace['e'] = math.e
 
+        # Add common mathematical functions (for bare function calls)
+        self.namespace['sqrt'] = math.sqrt
+        self.namespace['sin'] = math.sin
+        self.namespace['cos'] = math.cos
+        self.namespace['tan'] = math.tan
+        self.namespace['asin'] = math.asin
+        self.namespace['acos'] = math.acos
+        self.namespace['atan'] = math.atan
+        self.namespace['arcsin'] = math.asin  # Alias
+        self.namespace['arccos'] = math.acos  # Alias
+        self.namespace['arctan'] = math.atan  # Alias
+        self.namespace['exp'] = math.exp
+        self.namespace['log'] = math.log
+        self.namespace['ln'] = math.log  # Alias
+        self.namespace['abs'] = abs
+
         # Load MathObjects
         self._load_mathobjects()
 
@@ -939,12 +955,13 @@ class InProcessSandbox:
         self.namespace['parserFunction'] = parserFunctionStub
 
     def _load_parser_macros(self) -> None:
-        """Load parser macros (PopUp, DropDown, RadioButtons, RadioMultiAnswer, LinearRelation, DifferenceQuotient, etc.)."""
+        """Load parser macros (PopUp, DropDown, RadioButtons, RadioMultiAnswer, LinearRelation, DifferenceQuotient, specialRadical, etc.)."""
         try:
             from pg_macros.parsers.parser_popup import PopUp, DropDown, DropDownTF, RadioButtons
             from pg_macros.parsers.parser_radio_multianswer import RadioMultiAnswer
             from pg_macros.parsers.parser_linear_relation import LinearRelation
             from pg_macros.parsers.parser_difference_quotient import DifferenceQuotient
+            from pg_macros.parsers.parser_special_trig import specialRadical, specialAngle
 
             self.namespace['PopUp'] = PopUp
             self.namespace['DropDown'] = DropDown
@@ -953,6 +970,8 @@ class InProcessSandbox:
             self.namespace['RadioMultiAnswer'] = RadioMultiAnswer
             self.namespace['LinearRelation'] = LinearRelation
             self.namespace['DifferenceQuotient'] = DifferenceQuotient
+            self.namespace['specialRadical'] = specialRadical
+            self.namespace['specialAngle'] = specialAngle
         except ImportError:
             # Provide fallback stubs if not available
             class PopUpStub:
@@ -986,6 +1005,14 @@ class InProcessSandbox:
                 def cmp(self):
                     return lambda x: {'correct': True, 'score': 1.0}
 
+            def specialRadicalStub(expr, *args, **kwargs):
+                from pg_mathobjects import Compute
+                return Compute(expr)
+
+            def specialAngleStub(expr, *args, **kwargs):
+                from pg_mathobjects import Compute
+                return Compute(expr)
+
             self.namespace['PopUp'] = PopUpStub
             self.namespace['DropDown'] = PopUpStub
             self.namespace['DropDownTF'] = lambda correct, **opts: PopUpStub(['True', 'False'], correct)
@@ -993,6 +1020,8 @@ class InProcessSandbox:
             self.namespace['RadioMultiAnswer'] = RadioMultiAnswerStub
             self.namespace['LinearRelation'] = LinearRelationStub
             self.namespace['DifferenceQuotient'] = DifferenceQuotientStub
+            self.namespace['specialRadical'] = specialRadicalStub
+            self.namespace['specialAngle'] = specialAngleStub
 
     def _load_statistics_macros(self) -> None:
         """Load statistics functions (stats_mean, stats_sd, stats_SX_SXX)."""
