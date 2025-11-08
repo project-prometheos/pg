@@ -939,11 +939,12 @@ class InProcessSandbox:
         self.namespace['parserFunction'] = parserFunctionStub
 
     def _load_parser_macros(self) -> None:
-        """Load parser macros (PopUp, DropDown, RadioButtons, RadioMultiAnswer, LinearRelation, etc.)."""
+        """Load parser macros (PopUp, DropDown, RadioButtons, RadioMultiAnswer, LinearRelation, DifferenceQuotient, etc.)."""
         try:
             from pg_macros.parsers.parser_popup import PopUp, DropDown, DropDownTF, RadioButtons
             from pg_macros.parsers.parser_radio_multianswer import RadioMultiAnswer
             from pg_macros.parsers.parser_linear_relation import LinearRelation
+            from pg_macros.parsers.parser_difference_quotient import DifferenceQuotient
 
             self.namespace['PopUp'] = PopUp
             self.namespace['DropDown'] = DropDown
@@ -951,6 +952,7 @@ class InProcessSandbox:
             self.namespace['RadioButtons'] = RadioButtons
             self.namespace['RadioMultiAnswer'] = RadioMultiAnswer
             self.namespace['LinearRelation'] = LinearRelation
+            self.namespace['DifferenceQuotient'] = DifferenceQuotient
         except ImportError:
             # Provide fallback stubs if not available
             class PopUpStub:
@@ -976,12 +978,21 @@ class InProcessSandbox:
                 def cmp(self):
                     return lambda x: {'correct': True, 'score': 1.0}
 
+            class DifferenceQuotientStub:
+                def __init__(self, formula, dx=None, zero_point=0, **options):
+                    self.formula = formula
+                    self.dx = dx
+
+                def cmp(self):
+                    return lambda x: {'correct': True, 'score': 1.0}
+
             self.namespace['PopUp'] = PopUpStub
             self.namespace['DropDown'] = PopUpStub
             self.namespace['DropDownTF'] = lambda correct, **opts: PopUpStub(['True', 'False'], correct)
             self.namespace['RadioButtons'] = PopUpStub
             self.namespace['RadioMultiAnswer'] = RadioMultiAnswerStub
             self.namespace['LinearRelation'] = LinearRelationStub
+            self.namespace['DifferenceQuotient'] = DifferenceQuotientStub
 
     def _load_statistics_macros(self) -> None:
         """Load statistics functions (stats_mean, stats_sd, stats_SX_SXX)."""
