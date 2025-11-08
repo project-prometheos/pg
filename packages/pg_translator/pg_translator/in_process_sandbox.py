@@ -460,12 +460,27 @@ class InProcessSandbox:
                     '__str__': lambda self: 'ImplicitPlane',
                 })()
 
-            def randomPerson():
-                """Stub for randomPerson - generates random person name."""
+            def randomPerson(n=1, **kwargs):
+                """Stub for randomPerson - generates random person names with pronouns."""
                 import random
+
+                # Simple Person stub with name() method
+                class Person:
+                    def __init__(self, first, last):
+                        self._first = first
+                        self._last = last
+                    def name(self):
+                        return f"{self._first} {self._last}"
+                    def __str__(self):
+                        return self.name()
+
                 first_names = ['Alice', 'Bob', 'Carol', 'David', 'Eve', 'Frank']
                 last_names = ['Smith', 'Jones', 'Brown', 'Davis', 'Miller', 'Wilson']
-                return f"{random.choice(first_names)} {random.choice(last_names)}"
+
+                if n == 1:
+                    return Person(random.choice(first_names), random.choice(last_names))
+                else:
+                    return [Person(random.choice(first_names), random.choice(last_names)) for _ in range(n)]
 
             # Additional graphics stubs
             def VectorField3D(*args, **kwargs):
@@ -780,12 +795,27 @@ class InProcessSandbox:
             })()
 
         # Random utilities
-        def randomPerson():
-            """Stub for randomPerson - generates random person name."""
+        def randomPerson(n=1, **kwargs):
+            """Stub for randomPerson - generates random person names with pronouns."""
             import random
+
+            # Simple Person stub with name() method
+            class Person:
+                def __init__(self, first, last):
+                    self._first = first
+                    self._last = last
+                def name(self):
+                    return f"{self._first} {self._last}"
+                def __str__(self):
+                    return self.name()
+
             first_names = ['Alice', 'Bob', 'Carol', 'David', 'Eve', 'Frank']
             last_names = ['Smith', 'Jones', 'Brown', 'Davis', 'Miller', 'Wilson']
-            return f"{random.choice(first_names)} {random.choice(last_names)}"
+
+            if n == 1:
+                return Person(random.choice(first_names), random.choice(last_names))
+            else:
+                return [Person(random.choice(first_names), random.choice(last_names)) for _ in range(n)]
 
         # Additional graphics stubs
         def VectorField3D(*args, **kwargs):

@@ -324,7 +324,7 @@ def STOP_RENDERING() -> None:
 # ANSWER FUNCTIONS
 # ============================================================================
 
-def ANS(*evaluators: Any) -> None:
+def ANS(*evaluators: Any, **kwargs) -> None:
     """
     Register answer evaluators (implicit pairing).
 
@@ -333,6 +333,11 @@ def ANS(*evaluators: Any) -> None:
     Usage:
         TEXT(ans_rule(), ans_rule())
         ANS(num_cmp(42), num_cmp(17))
+        ANS(cmp(...), vars => ['x', 'y'])  # With options
+
+    Args:
+        *evaluators: Answer evaluators
+        **kwargs: Optional keyword arguments (vars, etc.) - passed through
 
     Reference: PG.pl::ANS (line 469)
     """

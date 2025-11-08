@@ -29,15 +29,22 @@ class Point(MathValue):
 
     type_precedence = TypePrecedence.POINT
 
-    def __init__(self, coords: list[MathValue] | list[float]):
+    def __init__(self, *args):
         """
         Initialize a Point.
 
         Args:
-            coords: List of coordinates (MathValue or float)
+            *args: Variable number of coordinates, or a single list/tuple of coordinates
+                   Point(1, 2, 3) or Point([1, 2, 3]) both work
         """
         # Convert to MathValue if needed
         from .value import MathValue as MV
+
+        # Handle both Point(x, y, z) and Point([x, y, z]) calling styles
+        if len(args) == 1 and isinstance(args[0], (list, tuple)):
+            coords = args[0]
+        else:
+            coords = args
 
         self.coords = [MV.from_python(c) if not isinstance(c, MathValue) else c for c in coords]
 
@@ -143,13 +150,30 @@ class Point(MathValue):
         """Right multiplication not supported."""
         raise TypeError("Point does not support multiplication")
 
-    def __truediv__(self, other: Any) -> MathValue:
-        """Division not supported."""
-        raise TypeError("Point does not support division")
+    def __truediv__(self, other: Any) -> Point:
+        """
+        Scalar division: point / scalar = point.
+
+        Used for computing midpoints: (p1 + p2) / 2
+        """
+        from .numeric import Real
+
+        # Convert to scalar if needed
+        if isinstance(other, (int, float)):
+            scalar = other
+        elif isinstance(other, Real):
+            scalar = other.to_python()
+        else:
+            raise TypeError(f"Cannot divide Point by {type(other).__name__}")
+
+        if scalar == 0:
+            raise ZeroDivisionError("Cannot divide point by zero")
+
+        return Point([c / scalar for c in self.coords])
 
     def __rtruediv__(self, other: Any) -> MathValue:
-        """Right division not supported."""
-        raise TypeError("Point does not support division")
+        """Right division not supported (scalar / point makes no sense)."""
+        raise TypeError("Cannot divide scalar by Point")
 
     def __pow__(self, other: Any) -> MathValue:
         """Power not supported."""
@@ -184,14 +208,21 @@ class Vector(MathValue):
 
     type_precedence = TypePrecedence.VECTOR
 
-    def __init__(self, components: list[MathValue] | list[float]):
+    def __init__(self, *args):
         """
         Initialize a Vector.
 
         Args:
-            components: List of vector components (MathValue or float)
+            *args: Variable number of components, or a single list/tuple of components
+                   Vector(1, 2, 3) or Vector([1, 2, 3]) both work
         """
         from .value import MathValue as MV
+
+        # Handle both Vector(x, y, z) and Vector([x, y, z]) calling styles
+        if len(args) == 1 and isinstance(args[0], (list, tuple)):
+            components = args[0]
+        else:
+            components = args
 
         self.components = [
             MV.from_python(c) if not isinstance(c, MathValue) else c for c in components

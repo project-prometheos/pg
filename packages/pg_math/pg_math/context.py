@@ -89,9 +89,21 @@ class ConstantManager:
     def __init__(self):
         self._constants: Dict[str, Any] = {}
 
-    def add(self, name: str, value: Any):
-        """Add a constant to the context."""
-        self._constants[name] = value
+    def add(self, name: str = None, value: Any = None, **kwargs):
+        """
+        Add a constant to the context.
+
+        Can be called as:
+        - add('pi', 3.14159)  # Positional
+        - add(k=0.023431412)  # Keyword (Perl style)
+        """
+        if name is not None and value is not None:
+            # Positional style: add('pi', 3.14159)
+            self._constants[name] = value
+        elif kwargs:
+            # Keyword style: add(k=0.023431412)
+            for const_name, const_value in kwargs.items():
+                self._constants[const_name] = const_value
 
     def set(self, name: str, value: Any):
         """Set a constant value."""

@@ -920,3 +920,25 @@ class Formula(MathValue):
         # Stub: In full implementation, this would use unit conversion
         # For now, return self as-is
         return self
+
+    def __getitem__(self, key):
+        """
+        Support subscript access for Perl hash-like attribute access.
+
+        Allows: formula['test_points'] or formula['limits']
+
+        This enables Perl idiom: $f->{test_points} = [[1], [2]]
+        which preprocessor converts to: f['test_points'] = [[1], [2]]
+        """
+        return getattr(self, key, None)
+
+    def __setitem__(self, key, value):
+        """
+        Support subscript assignment for Perl hash-like attribute setting.
+
+        Allows: formula['test_points'] = [[1], [2], [3]]
+
+        This enables Perl idiom: $f->{test_points} = [[1], [2]]
+        which preprocessor converts to: f['test_points'] = [[1], [2]]
+        """
+        setattr(self, key, value)
