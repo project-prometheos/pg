@@ -366,6 +366,16 @@ class PGPreprocessor:
                 # Match with or without parentheses around condition
                 until_match = re.search(r'\}\s*until\s*(?:\(([^)]+)\)|(.+))$', last_line)
 
+                # If not found and we have a next line, check if "until" is on the next line
+                if not until_match and i < len(lines):
+                    next_line = lines[i]
+                    # Check if next line starts with "until"
+                    until_match = re.match(r'^\s*until\s*(?:\(([^)]+)\)|([^;]+))', next_line)
+                    if until_match:
+                        # Add the next line to block_lines
+                        block_lines.append(next_line)
+                        i += 1
+
                 if until_match:
                     # Get condition from either group 1 (with parens) or group 2 (without)
                     condition = until_match.group(1) or until_match.group(2)
@@ -382,15 +392,26 @@ class PGPreprocessor:
                     if first:
                         body_lines.append(first)
 
-                    # Middle lines: add as-is
-                    for line in block_lines[1:-1]:
-                        body_lines.append(line)
+                    # Check if last line is just "until" (on separate line from })
+                    last_line_is_until = re.match(r'^\s*until\s+', block_lines[-1])
 
-                    # Last line: remove "} until (...)" or "} until condition"
-                    last = re.sub(
-                        r'\}\s*until\s*.*$', '', block_lines[-1]).strip()
-                    if last:
-                        body_lines.append(last)
+                    if last_line_is_until:
+                        # Middle lines: all lines except first and last (skip the "until" line)
+                        for line in block_lines[1:-1]:
+                            # Remove trailing } if present
+                            cleaned = re.sub(r'\s*}\s*$', '', line).strip()
+                            if cleaned:
+                                body_lines.append(cleaned)
+                    else:
+                        # Middle lines: add as-is
+                        for line in block_lines[1:-1]:
+                            body_lines.append(line)
+
+                        # Last line: remove "} until (...)" or "} until condition"
+                        last = re.sub(
+                            r'\}\s*until\s*.*$', '', block_lines[-1]).strip()
+                        if last:
+                            body_lines.append(last)
 
                     # Transform body lines
                     transformed_body = []
@@ -875,10 +896,16 @@ class PGPreprocessor:
         line = re.sub(r'\bfor\s+my\s+([a-zA-Z_]\w*)\s*\(([^)]+)\)\s*\{', convert_for_loop, line)
         line = re.sub(r'\bfor\s+([a-zA-Z_]\w*)\s*\(([^)]+)\)\s*\{', convert_for_loop, line)
 
+        # Remove Perl 'my' keyword from variable declarations
+        # Pattern: my VAR = → VAR =
+        # This handles inline statements like: for i: my x = i * 2; my y = x + 1
+        line = re.sub(r'\bmy\s+([a-zA-Z_]\w*)\s*=', r'\1 =', line)
+
         # Clean up stray closing braces from converted for-loops and blocks
-        # These appear at the end of lines after inline for-loops
-        # Pattern: statements; } at end of line → statements (remove trailing brace)
+        # Pattern 1: statements; } at end of line → statements (remove trailing brace + semicolon)
         line = re.sub(r';\s*}$', '', line)
+        # Pattern 2: ) } at end of line (function call followed by brace)
+        line = re.sub(r'\)\s*}$', ')', line)
 
         # Transform Perl map with blocks: map { EXPR } LIST
         # map { random(1, 10) } 0 .. 7  →  [random(1, 10) for _ in range(0, 8)]
