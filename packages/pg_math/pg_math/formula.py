@@ -40,6 +40,30 @@ except ImportError:
 from .value import MathValue, ToleranceMode, TypePrecedence
 
 
+class CMPWrapper:
+    """
+    Wrapper for .cmp that works as both property access and method call.
+
+    Handles Perl idiom where ->cmp can be used without parentheses and
+    chained with ->withPostFilter.
+    """
+    def __init__(self, formula, **default_options):
+        self.formula = formula
+        self.default_options = default_options
+
+    def __call__(self, **options):
+        """Call as cmp() to get answer checker."""
+        from .answer_checker import FormulaAnswerChecker
+        merged_options = {**self.default_options, **options}
+        return FormulaAnswerChecker(self.formula, **merged_options)
+
+    def withPostFilter(self, filter_function):
+        """Chain with withPostFilter like Perl ->cmp->withPostFilter."""
+        from .answer_checker import FormulaAnswerChecker
+        checker = FormulaAnswerChecker(self.formula, **self.default_options)
+        return checker.withPostFilter(filter_function)
+
+
 class Formula(MathValue):
     """
     Formula represents a mathematical expression with deferred evaluation.
@@ -809,32 +833,29 @@ class Formula(MathValue):
 
     # Answer checking (NEW FOR PARITY)
 
-    def cmp(self, **options):
+    @property
+    def cmp(self):
         """
         Create an answer evaluator for this formula.
 
         This is the built-in answer checker that every Formula has in Perl.
-        Returns an answer evaluator configured for this formula.
-
-        Args:
-            **options: Options to pass to FormulaAnswerChecker:
-                - tolerance: Comparison tolerance (default: 0.01)
-                - num_points: Number of test points (default: 5)
+        Returns a CMPWrapper that can be:
+        - Called as cmp() to get answer checker
+        - Chained as cmp.withPostFilter(...) for Perl compatibility
 
         Returns:
-            FormulaAnswerChecker configured for this formula
+            CMPWrapper that works as both callable and has withPostFilter
 
         Example:
             >>> f = Formula("x^2", variables=["x"])
             >>> checker = f.cmp()
             >>> result = checker.check("x*x")
             >>> result['correct']  # True
+            >>> # Or chain: f.cmp.withPostFilter(AnswerHints(...))
 
         Reference: lib/Value/Formula.pm::cmp (lines 430-470)
         """
-        from .answer_checker import FormulaAnswerChecker
-
-        return FormulaAnswerChecker(self, **options)
+        return CMPWrapper(self)
 
     def adapt_parameters(self, student_formula, *param_names):
         """Adaptive parameter finding (advanced)."""
@@ -885,3 +906,17 @@ class Formula(MathValue):
             return {param: float(val) for param, val in zip(param_names, params_solution)}
         except:
             return None
+
+    def toUnits(self, unit_string):
+        """
+        Convert this formula with units to a specified unit.
+
+        Args:
+            unit_string: Target unit as string (e.g., 'cup', 'mi/h')
+
+        Returns:
+            New Formula with converted units (stub implementation)
+        """
+        # Stub: In full implementation, this would use unit conversion
+        # For now, return self as-is
+        return self

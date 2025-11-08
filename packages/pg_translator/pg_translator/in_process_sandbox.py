@@ -478,6 +478,7 @@ class InProcessSandbox:
                 """Stub for createTikZImage - creates TikZ image object."""
                 return type('TikZImage', (), {
                     'tikzLibraries': lambda *a, **k: None,
+                    'texPackages': lambda *a, **k: None,
                     'BEGIN_TIKZ': property(lambda self: ''),
                     'END_TIKZ': property(lambda self: ''),
                     'tex': lambda *a, **k: '',
@@ -797,6 +798,7 @@ class InProcessSandbox:
             """Stub for createTikZImage - creates TikZ image object."""
             return type('TikZImage', (), {
                 'tikzLibraries': lambda *a, **k: None,
+                'texPackages': lambda *a, **k: None,
                 'BEGIN_TIKZ': property(lambda self: ''),
                 'END_TIKZ': property(lambda self: ''),
                 'tex': lambda *a, **k: '',
@@ -1299,6 +1301,11 @@ class InProcessSandbox:
                 @staticmethod
                 def Allow():
                     """Stub for parser::Assignment->Allow."""
+                    pass
+
+                @staticmethod
+                def Function(*args):
+                    """Stub for parser::Assignment->Function(name)."""
                     pass
 
         # Stub for helpLink - provides links to help documentation
