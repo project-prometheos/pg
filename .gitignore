@@ -33,3 +33,9 @@ uv.lock
 apps/backend/.pytest_cache/
 coverage/
 dist/
+
+# Debugging and analysis scripts (development artifacts)
+debug_*.py
+test_*.py
+analyze_*.py
+show_*.py
