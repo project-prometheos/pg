@@ -617,24 +617,99 @@ class PGPreprocessor:
         # Transform Perl unless → if not
         line = re.sub(r'\bunless\s+', 'if not ', line)
 
+        # Transform Perl ternary operator: condition ? true_value : false_value
+        # → true_value if condition else false_value
+        # Only transform if ? appears within a clear expression context
+        if '?' in line and ':' in line and line.count('?') == 1:
+            # Find the ternary pattern: COND ? TRUE : FALSE
+            # Track depth to find ? and : at same parenthesis level
+            depth = 0
+            question_pos = -1
+            colon_pos = -1
+
+            for i, ch in enumerate(line):
+                if ch in '([{':
+                    depth += 1
+                elif ch in ')]}':
+                    depth -= 1
+                elif ch == '?' and question_pos < 0:
+                    question_pos = i
+                elif ch == ':' and depth >= 0 and question_pos > 0 and colon_pos < 0:
+                    # Check if this looks like a ternary colon (not a dict key)
+                    # Dict keys have word: pattern, ternaries have expr ? val : val
+                    if i > 0 and not (line[i-1].isalnum() or line[i-1] == '_'):
+                        colon_pos = i
+
+            # If we found both ? and :, transform the ternary expression
+            if question_pos > 0 and colon_pos > question_pos:
+                # Find the start of the ternary expression (after = , ( or start of line)
+                expr_start = 0
+                for j in range(question_pos - 1, -1, -1):
+                    if line[j] in '=,(':
+                        expr_start = j + 1
+                        break
+
+                # Find the end of the ternary expression (before ) , or end of line)
+                expr_end = len(line)
+                for j in range(colon_pos + 1, len(line)):
+                    if line[j] in ',)':
+                        expr_end = j
+                        break
+
+                # Extract components
+                condition = line[expr_start:question_pos].strip()
+                true_value = line[question_pos+1:colon_pos].strip()
+                false_value = line[colon_pos+1:expr_end].strip()
+
+                # Reconstruct with Python ternary
+                before = line[:expr_start]
+                after = line[expr_end:]
+                line = f"{before}{true_value} if {condition} else {false_value}{after}"
+
         # Transform Perl statement modifiers: STATEMENT if/unless CONDITION
         # statement if condition → if condition: statement
         # statement unless condition → if not condition: statement
-        # But be careful not to transform regular if/elsif/else blocks or comment lines
+        # But be careful not to transform regular if/elsif/else blocks, comment lines, or Python ternaries
         if re.search(r'\S+.*\s+(if|unless)\s+\S+', line) and not re.match(r'^\s*(if|elsif|else|unless|#)', line):
-            # Check if this is a statement modifier (not a block if)
-            # Statement modifiers don't have colons or blocks after them
-            match = re.search(r'^(\s*)(.+?)\s+(if|unless)\s+(.+)$', line)
-            if match and '{' not in match.group(2):  # No block in statement
-                indent = match.group(1)
-                statement = match.group(2).strip()
-                modifier = match.group(3)
-                condition = match.group(4).strip()
+            # Skip if this is a Python ternary (has 'if' with 'else' after it)
+            # Python ternary: VALUE if CONDITION else OTHER_VALUE
+            if ' if ' in line and ' else ' in line:
+                # Check if 'else' comes after 'if' (Python ternary pattern)
+                if_pos = line.find(' if ')
+                else_pos = line.find(' else ')
+                if if_pos >= 0 and else_pos > if_pos:
+                    # This is a Python ternary, don't transform
+                    pass
+                else:
+                    # Not a ternary, continue with statement modifier
+                    # Check if this is a statement modifier (not a block if)
+                    # Statement modifiers don't have colons or blocks after them
+                    match = re.search(r'^(\s*)(.+?)\s+(if|unless)\s+(.+)$', line)
+                    if match and '{' not in match.group(2):  # No block in statement
+                        indent = match.group(1)
+                        statement = match.group(2).strip()
+                        modifier = match.group(3)
+                        condition = match.group(4).strip()
 
-                if modifier == 'if':
-                    line = f"{indent}if {condition}: {statement}"
-                else:  # unless
-                    line = f"{indent}if not ({condition}): {statement}"
+                        if modifier == 'if':
+                            line = f"{indent}if {condition}: {statement}"
+                        else:  # unless
+                            line = f"{indent}if not ({condition}): {statement}"
+            else:
+                # No 'else', so can't be a Python ternary
+                # Check if this is a statement modifier (not a block if)
+                # Statement modifiers don't have colons or blocks after them
+                match = re.search(r'^(\s*)(.+?)\s+(if|unless)\s+(.+)$', line)
+                if match and '{' not in match.group(2):  # No block in statement
+                    indent = match.group(1)
+                    statement = match.group(2).strip()
+                    modifier = match.group(3)
+                    condition = match.group(4).strip()
+
+                    if modifier == 'if':
+                        line = f"{indent}if {condition}: {statement}"
+                    else:  # unless
+                        line = f"{indent}if not ({condition}): {statement}"
 
         # Transform Perl fat comma (hash key-value): key => value
         # Context-aware conversion:
