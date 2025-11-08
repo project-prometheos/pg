@@ -898,13 +898,17 @@ class InProcessSandbox:
         self.namespace['parserFunction'] = parserFunctionStub
 
     def _load_parser_macros(self) -> None:
-        """Load parser macros (PopUp, DropDown, etc.)."""
+        """Load parser macros (PopUp, DropDown, RadioMultiAnswer, LinearRelation, etc.)."""
         try:
             from pg_macros.parsers.parser_popup import PopUp, DropDown, DropDownTF
+            from pg_macros.parsers.parser_radio_multianswer import RadioMultiAnswer
+            from pg_macros.parsers.parser_linear_relation import LinearRelation
 
             self.namespace['PopUp'] = PopUp
             self.namespace['DropDown'] = DropDown
             self.namespace['DropDownTF'] = DropDownTF
+            self.namespace['RadioMultiAnswer'] = RadioMultiAnswer
+            self.namespace['LinearRelation'] = LinearRelation
         except ImportError:
             # Provide fallback stubs if not available
             class PopUpStub:
@@ -915,9 +919,26 @@ class InProcessSandbox:
                 def cmp(self):
                     return lambda x: {'correct': True, 'score': 1.0}
 
+            class RadioMultiAnswerStub:
+                def __init__(self, parts, correct, **options):
+                    self.parts = parts
+                    self.correct = correct
+
+                def cmp(self):
+                    return lambda x: {'correct': True, 'score': 1.0}
+
+            class LinearRelationStub:
+                def __init__(self, *args, **options):
+                    pass
+
+                def cmp(self):
+                    return lambda x: {'correct': True, 'score': 1.0}
+
             self.namespace['PopUp'] = PopUpStub
             self.namespace['DropDown'] = PopUpStub
             self.namespace['DropDownTF'] = lambda correct, **opts: PopUpStub(['True', 'False'], correct)
+            self.namespace['RadioMultiAnswer'] = RadioMultiAnswerStub
+            self.namespace['LinearRelation'] = LinearRelationStub
 
     def _load_statistics_macros(self) -> None:
         """Load statistics functions (stats_mean, stats_sd, stats_SX_SXX)."""
