@@ -322,6 +322,18 @@ class Real(MathValue):
         from .answer_checker import RealAnswerChecker
         return RealAnswerChecker(self, **options)
 
+    def cmp(self, **options):
+        """
+        Alias for answer_checker() - Perl compatibility.
+
+        Args:
+            **options: Checker options (tolerance, tolType)
+
+        Returns:
+            RealAnswerChecker that can check student answers
+        """
+        return self.answer_checker(**options)
+
 
 class Complex(MathValue):
     """

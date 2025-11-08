@@ -345,6 +345,105 @@ class InProcessSandbox:
                 # Return rendered HTML (which TEXT() will append)
                 return rendered_html
 
+            # Define additional stubs not in pg_core
+            def non_zero_point3D(*args):
+                """Stub for non_zero_point3D - generates non-zero 3D point."""
+                Point = self.namespace.get('Point')
+                if Point:
+                    return Point([pg_core.non_zero_random(-5, 5), pg_core.non_zero_random(-5, 5), pg_core.non_zero_random(-5, 5)])
+                return [pg_core.non_zero_random(-5, 5), pg_core.non_zero_random(-5, 5), pg_core.non_zero_random(-5, 5)]
+
+            def Matrix(*args, **kwargs):
+                """Matrix wrapper for compatibility."""
+                _Matrix = self.namespace.get('Matrix')
+                if not _Matrix:
+                    try:
+                        from pg_math.geometric import Matrix as _Matrix
+                        self.namespace['Matrix'] = _Matrix
+                    except ImportError:
+                        if len(args) == 1 and isinstance(args[0], (list, tuple)):
+                            return list(args[0])
+                        return list(args)
+                if len(args) == 1 and isinstance(args[0], (list, tuple)):
+                    return _Matrix(args[0], **kwargs)
+                return _Matrix(list(args), **kwargs)
+
+            def Graph3D(*args, **kwargs):
+                """Stub for Graph3D - 3D graphing object."""
+                return type('Graph3D', (), {
+                    'plotSurface': lambda *a, **k: None,
+                    'addCurve': lambda *a, **k: None,
+                    'addPoint': lambda *a, **k: None,
+                })()
+
+            def Plot(*args, **kwargs):
+                """Stub for Plot - 2D plotting function."""
+                return type('Plot', (), {'plot': lambda *a, **k: None})()
+
+            def COMPOSITION_ANS(*args, **kwargs):
+                """Stub for COMPOSITION_ANS - function composition answer checker."""
+                return pg_core.ANS(*args, **kwargs)
+
+            def UNORDERED_ANS(*args, **kwargs):
+                """Stub for UNORDERED_ANS - unordered answer checker."""
+                return pg_core.ANS(*args, **kwargs)
+
+            def DraggableProof(*args, **kwargs):
+                """Stub for DraggableProof - drag-and-drop proof interface."""
+                return type('DraggableProof', (), {
+                    'Print': lambda *a, **k: '',
+                    'CorrectProof': lambda *a, **k: [],
+                })()
+
+            def DraggableSubsets(*args, **kwargs):
+                """Stub for DraggableSubsets - drag-and-drop subset interface."""
+                return type('DraggableSubsets', (), {'Print': lambda *a, **k: ''})()
+
+            def CheckboxList(*args, **kwargs):
+                """Stub for CheckboxList - checkbox list interface."""
+                return '<input type="checkbox" />'
+
+            def tag(tagname, content='', **attrs):
+                """Stub for tag - HTML tag generator."""
+                attr_str = ' '.join(f'{k}="{v}"' for k, v in attrs.items())
+                if content:
+                    return f'<{tagname} {attr_str}>{content}</{tagname}>'
+                else:
+                    return f'<{tagname} {attr_str}/>'
+
+            def Round(value, decimals=0):
+                """Stub for Round - rounding function."""
+                return round(float(value), int(decimals))
+
+            def NumberWithUnits(value, units=''):
+                """Stub for NumberWithUnits - number with units."""
+                return type('NumberWithUnits', (), {
+                    'value': value,
+                    'units': units,
+                    '__str__': lambda self: f'{value} {units}',
+                })()
+
+            def ImplicitEquation(*args, **kwargs):
+                """Stub for ImplicitEquation - implicit equation parser."""
+                Formula = self.namespace.get('Formula')
+                if Formula:
+                    return Formula(str(args[0]) if args else '0')
+                return str(args[0]) if args else '0'
+
+            def SolutionFor(*args, **kwargs):
+                """Stub for SolutionFor - solution checker."""
+                Formula = self.namespace.get('Formula')
+                if Formula:
+                    return Formula(str(args[0]) if args else '0')
+                return str(args[0]) if args else '0'
+
+            def randomPerson():
+                """Stub for randomPerson - generates random person name."""
+                import random
+                first_names = ['Alice', 'Bob', 'Carol', 'David', 'Eve', 'Frank']
+                last_names = ['Smith', 'Jones', 'Brown', 'Davis', 'Miller', 'Wilson']
+                return f"{random.choice(first_names)} {random.choice(last_names)}"
+
             # Add pg_core functions to namespace
             # Register core functions
             self.namespace.update({
@@ -370,6 +469,22 @@ class InProcessSandbox:
                 'get_environment': pg_core.get_environment,
                 # Common constants
                 'SPACE': ' ',
+                # Additional stubs
+                'non_zero_point3D': non_zero_point3D,
+                'Matrix': Matrix,
+                'Graph3D': Graph3D,
+                'Plot': Plot,
+                'COMPOSITION_ANS': COMPOSITION_ANS,
+                'UNORDERED_ANS': UNORDERED_ANS,
+                'DraggableProof': DraggableProof,
+                'DraggableSubsets': DraggableSubsets,
+                'CheckboxList': CheckboxList,
+                'tag': tag,
+                'Round': Round,
+                'NumberWithUnits': NumberWithUnits,
+                'ImplicitEquation': ImplicitEquation,
+                'SolutionFor': SolutionFor,
+                'randomPerson': randomPerson,
             })
 
             # Store reference for initialization
@@ -472,6 +587,124 @@ class InProcessSandbox:
             # Just a placeholder - real implementation would add to Context
             pass
 
+        # Geometric stubs
+        def non_zero_point3D(*args):
+            """Stub for non_zero_point3D - generates non-zero 3D point."""
+            # Returns a random 3D point with no zero coordinates
+            # Access Point from namespace
+            Point = self.namespace.get('Point')
+            if Point:
+                return Point([non_zero_random(-5, 5), non_zero_random(-5, 5), non_zero_random(-5, 5)])
+            # Fallback: return list
+            return [non_zero_random(-5, 5), non_zero_random(-5, 5), non_zero_random(-5, 5)]
+
+        # Matrix constructor (wrap pg_math Matrix if available)
+        def Matrix(*args, **kwargs):
+            """Matrix wrapper for compatibility."""
+            # Try to get Matrix from namespace (loaded by _load_mathobjects)
+            _Matrix = self.namespace.get('Matrix')
+            if not _Matrix:
+                # Import if not in namespace yet
+                try:
+                    from pg_math.geometric import Matrix as _Matrix
+                    self.namespace['Matrix'] = _Matrix
+                except ImportError:
+                    # Fallback: return list of lists
+                    if len(args) == 1 and isinstance(args[0], (list, tuple)):
+                        return list(args[0])
+                    return list(args)
+            # Handle various calling conventions
+            if len(args) == 1 and isinstance(args[0], (list, tuple)):
+                return _Matrix(args[0], **kwargs)
+            return _Matrix(list(args), **kwargs)
+
+        # Graphics stubs
+        def Graph3D(*args, **kwargs):
+            """Stub for Graph3D - 3D graphing object."""
+            # Minimal stub - just return a placeholder object
+            return type('Graph3D', (), {
+                'plotSurface': lambda *a, **k: None,
+                'addCurve': lambda *a, **k: None,
+                'addPoint': lambda *a, **k: None,
+            })()
+
+        def Plot(*args, **kwargs):
+            """Stub for Plot - 2D plotting function."""
+            return type('Plot', (), {'plot': lambda *a, **k: None})()
+
+        # Special answer evaluation functions
+        def COMPOSITION_ANS(*args, **kwargs):
+            """Stub for COMPOSITION_ANS - function composition answer checker."""
+            return ANS(*args, **kwargs)
+
+        def UNORDERED_ANS(*args, **kwargs):
+            """Stub for UNORDERED_ANS - unordered answer checker."""
+            return ANS(*args, **kwargs)
+
+        # Interactive elements
+        def DraggableProof(*args, **kwargs):
+            """Stub for DraggableProof - drag-and-drop proof interface."""
+            return type('DraggableProof', (), {
+                'Print': lambda *a, **k: '',
+                'CorrectProof': lambda *a, **k: [],
+            })()
+
+        def DraggableSubsets(*args, **kwargs):
+            """Stub for DraggableSubsets - drag-and-drop subset interface."""
+            return type('DraggableSubsets', (), {
+                'Print': lambda *a, **k: '',
+            })()
+
+        def CheckboxList(*args, **kwargs):
+            """Stub for CheckboxList - checkbox list interface."""
+            return '<input type="checkbox" />'
+
+        # String/HTML utilities
+        def tag(tagname, content='', **attrs):
+            """Stub for tag - HTML tag generator."""
+            attr_str = ' '.join(f'{k}="{v}"' for k, v in attrs.items())
+            if content:
+                return f'<{tagname} {attr_str}>{content}</{tagname}>'
+            else:
+                return f'<{tagname} {attr_str}/>'
+
+        # Numeric utilities
+        def Round(value, decimals=0):
+            """Stub for Round - rounding function."""
+            return round(float(value), int(decimals))
+
+        # Units
+        def NumberWithUnits(value, units=''):
+            """Stub for NumberWithUnits - number with units."""
+            return type('NumberWithUnits', (), {
+                'value': value,
+                'units': units,
+                '__str__': lambda self: f'{value} {units}',
+            })()
+
+        # Parser utilities
+        def ImplicitEquation(*args, **kwargs):
+            """Stub for ImplicitEquation - implicit equation parser."""
+            Formula = self.namespace.get('Formula')
+            if Formula:
+                return Formula(str(args[0]) if args else '0')
+            return str(args[0]) if args else '0'
+
+        def SolutionFor(*args, **kwargs):
+            """Stub for SolutionFor - solution checker."""
+            Formula = self.namespace.get('Formula')
+            if Formula:
+                return Formula(str(args[0]) if args else '0')
+            return str(args[0]) if args else '0'
+
+        # Random utilities
+        def randomPerson():
+            """Stub for randomPerson - generates random person name."""
+            import random
+            first_names = ['Alice', 'Bob', 'Carol', 'David', 'Eve', 'Frank']
+            last_names = ['Smith', 'Jones', 'Brown', 'Davis', 'Miller', 'Wilson']
+            return f"{random.choice(first_names)} {random.choice(last_names)}"
+
         self.namespace.update({
             'DOCUMENT': DOCUMENT,
             'ENDDOCUMENT': ENDDOCUMENT,
@@ -493,6 +726,30 @@ class InProcessSandbox:
             'parserFunction': parserFunction,
             'get_environment': get_environment,
             'set_environment': set_environment,
+            # Geometric stubs
+            'non_zero_point3D': non_zero_point3D,
+            'Matrix': Matrix,
+            # Graphics
+            'Graph3D': Graph3D,
+            'Plot': Plot,
+            # Special answer evaluation
+            'COMPOSITION_ANS': COMPOSITION_ANS,
+            'UNORDERED_ANS': UNORDERED_ANS,
+            # Interactive elements
+            'DraggableProof': DraggableProof,
+            'DraggableSubsets': DraggableSubsets,
+            'CheckboxList': CheckboxList,
+            # String/HTML utilities
+            'tag': tag,
+            # Numeric utilities
+            'Round': Round,
+            # Units
+            'NumberWithUnits': NumberWithUnits,
+            # Parser utilities
+            'ImplicitEquation': ImplicitEquation,
+            'SolutionFor': SolutionFor,
+            # Random utilities
+            'randomPerson': randomPerson,
             # Add a dummy macro loader to suppress warnings
             # Macros are pre-loaded, so this just prevents the warning
             '_macro_loader': type('DummyLoader', (), {'load_macro': lambda self, x: None})(),

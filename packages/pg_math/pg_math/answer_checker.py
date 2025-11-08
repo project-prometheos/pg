@@ -222,3 +222,109 @@ class RealAnswerChecker(AnswerChecker):
                 'correct': False,
                 'message': f'Expected {self.correct_value.value}, got {student_value}'
             }
+
+
+class VectorAnswerChecker(AnswerChecker):
+    """
+    Answer checker for Vector objects.
+
+    Compares vectors component-wise with tolerance or uses custom checker.
+    """
+
+    def __init__(self, correct_value, **options):
+        """
+        Create a VectorAnswerChecker.
+
+        Args:
+            correct_value: The correct Vector
+            **options: Checker options (tolerance, tolType, checker)
+        """
+        super().__init__(correct_value, **options)
+        # Custom checker function (if provided)
+        self.custom_checker = options.get('checker', None)
+        # Get tolerance from options (stub - not fully implemented)
+        self.tolerance = options.get('tolerance', 0.001)
+
+    def __call__(self, student_answer: str) -> Dict[str, Any]:
+        """Allow checker to be called as a function."""
+        return self.check(student_answer)
+
+    def check(self, student_answer: str) -> Dict[str, Any]:
+        """
+        Check if student answer matches correct answer.
+
+        If custom checker is provided, use it. Otherwise, do component-wise comparison.
+
+        Args:
+            student_answer: Student's answer (string or Vector)
+
+        Returns:
+            dict with 'score', 'correct' keys, and optional 'message'
+        """
+        from .geometric import Vector
+
+        # Parse student answer if it's a string
+        if isinstance(student_answer, str):
+            # Stub: For now, just return 0 if custom checker not provided
+            # Full implementation would parse the string to a Vector
+            if self.custom_checker is None:
+                return {
+                    'score': 0.0,
+                    'correct': False,
+                    'message': 'Vector parsing not fully implemented'
+                }
+            # For custom checker, we'd need to parse and call it
+            return {
+                'score': 0.0,
+                'correct': False,
+                'message': 'String vector parsing stub'
+            }
+
+        # If custom checker provided, use it
+        if self.custom_checker is not None:
+            try:
+                # Call custom checker: checker(correct, student, ansHash)
+                # ansHash is a stub object for now
+                ans_hash = {'correct_ans': self.correct_value}
+                result = self.custom_checker(self.correct_value, student_answer, ans_hash)
+                # Custom checker returns 0 or 1
+                score = float(result) if isinstance(result, (int, float)) else 0.0
+                return {
+                    'score': score,
+                    'correct': score >= 1.0
+                }
+            except Exception as e:
+                return {
+                    'score': 0.0,
+                    'correct': False,
+                    'message': f'Custom checker error: {e}'
+                }
+
+        # Default: component-wise comparison
+        if not isinstance(student_answer, Vector):
+            return {
+                'score': 0.0,
+                'correct': False,
+                'message': 'Student answer is not a Vector'
+            }
+
+        # Compare dimensions
+        if len(self.correct_value.components) != len(student_answer.components):
+            return {
+                'score': 0.0,
+                'correct': False,
+                'message': 'Vector dimensions do not match'
+            }
+
+        # Compare component-wise using compare method
+        if self.correct_value.compare(student_answer, self.tolerance):
+            return {
+                'score': 1.0,
+                'correct': True
+            }
+        else:
+            return {
+                'score': 0.0,
+                'correct': False,
+                'message': 'Vectors do not match'
+            }

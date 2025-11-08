@@ -324,6 +324,31 @@ class Vector(MathValue):
         """Check if vectors are orthogonal (perpendicular)."""
         return abs(self.dot(other).value) < tolerance
 
+    def answer_checker(self, **options):
+        """
+        Create an answer checker for this Vector.
+
+        Args:
+            **options: Checker options (tolerance, tolType, checker)
+
+        Returns:
+            VectorAnswerChecker that can check student answers
+        """
+        from .answer_checker import VectorAnswerChecker
+        return VectorAnswerChecker(self, **options)
+
+    def cmp(self, **options):
+        """
+        Alias for answer_checker() - Perl compatibility.
+
+        Args:
+            **options: Checker options (tolerance, tolType, checker)
+
+        Returns:
+            VectorAnswerChecker that can check student answers
+        """
+        return self.answer_checker(**options)
+
     # Arithmetic operators
 
     def __add__(self, other: Any) -> Vector:
