@@ -518,6 +518,58 @@ class PGPreprocessor:
 
                 continue
 
+            # Check for inline if-else statements: if (cond) { stmt; } else { stmt; }
+            # Python requires these on separate lines with indentation
+            # Pattern: if (condition) { statements } else { statements }
+            inline_if_match = re.match(r'^(\s*)if\s*\(([^)]+)\)\s*\{([^}]+)\}\s*else\s*\{([^}]+)\}', original_line)
+            if inline_if_match:
+                indent = inline_if_match.group(1)
+                condition = inline_if_match.group(2).strip()
+                if_body = inline_if_match.group(3).strip()
+                else_body = inline_if_match.group(4).strip()
+
+                # Transform condition and bodies
+                transformed_condition = self._transform_line(condition)
+
+                # Split bodies by semicolon
+                if_statements = [s.strip() for s in if_body.split(';') if s.strip()]
+                else_statements = [s.strip() for s in else_body.split(';') if s.strip()]
+
+                # Generate Python if-else block
+                output_lines.append(f'{indent}if ({transformed_condition}):')
+                for stmt in if_statements:
+                    transformed_stmt = self._transform_line(stmt)
+                    output_lines.append(f'{indent}    {transformed_stmt}')
+                output_lines.append(f'{indent}else:')
+                for stmt in else_statements:
+                    transformed_stmt = self._transform_line(stmt)
+                    output_lines.append(f'{indent}    {transformed_stmt}')
+
+                i += 1
+                continue
+
+            # Check for inline if statements (no else): if (cond) { stmt; }
+            inline_if_only_match = re.match(r'^(\s*)if\s*\(([^)]+)\)\s*\{([^}]+)\}(?!\s*else)', original_line)
+            if inline_if_only_match:
+                indent = inline_if_only_match.group(1)
+                condition = inline_if_only_match.group(2).strip()
+                if_body = inline_if_only_match.group(3).strip()
+
+                # Transform condition and body
+                transformed_condition = self._transform_line(condition)
+
+                # Split body by semicolon
+                if_statements = [s.strip() for s in if_body.split(';') if s.strip()]
+
+                # Generate Python if block
+                output_lines.append(f'{indent}if ({transformed_condition}):')
+                for stmt in if_statements:
+                    transformed_stmt = self._transform_line(stmt)
+                    output_lines.append(f'{indent}    {transformed_stmt}')
+
+                i += 1
+                continue
+
             # Check for inline for-loop statements: for VAR in EXPR: stmt1; stmt2; ...
             # Python requires these on separate lines with indentation
             inline_for_match = re.match(r'^(\s*)(for\s+\w+\s+in\s+[^:]+):\s*(.+)', original_line)
