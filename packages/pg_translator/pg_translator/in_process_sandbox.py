@@ -474,6 +474,22 @@ class InProcessSandbox:
                     'plot': lambda *a, **k: None,
                 })()
 
+            def createTikZImage(*args, **kwargs):
+                """Stub for createTikZImage - creates TikZ image object."""
+                return type('TikZImage', (), {
+                    'tikzLibraries': lambda *a, **k: None,
+                    'BEGIN_TIKZ': property(lambda self: ''),
+                    'END_TIKZ': property(lambda self: ''),
+                    'tex': lambda *a, **k: '',
+                })()
+
+            def Line(*points, **kwargs):
+                """Stub for Line - geometric line through points."""
+                return type('Line', (), {
+                    '__str__': lambda self: 'Line',
+                    'evaluate': lambda self, t: points[0] if points else (0, 0, 0),
+                })()
+
             # Perl compatibility values
             def undef():
                 """Stub for Perl's undef - returns None."""
@@ -511,6 +527,8 @@ class InProcessSandbox:
                 'Graph3D': Graph3D,
                 'Plot': Plot,
                 'VectorField3D': VectorField3D,
+                'createTikZImage': createTikZImage,
+                'Line': Line,
                 'COMPOSITION_ANS': COMPOSITION_ANS,
                 'UNORDERED_ANS': UNORDERED_ANS,
                 'DraggableProof': DraggableProof,
@@ -775,6 +793,22 @@ class InProcessSandbox:
                 'plot': lambda *a, **k: None,
             })()
 
+        def createTikZImage(*args, **kwargs):
+            """Stub for createTikZImage - creates TikZ image object."""
+            return type('TikZImage', (), {
+                'tikzLibraries': lambda *a, **k: None,
+                'BEGIN_TIKZ': property(lambda self: ''),
+                'END_TIKZ': property(lambda self: ''),
+                'tex': lambda *a, **k: '',
+            })()
+
+        def Line(*points, **kwargs):
+            """Stub for Line - geometric line through points."""
+            return type('Line', (), {
+                '__str__': lambda self: 'Line',
+                'evaluate': lambda self, t: points[0] if points else (0, 0, 0),
+            })()
+
         # Perl compatibility values
         def undef():
             """Stub for Perl's undef - returns None."""
@@ -809,6 +843,8 @@ class InProcessSandbox:
             'Graph3D': Graph3D,
             'Plot': Plot,
             'VectorField3D': VectorField3D,
+            'createTikZImage': createTikZImage,
+            'Line': Line,
             # Special answer evaluation
             'COMPOSITION_ANS': COMPOSITION_ANS,
             'UNORDERED_ANS': UNORDERED_ANS,

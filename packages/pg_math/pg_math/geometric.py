@@ -233,6 +233,18 @@ class Vector(MathValue):
         """Convert to NumPy array."""
         return np.array(self.to_python())
 
+    @property
+    def value(self) -> list[float]:
+        """
+        Get the numeric value of the vector as a list.
+
+        Perl compatibility property - returns the components as Python values.
+
+        Returns:
+            List of float values
+        """
+        return self.to_python()
+
     def __len__(self) -> int:
         """Dimension of the vector."""
         return len(self.components)
