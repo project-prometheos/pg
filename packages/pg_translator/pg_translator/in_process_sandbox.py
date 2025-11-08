@@ -626,11 +626,11 @@ class InProcessSandbox:
         # IMPORTANT: Reset Context to prevent variable pollution
         # Context is a global singleton that persists between problems
         try:
-            from pg_mathobjects import Context
+            from pg_math.context import get_context
             # Force creation of fresh Numeric context
-            Context('Numeric')
+            get_context('Numeric')
         except ImportError:
-            pass  # pg_mathobjects not available
+            pass  # pg_math not available
 
         # Set random seed
         import random as _random_module

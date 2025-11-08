@@ -8,8 +8,6 @@ Provides stub implementations for various context macros like:
 etc.
 """
 
-from pg_math.context import Context as BaseContext
-
 
 def Context(name: str = 'Numeric'):
     """
@@ -24,26 +22,13 @@ def Context(name: str = 'Numeric'):
     - 'Interval'
     - 'String'
 
-    For now, most specialized contexts just return the base Numeric context
-    with appropriate flags set.
+    Delegates to pg_math.context.get_context for proper context switching.
     """
-    # Get the base context
-    ctx = BaseContext(name if name == 'Numeric' else 'Numeric')
+    # Import get_context to properly set the current context
+    from pg_math.context import get_context
 
-    # Set context-specific flags
-    if 'Fraction' in name:
-        # Fraction contexts should not allow decimals
-        if 'NoDecimals' in name:
-            ctx.flags['allowDecimals'] = False
-        ctx.flags['reduceFractions'] = True
-
-        if 'Limited' in name:
-            ctx.flags['strictFractions'] = True
-
-        if 'Proper' in name:
-            ctx.flags['requireProperFractions'] = True
-
-    return ctx
+    # Use get_context which properly sets and returns the context
+    return get_context(name)
 
 
 # Export for macro loading

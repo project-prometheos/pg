@@ -280,9 +280,9 @@ class ContextFlags:
         """Set flag values."""
         self._flags.update(kwargs)
 
-    def get(self, name: str) -> Any:
-        """Get flag value."""
-        return self._flags.get(name)
+    def get(self, name: str, default: Any = None) -> Any:
+        """Get flag value with optional default."""
+        return self._flags.get(name, default)
 
     def copy(self):
         """Create a copy of this flags object."""
