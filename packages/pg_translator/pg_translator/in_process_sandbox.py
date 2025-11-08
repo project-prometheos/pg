@@ -352,6 +352,8 @@ class InProcessSandbox:
                 'PGEnvironment': pg_core.PGEnvironment,
                 'set_environment': pg_core.set_environment,
                 'get_environment': pg_core.get_environment,
+                # Common constants
+                'SPACE': ' ',
             })
 
             # Store reference for initialization
@@ -549,12 +551,16 @@ class InProcessSandbox:
         def PI(): return math.pi
         def E(): return math.e
 
+        # Common constants
+        SPACE = ' '
+
         self.namespace.update({
             'ans_rule': ans_rule,
             'ans_box': ans_box,
             'beginproblem': beginproblem,
             'PAR': PAR,
             'BR': BR,
+            'SPACE': SPACE,
             'BBOLD': BBOLD,
             'EBOLD': EBOLD,
             'BITALIC': BITALIC,
@@ -933,15 +939,16 @@ class InProcessSandbox:
         self.namespace['parserFunction'] = parserFunctionStub
 
     def _load_parser_macros(self) -> None:
-        """Load parser macros (PopUp, DropDown, RadioMultiAnswer, LinearRelation, etc.)."""
+        """Load parser macros (PopUp, DropDown, RadioButtons, RadioMultiAnswer, LinearRelation, etc.)."""
         try:
-            from pg_macros.parsers.parser_popup import PopUp, DropDown, DropDownTF
+            from pg_macros.parsers.parser_popup import PopUp, DropDown, DropDownTF, RadioButtons
             from pg_macros.parsers.parser_radio_multianswer import RadioMultiAnswer
             from pg_macros.parsers.parser_linear_relation import LinearRelation
 
             self.namespace['PopUp'] = PopUp
             self.namespace['DropDown'] = DropDown
             self.namespace['DropDownTF'] = DropDownTF
+            self.namespace['RadioButtons'] = RadioButtons
             self.namespace['RadioMultiAnswer'] = RadioMultiAnswer
             self.namespace['LinearRelation'] = LinearRelation
         except ImportError:
@@ -972,6 +979,7 @@ class InProcessSandbox:
             self.namespace['PopUp'] = PopUpStub
             self.namespace['DropDown'] = PopUpStub
             self.namespace['DropDownTF'] = lambda correct, **opts: PopUpStub(['True', 'False'], correct)
+            self.namespace['RadioButtons'] = PopUpStub
             self.namespace['RadioMultiAnswer'] = RadioMultiAnswerStub
             self.namespace['LinearRelation'] = LinearRelationStub
 

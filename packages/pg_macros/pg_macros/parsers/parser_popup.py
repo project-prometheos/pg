@@ -109,3 +109,29 @@ def DropDownTF(correct: Any, **options) -> DropDown:
         options['showInStatic'] = 0
 
     return DropDown(['True', 'False'], correct_value, **options)
+
+
+class RadioButtons(PopUp):
+    """
+    Radio button menu object for multiple choice answers.
+
+    Similar to PopUp but presents choices as radio buttons instead of a dropdown.
+    """
+
+    def __init__(self, choices: list, correct: Any, **options):
+        """
+        Create a radio button menu.
+
+        Args:
+            choices: List of choice strings (can include nested lists for randomization)
+            correct: Correct answer (string or index)
+            **options: Additional options (separator, labels, etc.)
+
+        Example:
+            RadioButtons(['Red', 'Blue', 'Green'], 'Blue')
+            RadioButtons([['Red', 'Blue'], 'Green'], 1, separator=' ')
+        """
+        super().__init__(choices, correct, **options)
+
+    def __str__(self):
+        return f"RadioButtons({self.choices}, {self.correct_value})"

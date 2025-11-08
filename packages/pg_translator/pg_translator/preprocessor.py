@@ -665,6 +665,12 @@ class PGPreprocessor:
         # Match: 'str' . 'str' or var . 'str' or 'str' . var
         line = re.sub(r'(\)|\'|\"|\w)\s+\.\s+(\(|\'|\"|\w)', r'\1 + \2', line)
 
+        # Transform Perl string repetition operator: x → *
+        # Match: 'str' x 3 or var x num
+        # Use word boundaries to avoid matching variable named 'x'
+        # Pattern: (value) x (number) where x is surrounded by spaces
+        line = re.sub(r'(\)|\'|\"|\w)\s+x\s+(\d+|\w+)', r'\1 * \2', line)
+
         # Note: do-while/do-until loops are handled in main preprocess loop
         # to allow multi-line output
 
