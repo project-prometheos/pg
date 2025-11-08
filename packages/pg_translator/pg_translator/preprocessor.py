@@ -116,20 +116,25 @@ class PGPreprocessor:
                     should_join = False
 
                     # Case 1: Line ends with = or , or ( or [
-                    if stripped and stripped[-1] in '=,([':
+                    # Strip inline comments first to check actual ending
+                    stripped_no_comment = self._strip_inline_comment(stripped)
+                    if stripped_no_comment and stripped_no_comment[-1] in '=,([':
                         if next_line and next_line[0] in ' \t':
                             should_join = True
 
-                    # Case 2: Unmatched parentheses/brackets
+                    # Case 2: Unmatched parentheses/brackets (check without comments)
                     if not should_join:
-                        open_count = stripped.count('(') + stripped.count('[') + stripped.count('{')
-                        close_count = stripped.count(')') + stripped.count(']') + stripped.count('}')
+                        check_line = self._strip_inline_comment(stripped)
+                        open_count = check_line.count('(') + check_line.count('[') + check_line.count('{')
+                        close_count = check_line.count(')') + check_line.count(']') + check_line.count('}')
                         if open_count > close_count:
                             should_join = True
 
                     if should_join and next_line.strip():
-                        # Join the lines (preserve comment markers with lstrip(' \t'))
-                        original_line = original_line.rstrip() + ' ' + next_line.lstrip(' \t')
+                        # Strip inline comment from current line before joining
+                        # to prevent comment from eating subsequent joined content
+                        line_without_comment = self._strip_inline_comment(original_line.rstrip())
+                        original_line = line_without_comment + ' ' + next_line.lstrip(' \t')
                         i += 1
                     else:
                         break
@@ -851,6 +856,54 @@ class PGPreprocessor:
         text = text.replace("'''", r"\'\'\'")
         text = text.replace('"""', r'\"\"\"')
         return text
+
+    def _strip_inline_comment(self, line: str) -> str:
+        """
+        Remove inline Perl/Python comments from a line.
+
+        This is needed when joining multi-line statements to prevent comments
+        from eating subsequent code. For example:
+            func(arg1,    # comment
+                 arg2)
+        Should become:
+            func(arg1, arg2)
+        Not:
+            func(arg1,    # comment arg2)
+
+        Args:
+            line: Line potentially containing # comment
+
+        Returns:
+            Line with inline comment removed, trailing whitespace stripped
+        """
+        # Find # that's not inside a string
+        in_string = False
+        string_char = None
+        escaped = False
+
+        for i, char in enumerate(line):
+            if escaped:
+                escaped = False
+                continue
+
+            if char == '\\':
+                escaped = True
+                continue
+
+            if char in ('"', "'"):
+                if not in_string:
+                    in_string = True
+                    string_char = char
+                elif char == string_char:
+                    in_string = False
+                    string_char = None
+
+            elif char == '#' and not in_string:
+                # Found comment start - return everything before it
+                return line[:i].rstrip()
+
+        # No comment found
+        return line.rstrip()
 
     def _transform_pgml_evaluators(self, pgml_content: str) -> str:
         """
