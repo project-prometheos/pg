@@ -576,6 +576,71 @@ class PGPreprocessor:
         line = line.replace('->with(', '.with_params(')
         line = line.replace('->', '.')
 
+        # Transform Perl hash/dict operator: => → = (for kwargs) or : (for dict literals)
+        # Context-dependent transformation:
+        # - Inside {} braces: => becomes : for dict literals
+        # - In function calls: name => value becomes name=value for keyword arguments
+        # - As array separator: => becomes ,
+        def replace_hash_arrow(text: str) -> str:
+            """Replace => appropriately based on context."""
+            result = []
+            i = 0
+            in_string = False
+            string_char = None
+            escaped = False
+            brace_depth = 0  # Track {} braces for dict literals
+
+            while i < len(text):
+                char = text[i]
+
+                if escaped:
+                    result.append(char)
+                    escaped = False
+                    i += 1
+                    continue
+
+                if char == '\\':
+                    result.append(char)
+                    escaped = True
+                    i += 1
+                    continue
+
+                if char in ('"', "'"):
+                    if not in_string:
+                        in_string = True
+                        string_char = char
+                    elif char == string_char:
+                        in_string = False
+                        string_char = None
+                    result.append(char)
+                    i += 1
+                    continue
+
+                # Track brace depth outside strings
+                if not in_string:
+                    if char == '{':
+                        brace_depth += 1
+                    elif char == '}':
+                        brace_depth -= 1
+
+                # Check for => outside of strings
+                if not in_string and i + 1 < len(text) and text[i:i+2] == '=>':
+                    # Inside {} braces: dict literal, use :
+                    # Outside braces: keyword argument, use =
+                    if brace_depth > 0:
+                        result.append(':')
+                    else:
+                        result.append('=')
+                    i += 2
+                    continue
+
+                result.append(char)
+                i += 1
+
+            return ''.join(result)
+
+        line = replace_hash_arrow(line)
+
         # Transform Perl string comparison operators (must be done carefully)
         # eq → == (string equality)
         # ne → != (string inequality)
