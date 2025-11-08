@@ -132,6 +132,13 @@ class PGPreprocessor:
                             if next_stripped[0] == '.' or (next_stripped[0] in '+-' and len(next_stripped) > 1 and next_stripped[1] in ' \t"\''):
                                 should_join = True
 
+                    # Case 2b: Next line starts with -> (Perl method chaining)
+                    # This handles: $obj = Func(...) \n ->method(...)
+                    if not should_join:
+                        next_stripped = next_line.lstrip(' \t')
+                        if next_stripped and next_stripped.startswith('->'):
+                            should_join = True
+
                     # Case 3: Unmatched parentheses/brackets (check without comments)
                     if not should_join:
                         check_line = self._strip_inline_comment(stripped)
@@ -795,10 +802,17 @@ class PGPreprocessor:
         # Transform Perl string concatenation operator: ' . ' → ' + '
         # Only when surrounded by spaces or between string literals/variables
         # Match: 'str' . 'str' or var . 'str' or 'str' . var
-        line = re.sub(r'(\)|\'|\"|\w)\s+\.\s+(\(|\'|\"|\w)', r'\1 + \2', line)
+        # Special handling for expressions: wrap non-string operands in str()
+        # Case 1: When second operand is ( expression ), wrap in str()
+        line = re.sub(r'(\)|\'|\"|\w)\s+\.\s+(\([^)]+\))', r'\1 + str(\2)', line)
+        # Case 2: Regular concatenation with strings/variables
+        line = re.sub(r'(\)|\'|\"|\w)\s+\.\s+(\'|\"|\w)', r'\1 + \2', line)
 
         # Also handle continuation lines starting with . (Perl string concat)
         # Match: ^\s+. "string" and convert to + "string"
+        # If it's . (expr), wrap in str()
+        line = re.sub(r'^(\s+)\.\s+(\([^)]+\))', r'\1+ str(\2)', line)
+        # Otherwise just convert . to +
         line = re.sub(r'^(\s+)\.\s+', r'\1+ ', line)
 
         # Transform Perl string repetition operator: x → *
