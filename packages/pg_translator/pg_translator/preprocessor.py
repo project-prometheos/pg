@@ -54,6 +54,7 @@ class PGPreprocessor:
         "HINT": (r"BEGIN_HINT\s*$", r"^END_HINT"),
         "PGML_SOLUTION": (r"BEGIN_PGML_SOLUTION\s*$", r"^END_PGML_SOLUTION"),
         "PGML_HINT": (r"BEGIN_PGML_HINT\s*$", r"^END_PGML_HINT"),
+        "TIKZ": (r"BEGIN_TIKZ\s*$", r"^END_TIKZ"),
     }
 
     def preprocess(self, pg_source: str, use_sandbox_macros: bool = True) -> PreprocessResult:
@@ -441,6 +442,20 @@ class PGPreprocessor:
                             output_lines.append(f"HINT(PGML({block_var}))")
                         else:
                             output_lines.append(f"TEXT(PGML({block_var}))")
+                    elif block_type == "TIKZ":
+                        # TIKZ blocks - raw strings with backslashes preserved
+                        # TikZ contains TeX/TikZ code that should NOT be transformed
+                        # Store as raw string to preserve backslashes
+                        block_var = f"tikz_block_{len(text_blocks) - 1}"
+                        # Use raw string (r'''...''') to preserve backslashes
+                        escaped_content = block_content.replace("'''", r"\'\'\'")
+                        output_lines.append(
+                            f"{block_var} = r'''\\n{escaped_content}\\n'''"
+                        )
+                        # TikZ blocks are typically assigned to a variable or method
+                        # The previous line should have the assignment target
+                        # For now, just skip output - the raw string is stored
+                        # output_lines.append(f"# TikZ block stored in {block_var}")
                     else:
                         # Plain TEXT blocks - convert to TEXT() calls
                         transformed_content = self._transform_text_block(
@@ -577,6 +592,33 @@ class PGPreprocessor:
         line = line.replace('->with(', '.with_params(')
         # Don't split method names starting with 'with' - they're valid Python identifiers
         line = line.replace('->', '.')
+
+        # Transform chained hash access: .{key} or ){key} → ['key']
+        # After -> to . conversion, Context()->{error}{msg} becomes Context().{error}.{msg}
+        # We need to convert .{key} and ){key} patterns to ['key']
+        # This handles: Context().{error} → Context()['error']
+        #               obj.{key1}.{key2} → obj['key1']['key2']
+        # Handle quoted keys: {'key'} → ['key'] (don't double-quote)
+        # Need to capture the dot to remove it: .{key} → ['key'] not .['key']
+        def transform_hash_access(match):
+            prefix = match.group(1)
+            key = match.group(2)
+            # Check if key is already quoted
+            if (key.startswith("'") and key.endswith("'")) or (key.startswith('"') and key.endswith('"')):
+                bracket = f"[{key}]"
+            else:
+                bracket = f"['{key}']"
+            # If prefix is '.', replace it; otherwise keep it
+            if prefix == '.':
+                return bracket
+            else:
+                return prefix + bracket
+
+        while True:
+            new_line = re.sub(r"([.\)\]'])\{([^}]+)\}", transform_hash_access, line)
+            if new_line == line:
+                break
+            line = new_line
 
         # Transform Perl hash/dict operator: => → = (for kwargs) or : (for dict literals)
         # Context-dependent transformation:
