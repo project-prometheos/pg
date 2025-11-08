@@ -640,6 +640,15 @@ class InProcessSandbox:
                 'UNORDERED_ANS': UNORDERED_ANS,
                 'nicestring': nicestring,
                 'GraphTool': GraphTool,
+                # GraphTool object type constants (used in f-strings)
+                'point': 'point',
+                'solid': 'solid',
+                'cubic': 'cubic',
+                'line': 'line',
+                'circle': 'circle',
+                'parabola': 'parabola',
+                'vector': 'vector',
+                'interval': 'interval',
                 'DraggableProof': DraggableProof,
                 'DraggableSubsets': DraggableSubsets,
                 'CheckboxList': CheckboxList,
@@ -1058,6 +1067,15 @@ class InProcessSandbox:
             # Formatting utilities
             'nicestring': nicestring,
             'GraphTool': GraphTool,
+            # GraphTool object type constants (used in f-strings)
+            'point': 'point',
+            'solid': 'solid',
+            'cubic': 'cubic',
+            'line': 'line',
+            'circle': 'circle',
+            'parabola': 'parabola',
+            'vector': 'vector',
+            'interval': 'interval',
             # Perl compatibility
             'undef': undef,
             # Add a dummy macro loader to suppress warnings

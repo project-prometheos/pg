@@ -123,7 +123,16 @@ class PGPreprocessor:
                         if next_line and next_line[0] in ' \t':
                             should_join = True
 
-                    # Case 2: Unmatched parentheses/brackets (check without comments)
+                    # Case 2: Next line starts with binary operator (., +, -, etc.) for continuation
+                    # This handles Perl string concatenation: "str" \n . "more"
+                    if not should_join:
+                        next_stripped = next_line.lstrip(' \t')
+                        if next_stripped and next_stripped[0] in '.+-':
+                            # Make sure it's not a unary minus or method call
+                            if next_stripped[0] == '.' or (next_stripped[0] in '+-' and len(next_stripped) > 1 and next_stripped[1] in ' \t"\''):
+                                should_join = True
+
+                    # Case 3: Unmatched parentheses/brackets (check without comments)
                     if not should_join:
                         check_line = self._strip_inline_comment(stripped)
                         open_count = check_line.count('(') + check_line.count('[') + check_line.count('{')
@@ -787,6 +796,10 @@ class PGPreprocessor:
         # Only when surrounded by spaces or between string literals/variables
         # Match: 'str' . 'str' or var . 'str' or 'str' . var
         line = re.sub(r'(\)|\'|\"|\w)\s+\.\s+(\(|\'|\"|\w)', r'\1 + \2', line)
+
+        # Also handle continuation lines starting with . (Perl string concat)
+        # Match: ^\s+. "string" and convert to + "string"
+        line = re.sub(r'^(\s+)\.\s+', r'\1+ ', line)
 
         # Transform Perl string repetition operator: x → *
         # Match: 'str' x 3 or var x num
