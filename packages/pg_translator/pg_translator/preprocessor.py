@@ -573,7 +573,9 @@ class PGPreprocessor:
 
         # Transform Perl method call operator: -> → .
         # Special case: ->with( becomes .with_params( to avoid Python keyword
+        # But preserve method names like ->withPostFilter(, ->withUnitsFor(, etc.
         line = line.replace('->with(', '.with_params(')
+        # Don't split method names starting with 'with' - they're valid Python identifiers
         line = line.replace('->', '.')
 
         # Transform Perl hash/dict operator: => → = (for kwargs) or : (for dict literals)
@@ -681,12 +683,12 @@ class PGPreprocessor:
             line
         )
 
-        # Special case: Wrap [ ... ], [ ... ] pairs in parens for function arguments
+        # Special case: Wrap [ ... ], [ ... ] pairs in parens for AnswerHints
         # After transforming ] => [ to ], [ we need to wrap in parens to make a tuple
-        # This is for AnswerHints( [ arr1 ], [ arr2 ] ) patterns
-        # Only wrap if it looks like a function argument context (after opening paren or comma)
-        if '], [' in line and '(' in line:
-            # Simple heuristic: wrap standalone [ ... ], [ ... ] patterns in parens
+        # This is ONLY for AnswerHints( [ arr1 ], [ arr2 ] ) patterns, not all functions
+        # Other functions like random_coprime expect separate arguments, not a tuple
+        if '], [' in line and 'AnswerHints' in line:
+            # Wrap [ ... ], [ ... ] patterns in AnswerHints calls
             # Match: [ ... ], [ ... ] where arrays can span lines (use non-greedy)
             line = re.sub(
                 r'(\(|\,)\s*(\[(?:[^\[\]]|\[[^\]]*\])*\])\s*,\s*(\[(?:[^\[\]]|\[[^\]]*\])*\])',

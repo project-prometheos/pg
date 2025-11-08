@@ -446,6 +446,7 @@ class InProcessSandbox:
         def random_coprime(*arrays):
             """Stub for random_coprime."""
             import math
+            import random
             from itertools import product
             if not arrays:
                 return ()
@@ -460,7 +461,7 @@ class InProcessSandbox:
                 return (list_random(*list_arrays[0]),)
             all_tuples = list(product(*list_arrays))
             coprime = [t for t in all_tuples if math.gcd(*[abs(x) for x in t]) == 1]
-            return list_random(*coprime) if coprime else tuple([0] * len(list_arrays))
+            return random.choice(coprime) if coprime else tuple([0] * len(list_arrays))
 
         def loadMacros(*args): pass
         def get_environment(): return _env
