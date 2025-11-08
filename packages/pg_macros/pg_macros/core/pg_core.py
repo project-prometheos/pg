@@ -598,13 +598,19 @@ def random(low: float = 0, high: float = 1, step: float | None = None) -> float:
     """
     Generate random number.
 
+    When low and high are both integers and step is None, returns an integer.
+    Otherwise returns a float.
+
     Reference: PGauxiliaryFunctions.pl::random
     """
     env = get_environment()
     if step is not None:
-        # Discrete random
+        # Discrete random with explicit step
         n_steps = int((high - low) / step) + 1
         return low + env.rng.randrange(n_steps) * step
+    elif isinstance(low, int) and isinstance(high, int):
+        # Integer range - return random integer (Perl behavior)
+        return env.rng.randint(low, high)
     else:
         # Continuous random
         return env.rng.uniform(low, high)
