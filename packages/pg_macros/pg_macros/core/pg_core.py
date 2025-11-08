@@ -654,14 +654,25 @@ def random_coprime(*arrays) -> tuple:
     if not arrays:
         raise ValueError("random_coprime requires at least one array")
 
+    # Convert all arrays to lists (handles range objects from Perl [1..n] syntax)
+    # Also expand list-wrapped ranges like [range(1, 13)]
+    def expand_array(arr):
+        """Expand array, handling nested range objects."""
+        expanded = list(arr)
+        # If result is a list containing a single range object, expand it
+        if len(expanded) == 1 and isinstance(expanded[0], range):
+            return list(expanded[0])
+        return expanded
+
+    list_arrays = [expand_array(arr) for arr in arrays]
+
     # Handle single array - return random element
-    if len(arrays) == 1:
-        arr = list(arrays[0]) if not isinstance(arrays[0], list) else arrays[0]
-        return (list_random(*arr),) if len(arr) > 0 else ()
+    if len(list_arrays) == 1:
+        return (list_random(*list_arrays[0]),) if len(list_arrays[0]) > 0 else ()
 
     # Build all possible tuples
     from itertools import product
-    all_tuples = list(product(*arrays))
+    all_tuples = list(product(*list_arrays))
 
     # Filter to coprime tuples (gcd of all elements == 1)
     def is_coprime(tup):

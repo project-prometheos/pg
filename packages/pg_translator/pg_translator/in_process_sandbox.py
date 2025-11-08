@@ -431,11 +431,18 @@ class InProcessSandbox:
             from itertools import product
             if not arrays:
                 return ()
-            if len(arrays) == 1:
-                return (list_random(*arrays[0]),)
-            all_tuples = list(product(*arrays))
+            # Convert all arrays to lists, expanding list-wrapped ranges
+            def expand_array(arr):
+                expanded = list(arr)
+                if len(expanded) == 1 and isinstance(expanded[0], range):
+                    return list(expanded[0])
+                return expanded
+            list_arrays = [expand_array(arr) for arr in arrays]
+            if len(list_arrays) == 1:
+                return (list_random(*list_arrays[0]),)
+            all_tuples = list(product(*list_arrays))
             coprime = [t for t in all_tuples if math.gcd(*[abs(x) for x in t]) == 1]
-            return list_random(*coprime) if coprime else tuple([0] * len(arrays))
+            return list_random(*coprime) if coprime else tuple([0] * len(list_arrays))
 
         def loadMacros(*args): pass
         def get_environment(): return _env
