@@ -381,11 +381,12 @@ class InProcessSandbox:
 
             def Matrix(*args, **kwargs):
                 """Matrix wrapper for compatibility."""
-                _Matrix = self.namespace.get('Matrix')
+                # Use a special key to avoid recursion with the wrapper itself
+                _Matrix = self.namespace.get('_Matrix_class')
                 if not _Matrix:
                     try:
                         from pg_math.geometric import Matrix as _Matrix
-                        self.namespace['Matrix'] = _Matrix
+                        self.namespace['_Matrix_class'] = _Matrix
                     except ImportError:
                         if len(args) == 1 and isinstance(args[0], (list, tuple)):
                             return list(args[0])
@@ -807,13 +808,13 @@ class InProcessSandbox:
         # Matrix constructor (wrap pg_math Matrix if available)
         def Matrix(*args, **kwargs):
             """Matrix wrapper for compatibility."""
-            # Try to get Matrix from namespace (loaded by _load_mathobjects)
-            _Matrix = self.namespace.get('Matrix')
+            # Use a special key to avoid recursion with the wrapper itself
+            _Matrix = self.namespace.get('_Matrix_class')
             if not _Matrix:
                 # Import if not in namespace yet
                 try:
                     from pg_math.geometric import Matrix as _Matrix
-                    self.namespace['Matrix'] = _Matrix
+                    self.namespace['_Matrix_class'] = _Matrix
                 except ImportError:
                     # Fallback: return list of lists
                     if len(args) == 1 and isinstance(args[0], (list, tuple)):
