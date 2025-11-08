@@ -609,6 +609,11 @@ class PGPreprocessor:
         # Don't split method names starting with 'with' - they're valid Python identifiers
         line = line.replace('->', '.')
 
+        # Remove empty parentheses after methods that should be properties
+        # In Perl, ->reduce() and ->reduce are equivalent
+        # In Python, we made these properties, so remove the ()
+        line = re.sub(r'\.reduce\(\)', '.reduce', line)
+
         # Transform chained hash access: .{key} or ){key} → ['key']
         # After -> to . conversion, Context()->{error}{msg} becomes Context().{error}.{msg}
         # We need to convert .{key} and ){key} patterns to ['key']
