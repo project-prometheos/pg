@@ -182,9 +182,22 @@ class InProcessSandbox:
         """Load MathObjects framework into namespace."""
         try:
             # Import MathObjects
-            from pg_mathobjects import Context, Formula, Real, Compute
+            # Use pg_math for Context and Compute (has full interval/inequality support)
+            from pg_math.context import get_context as _get_context
+            from pg_math.compute import Compute as _Compute
+            from pg_mathobjects import Formula, Real
             from pg_mathobjects.formula_up_to_constant import FormulaUpToConstant
             from pg_math import Complex as _Complex, List as _List, Point, Vector, Interval, Set
+
+            # Context function that delegates to pg_math
+            def Context(name=None):
+                """Context function - delegates to pg_math.context.get_context."""
+                return _get_context(name)
+
+            # Compute function that delegates to pg_math
+            def Compute(expr):
+                """Compute function - delegates to pg_math.compute.Compute."""
+                return _Compute(expr)
 
             # Wrapper for Complex that handles list arguments (Perl compatibility)
             def Complex(real, imag=0, **kwargs):

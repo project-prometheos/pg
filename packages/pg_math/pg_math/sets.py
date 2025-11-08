@@ -29,26 +29,58 @@ class Interval(MathValue):
 
     type_precedence = TypePrecedence.INTERVAL
 
-    def __init__(
-        self,
-        left: MathValue | float,
-        right: MathValue | float,
-        open_left: bool = False,
-        open_right: bool = False,
-    ):
+    def __init__(self, *args):
         """
         Initialize an Interval.
 
+        Supports Perl-style constructor syntax:
+        - Interval('[', 1, 5, ']') - with bracket arguments
+        - Interval(1, 5) - defaults to open on both sides
+        - Interval(1, 5, False, True) - with boolean open_left, open_right
+
         Args:
-            left: Left endpoint
-            right: Right endpoint
-            open_left: True if left endpoint is open (excluded)
-            open_right: True if right endpoint is open (excluded)
+            args: Variable arguments:
+                - 4 args: open_bracket, left, right, close_bracket
+                - 2 args: left, right (both open)
+                - 4 args (last 2 bool): left, right, open_left, open_right
+
+        Reference: lib/Value/Interval.pm::new
         """
         from .value import MathValue as MV
 
-        self.left = MV.from_python(left) if not isinstance(left, MathValue) else left
-        self.right = MV.from_python(right) if not isinstance(right, MathValue) else right
+        # Parse arguments based on count and type
+        if len(args) == 4:
+            # Check if first and last args are bracket strings
+            if isinstance(args[0], str) and isinstance(args[3], str):
+                # Perl-style: Interval('[', 1, 5, ']')
+                open_bracket = args[0]
+                left_val = args[1]
+                right_val = args[2]
+                close_bracket = args[3]
+
+                # Convert brackets to boolean flags
+                open_left = (open_bracket == '(')
+                open_right = (close_bracket == ')')
+            elif isinstance(args[2], bool) and isinstance(args[3], bool):
+                # Python-style: Interval(1, 5, False, True)
+                left_val = args[0]
+                right_val = args[1]
+                open_left = args[2]
+                open_right = args[3]
+            else:
+                raise ValueError("Invalid Interval constructor arguments")
+        elif len(args) == 2:
+            # Interval(1, 5) - defaults to open on both sides
+            left_val = args[0]
+            right_val = args[1]
+            open_left = True
+            open_right = True
+        else:
+            raise ValueError(f"Interval requires 2 or 4 arguments, got {len(args)}")
+
+        # Convert to MathValue
+        self.left = MV.from_python(left_val) if not isinstance(left_val, MathValue) else left_val
+        self.right = MV.from_python(right_val) if not isinstance(right_val, MathValue) else right_val
         self.open_left = open_left
         self.open_right = open_right
 
