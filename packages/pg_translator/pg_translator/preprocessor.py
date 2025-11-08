@@ -386,9 +386,8 @@ class PGPreprocessor:
 
                     # Extract the body (everything between do { and } until)
                     body_lines = []
-                    # First line: remove "do {"
-                    first = block_lines[0].replace(
-                        'do', '').replace('{', '').strip()
+                    # First line: remove "do {" at start (use regex to avoid removing 'do' from 'random')
+                    first = re.sub(r'^\s*do\s*\{', '', block_lines[0]).strip()
                     if first:
                         body_lines.append(first)
 
