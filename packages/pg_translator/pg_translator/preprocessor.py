@@ -1094,52 +1094,94 @@ class PGPreprocessor:
 
         # Transform Perl ternary operator: condition ? true_value : false_value
         # → true_value if condition else false_value
-        # Only transform if ? appears within a clear expression context
-        if '?' in line and ':' in line and line.count('?') == 1:
-            # Find the ternary pattern: COND ? TRUE : FALSE
-            # Track depth to find ? and : at same parenthesis level
-            depth = 0
-            question_pos = -1
-            colon_pos = -1
+        # Handle nested ternaries by converting innermost-to-outermost
+        # Loop until no more ternaries found (max 10 iterations to prevent infinite loop)
+        max_iterations = 10
+        iteration = 0
+        while '?' in line and ':' in line and iteration < max_iterations:
+            iteration += 1
+            old_line = line
 
-            for i, ch in enumerate(line):
+            # Find the LAST ? (innermost in nested ternaries)
+            # Track parenthesis depth to find matching :
+            question_pos = -1
+            for i in range(len(line) - 1, -1, -1):
+                if line[i] == '?':
+                    # Check if this is inside a string
+                    in_string = False
+                    for j in range(i):
+                        if line[j] in ('"', "'") and (j == 0 or line[j-1] != '\\'):
+                            in_string = not in_string
+                    if not in_string:
+                        question_pos = i
+                        break
+
+            if question_pos < 0:
+                break
+
+            # Find matching : after the ?
+            depth = 0
+            colon_pos = -1
+            for i in range(question_pos + 1, len(line)):
+                ch = line[i]
                 if ch in '([{':
                     depth += 1
                 elif ch in ')]}':
                     depth -= 1
-                elif ch == '?' and question_pos < 0:
-                    question_pos = i
-                elif ch == ':' and depth >= 0 and question_pos > 0 and colon_pos < 0:
+                elif ch == ':' and depth == 0:
                     # Check if this looks like a ternary colon (not a dict key)
-                    # Dict keys have word: pattern, ternaries have expr ? val : val
                     if i > 0 and not (line[i-1].isalnum() or line[i-1] == '_'):
                         colon_pos = i
+                        break
 
-            # If we found both ? and :, transform the ternary expression
-            if question_pos > 0 and colon_pos > question_pos:
-                # Find the start of the ternary expression (after = , ( or start of line)
-                expr_start = 0
-                for j in range(question_pos - 1, -1, -1):
-                    if line[j] in '=,(':
+            if colon_pos < 0:
+                break
+
+            # Find start of condition (work backwards from ?)
+            expr_start = 0
+            depth = 0
+            for j in range(question_pos - 1, -1, -1):
+                ch = line[j]
+                if ch in ')]}':
+                    depth += 1
+                elif ch in '([{':
+                    depth -= 1
+                    if depth < 0:
                         expr_start = j + 1
                         break
+                elif depth == 0 and ch in '=,(':
+                    expr_start = j + 1
+                    break
 
-                # Find the end of the ternary expression (before ) , or end of line)
-                expr_end = len(line)
-                for j in range(colon_pos + 1, len(line)):
-                    if line[j] in ',)':
+            # Find end of false value (work forwards from :)
+            expr_end = len(line)
+            depth = 0
+            for j in range(colon_pos + 1, len(line)):
+                ch = line[j]
+                if ch in '([{':
+                    depth += 1
+                elif ch in ')]}':
+                    depth -= 1
+                    if depth < 0:
                         expr_end = j
                         break
+                elif depth == 0 and ch in ',)':
+                    expr_end = j
+                    break
 
-                # Extract components
-                condition = line[expr_start:question_pos].strip()
-                true_value = line[question_pos+1:colon_pos].strip()
-                false_value = line[colon_pos+1:expr_end].strip()
+            # Extract components
+            condition = line[expr_start:question_pos].strip()
+            true_value = line[question_pos+1:colon_pos].strip()
+            false_value = line[colon_pos+1:expr_end].strip()
 
-                # Reconstruct with Python ternary
-                before = line[:expr_start]
-                after = line[expr_end:]
-                line = f"{before}{true_value} if {condition} else {false_value}{after}"
+            # Reconstruct with Python ternary
+            before = line[:expr_start]
+            after = line[expr_end:]
+            line = f"{before}{true_value} if {condition} else {false_value}{after}"
+
+            # If line didn't change, break to avoid infinite loop
+            if line == old_line:
+                break
 
         # Transform Perl statement modifiers: STATEMENT if/unless CONDITION
         # statement if condition → if condition: statement
