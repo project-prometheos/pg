@@ -437,6 +437,88 @@ class PGPreprocessor:
                     # Not a proper do-until, fall through to normal processing
                     i = i - len(block_lines) + 1
 
+            # Check for multi-line Perl for-loops: for my? $VAR (EXPR) { ... }
+            # Must handle BEFORE line-by-line conversion to preserve block structure
+            # Variable can have $ prefix (Perl) or not (already transformed)
+            for_loop_match = re.match(r'^\s*for\s+(?:my\s+)?(?:\$)?([a-zA-Z_]\w*)\s*\(([^)]+)\)\s*\{', original_line)
+            if for_loop_match:
+                var = for_loop_match.group(1)
+                expr = for_loop_match.group(2)
+
+                # Check if single-line: for my $k (0..$n) { stmt; }
+                single_line_match = re.search(r'\{([^}]+)\}', original_line)
+                if single_line_match and original_line.count('{') == 1 and original_line.count('}') == 1:
+                    # Single-line for-loop
+                    body = single_line_match.group(1).strip()
+                    # Transform expression (handle Perl range: START .. END)
+                    # Variables can have $ prefix (e.g., $n) or not
+                    expr = re.sub(r'(\d+|(?:\$)?[a-zA-Z_]\w*)\s*\.\.\s*(\d+|(?:\$)?[a-zA-Z_]\w*)',
+                                 lambda m: f'range({m.group(1).strip()}, {m.group(2).strip()}+1)',
+                                 expr)
+                    # Transform the expression (strips $ prefixes, converts operators)
+                    expr = self._transform_line(expr)
+                    transformed_body = self._transform_line(body)
+                    output_lines.append(f'for {var} in {expr}:')
+                    output_lines.append(f'    {transformed_body}')
+                    i += 1
+                    continue
+
+                # Multi-line for-loop: collect the block
+                block_lines = [original_line]
+                brace_depth = original_line.count('{') - original_line.count('}')
+                i += 1
+
+                # Collect lines until we find the matching }
+                while i < len(lines) and brace_depth > 0:
+                    line = lines[i]
+                    block_lines.append(line)
+                    brace_depth += line.count('{') - line.count('}')
+                    i += 1
+
+                # Transform the expression (handle Perl range: START .. END)
+                # Variables can have $ prefix (e.g., $n) or not
+                expr = re.sub(r'(\d+|(?:\$)?[a-zA-Z_]\w*)\s*\.\.\s*(\d+|(?:\$)?[a-zA-Z_]\w*)',
+                             lambda m: f'range({m.group(1).strip()}, {m.group(2).strip()}+1)',
+                             expr)
+                # Transform the expression (strips $ prefixes, converts operators)
+                expr = self._transform_line(expr)
+
+                # Extract body lines
+                body_lines = []
+                # First line: remove "for ... {" part
+                first = re.sub(r'^\s*for\s+(?:my\s+)?\w+\s*\([^)]+\)\s*\{', '', block_lines[0]).strip()
+                if first:
+                    body_lines.append(first)
+
+                # Middle lines: all lines except first and last
+                for line in block_lines[1:-1]:
+                    body_lines.append(line)
+
+                # Last line: remove closing }
+                if len(block_lines) > 1:
+                    last = re.sub(r'\s*}\s*$', '', block_lines[-1]).strip()
+                    if last:
+                        body_lines.append(last)
+
+                # Transform body lines
+                transformed_body = []
+                for line in body_lines:
+                    stripped_line = line.lstrip()
+                    if stripped_line:
+                        # Split by semicolon to handle multiple statements per line
+                        statements = [s.strip() for s in stripped_line.split(';') if s.strip()]
+                        for stmt in statements:
+                            transformed = self._transform_line(stmt)
+                            if transformed:
+                                # Add consistent 4-space indentation
+                                transformed_body.append('    ' + transformed)
+
+                # Generate Python for-loop
+                output_lines.append(f'for {var} in {expr}:')
+                output_lines.extend(transformed_body)
+
+                continue
+
             # Check for inline for-loop statements: for VAR in EXPR: stmt1; stmt2; ...
             # Python requires these on separate lines with indentation
             inline_for_match = re.match(r'^(\s*)(for\s+\w+\s+in\s+[^:]+):\s*(.+)', original_line)
