@@ -100,14 +100,35 @@ class Formula(Value):
             # Convert ^ to ** for exponentiation
             expr_str = self.expression.replace('^', '**')
 
-            # Parse with implicit multiplication
-            transformations = standard_transformations + \
-                (implicit_multiplication_application,)
-            self._tree = parse_expr(
-                expr_str,
-                local_dict=local_dict,
-                transformations=transformations
-            )
+            # Handle equations (formulas with =)
+            # If the formula contains =, treat it as an equation
+            if '=' in expr_str and '==' not in expr_str and '!=' not in expr_str and '<=' not in expr_str and '>=' not in expr_str:
+                # Split on = and parse as equation
+                parts = expr_str.split('=', 1)
+                if len(parts) == 2:
+                    transformations = standard_transformations + \
+                        (implicit_multiplication_application,)
+                    lhs = parse_expr(parts[0].strip(), local_dict=local_dict, transformations=transformations)
+                    rhs = parse_expr(parts[1].strip(), local_dict=local_dict, transformations=transformations)
+                    self._tree = sp.Eq(lhs, rhs)
+                else:
+                    # Fallback to regular parsing
+                    transformations = standard_transformations + \
+                        (implicit_multiplication_application,)
+                    self._tree = parse_expr(
+                        expr_str,
+                        local_dict=local_dict,
+                        transformations=transformations
+                    )
+            else:
+                # Parse with implicit multiplication
+                transformations = standard_transformations + \
+                    (implicit_multiplication_application,)
+                self._tree = parse_expr(
+                    expr_str,
+                    local_dict=local_dict,
+                    transformations=transformations
+                )
 
             # Validate polynomial form if required by context
             self._validate_polynomial()
