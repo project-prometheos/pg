@@ -135,9 +135,19 @@ class FunctionManager:
     def __init__(self):
         self._functions: Dict[str, dict] = {}
 
-    def add(self, name: str, **options):
-        """Add a function to the context."""
-        self._functions[name] = options
+    def add(self, name: str, options=None, **kwargs):
+        """Add a function to the context.
+
+        Can be called as:
+        - add('name', {'key': 'value'})  # dict as second arg
+        - add('name', key='value')  # kwargs
+        """
+        if options is not None and isinstance(options, dict):
+            self._functions[name] = options
+        elif kwargs:
+            self._functions[name] = kwargs
+        else:
+            self._functions[name] = {}
 
     def set(self, name: str, **options):
         """Set function options."""

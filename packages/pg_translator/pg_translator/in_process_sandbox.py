@@ -418,6 +418,76 @@ class InProcessSandbox:
                 """Stub for UNORDERED_ANS - unordered answer checker."""
                 return pg_core.ANS(*args, **kwargs)
 
+            def nicestring(coeffs, vars=None):
+                """
+                Format a polynomial as a nice string (e.g., "3x + 2y - 5").
+
+                Args:
+                    coeffs: List of coefficients
+                    vars: List of variable names (default: ['x'])
+
+                Returns:
+                    String representation of the polynomial
+                """
+                if vars is None:
+                    vars = ['x']
+
+                if not coeffs:
+                    return '0'
+
+                terms = []
+                for i, coeff in enumerate(coeffs):
+                    if coeff == 0:
+                        continue
+
+                    var = vars[i] if i < len(vars) else ''
+
+                    if i == 0 and not var:
+                        # Constant term only
+                        terms.append(str(coeff))
+                    elif coeff == 1 and var:
+                        terms.append(var)
+                    elif coeff == -1 and var:
+                        terms.append(f"-{var}")
+                    elif var:
+                        terms.append(f"{coeff}{var}")
+                    else:
+                        terms.append(str(coeff))
+
+                if not terms:
+                    return '0'
+
+                # Join with appropriate signs
+                result = terms[0]
+                for term in terms[1:]:
+                    if term.startswith('-'):
+                        result += f" - {term[1:]}"
+                    else:
+                        result += f" + {term}"
+
+                return result
+
+            def GraphTool(*args, **kwargs):
+                """
+                Stub for GraphTool - interactive graphing tool for WeBWorK.
+
+                Returns a stub object that can be used in answer blanks.
+                """
+                class GraphToolStub:
+                    def __init__(self, *args, **kwargs):
+                        self.args = args
+                        self.kwargs = kwargs
+
+                    def with_params(self, **params):
+                        """Set parameters for the GraphTool."""
+                        self.kwargs.update(params)
+                        return self
+
+                    def __str__(self):
+                        return "[GraphTool]"
+
+                return GraphToolStub(*args, **kwargs)
+
             def DraggableProof(*args, **kwargs):
                 """Stub for DraggableProof - drag-and-drop proof interface."""
                 return type('DraggableProof', (), {
@@ -568,6 +638,8 @@ class InProcessSandbox:
                 'Line': Line,
                 'COMPOSITION_ANS': COMPOSITION_ANS,
                 'UNORDERED_ANS': UNORDERED_ANS,
+                'nicestring': nicestring,
+                'GraphTool': GraphTool,
                 'DraggableProof': DraggableProof,
                 'DraggableSubsets': DraggableSubsets,
                 'CheckboxList': CheckboxList,
@@ -766,6 +838,50 @@ class InProcessSandbox:
             """Stub for UNORDERED_ANS - unordered answer checker."""
             return ANS(*args, **kwargs)
 
+        def nicestring(coeffs, vars=None):
+            """Format a polynomial as a nice string."""
+            if vars is None:
+                vars = ['x']
+            if not coeffs:
+                return '0'
+            terms = []
+            for i, coeff in enumerate(coeffs):
+                if coeff == 0:
+                    continue
+                var = vars[i] if i < len(vars) else ''
+                if i == 0 and not var:
+                    terms.append(str(coeff))
+                elif coeff == 1 and var:
+                    terms.append(var)
+                elif coeff == -1 and var:
+                    terms.append(f"-{var}")
+                elif var:
+                    terms.append(f"{coeff}{var}")
+                else:
+                    terms.append(str(coeff))
+            if not terms:
+                return '0'
+            result = terms[0]
+            for term in terms[1:]:
+                if term.startswith('-'):
+                    result += f" - {term[1:]}"
+                else:
+                    result += f" + {term}"
+            return result
+
+        def GraphTool(*args, **kwargs):
+            """Stub for GraphTool - interactive graphing tool."""
+            class GraphToolStub:
+                def __init__(self, *args, **kwargs):
+                    self.args = args
+                    self.kwargs = kwargs
+                def with_params(self, **params):
+                    self.kwargs.update(params)
+                    return self
+                def __str__(self):
+                    return "[GraphTool]"
+            return GraphToolStub(*args, **kwargs)
+
         # Interactive elements
         def DraggableProof(*args, **kwargs):
             """Stub for DraggableProof - drag-and-drop proof interface."""
@@ -939,6 +1055,9 @@ class InProcessSandbox:
             'ImplicitPlane': ImplicitPlane,
             # Random utilities
             'randomPerson': randomPerson,
+            # Formatting utilities
+            'nicestring': nicestring,
+            'GraphTool': GraphTool,
             # Perl compatibility
             'undef': undef,
             # Add a dummy macro loader to suppress warnings

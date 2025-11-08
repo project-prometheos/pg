@@ -727,6 +727,28 @@ class PGPreprocessor:
             line
         )
 
+        # Special case: 'string' = value (string literal can't be keyword arg)
+        # This happens with parserFunction('f(x,y)' => 'definition')
+        # Transform to comma-separated arguments: 'string', value
+        # Pattern: 'string' = value or "string" = value
+        line = re.sub(
+            r'(["\'])([^"\']*)\1\s*=\s*(["\'][^"\']*["\'])',
+            r'\1\2\1, \3',
+            line
+        )
+
+        # Special case: identifier = { dict } in .add() calls (should be 'identifier', { dict })
+        # This happens with Context().functions.add(name => { ... })
+        # The => was converted to = by replace_hash_arrow, but should be string + comma
+        # Pattern: .add( word = {
+        # Convert to: .add( 'word', {
+        # Only apply after .add( to avoid breaking legitimate keyword arguments
+        line = re.sub(
+            r'(\.add\(\s*)([a-z_][a-zA-Z0-9_]*)\s*=\s*\{',
+            r"\1'\2', {",
+            line
+        )
+
         # Special case: Wrap [ ... ], [ ... ] pairs in parens for AnswerHints
         # After transforming ] => [ to ], [ we need to wrap in parens to make a tuple
         # This is ONLY for AnswerHints( [ arr1 ], [ arr2 ] ) patterns, not all functions
@@ -748,12 +770,14 @@ class PGPreprocessor:
         # le → <= (less than or equal)
         # ge → >= (greater than or equal)
         # Use word boundaries to avoid matching inside identifiers
-        line = re.sub(r'\beq\b', '==', line)
-        line = re.sub(r'\bne\b', '!=', line)
-        line = re.sub(r'\blt\b', '<', line)
-        line = re.sub(r'\bgt\b', '>', line)
-        line = re.sub(r'\ble\b', '<=', line)
-        line = re.sub(r'\bge\b', '>=', line)
+        # Use negative lookahead to avoid matching variable names (followed by =, ., (, [)
+        # This prevents: $gt = ... from becoming > = ...
+        line = re.sub(r'\beq\b(?!\s*[=\.\(\[])', '==', line)
+        line = re.sub(r'\bne\b(?!\s*[=\.\(\[])', '!=', line)
+        line = re.sub(r'\blt\b(?!\s*[=\.\(\[])', '<', line)
+        line = re.sub(r'\bgt\b(?!\s*[=\.\(\[])', '>', line)
+        line = re.sub(r'\ble\b(?!\s*[=\.\(\[])', '<=', line)
+        line = re.sub(r'\bge\b(?!\s*[=\.\(\[])', '>=', line)
 
         # Transform Perl namespace separator: Package::Function → Package.Function
         line = re.sub(
