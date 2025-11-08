@@ -264,15 +264,29 @@ class StringsManager:
     def __init__(self):
         self._strings: Dict[str, StringConfig] = {}
 
-    def add(self, **strings: dict) -> None:
+    def add(self, name=None, config=None, **strings: dict) -> None:
         """
         Add strings to the context.
 
+        Can be called as:
+        - add('name', {'key': 'value'})  # positional: name and config dict
+        - add(name={'key': 'value'})  # kwargs: name=config pairs
+
         Args:
+            name: Optional string name (for positional call)
+            config: Optional config dict (for positional call)
             **strings: String names with optional configuration dicts
                       e.g., add(none={}, N={'alias': 'none'})
         """
-        for name, config in strings.items():
+        # Handle positional arguments
+        if name is not None:
+            if config is None:
+                config = {}
+            strings_to_add = {name: config}
+        else:
+            strings_to_add = strings
+
+        for name, config in strings_to_add.items():
             if config is None:
                 config = {}
 

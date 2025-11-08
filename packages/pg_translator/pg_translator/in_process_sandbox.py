@@ -532,11 +532,14 @@ class InProcessSandbox:
                 return str(args[0]) if args else '0'
 
             def SolutionFor(*args, **kwargs):
-                """Stub for SolutionFor - solution checker."""
+                """Stub for SolutionFor - solution checker.
+
+                Returns a dict-like object with 'f' key containing the formula.
+                """
                 Formula = self.namespace.get('Formula')
-                if Formula:
-                    return Formula(str(args[0]) if args else '0')
-                return str(args[0]) if args else '0'
+                formula_obj = Formula(str(args[0]) if args else '0') if Formula else str(args[0]) if args else '0'
+                # Return a dict-like object with the formula
+                return {'f': formula_obj, 'solution': args[1] if len(args) > 1 else None}
 
             def ParametricLine(*args, **kwargs):
                 """Stub for ParametricLine - parametric line parser."""
@@ -943,11 +946,14 @@ class InProcessSandbox:
             return str(args[0]) if args else '0'
 
         def SolutionFor(*args, **kwargs):
-            """Stub for SolutionFor - solution checker."""
+            """Stub for SolutionFor - solution checker.
+
+            Returns a dict-like object with 'f' key containing the formula.
+            """
             Formula = self.namespace.get('Formula')
-            if Formula:
-                return Formula(str(args[0]) if args else '0')
-            return str(args[0]) if args else '0'
+            formula_obj = Formula(str(args[0]) if args else '0') if Formula else str(args[0]) if args else '0'
+            # Return a dict-like object with the formula
+            return {'f': formula_obj, 'solution': args[1] if len(args) > 1 else None}
 
         def ParametricLine(*args, **kwargs):
             """Stub for ParametricLine - parametric line parser."""
