@@ -11,6 +11,30 @@ from sympy.parsing.sympy_parser import parse_expr, standard_transformations, imp
 from .value import Value
 
 
+class CMPWrapper:
+    """
+    Wrapper for .cmp that works as both property access and method call.
+
+    Handles Perl idiom where ->cmp can be used without parentheses and
+    chained with ->withPostFilter.
+    """
+    def __init__(self, formula, **default_options):
+        self.formula = formula
+        self.default_options = default_options
+
+    def __call__(self, **options):
+        """Call as cmp() to get answer checker."""
+        from .answer_checker import FormulaAnswerChecker
+        merged_options = {**self.default_options, **options}
+        return FormulaAnswerChecker(self.formula, **merged_options)
+
+    def withPostFilter(self, filter_function):
+        """Chain with withPostFilter like Perl ->cmp->withPostFilter."""
+        from .answer_checker import FormulaAnswerChecker
+        checker = FormulaAnswerChecker(self.formula, **self.default_options)
+        return checker.withPostFilter(filter_function)
+
+
 class Formula(Value):
     """
     Symbolic formula MathObject.
@@ -315,7 +339,16 @@ class Formula(Value):
         """Negate the formula."""
         return Formula(-self._tree, self.context)
 
-    def cmp(self, **options):
-        """Return answer checker."""
-        from .answer_checker import FormulaAnswerChecker
-        return FormulaAnswerChecker(self, **options)
+    @property
+    def cmp(self):
+        """
+        Create an answer evaluator for this formula.
+
+        Returns a CMPWrapper that can be:
+        - Called as cmp() to get answer checker
+        - Chained as cmp.withPostFilter(...) for Perl compatibility
+
+        Returns:
+            CMPWrapper that works as both callable and has withPostFilter
+        """
+        return CMPWrapper(self)

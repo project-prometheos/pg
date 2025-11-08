@@ -360,6 +360,25 @@ class InProcessSandbox:
                     return Vector([pg_core.non_zero_random(-5, 5), pg_core.non_zero_random(-5, 5), pg_core.non_zero_random(-5, 5)])
                 return [pg_core.non_zero_random(-5, 5), pg_core.non_zero_random(-5, 5), pg_core.non_zero_random(-5, 5)]
 
+            def norm(vector):
+                """Compute the norm (magnitude/length) of a vector."""
+                if hasattr(vector, 'norm'):
+                    return vector.norm()
+                # Fallback for list/tuple
+                import math
+                return math.sqrt(sum(x**2 for x in vector))
+
+            def unit(vector):
+                """Compute the unit vector in the direction of the given vector."""
+                if hasattr(vector, 'unit'):
+                    return vector.unit()
+                # Fallback for list/tuple
+                import math
+                magnitude = math.sqrt(sum(x**2 for x in vector))
+                if magnitude == 0:
+                    raise ValueError("Cannot compute unit vector of zero vector")
+                return [x / magnitude for x in vector]
+
             def Matrix(*args, **kwargs):
                 """Matrix wrapper for compatibility."""
                 _Matrix = self.namespace.get('Matrix')
@@ -539,6 +558,8 @@ class InProcessSandbox:
                 # Additional stubs
                 'non_zero_point3D': non_zero_point3D,
                 'non_zero_vector3D': non_zero_vector3D,
+                'norm': norm,
+                'unit': unit,
                 'Matrix': Matrix,
                 'Graph3D': Graph3D,
                 'Plot': Plot,
@@ -678,6 +699,25 @@ class InProcessSandbox:
             if Vector:
                 return Vector([non_zero_random(-5, 5), non_zero_random(-5, 5), non_zero_random(-5, 5)])
             return [non_zero_random(-5, 5), non_zero_random(-5, 5), non_zero_random(-5, 5)]
+
+        def norm(vector):
+            """Compute the norm (magnitude/length) of a vector."""
+            if hasattr(vector, 'norm'):
+                return vector.norm()
+            # Fallback for list/tuple
+            import math
+            return math.sqrt(sum(x**2 for x in vector))
+
+        def unit(vector):
+            """Compute the unit vector in the direction of the given vector."""
+            if hasattr(vector, 'unit'):
+                return vector.unit()
+            # Fallback for list/tuple
+            import math
+            magnitude = math.sqrt(sum(x**2 for x in vector))
+            if magnitude == 0:
+                raise ValueError("Cannot compute unit vector of zero vector")
+            return [x / magnitude for x in vector]
 
         # Matrix constructor (wrap pg_math Matrix if available)
         def Matrix(*args, **kwargs):
@@ -870,6 +910,8 @@ class InProcessSandbox:
             # Geometric stubs
             'non_zero_point3D': non_zero_point3D,
             'non_zero_vector3D': non_zero_vector3D,
+            'norm': norm,
+            'unit': unit,
             'Matrix': Matrix,
             # Graphics
             'Graph3D': Graph3D,
