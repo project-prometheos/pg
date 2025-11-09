@@ -70,6 +70,15 @@ class List(MathValue):
         """Get element by index."""
         return self.elements[index]
 
+    def cmp(self, *args, **kwargs) -> "MathValue":
+        """
+        Return a comparator for this list.
+
+        In Perl MathObjects, cmp() returns a comparator object.
+        For Python, we return self to maintain compatibility.
+        """
+        return self
+
     def __setitem__(self, index: int, value: MathValue) -> None:
         """Set element by index."""
         self.elements[index] = value
@@ -232,6 +241,15 @@ class String(MathValue):
     def __len__(self) -> int:
         """Length of string."""
         return len(self.value)
+
+    def cmp(self, *args, **kwargs) -> "MathValue":
+        """
+        Return a comparator for this string.
+
+        In Perl MathObjects, cmp() returns a comparator object.
+        For Python, we return self to maintain compatibility.
+        """
+        return self
 
     # String operations
 

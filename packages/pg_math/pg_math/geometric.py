@@ -276,6 +276,15 @@ class Vector(MathValue):
         """
         return self.to_python()
 
+    def cmp(self, *args, **kwargs) -> "MathValue":
+        """
+        Return a comparator for this vector.
+
+        In Perl MathObjects, cmp() returns a comparator object.
+        For Python, we return self to maintain compatibility.
+        """
+        return self
+
     def __len__(self) -> int:
         """Dimension of the vector."""
         return len(self.components)
@@ -557,6 +566,15 @@ class Matrix(MathValue):
         if len(self.rows) == 0:
             return (0, 0)
         return (len(self.rows), len(self.rows[0]))
+
+    def cmp(self, *args, **kwargs) -> "MathValue":
+        """
+        Return a comparator for this matrix.
+
+        In Perl MathObjects, cmp() returns a comparator object.
+        For Python, we return self to maintain compatibility.
+        """
+        return self
 
     def __getitem__(self, index: tuple[int, int] | int) -> MathValue:
         """Get element by (row, col) or row."""
