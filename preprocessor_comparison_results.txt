@@ -1,0 +1,1143 @@
+================================================================================
+PREPROCESSOR COMPARISON REPORT
+================================================================================
+
+Total files tested: 20
+
+Results:
+  [OK] Identical outputs:       0 (0%)
+  [!=] Different outputs:      20 (100%)
+  [X]  Grammar failures:        0 (0%)
+  [X]  Regex failures:          0 (0%)
+  [X]  Both failed:             0 (0%)
+  [?]  Read errors:             0 (0%)
+
+================================================================================
+
+FILES WITH DIFFERENT OUTPUTS (20):
+--------------------------------------------------------------------------------
+  • AlgebraicFractionAnswer.pg
+    Regex: 99 lines, Grammar: 91 lines
+  • AnswerBlankInExponent.pg
+    Regex: 65 lines, Grammar: 55 lines
+  • AnswerUpToMultiple.pg
+    Regex: 41 lines, Grammar: 36 lines
+  • DomainRange.pg
+    Regex: 92 lines, Grammar: 83 lines
+  • DynamicGraph.pg
+    Regex: 91 lines, Grammar: 84 lines
+  • EquationDefiningFunction.pg
+    Regex: 47 lines, Grammar: 42 lines
+  • EquationImplicitFunction.pg
+    Regex: 60 lines, Grammar: 53 lines
+  • ExpandedPolynomial.pg
+    Regex: 70 lines, Grammar: 65 lines
+  • FactoredPolynomial.pg
+    Regex: 61 lines, Grammar: 55 lines
+  • FractionAnswer.pg
+    Regex: 56 lines, Grammar: 51 lines
+
+================================================================================
+DETAILED DIFFERENCES
+================================================================================
+
+
+================================================================================
+File: AlgebraicFractionAnswer.pg
+================================================================================
+--- AlgebraicFractionAnswer.pg (regex)
++++ AlgebraicFractionAnswer.pg (grammar)
+@@ -1,7 +1,6 @@
+ ## DESCRIPTION
+ ## Algebraic fraction answer requiring simplification
+ ## ENDDESCRIPTION
+-
+ ## DBsubject(WeBWorK)
+ ## DBchapter(WeBWorK tutorial)
+ ## DBsection(PGML tutorial 2015)
+@@ -10,61 +9,52 @@
+ ## Author(Paul Pearson)
+ ## MO(1)
+ ## KEYWORDS('algebra', 'algebraic fraction answer')
+-
+ #:% name = Algebraic Fraction Answer
+ #:% type = Sample
+ #:% subject = [algebra, precalculus]
+ #:% categories = [fraction]
+-
+ #:% section = preamble
+ #: Load the PODLINK('parserMultiAnswer.pl') macro to be able to consider two
+ #: answer rules together (the numerator and denominator) in the answer checker.
+ #: Note that the PODLINK('niceTables.pl') macro is implicitly used, and is
+ #: automatically loaded by the `PGML.pl` macro.
+ DOCUMENT()
+-
+-
+ #:% section = setup
+-#: Define MathObject formulas `num` and `den` which are the correct numerator
+-#: and denominator for the answer, as well as the bogus answers `numbogus` and
+-#: `denbogus` that result from not finding a common denominator (used in the
++#: Define MathObject formulas `$num` and `$den` which are the correct numerator
++#: and denominator for the answer, as well as the bogus answers `$numbogus` and
++#: `$denbogus` that result from not finding a common denominator (used in the
+ #: custom answer checker). A `MultiAnswer` is used to check the numerator and
+ #: denominator together.
+ #:
+-#: The `allowBlankAnswers = 1` option for the `MultiAnswer` object is set which
++#: The `allowBlankAnswers => 1` option for the `MultiAnswer` object is set which
+ #: allows the answers to be left blank, so that partial credit can be given if
+ #: the student has the numerator or denominator correct but does not enter both.
+ #: This requires that the type of the students input be checked before using
+ #: those values in computations or warnings will be issued (in this case the
+ #: warning "Operands of '*' can't be words" is issued if
+-#: `f1 * f2stu == f1stu * f2` is computed). This is done for the
+-#: numerator, for example, with `Value.classMatch(f1stu, 'Formula')`.
++#: `$f1 * $f2stu == $f1stu * $f2` is computed). This is done for the
++#: numerator, for example, with `Value::classMatch($f1stu, 'Formula')`.
+ #:
+
+
+================================================================================
+File: AnswerBlankInExponent.pg
+================================================================================
+--- AnswerBlankInExponent.pg (regex)
++++ AnswerBlankInExponent.pg (grammar)
+@@ -1,7 +1,6 @@
+ ## DESCRIPTION
+ ## Answer blank in the exponent
+ ## ENDDESCRIPTION
+-
+ ## DBsubject(WeBWorK)
+ ## DBchapter(WeBWorK tutorial)
+ ## DBsection(PGML tutorial 2015)
+@@ -10,16 +9,12 @@
+ ## Author(Paul Pearson)
+ ## MO(1)
+ ## KEYWORDS('algebra', 'answer blank in the exponent')
+-
+ #:% name = Answer Blank in the Exponent
+ #:% type = Sample
+ #:% subject = [algebra, precalculus]
+ #:% categories = [exponent]
+-
+ #:% section = preamble
+ DOCUMENT()
+-
+-
+ #:% section = setup
+ #: Set the context to allow only the variables `a` and `b` and choose a random
+ #: exponent.
+@@ -28,38 +23,33 @@
+ #: with the right one shifted up using the CSS style `vertical-align`.
+ #: In hardcopy mode, a LaTeX exponent is used.
+ Context().variables.are(a = 'Real', b = 'Real')
+-
+ n = random(3, 9)
+-
+ # TeX
+ expression = f"a^{{{n}}} b^{{{n}}}"
+-
+ # MathObjects
+-base     = Formula("a*b")
++base = Formula("a*b")
+ exponent = Formula(f"{n}")
+-
+ # Display exponents nicely
+ if (displayMode == 'TeX'):
+-    exp = f"\( \displaystyle {expression} = (" + ans_rule(4) + ")^{" + ans_rule(4) + "}\)"
++exp = f"\( \displaystyle {expression} = (" + ans_rule(4) + ")^{" + ans_rule(4) + "}\)"
+ else:
+-    exp = f"<span>\(\displaystyle {expression} = \Big(\)" + ans_rule(4) + '\(\Big)\)</span><span style="vertical-align: 12pt;">' + ans_rule(4) + '</span>'
++    exp = f"<span>\(\displaystyle {expression} = \Big(\)" . ans_rule(4) . '\(\Big)\)</span><span style="vertical-align: 12pt;">' . ans_rule(4) . '</span>'
++#:% section = statement
+
+
+================================================================================
+File: AnswerUpToMultiple.pg
+================================================================================
+--- AnswerUpToMultiple.pg (regex)
++++ AnswerUpToMultiple.pg (grammar)
+@@ -1,7 +1,6 @@
+ ## DESCRIPTION
+ ## Answers up to multiplication
+ ## ENDDESCRIPTION
+-
+ ## DBsubject(WeBWorK)
+ ## DBchapter(WeBWorK tutorial)
+ ## DBsection(PGML tutorial 2015)
+@@ -10,32 +9,28 @@
+ ## Author(Paul Pearson)
+ ## MO(1)
+ ## KEYWORDS('algebra', 'answer up to multiplication')
+-
+ #:% name = Answer up to a Constant Multiple
+ #:% type = Sample
+ #:% subject = [algebra, precalculus]
+ #:% categories = [answers, adaptive parameters]
+-
+ #:% section = preamble
+ DOCUMENT()
+-
+-
+ #:% section = setup
+ #: The answer checker uses a local context with an adaptive parameter to check
+ #: if the student answer is a parameter `C0` multiple of the correct answer.
+ #: For more on adaptive parameters, see PROBLINK('AdaptiveParameters.pg').
+-
+ ans = Compute('(x + 1)(x - 2)').cmp( checker = lambda *args, **kwargs: None )  # Stubbed Perl closure
+-
+ #:% section = statement
+-pgml_block_0 = '''\nFind a quadratic equation in terms of the variable
++pgml_block_0 = '''
++Find a quadratic equation in terms of the variable
+ [`x`] with roots [`-1`] and [`2`].
+ 
+-[`y =`] [_]{ans}{15}\n'''
++[`y =`] [_]{ans}{15}
++'''
+ TEXT(PGML(pgml_block_0))
+-
+ #:% section = solution
+-pgml_block_1 = '''\nSolution explanation goes here.\n'''
++pgml_block_1 = '''
++Solution explanation goes here.
++'''
+ SOLUTION(PGML(pgml_block_1))
+-
+-ENDDOCUMENT();
+
+
+================================================================================
+File: DomainRange.pg
+================================================================================
+--- DomainRange.pg (regex)
++++ DomainRange.pg (grammar)
+@@ -1,7 +1,6 @@
+ ## DESCRIPTION
+ ## Domain and range of a function using inequalities
+ ## ENDDESCRIPTION
+-
+ ## DBsubject(WeBWorK)
+ ## DBchapter(WeBWorK tutorial)
+ ## DBsection(PGML tutorial 2015)
+@@ -10,32 +9,28 @@
+ ## Author(Paul Pearson)
+ ## MO(1)
+ ## KEYWORDS('algebra', 'domain and range using inequalities')
+-
+ #:% name = Domain and Range of a Function
+ #:% type = Sample
+ #:% subject = [algebra, precalculus]
+ #:% categories = [domain]
+-
+ #:% section = preamble
+ #: The PODLINK('contextInequalities.pl') macro is used for inequality answers.
+ DOCUMENT()
+-
+-
+ #:% section = setup
+ #: In addition to showing how to use the PODLINK('contextInequalities.pl')
+ #: macro, this example problem demonstrates how different contexts can be used
+ #: for different answers in a problem.
+ #:
+-#: First, `Context('Inequalities-Only').variables.are(x = 'Real')` is called,
++#: First, `Context('Inequalities-Only')->variables->are(x => 'Real')` is called,
+ #: and this creates a new context instance. This instance only has the variable
+-#: `x`. Note that calling `.variables.are(x = 'Real')` for this instance is
++#: `x`. Note that calling `->variables->are(x => 'Real')` for this instance is
+ #: actually unnecessary since `x` is the only variable in the context by
+-#: default. It is only shown here for emphasis. The `domain` is computed in
++#: default. It is only shown here for emphasis. The `$domain` is computed in
+ #: this context.
+ #:
+-#: Next, `Context('Inequalities-Only').variables.are(y = 'Real')` is called,
++#: Next, `Context('Inequalities-Only')->variables->are(y => 'Real')` is called,
+ #: and this creates another context instance.  This instance only has the
+-#: variable `y`. The `range` is computed in this context.
++#: variable `y`. The `$range` is computed in this context.
+ #:
+ #: Note that the "Inequalities-Only" requires students to enter their answer
+ #: using inequalities. The more general "Inequalities" context provided in the
+@@ -43,7 +38,7 @@
+ #: using interval notation. For more details, please see
+
+
+================================================================================
+File: DynamicGraph.pg
+================================================================================
+--- DynamicGraph.pg (regex)
++++ DynamicGraph.pg (grammar)
+@@ -1,7 +1,6 @@
+ ## DESCRIPTION
+ ## Dynamically generated graph of a function
+ ## ENDDESCRIPTION
+-
+ ## DBsubject(WeBWorK)
+ ## DBchapter(WeBWorK tutorial)
+ ## DBsection(PGML tutorial 2015)
+@@ -10,30 +9,26 @@
+ ## Author(Paul Pearson)
+ ## MO(1)
+ ## KEYWORDS('algebra', 'dynamic graph')
+-
+ #:% name = Dynamic Graph
+ #:% type = Sample
+ #:% subject = [algebra, precalculus]
+ #:% categories = [graph]
+-
+ #:% section = preamble
+ #: The dynamic graph is generated with `PGtikz.pl`, so this is needed.
+ DOCUMENT()
+-
+-
+ #:% section = setup
+-#: The code between `graph.BEGIN_TIKZ` and `END_TIKZ` are TikZ commands.
+-#: Information on TikZ can be found at the [homepage for TikZ](https://tikz.dev())
++#: The code between `$graph->BEGIN_TIKZ` and `END_TIKZ` are TikZ commands.
++#: Information on TikZ can be found at the [homepage for TikZ](https://tikz.dev)
+ #: and details on using TikZ within pg problems can be found in
+ #: PODLINK('PGtikz.pl').
+ #:
+ #: This problem creates a parabola with random intercepts.
+ #:
+-#: Some notes about the commands in the `BEGIN_TIKZ/END_TIKZ` 'block':
++#: Some notes about the commands in the `BEGIN_TIKZ/END_TIKZ` block:
+ #:
+ #: * The first `\filldraw` command produces a frame around the plotting region
+ #: * The first two `\draw` commands draw the axes as well as the axis labels.
+-#:   The `.` gives the lines arrows in that direction and the `thick` makes
++#:   The `->` gives the lines arrows in that direction and the `thick` makes
+ #:   the lines a bit thicker.
+ #: * The two `\foreach` commands produce the tick marks and labels.
+ #: * The last `\draw` command produces the graph of the function. The `domain`
+@@ -43,9 +38,7 @@
+ a = random(1, 4);    # negative of left x-intercept
+ b = random(2, 4);    # right x-intercept
+ c = random(2, 6);    # y-intercept
+-
+
+
+================================================================================
+File: EquationDefiningFunction.pg
+================================================================================
+--- EquationDefiningFunction.pg (regex)
++++ EquationDefiningFunction.pg (grammar)
+@@ -1,7 +1,6 @@
+ ## DESCRIPTION
+ ## An equation defining a function
+ ## ENDDESCRIPTION
+-
+ ## DBsubject(WeBWorK)
+ ## DBchapter(WeBWorK tutorial)
+ ## DBsection(PGML tutorial 2015)
+@@ -11,37 +10,33 @@
+ ## Static(1)
+ ## MO(1)
+ ## KEYWORDS('algebra', 'equation defining a function')
+-
+ #:% name = Answer is an Equation
+ #:% type = Sample
+ #:% subject = [algebra, precalculus]
+ #:% categories = [equations, function, answers]
+-
+ #:% section = preamble
+ #: The macro file PODLINK('parserAssignment.pl') needs to be included.
+ DOCUMENT()
+-
+-
+ #:% section = setup
+-#: To allow assignments in the current context call `parser.Assignment.Allow`.
++#: To allow assignments in the current context call `parser::Assignment->Allow`.
+ #: To allow students to enter an assignment in which the left side is a function
+-#: use `parser.Assignment.Function('f')`. For more details, see
++#: use `parser::Assignment->Function('f')`. For more details, see
+ #: PODLINK('parserAssignment.pl').
+ Context().variables.are(x = 'Real', y = 'Real')
+-parser.Assignment.Allow()
+-parser.Assignment.Function('f')
+-
++parser::Assignment.Allow
++parser::Assignment.Function('f')
+ eqn = Formula('y = 5x + 2')
+ fun = Formula('f(x) = 3x^2 + 2x')
++#:% section = statement
++pgml_block_0 = '''
++Enter [`[$eqn]`]: [_]{eqn}{10}
+ 
+-#:% section = statement
+-pgml_block_0 = '''\nEnter [`[$eqn]`]: [_]{eqn}{10}
+-
+-Enter [`[$fun]`]: [_]{fun}{10}\n'''
++Enter [`[$fun]`]: [_]{fun}{10}
++'''
+
+
+================================================================================
+File: EquationImplicitFunction.pg
+================================================================================
+--- EquationImplicitFunction.pg (regex)
++++ EquationImplicitFunction.pg (grammar)
+@@ -1,7 +1,6 @@
+ ## DESCRIPTION
+ ## An equation implicitly defining a function
+ ## ENDDESCRIPTION
+-
+ ## DBsubject(WeBWorK)
+ ## DBchapter(WeBWorK tutorial)
+ ## DBsection(PGML tutorial 2015)
+@@ -10,17 +9,13 @@
+ ## Author(Paul Pearson)
+ ## MO(1)
+ ## KEYWORDS('algebra', 'equation implicitly defining a function')
+-
+ #:% name = Implicit Function as an Equation
+ #:% type = Sample
+ #:% subject = [algebra, precalculus]
+ #:% categories = [implicit function]
+-
+ #:% section = preamble
+ #: The macro PODLINK('parserImplicitEquation.pl') allows the entry of equations.
+ DOCUMENT()
+-
+-
+ #:% section = setup
+ #: Some error messages are prevented by redefining them to be a blank string ' '
+ #: (notice the space). Since the circle defined by the implicit equation in this
+@@ -34,27 +29,25 @@
+ #: `4x + 3y = 12`, or `4x + 3y + 5z = 21`, then the
+ #: PODLINK('parserImplicitPlane.pl') macro should be used instead.
+ Context('ImplicitEquation')
+-Context()['error']['msg']["Can't find any solutions to your equation"] = ' '
+-Context()['error']['msg']["Can't generate enough valid points for comparison"] = ' '
+-
+-Context().variables.set( x = { 'limits' : [ -6, 11 ] }, y = { 'limits' : [ -6, 11 ] }, )
+-
++Context().{error}{msg}{"Can't find any solutions to your equation"} = ' '
++Context().{error}{msg}{"Can't generate enough valid points for comparison"} = ' '
++Context().variables.set( x = { limits = [ -6, 11 ] }, y = { limits = [ -6, 11 ] }, )
+ a = random(1, 5)
+ b = random(1, 5)
+ r = random(2, 5)
+ p = Compute(f"({a},{b})")
+-
+-answer = ImplicitEquation( f"(x-{a})^2 + (y-{b})^2 = {r}^2", solutions = [ [ a,                    b + r ], [ a,                    b - r ], [ a + r,               b ], [ a - r,               b ], [ a + r * sqrt(2) / 2, b + r * sqrt(2) / 2 ], ] )
+-
++answer = ImplicitEquation( f"(x-{a})^2 + (y-{b})^2 = {r}^2", solutions = [ [ a,                    b + r ], [ a,                    b - r ], [ a + r,               b ], [ a - r,               b ], [ a + r * sqrt(2) / 2, $b + $r * sqrt(2) / 2 ], ] )
+ #:% section = statement
+-pgml_block_0 = '''\nEnter an equation for a circle in the [`xy`]-plane of radius [`[$r]`] centered
+
+
+================================================================================
+File: ExpandedPolynomial.pg
+================================================================================
+--- ExpandedPolynomial.pg (regex)
++++ ExpandedPolynomial.pg (grammar)
+@@ -2,7 +2,6 @@
+ ## This problem gives the student a quadratic in factored form and asks for
+ ## the equivalent in expanded/general form.
+ ## ENDDESCRIPTION
+-
+ ## DBsubject(WeBWorK)
+ ## DBchapter(WeBWorK tutorial)
+ ## DBsection(PGML tutorial 2015)
+@@ -12,30 +11,26 @@
+ ## Static(1)
+ ## MO(1)
+ ## KEYWORDS('algebra', 'expanded polynomial')
+-
+ #:% name = Expanded Polynomial
+ #:% type = Sample
+ #:% subject = [algebra, precalculus]
+ #:% categories = [polynomials]
+-
+ #:% section = preamble
+ #: Load the PODLINK('contextLimitedPolynomial.pl') macro.
+ DOCUMENT()
+-
+-
+ #:% section = setup
+-#: The PODLINK('contextLimitedPolynomial.pl') macro provides two 'contexts':
++#: The PODLINK('contextLimitedPolynomial.pl') macro provides two contexts:
+ #:
+-#: ```{#contexts .perl()
+-#: Context('LimitedPolynomial')
+-#: Context('LimitedPolynomial-Strict')
++#: ```{#contexts .perl}
++#: Context('LimitedPolynomial');
++#: Context('LimitedPolynomial-Strict');
+ #: ```
+ #: The strict version does not allow any mathematical operations within
+ #: coefficients, so `(5+3)x` must be simplified to `8x`. For more details, see
+ #: PODLINK('contextLimitedPolynomial.pl').
+ #:
+ #: Switch to the `LimitedPolynomial-Strict` context, construct the coefficients
+-#: `b` and `c`, and then construct `expandedform` using these coefficients.
++#: `$b` and `$c`, and then construct `$expandedform` using these coefficients.
+ #: Note that the coefficients must be provided as simplified numeric values
+ #: because the `LimitedPolynomial-Strict` context will not accept answers that
+ #: are not already simplified completely. That is done here by computing those
+@@ -44,27 +39,27 @@
+ #: ensures that the polynomial will be displayed as `x^2 - 6x + 4` instead of
+ #: `x^2 + -6x + 4`.
+ Context('Numeric')
+
+
+================================================================================
+File: FactoredPolynomial.pg
+================================================================================
+--- FactoredPolynomial.pg (regex)
++++ FactoredPolynomial.pg (grammar)
+@@ -1,7 +1,6 @@
+ ## DESCRIPTION
+ ## Factored polynomial
+ ## ENDDESCRIPTION
+-
+ ## DBsubject(WeBWorK)
+ ## DBchapter(WeBWorK tutorial)
+ ## DBsection(PGML tutorial 2015)
+@@ -11,22 +10,18 @@
+ ## Static(1)
+ ## MO(1)
+ ## KEYWORDS('algebra', 'factored polynomial')
+-
+ #:% name = Factored Polynomial
+ #:% type = Sample
+ #:% subject = [algebra, precalculus]
+ #:% categories = [polynomials]
+-
+ #:% section = preamble
+ #: Additional contexts provided by the PODLINK('contextPolynomialFactors.pl')
+ #: and PODLINK('contextLimitedPowers.pl') macros are needed.
+ DOCUMENT()
+-
+-
+ #:% section = setup
+ #: Before computing the answer which will be the factored form of the
+ #: polynomial, change to the `PolynomialFactors-Strict` context, and restrict
+-#: the allowed powers to only 0 and 1 using the `LimitedPowers.OnlyIntegers`
++#: the allowed powers to only 0 and 1 using the `LimitedPowers::OnlyIntegers`
+ #: method. Note that restricting all powers to 0 or 1 means that repeated
+ #: factors will have to be entered in the form `k(ax+b)(ax+b)` instead of
+ #: `k(ax+b)^2`. Also, restricting all exponents to 0 or 1 means that the
+@@ -34,28 +29,27 @@
+ #: quadratic factors can appear). If the exponents of 0, 1, or 2 were allowed,
+ #: then students would be allowed to enter reducible quadratic factors. There
+ #: are no restrictions on the coefficients, so the quadratic could have any
+-#: nonzero leading coefficient. Also set `singleFactors = 0` so that repeated,
++#: nonzero leading coefficient. Also set `singleFactors => 0` so that repeated,
+ #: non-simplified factors do not generate errors.
+-
+ # Expanded form
+ Context('Numeric')
+ poly = Compute('8x^2 + 28x + 12')
+-
+ # Factored form
+ Context('PolynomialFactors-Strict')
+ Context().flags.set(singleFactors = 0)
+-LimitedPowers.OnlyIntegers( minPower = 0, maxPower = 1, message  = 'either 0 or 1', )
+
+
+================================================================================
+File: FractionAnswer.pg
+================================================================================
+--- FractionAnswer.pg (regex)
++++ FractionAnswer.pg (grammar)
+@@ -1,7 +1,6 @@
+ ## DESCRIPTION
+ ## Fraction answer
+ ## ENDDESCRIPTION
+-
+ ## DBsubject(WeBWorK)
+ ## DBchapter(WeBWorK tutorial)
+ ## DBsection(PGML tutorial 2015)
+@@ -10,47 +9,43 @@
+ ## Author(Paul Pearson)
+ ## MO(1)
+ ## KEYWORDS('algebra', 'fraction answer')
+-
+ #:% name = Fraction Answer
+ #:% type = Sample
+ #:% subject = [algebra, precalculus]
+ #:% categories = [fraction]
+-
+ #:% section = preamble
+ #: The macro `contextFraction.pl` must be loaded.
+ DOCUMENT()
+-
+-
+ #:% section = setup
+-#: The PODLINK('contextFraction.pl') macro provides four 'contexts':
++#: The PODLINK('contextFraction.pl') macro provides four contexts:
+ #:
+-#: ```{#contexts .perl()
+-#: Context('Fraction')
+-#: Context('Fraction-NoDecimals')
+-#: Context('LimitedFraction')
+-#: Context('LimitedProperFraction')
++#: ```{#contexts .perl}
++#: Context('Fraction');
++#: Context('Fraction-NoDecimals');
++#: Context('LimitedFraction');
++#: Context('LimitedProperFraction');
+ #: ```
+ #:
+ #: See PODLINK('contextFraction.pl') for the differences between these contexts.
+ Context('Fraction-NoDecimals')
+-
+ answer = Compute('3/2')
+-
+ #:% section = statement
+ #: There are many context flags that control how fraction answers are checked.
+ #: See the documentation for the PODLINK('contextFraction.pl') macro for more
+ #: details.
+
+
+================================================================================
+File: FunctionDecomposition.pg
+================================================================================
+--- FunctionDecomposition.pg (regex)
++++ FunctionDecomposition.pg (grammar)
+@@ -1,21 +1,17 @@
+ ## DESCRIPTION
+ ## Decompose a function into two functions
+ ## ENDDESCRIPTION
+-
+ ## KEYWORDS('algebra', 'function decomposition')
+-
+ ## DBsubject(WeBWorK)
+ ## DBchapter(WeBWorK tutorial)
+ ## DBsection(PGML tutorial 2015)
+ ## Date(06/01/2015)
+ ## Institution(Hope College)
+ ## Author(Paul Pearson)
+-
+ #:% name = Function Decomposition
+ #:% type = Sample
+ #:% subject = [algebra, precalculus]
+ #:% categories = [composition]
+-
+ #:% section = preamble
+ #: Include the macro file PODLINK('answerComposition.pl') which provides an
+ #: answer checker that determines if two functions compose to form a given
+@@ -23,36 +19,32 @@
+ #: given function into a composition of two simpler functions, neither of which
+ #: is allowed to be the identity function.
+ DOCUMENT()
+-
+-
+ #:% section = setup
+ #: This problem asks the students for functions `y = f(u)` and `u = g(x)` such
+ #: that `f(g(x))` is a given function. Therefore, the variable `u` needs to be
+-#: added to the context, and the functions `f` and `g` defined.
++#: added to the context, and the functions `$f` and `$g` defined.
+ Context().variables.add(u = 'Real')
+-
+ a = random(2, 9)
+-
+ f = Formula("sqrt(u)")
+ g = Formula(f"x^2+{a}")
+-
+ #:% section = statement
+-pgml_block_0 = '''\nExpress the function [`y = \\sqrt{x^2 + [a]}`] as a composition [`y = f(g(x))`]
++pgml_block_0 = '''
++Express the function [`y = \\sqrt{x^2 + [a]}`] as a composition [`y = f(g(x))`]
+ of two simpler functions [`y = f(u)`] and [`u = g(x)`].
+ 
+ * [`f(u) =`] [_]{ width => 15 }
+ 
+
+
+================================================================================
+File: FunctionPlot.pg
+================================================================================
+--- FunctionPlot.pg (regex)
++++ FunctionPlot.pg (grammar)
+@@ -1,7 +1,6 @@
+ ## DESCRIPTION
+ ## A dynamic plot of a quadratic function
+ ## ENDDESCRIPTION
+-
+ ## DBsubject(WeBWorK)
+ ## DBchapter(WeBWorK tutorial)
+ ## DBsection(PGML tutorial 2015)
+@@ -10,18 +9,14 @@
+ ## Author(Jaimos Skriletz)
+ ## MO(1)
+ ## KEYWORDS('algebra', 'precalculus', 'quadratic', 'plot')
+-
+ #:% name = Function Plot
+ #:% type = Sample
+ #:% subject = [algebra, precalculus, plot]
+ #:% categories = [plots]
+-
+ #:% section = preamble
+ DOCUMENT()
+-
+-
+ #:% section = setup
+-#: For this problem, a plot of y = ax^2$ for a random value of a$ is
++#: For this problem, a plot of $y = ax^2$ for a random value of $a$ is
+ #: generated. Create a Plot object with the given plotting window and other
+ #: axis properties.
+ #:
+@@ -29,13 +24,9 @@
+ #: the plot. The `{-3,3}` is the domain of the plot where curly braces produces
+ #: arrows.  Other formats for this are `(-3,3)` for open endpoints and `[-3,3]`
+ #: are closed endpoints.  They can be mixed.
+-
+ a = non_zero_random(-3, 3)
+-
+-plot = Plot( xmin        = -3.2, xmax        =  3.2, ymin        = -10, ymax        =  10, xtick_delta =  1, ytick_delta =  2, xlabel      = '\(x\)', ylabel      = '\(y\)', )
+-
+-plot.add_function(f"{a} x^2 for * in {{-3,3}} using 'color':blue, 'width':3")
+-
++plot = Plot( xmin = -3.2, xmax = 3.2, ymin = -10, ymax = 10, xtick_delta = 1, ytick_delta = 2, xlabel = '\(x\)', ylabel = '\(y\)', )
++plot.add_function(f"{a} x^2 for * in {{-3,3}} using color:blue, width:3")
+ #:% section = statement
+ #: By default, the plot uses JSXGraph to plot the graph in HTML and will use
+ #: tikz/pgfplots to produce the hardcopy.
+@@ -43,16 +34,18 @@
+ #: The `[! !]{}{}` is a PGML format for inserting an image, with the first
+ #: argument is the alternate text for the image, the second argument is the
+ #: plot and the third is the width of the plot.
+
+
+================================================================================
+File: GraphToolCircle.pg
+================================================================================
+--- GraphToolCircle.pg (regex)
++++ GraphToolCircle.pg (grammar)
+@@ -1,7 +1,6 @@
+ ## DESCRIPTION
+ ## Interactive graphing tool problem that asks the student to plot a circle.
+ ## ENDDESCRIPTION
+-
+ ## DBsubject(WeBWorK)
+ ## DBchapter(WeBWorK tutorial)
+ ## DBsection(WeBWorK tutorial)
+@@ -9,28 +8,24 @@
+ ## Institution(Missouri Western State University)
+ ## Author(Glenn Rice)
+ ## KEYWORDS('graphs', 'circles')
+-
+ #:% name = Graph Tool, plotting a circle
+ #:% type = [Sample, technique]
+ #:% subject = [algebra, precalculus, geometry]
+ #:% categories = [graph, graphtool]
+-
+ #:% section = preamble
+ #: This example shows how to get student input in the form of a graph (a circle)
+ #: by using interactive graphing tools. Load the PODLINK('parserGraphTool.pl')
+ #: macro for this.
+ DOCUMENT()
+-
+-
+ #:% section = setup
+-#: The variables `h`, `k` and `r` randomly pick a center and radius of the
++#: The variables `$h`, `$k` and `$r` randomly pick a center and radius of the
+ #: circle.
+ #:
+ #: The lines
+ #:
+-#: ```{#equation .perl()
+-#: Context().variables.add(y = 'Real')
+-#: circle_eq_lhs = Formula(f"(x - {h})^2 + (y - {k})^2").reduce
++#: ```{#equation .perl}
++#: Context()->variables->add(y => 'Real');
++#: $circle_eq_lhs = Formula("(x - $h)^2 + (y - $k)^2")->reduce;
+ #: ```
+ #:
+ #: define the equation of the circle that is shown in the problem and solution.
+@@ -44,8 +39,8 @@
+ #: whether the object is to be `solid` or `dashed`, the third attribute is the
+ #: center of the circle, and the fourth attribute is a point on the circle.
+ #:
+-#: The `.with` method is then used to set options for the `GraphTool` object.
+-#: In this case the options that are set 'are':
++#: The `->with` method is then used to set options for the `GraphTool` object.
+
+
+================================================================================
+File: GraphToolCubic.pg
+================================================================================
+--- GraphToolCubic.pg (regex)
++++ GraphToolCubic.pg (grammar)
+@@ -1,7 +1,6 @@
+ ## DESCRIPTION
+ ## Interactive graphing tool problem that asks the student to plot a cubic.
+ ## ENDDESCRIPTION
+-
+ ## DBsubject(WeBWorK)
+ ## DBchapter(WeBWorK tutorial)
+ ## DBsection(WeBWorK tutorial)
+@@ -9,19 +8,15 @@
+ ## Institution(Missouri Western State University)
+ ## Author(Glenn Rice)
+ ## KEYWORDS('graphs', 'circles')
+-
+ #:% name = Graph Tool, plotting a cubic
+ #:% type = [Sample, technique]
+ #:% subject = [algebra, precalculus]
+ #:% categories = [graph, graphtool]
+-
+ #:% section = preamble
+ #: This example shows how to get student input in the form of a graph (a cubic)
+ #: by using interactive graphing tools. Load the PODLINK('parserGraphTool.pl')
+ #: macro for this.
+ DOCUMENT()
+-
+-
+ #:% section = setup
+ #: A cubic is created with 3 random zeros and a random y-intercept.
+ #:
+@@ -34,8 +29,8 @@
+ #: whether the object is to be `solid` or `dashed`, the remaining attributes
+ #: are four distinct points of the cubic.
+ #:
+-#: The `.with` method is then used to set options for the `GraphTool` object.
+-#: In this case the options that are set 'are':
++#: The `->with` method is then used to set options for the `GraphTool` object.
++#: In this case the options that are set are:
+ #:
+ #: * `bBox`: This is an array reference of four values xmin, ymax, xmax, ymin
+ #: indicating the upper left and lower right corners of the visible graph.
+@@ -46,39 +41,34 @@
+ #: student answer that 'looks' like the correct one. For simple graphs,
+ #: the default should be sufficient. See PROBLINK('GraphToolCustomChecker.pg')
+ #: for an example of how to use a custom checker.
+-
+ Context('Fraction')
+-
+ x1 = random(-8, -4)
+ x2 = non_zero_random(-3, -3)
+
+
+================================================================================
+File: GraphToolCustomChecker.pg
+================================================================================
+--- GraphToolCustomChecker.pg (regex)
++++ GraphToolCustomChecker.pg (grammar)
+@@ -1,7 +1,6 @@
+ ## DESCRIPTION
+ ## Interactive graphing tool problem with a custom checker.
+ ## ENDDESCRIPTION
+-
+ ## DBsubject(WeBWorK)
+ ## DBchapter(WeBWorK tutorial)
+ ## DBsection(WeBWorK tutorial)
+@@ -9,28 +8,24 @@
+ ## Institution(Missouri Western State University)
+ ## Author(Glenn Rice)
+ ## KEYWORDS('graphs', 'circles')
+-
+ #:% name = Graph Tool, custom checker
+ #:% type = [Sample, technique]
+ #:% subject = [algebra, precalculus]
+ #:% categories = [graph, graphtool]
+-
+ #:% section = preamble
+ #: This example shows how to get student input in the form of a graph (a circle)
+ #: by using interactive graphing tools, and demonstrates the usage of a custom
+ #: checker.  Load the PODLINK('parserGraphTool.pl') macro for this.
+ DOCUMENT()
+-
+-
+ #:% section = setup
+-#: The variables `h`, `k` and `r` randomly pick a center and radius of the
++#: The variables `$h`, `$k` and `$r` randomly pick a center and radius of the
+ #: circle.
+ #:
+ #: The lines
+ #:
+-#: ```{#equation .perl()
+-#: Context().variables.add(y = 'Real')
+-#: circle_eq_lhs = Formula(f"(x - {h})^2 + (y - {k})^2").reduce
++#: ```{#equation .perl}
++#: Context()->variables->add(y => 'Real');
++#: $circle_eq_lhs = Formula("(x - $h)^2 + (y - $k)^2")->reduce;
+ #: ```
+ #:
+ #: define the equation of the circle that is shown in the problem and solution.
+@@ -44,8 +39,8 @@
+ #: whether the object is to be `solid` or `dashed`, the third attribute is the
+ #: center of the circle, and the fourth attribute is a point on the circle.
+ #:
+-#: The `.with` method is then used to set options for the `GraphTool` object.
+-#: In this case the options that are set 'are':
++#: The `->with` method is then used to set options for the `GraphTool` object.
+
+
+================================================================================
+File: GraphToolLine.pg
+================================================================================
+--- GraphToolLine.pg (regex)
++++ GraphToolLine.pg (grammar)
+@@ -1,7 +1,6 @@
+ ## DESCRIPTION
+ ## Interactive graphing tool problem that asks the student to plot a line.
+ ## ENDDESCRIPTION
+-
+ ## DBsubject(WeBWorK)
+ ## DBchapter(WeBWorK tutorial)
+ ## DBsection(WeBWorK tutorial)
+@@ -9,19 +8,15 @@
+ ## Institution(Missouri Western State University)
+ ## Author(Glenn Rice)
+ ## KEYWORDS('graphs', 'circles')
+-
+ #:% name = Graph Tool, plotting a line
+ #:% type = [Sample, technique]
+ #:% subject = [algebra, precalculus, geometry]
+ #:% categories = [graph, graphtool]
+-
+ #:% section = preamble
+ #: This example shows how to get student input in the form of a graph (a line)
+ #: by using interactive graphing tools. Load the PODLINK('parserGraphTool.pl')
+ #: macro for this.
+ DOCUMENT()
+-
+-
+ #:% section = setup
+ #: A cubic is created with 3 random zeros and a random y-intercept.
+ #:
+@@ -34,8 +29,8 @@
+ #: whether the object is to be `solid` or `dashed`, and the remaining attributes
+ #: are two distinct points on the line.
+ #:
+-#: The `.with` method is then used to set options for the `GraphTool` object.
+-#: In this case the options that are set 'are':
++#: The `->with` method is then used to set options for the `GraphTool` object.
++#: In this case the options that are set are:
+ #:
+ #: * `bBox`: This is an array reference of four values xmin, ymax, xmax, ymin
+ #: indicating the upper left and lower right corners of the visible graph.
+@@ -46,22 +41,21 @@
+ #: student answer that 'looks' like the correct one. For simple graphs,
+ #: the default should be sufficient. See PROBLINK('GraphToolCustomChecker.pg')
+ #: for an example of how to use a custom checker.
++x0 = non_zero_random(-6, 6)
++y0 = non_zero_random(-6, 6)
++line = nicestring([ y0, x0 ], [ 'x', 'y' ])
++gt = GraphTool(f"{{line, solid, ({x0}, 0), (0, {y0})}}").with( bBox = [ -11, 11, 11, -11 ], availableTools = [ 'PointTool',  'LineTool', 'CircleTool', 'QuadraticTool', 'CubicTool',  'FillTool', 'SolidDashTool' ], )
++#:% section = statement.
+
+
+================================================================================
+File: GraphToolNumberLine.pg
+================================================================================
+--- GraphToolNumberLine.pg (regex)
++++ GraphToolNumberLine.pg (grammar)
+@@ -1,7 +1,6 @@
+ ## DESCRIPTION
+ ## Interactive graphing tool problem that asks the student to plot a circle.
+ ## ENDDESCRIPTION
+-
+ ## DBsubject(WeBWorK)
+ ## DBchapter(WeBWorK tutorial)
+ ## DBsection(WeBWorK tutorial)
+@@ -9,19 +8,15 @@
+ ## Institution(Missouri Western State University)
+ ## Author(Glenn Rice)
+ ## KEYWORDS('graphs', 'circles')
+-
+ #:% name = Graph Tool, number line
+ #:% type = [Sample, technique]
+ #:% subject = [algebra, precalculus]
+ #:% categories = [graph, graphtool]
+-
+ #:% section = preamble
+ #: This example shows how to get student input in the form of a graph
+ #: by using interactive graphing tools. Load the PODLINK('parserGraphTool.pl')
+ #: macro for this.
+ DOCUMENT()
+-
+-
+ #:% section = setup
+ #: Two intervals are created with random enpoints. The first
+ #: one is a bounded interval, and the second an unbounded interval.
+@@ -34,8 +29,8 @@
+ #: attributes depend on the type of graph object. For an `interval`, there is
+ #: only one attribute which is the interval in standard interval notation.
+ #:
+-#: The `.with` method is then used to set options for the `GraphTool` object.
+-#: In this case the options that are set 'are':
++#: The `->with` method is then used to set options for the `GraphTool` object.
++#: In this case the options that are set are:
+ #:
+ #: * `numberLine` is set to 1 (true) to indicate this is a one-dimensional
+ #:   graph.
+@@ -43,27 +38,24 @@
+ #:  [xmin, xmax] containing the left and right limits of the visible graph.
+ #: * `availableTools`: This determines which tools will be available for the
+ #:   student to use.
+-#: * `ticksDistanceX`: The distance between tick marks in the * direction.
++#: * `ticksDistanceX`: The distance between tick marks in the x direction.
+ #: * `minorTicksX`: The number of minor ticks to show. This can be 0.
+ #: * `useBracketEnds`: 1 (true) means to use () and [] to denote the interval
+ #:   ends, and a value of 0 means to use open and solid circles.
+
+
+================================================================================
+File: GraphToolPoints.pg
+================================================================================
+--- GraphToolPoints.pg (regex)
++++ GraphToolPoints.pg (grammar)
+@@ -1,7 +1,6 @@
+ ## DESCRIPTION
+ ## Interactive graphing tool problem that asks the student to plot points.
+ ## ENDDESCRIPTION
+-
+ ## DBsubject(WeBWorK)
+ ## DBchapter(WeBWorK tutorial)
+ ## DBsection(WeBWorK tutorial)
+@@ -9,20 +8,16 @@
+ ## Institution(Missouri Western State University)
+ ## Author(Glenn Rice)
+ ## KEYWORDS('graphs', 'circles')
+-
+ #:% name = Graph Tool, plotting points
+ #:% type = [Sample, technique]
+ #:% subject = [algebra, precalculus]
+ #:% categories = [graph, graphtool]
+-#:% see_also = [GraphToolCircle.pg(), GraphToolCubic.pg(), GraphToolLine.pg(), GraphToolNumberLine.pg()]
+-
++#:% see_also = [GraphToolCircle.pg, GraphToolCubic.pg, GraphToolLine.pg, GraphToolNumberLine.pg]
+ #:% section = preamble
+ #: This example shows how to get student input in the form of points
+ #: by using interactive graphing tools. Load the PODLINK('parserGraphTool.pl')
+ #: macro for this.
+ DOCUMENT()
+-
+-
+ #:% section = setup
+ #: Two points are created at random.
+ #:
+@@ -34,8 +29,8 @@
+ #: attributes are depend on the type. For a point, there is only one additional
+ #: attribute which is the point itself.
+ #:
+-#: The `.with` method is then used to set options for the `GraphTool` object.
+-#: In this case the options that are set 'are':
++#: The `->with` method is then used to set options for the `GraphTool` object.
++#: In this case the options that are set are:
+ #:
+ #: * `bBox`: This is an array reference of four values `xmin, ymax, xmax, ymin`
+ #:   indicating the upper left and lower right corners of the visible graph.
+@@ -47,21 +42,20 @@
+ #: For more details, see the PODLINK('POD','parserGraphTool.pl').
+ x1 = non_zero_random(-5, 5)
+ y1 = non_zero_random(-5, 5)
+-
+ x2 = non_zero_random(-5, 5)
+ y2 = non_zero_random(-5, 5)
+
+
+================================================================================
+File: InequalityAnswer.pg
+================================================================================
+--- InequalityAnswer.pg (regex)
++++ InequalityAnswer.pg (grammar)
+@@ -1,7 +1,6 @@
+ ## DESCRIPTION
+ ## Answer is an inequality
+ ## ENDDESCRIPTION
+-
+ ## DBsubject(WeBWorK)
+ ## DBchapter(WeBWorK tutorial)
+ ## DBsection(PGML tutorial 2015)
+@@ -10,42 +9,38 @@
+ ## Author(Paul Pearson)
+ ## MO(1)
+ ## KEYWORDS('algebra', 'answer is an inequality')
+-
+ #:% name = Answer as an Inequality
+ #:% type = Sample
+ #:% subject = [algebra, precalculus]
+ #:% categories = [fraction]
+-
+ #:% section = preamble
+ #: The PODLINK('contextInequalities.pl') macro must be loaded
+ DOCUMENT()
+-
+-
+ #:% section = setup
+ #: Require students to use inequalities by using `Context('Inequalities-Only')`.
+ #: Note that if `Context('Inequalities')` is used instead, then students could
+ #: also enter answers using interval notation. For more details, please see
+ #: PODLINK('contextInequalities.pl').
+ #:
+-#: The context flag `formatStudentAnswer = 'parsed'` is used so that the
++#: The context flag `formatStudentAnswer => 'parsed'` is used so that the
+ #: student's answer is left as a fraction rather than reduced to a decimal.
+ Context('Inequalities-Only')
+ Context().flags.set(formatStudentAnswer = 'parsed')
+-
+-a   = random(3, 9)
++a = random(3, 9)
+ ans = Compute(f"x >= -10 / {a}")
+-
+ #:% section = statement
+-pgml_block_0 = '''\nSolve the inequality [``-[$a]x  \\leq 10``].
++pgml_block_0 = '''
++Solve the inequality [``-[$a]x  \\leq 10``].
+ Enter your answer using inequality notation.
+ 
+ [_]{ans}
+ 
+-[@ helpLink('inequalities') @]*\n'''
+
+
+================================================================================
+File: LinearInequality.pg
+================================================================================
+--- LinearInequality.pg (regex)
++++ LinearInequality.pg (grammar)
+@@ -1,7 +1,6 @@
+ ## DESCRIPTION
+ ## Enter a linear inequality based on a description
+ ## ENDDESCRIPTION
+-
+ ## DBsubject(WeBWorK)
+ ## DBchapter(WeBWorK tutorial)
+ ## DBsection(PGML tutorial 2015)
+@@ -10,40 +9,35 @@
+ ## Author(Peter Staab)
+ ## MO(1)
+ ## KEYWORDS('algebra', 'linear inequality')
+-
+ #:% name = Linear Inequality
+ #:% type = Sample
+ #:% subject = [algebra, precalculus]
+ #:% categories = [inequality]
+-
+ #:% section = preamble
+ #: The macro file PODLINK('parserLinearRelation.pl') must be loaded to be able
+ #: to use the LinearRelation object.
+ DOCUMENT()
+-
+-
+ #:% section = setup
+ Context("LinearRelation")
+-
+ while True:
+     a = random(2, 6); b = random(2, 6)
+-    if ((a != b)):
++    if not (a != b):
+         break
+ ab = a * b
+-
+ lr = LinearRelation(f"{a} x + {b} y < {ab}").reduce
+-
+ #:% section = statement
+-pgml_block_0 = '''\nThe line [`L`] that passes through the point [`([$b],0)`] and [`(0,[$a])`]
++pgml_block_0 = '''
++The line [`L`] that passes through the point [`([$b],0)`] and [`(0,[$a])`]
+ divides the [`xy`]-plane into two regions.  What is the linear relation that
+ describes the half-plane containing the origin?  Note, do not include the points
+ on the line?
+ 
+-[__]{lr}\n'''
++[__]{lr}
++'''
+ TEXT(PGML(pgml_block_0))
+

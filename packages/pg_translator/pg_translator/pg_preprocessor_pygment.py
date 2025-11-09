@@ -477,24 +477,49 @@ class PGPreprocessor:
     # ------------------------------------------------------------------
 
     def _grammar(self) -> str:
-        """Return the Lark grammar for parsing simple PG statements.
+        """Return the Lark grammar for parsing PG/Perl statements.
 
-        The grammar is designed to avoid reduce/reduce conflicts by not
-        allowing function calls to appear both as top-level statements
-        and as unary expressions.  Instead, calls are always parsed
-        as expressions (call_expr) and then wrapped into an expr_stmt
-        when they appear as standalone statements.  This grammar is
-        intentionally permissive; unknown constructs fall back to the
-        Pygments rewrite.
+        This extended grammar covers most Perl constructs found in PG files:
+        - Control flow: if/elsif/unless/while/for
+        - Ternary operator: cond ? true : false
+        - Hash/array access: $hash{key}, $array[idx]
+        - Method calls: $obj->method()
+        - Ranges: 0..10
+        - Map/grep blocks
+        - Statement modifiers: stmt if cond
+        - Fat comma: key => value
+
+        The grammar is designed to avoid reduce/reduce conflicts.
+        Unparseable constructs fall back to Pygments rewriting.
         """
         return r"""
             start: (stmt ";"?)*
 
-            stmt: decl
+            stmt: if_stmt
+                | while_stmt
+                | for_stmt
+                | do_until_stmt
+                | decl
                 | assign
                 | expr_stmt
                 | document
                 | enddocument
+                | stmt_modifier
+
+            // Control flow statements
+            if_stmt: "if" "(" expr ")" block elsif_clause* else_clause?
+            elsif_clause: "elsif" "(" expr ")" block
+            else_clause: "else" block
+            unless_stmt: "unless" "(" expr ")" block
+            while_stmt: "while" "(" expr ")" block
+            for_stmt: "for" "my"? var "(" expr ")" block
+            do_until_stmt: "do" block "until" "(" expr ")"
+
+            block: "{" (stmt ";"?)* "}"
+
+            // Statement modifiers (trailing conditionals)
+            stmt_modifier: simple_stmt ("if"|"unless") expr
+            simple_stmt: decl | assign | call_expr
 
             document: "DOCUMENT" "(" ")"            -> document_call
             enddocument: "ENDDOCUMENT" "(" ")"      -> enddocument_call
@@ -502,21 +527,59 @@ class PGPreprocessor:
 
             decl: "my" var "=" expr               -> assign_stmt
             assign: var "=" expr                -> assign_stmt
+                  | var subscript "=" expr      -> subscript_assign
             expr_stmt: expr                      -> expr_stmt
 
             args: expr ("," expr)*
 
-            ?expr: or_expr
-            ?or_expr: and_expr ("||" and_expr)*      -> binary_expr
-            ?and_expr: add_expr ("&&" add_expr)*     -> binary_expr
-            ?add_expr: mul_expr (("+"|"-"|".") mul_expr)* -> binary_expr
-            ?mul_expr: unary_expr (("*"|"/"|"%") unary_expr)* -> binary_expr
-            ?unary_expr: call_expr | var | atom
+            // Hash/Array subscripting
+            subscript: "[" expr "]"              -> array_subscript
+                     | "{" expr "}"              -> hash_subscript
 
-            call_expr: NAME "(" args? ")"          -> call_expr
+            // Expressions with precedence (lowest to highest)
+            ?expr: ternary_expr
+
+            // Ternary: cond ? true : false
+            ?ternary_expr: or_expr ("?" or_expr ":" ternary_expr)?  -> ternary_expr
+
+            ?or_expr: and_expr (("||" | "or") and_expr)*      -> binary_expr
+            ?and_expr: comp_expr (("&&" | "and") comp_expr)*  -> binary_expr
+
+            // Comparison operators (eq, ne, lt, gt, le, ge, ==, !=, <, >, <=, >=)
+            ?comp_expr: range_expr (comp_op range_expr)*     -> binary_expr
+            comp_op: "eq" | "ne" | "lt" | "gt" | "le" | "ge"
+                   | "==" | "!=" | "<" | ">" | "<=" | ">="
+
+            // Range operator: 0..10
+            ?range_expr: add_expr (".." add_expr)?           -> range_expr
+
+            ?add_expr: mul_expr (add_op mul_expr)*           -> binary_expr
+            add_op: "+" | "-" | "."  // . is string concat in Perl
+
+            ?mul_expr: unary_expr (mul_op unary_expr)*       -> binary_expr
+            mul_op: "*" | "/" | "%" | "x"  // x is string repeat in Perl
+
+            ?unary_expr: postfix_expr
+                       | "-" unary_expr                      -> unary_minus
+                       | "!" unary_expr                      -> unary_not
+
+            // Postfix: method calls, subscripts
+            ?postfix_expr: primary (postfix_op)*
+            postfix_op: "->" NAME "(" args? ")"              -> method_call
+                      | subscript
+
+            ?primary: call_expr | var | atom | "(" expr ")"
+
+            call_expr: NAME "(" args? ")"                    -> call_expr
+
+            // Map and grep blocks
+            map_expr: "map" "{" expr "}" expr                -> map_expr
+            grep_expr: "grep" "{" expr "}" expr              -> grep_expr
 
             var: VAR
-            atom: NUMBER | STRING | NAME
+            atom: NUMBER | STRING | NAME | regex_literal
+
+            regex_literal: "qr" "/" /[^\/]+/ "/" /[imsxo]*/  -> regex_literal
 
             NAME: /[A-Za-z_][A-Za-z0-9_]*/
             VAR: /[\$@%][A-Za-z_][A-Za-z0-9_]*/
@@ -536,13 +599,13 @@ class PGPreprocessor:
 
             def start(self, *stmts):
                 """Flatten the list of statements from the top-level start rule."""
-                # Lark wraps the top-level rule in a Tree; return a plain list
                 return list(stmts)
 
             def stmt(self, item):
                 """Unwrap the single child of a stmt production."""
-                # Each stmt rule has exactly one child (the IR tuple)
                 return item
+
+            # Document control
             def document_call(self):
                 return ("call", "DOCUMENT", [])
 
@@ -550,29 +613,129 @@ class PGPreprocessor:
                 return ("call", "ENDDOCUMENT", [])
 
             def loadmacros_call(self, *args):
-                # loadMacros calls are dropped in sandbox mode; produce no output
                 return ("noop", )
 
+            # Control flow statements
+            def if_stmt(self, condition, block, *clauses):
+                """Lower if statement with optional elsif/else clauses."""
+                return ("if", condition, block, list(clauses))
+
+            def elsif_clause(self, condition, block):
+                return ("elsif", condition, block)
+
+            def else_clause(self, block):
+                return ("else", block)
+
+            def unless_stmt(self, condition, block):
+                """Lower unless statement (if not)."""
+                return ("unless", condition, block)
+
+            def while_stmt(self, condition, block):
+                """Lower while loop."""
+                return ("while", condition, block)
+
+            def for_stmt(self, var, expr, block):
+                """Lower for loop."""
+                return ("for", var, expr, block)
+
+            def do_until_stmt(self, block, condition):
+                """Lower do-until loop."""
+                return ("do_until", block, condition)
+
+            def block(self, *stmts):
+                """Lower block of statements."""
+                return ("block", list(stmts))
+
+            # Statement modifiers
+            def stmt_modifier(self, stmt, modifier, condition):
+                """Lower statement modifier (trailing if/unless)."""
+                return ("stmt_modifier", stmt, modifier, condition)
+
+            def simple_stmt(self, stmt):
+                return stmt
+
+            # Assignments
             def assign_stmt(self, var, expr):
                 """Lower a variable declaration or assignment."""
                 return ("assign", var, expr)
 
+            def subscript_assign(self, var, subscript, expr):
+                """Lower subscript assignment: $arr[0] = value."""
+                return ("subscript_assign", var, subscript, expr)
+
+            # Subscripting
+            def array_subscript(self, expr):
+                return ("array_subscript", expr)
+
+            def hash_subscript(self, expr):
+                return ("hash_subscript", expr)
+
+            # Expressions
             def call_expr(self, name, *args):
                 """Lower a function call expression."""
                 arglist = args[0] if args else []
                 return ("call", name, arglist)
 
             def expr_stmt(self, expr):
-                """Lower an expression statement (e.g. a call used as a statement)."""
+                """Lower an expression statement."""
                 return ("expr", expr)
 
+            def ternary_expr(self, *parts):
+                """Lower ternary operator: cond ? true : false."""
+                if len(parts) == 1:
+                    return parts[0]
+                elif len(parts) == 3:
+                    cond, true_val, false_val = parts
+                    return ("ternary", cond, true_val, false_val)
+                return parts[0]
+
             def binary_expr(self, left, *rest):
-                # Combine binary operations; for now just fold into a list for later reconstruction
+                """Lower binary operations."""
                 expr = left
                 for op, right in zip(rest[::2], rest[1::2]):
                     expr = ("bin", expr, op, right)
                 return expr
 
+            def range_expr(self, *parts):
+                """Lower range operator: 0..10."""
+                if len(parts) == 2:
+                    start, end = parts
+                    return ("range", start, end)
+                return parts[0]
+
+            def unary_minus(self, expr):
+                return ("unary", "-", expr)
+
+            def unary_not(self, expr):
+                return ("unary", "!", expr)
+
+            def postfix_expr(self, primary, *postfix_ops):
+                """Lower postfix operations (method calls, subscripts)."""
+                expr = primary
+                for op in postfix_ops:
+                    expr = ("postfix", expr, op)
+                return expr
+
+            def method_call(self, name, *args):
+                """Lower method call: ->method()."""
+                arglist = args[0] if args else []
+                return ("method_call", name, arglist)
+
+            # Map and grep
+            def map_expr(self, block_expr, list_expr):
+                """Lower map block."""
+                return ("map", block_expr, list_expr)
+
+            def grep_expr(self, block_expr, list_expr):
+                """Lower grep block."""
+                return ("grep", block_expr, list_expr)
+
+            # Regex
+            def regex_literal(self, pattern, flags):
+                """Lower regex literal: qr/pattern/flags."""
+                return ("regex", str(pattern), str(flags))
+
+            # Tokens
             def VAR(self, tok):
                 return ("var", str(tok))
 
@@ -589,11 +752,11 @@ class PGPreprocessor:
                 return list(exprs)
 
             def var(self, child):
-                """Unwrap the var rule to return its child (the ('var', name) tuple)."""
+                """Unwrap the var rule to return its child."""
                 return child
 
             def atom(self, child):
-                """Unwrap the atom rule to return its child (string or token)."""
+                """Unwrap the atom rule to return its child."""
                 return child
 
         return ToIR()
@@ -658,18 +821,19 @@ class PGPreprocessor:
 
         Returns a string containing Python code representing the expression.
         """
-        try:
-            tree = self._parser.parse(expr)
-            ir_list = self._transformer.transform(tree)
-            # Find first expr or assign
-            if not isinstance(ir_list, list):
-                ir_list = [ir_list]
-            for ir in ir_list:
-                if ir[0] in ("assign", "expr", "bin", "var", "call"):
-                    return self._expr_to_py(ir)
-            # Fallback: use pygments rewrite
-        except LarkError:
-            pass
+        if self._parser is not None:
+            try:
+                tree = self._parser.parse(expr)
+                ir_list = self._transformer.transform(tree)
+                # Find first expr or assign
+                if not isinstance(ir_list, list):
+                    ir_list = [ir_list]
+                for ir in ir_list:
+                    if ir[0] in ("assign", "expr", "bin", "var", "call"):
+                        return self._expr_to_py(ir)
+                # Fallback: use pygments rewrite
+            except LarkError:
+                pass
         return self._rewrite_with_pygments(expr)
 
     # ------------------------------------------------------------------
@@ -677,61 +841,246 @@ class PGPreprocessor:
     # ------------------------------------------------------------------
 
     def _emit_ir(self, ir: Any, indent: int = 0) -> Optional[str]:
-        """Convert IR nodes into Python code lines.  Returns None for no output."""
+        """Convert IR nodes into Python code lines. Returns None for no output."""
         typ = ir[0]
+        ind = "    " * indent
+
         if typ == "noop":
             return None
+
+        # Control flow statements
+        if typ == "if":
+            _, condition, block, clauses = ir
+            cond_py = self._expr_to_py(condition)
+            block_stmts = self._emit_block(block, indent + 1)
+            lines = [f"{ind}if {cond_py}:"]
+            lines.extend(block_stmts)
+
+            # Handle elsif and else clauses
+            for clause in clauses:
+                if clause[0] == "elsif":
+                    _, elif_cond, elif_block = clause
+                    elif_cond_py = self._expr_to_py(elif_cond)
+                    lines.append(f"{ind}elif {elif_cond_py}:")
+                    lines.extend(self._emit_block(elif_block, indent + 1))
+                elif clause[0] == "else":
+                    _, else_block = clause
+                    lines.append(f"{ind}else:")
+                    lines.extend(self._emit_block(else_block, indent + 1))
+
+            return "\n".join(lines)
+
+        if typ == "unless":
+            _, condition, block = ir
+            cond_py = self._expr_to_py(condition)
+            block_stmts = self._emit_block(block, indent + 1)
+            lines = [f"{ind}if not ({cond_py}):"]
+            lines.extend(block_stmts)
+            return "\n".join(lines)
+
+        if typ == "while":
+            _, condition, block = ir
+            cond_py = self._expr_to_py(condition)
+            block_stmts = self._emit_block(block, indent + 1)
+            lines = [f"{ind}while {cond_py}:"]
+            lines.extend(block_stmts)
+            return "\n".join(lines)
+
+        if typ == "for":
+            _, var, expr, block = ir
+            var_name = self._desigil(var[1] if isinstance(var, tuple) else var)
+            expr_py = self._expr_to_py(expr)
+            block_stmts = self._emit_block(block, indent + 1)
+            lines = [f"{ind}for {var_name} in {expr_py}:"]
+            lines.extend(block_stmts)
+            return "\n".join(lines)
+
+        if typ == "do_until":
+            _, block, condition = ir
+            cond_py = self._expr_to_py(condition)
+            block_stmts = self._emit_block(block, indent + 1)
+            lines = [f"{ind}while True:"]
+            lines.extend(block_stmts)
+            lines.append(f"{ind}    if {cond_py}:")
+            lines.append(f"{ind}        break")
+            return "\n".join(lines)
+
+        if typ == "stmt_modifier":
+            _, stmt, modifier, condition = ir
+            stmt_py = self._emit_ir(stmt, indent)
+            cond_py = self._expr_to_py(condition)
+            if modifier == "if":
+                return f"{ind}if {cond_py}: {stmt_py.strip()}"
+            else:  # unless
+                return f"{ind}if not ({cond_py}): {stmt_py.strip()}"
+
+        # Assignments
         if typ == "assign":
             _, var, expr = ir
             var_name = self._desigil(var[1] if isinstance(var, tuple) else var)
             expr_py = self._expr_to_py(expr)
-            return f"{var_name} = {expr_py}"
+            return f"{ind}{var_name} = {expr_py}"
+
+        if typ == "subscript_assign":
+            _, var, subscript, expr = ir
+            var_name = self._desigil(var[1] if isinstance(var, tuple) else var)
+            subscript_py = self._emit_subscript(subscript)
+            expr_py = self._expr_to_py(expr)
+            return f"{ind}{var_name}{subscript_py} = {expr_py}"
+
+        # Function calls
         if typ == "call":
             _, name, args = ir
-            # Special case: skip empty loadMacros calls
             if name == "loadMacros":
                 return None
-            py_args = []
-            for a in args:
-                py_args.append(self._expr_to_py(a))
-            return f"{name}({', '.join(py_args)})"
+            py_args = [self._expr_to_py(a) for a in args]
+            return f"{ind}{name}({', '.join(py_args)})"
+
+        # Expressions
         if typ == "expr":
             _, expr = ir
-            return self._expr_to_py(expr)
+            return f"{ind}{self._expr_to_py(expr)}"
+
         if typ == "bin":
-            return self._expr_to_py(ir)
+            return f"{ind}{self._expr_to_py(ir)}"
+
         # Unknown IR: produce raw comment
-        return f"# {ir}"
+        return f"{ind}# {ir}"
+
+    def _emit_block(self, block_ir: Any, indent: int) -> List[str]:
+        """Emit a block of statements with proper indentation."""
+        if block_ir[0] != "block":
+            return []
+
+        _, stmts = block_ir
+        lines = []
+        for stmt in stmts:
+            emitted = self._emit_ir(stmt, indent)
+            if emitted:
+                lines.append(emitted)
+
+        # Ensure block has at least pass if empty
+        if not lines:
+            lines.append("    " * indent + "pass")
+
+        return lines
+
+    def _emit_subscript(self, subscript_ir: Any) -> str:
+        """Emit a subscript operation (array or hash)."""
+        typ = subscript_ir[0]
+        _, expr = subscript_ir
+        expr_py = self._expr_to_py(expr)
+
+        if typ == "array_subscript":
+            return f"[{expr_py}]"
+        elif typ == "hash_subscript":
+            # Quote bare words if they're not already quoted
+            if expr_py and expr_py[0] not in ('"', "'"):
+                return f"['{expr_py}']"
+            return f"[{expr_py}]"
+
+        return f"[{expr_py}]"
 
     def _expr_to_py(self, expr: Any) -> str:
         """Lower an expression IR into a Python expression string."""
         if isinstance(expr, tuple):
             head = expr[0]
+
+            # Variables
             if head == "var":
-                # expr[1] contains the original sigiled name
                 return self._desigil(expr[1])
+
+            # Binary operations
             if head == "bin":
                 _, left, op, right = expr
                 py_left = self._expr_to_py(left)
                 py_right = self._expr_to_py(right)
-                # Convert Perl string concat '.' to Python '+'
-                if op in ("eq", "ne", "lt", "gt"):
-                    op_map = {"eq": "==", "ne": "!=", "lt": "<", "gt": ">"}
-                    py_op = op_map[op]
-                elif op == ".":
-                    py_op = "+"
-                else:
-                    py_op = op
+
+                # Operator mapping
+                op_map = {
+                    "eq": "==", "ne": "!=", "lt": "<", "gt": ">",
+                    "le": "<=", "ge": ">=",
+                    ".": "+",  # String concatenation
+                    "x": "*",  # String repetition
+                    "||": " or ", "&&": " and ",
+                    "or": " or ", "and": " and "
+                }
+                py_op = op_map.get(op, op)
                 return f"({py_left} {py_op} {py_right})"
+
+            # Ternary operator
+            if head == "ternary":
+                _, cond, true_val, false_val = expr
+                cond_py = self._expr_to_py(cond)
+                true_py = self._expr_to_py(true_val)
+                false_py = self._expr_to_py(false_val)
+                return f"({true_py} if {cond_py} else {false_py})"
+
+            # Range operator
+            if head == "range":
+                _, start, end = expr
+                start_py = self._expr_to_py(start)
+                end_py = self._expr_to_py(end)
+                return f"range({start_py}, {end_py} + 1)"
+
+            # Unary operations
+            if head == "unary":
+                _, op, operand = expr
+                operand_py = self._expr_to_py(operand)
+                if op == "!":
+                    return f"(not {operand_py})"
+                return f"({op}{operand_py})"
+
+            # Postfix operations (method calls, subscripts)
+            if head == "postfix":
+                _, base, op = expr
+                base_py = self._expr_to_py(base)
+
+                if op[0] == "method_call":
+                    _, method_name, args = op
+                    arg_strs = [self._expr_to_py(a) for a in args]
+                    return f"{base_py}.{method_name}({', '.join(arg_strs)})"
+                elif op[0] in ("array_subscript", "hash_subscript"):
+                    subscript_py = self._emit_subscript(op)
+                    return f"{base_py}{subscript_py}"
+
+                return base_py
+
+            # Function calls
             if head == "call":
                 _, name, args = expr
                 arg_strings = [self._expr_to_py(a) for a in args]
                 return f"{name}({', '.join(arg_strings)})"
+
+            # Map and grep
+            if head == "map":
+                _, block_expr, list_expr = expr
+                block_py = self._expr_to_py(block_expr)
+                list_py = self._expr_to_py(list_expr)
+                return f"[{block_py} for _ in {list_py}]"
+
+            if head == "grep":
+                _, block_expr, list_expr = expr
+                block_py = self._expr_to_py(block_expr)
+                list_py = self._expr_to_py(list_expr)
+                return f"[_ for _ in {list_py} if {block_py}]"
+
+            # Regex literal
+            if head == "regex":
+                _, pattern, flags = expr
+                # Escape quotes in pattern
+                escaped_pattern = pattern.replace('"', '\\"')
+                return f'r"{escaped_pattern}"'
+
+            # Expression statements
             if head == "expr":
                 return self._expr_to_py(expr[1])
+
+            # Assignments (in expression context)
             if head == "assign":
                 _, var, val = expr
                 return f"{self._desigil(var[1])} = {self._expr_to_py(val)}"
+
         # Otherwise, treat as raw string and apply rewrite
         return self._rewrite_with_pygments(str(expr))
 
@@ -757,9 +1106,20 @@ class PGPreprocessor:
                 result.append(text)
                 i += 1
                 continue
-            # Strings are left untouched
+            # String interpolation: convert Perl "$var" to Python f"{var}"
             if ttype in Token.Literal.String:
-                result.append(text)
+                # Only process double-quoted strings (Perl interpolates these)
+                if text.startswith('"') and '$' in text:
+                    # Extract content without quotes
+                    content = text[1:-1] if len(text) >= 2 else text
+                    # Escape literal braces for f-strings
+                    escaped = content.replace('{', '{{').replace('}', '}}')
+                    # Convert $var to {var}
+                    import re
+                    converted = re.sub(r'\$([a-zA-Z_][a-zA-Z0-9_]*)', r'{\1}', escaped)
+                    result.append(f'f"{converted}"')
+                else:
+                    result.append(text)
                 i += 1
                 continue
             # Variables: remove sigil
@@ -822,10 +1182,31 @@ class PGPreprocessor:
                 continue
             result.append(text)
             i += 1
+
         rewritten = ''.join(result).rstrip()
-        # Condense spaces around equals inserted from fat comma conversion
-        # e.g. "k  =  k" -> "k = k"
+
+        # Post-processing: Apply additional transformations
+        import re
+
+        # Condense spaces around equals from fat comma conversion
         rewritten = re.sub(r'\s+=\s+', ' = ', rewritten)
+
+        # Convert string comparison operators
+        rewritten = re.sub(r'\beq\b', '==', rewritten)
+        rewritten = re.sub(r'\bne\b', '!=', rewritten)
+        rewritten = re.sub(r'\ble\b', '<=', rewritten)
+        rewritten = re.sub(r'\bge\b', '>=', rewritten)
+
+        # Convert logical operators
+        rewritten = rewritten.replace('||', ' or ')
+        rewritten = rewritten.replace('&&', ' and ')
+
+        # Convert Perl $#array (last index) to len(array)-1
+        rewritten = re.sub(r'\$\#([a-zA-Z_]\w*)', r'len(\1)-1', rewritten)
+
+        # Convert Perl reference operator ~~& to just the function name
+        rewritten = re.sub(r'~~&([a-zA-Z_]\w*)', r'\1', rewritten)
+
         return rewritten
 
     # ------------------------------------------------------------------
