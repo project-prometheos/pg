@@ -140,8 +140,8 @@ class InProcessSandbox:
             # Allow pg_mathobjects and its submodules
             if name.startswith('pg_mathobjects'):
                 return original_import(name, globals, locals, fromlist, level)
-            # Allow math and random (already in namespace but allow re-import)
-            if name in ('math', 'random'):
+            # Allow math, random, and re (already in namespace but allow re-import)
+            if name in ('math', 'random', 're'):
                 return original_import(name, globals, locals, fromlist, level)
             # Block everything else
             raise ImportError(f"Import of '{name}' is not allowed in sandbox")
@@ -154,8 +154,10 @@ class InProcessSandbox:
         # Import safe modules
         import math
         import random
+        import re
         self.namespace['math'] = math
         self.namespace['random'] = random
+        self.namespace['re'] = re
 
         # Add common mathematical constants
         self.namespace['pi'] = math.pi

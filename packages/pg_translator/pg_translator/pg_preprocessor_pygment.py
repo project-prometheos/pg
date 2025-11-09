@@ -256,6 +256,9 @@ class PGPreprocessor:
             output_line_num = len(output_lines) + 1
             line_map[output_line_num] = line_start_index + 1
 
+            # Convert map/grep blocks to Python list comprehensions BEFORE parsing
+            original_line = self._convert_map_grep_blocks(original_line)
+
             # Handle compound lines with loadMacros
             if ';' in original_line and 'loadMacros' in original_line:
                 parts = original_line.split(';')
@@ -619,6 +622,116 @@ class PGPreprocessor:
 
         code = "\n".join(output_lines)
         return PreprocessResult(code=code, text_blocks=text_blocks, line_map=line_map)
+
+    # ------------------------------------------------------------------
+    # Map/Grep block conversion
+    # ------------------------------------------------------------------
+
+    def _convert_map_grep_blocks(self, line: str) -> str:
+        """Convert Perl map/grep blocks to Python list comprehensions.
+
+        Converts:
+            map { EXPR } LIST     ->    [EXPR for _ in LIST]
+            grep { EXPR } LIST    ->    [EXPR for _ in LIST if EXPR]
+        """
+        import re as re_module
+
+        # Match map { ... } expr where expr can be a range like 0 .. 10
+        # We need to handle nested braces and capture everything up to the last brace
+        def find_map_grep_blocks(text):
+            """Find all map/grep blocks in the text and convert them."""
+            result = []
+            i = 0
+            while i < len(text):
+                # Look for 'map {' or 'grep {'
+                match = re_module.search(r'\b(map|grep)\s*\{', text[i:])
+                if not match:
+                    result.append(text[i:])
+                    break
+
+                # Found map or grep, add everything before it
+                result.append(text[i:i + match.start()])
+                keyword = match.group(1)
+                block_start = i + match.end() - 1  # Position of opening brace
+
+                # Find matching closing brace
+                brace_depth = 1
+                block_end = block_start + 1
+                while block_end < len(text) and brace_depth > 0:
+                    if text[block_end] == '{':
+                        brace_depth += 1
+                    elif text[block_end] == '}':
+                        brace_depth -= 1
+                    block_end += 1
+
+                if brace_depth == 0:
+                    # Extract block content
+                    block_content = text[block_start + 1:block_end - 1]
+
+                    # Find the list expression after the closing brace
+                    list_start = block_end
+                    # Skip whitespace
+                    while list_start < len(text) and text[list_start] in ' \t':
+                        list_start += 1
+
+                    # Capture list expression (stops at ;, }, or end of common operators)
+                    list_end = list_start
+                    paren_depth = 0
+                    bracket_depth = 0
+                    while list_end < len(text):
+                        ch = text[list_end]
+                        if ch == '(':
+                            paren_depth += 1
+                        elif ch == ')':
+                            paren_depth -= 1
+                            if paren_depth < 0:
+                                break
+                        elif ch == '[':
+                            bracket_depth += 1
+                        elif ch == ']':
+                            bracket_depth -= 1
+                            if bracket_depth < 0:
+                                break
+                        elif ch in ';,}' and paren_depth == 0 and bracket_depth == 0:
+                            break
+                        elif ch == ' ' and paren_depth == 0 and bracket_depth == 0:
+                            # Check if this is the .. range operator
+                            if list_end + 3 <= len(text) and text[list_end:list_end+3] == ' ..':
+                                list_end += 3
+                                while list_end < len(text) and text[list_end] == ' ':
+                                    list_end += 1
+                                continue
+                            else:
+                                break
+                        list_end += 1
+
+                    list_expr = text[list_start:list_end].strip()
+
+                    # Replace $_ with _ in block
+                    block_content = re_module.sub(r'\$_\b', '_', block_content)
+
+                    # Convert fat comma => to =
+                    block_content = re_module.sub(r'\s*=>\s*', ' = ', block_content)
+
+                    # Convert Perl range operator .. to Python range()
+                    # Handle both "a .. b" and "a..b" formats
+                    list_expr = re_module.sub(r'(\S+)\s*\.\.\s*(\S+)', r'range(\1, \2 + 1)', list_expr)
+
+                    # Build the list comprehension
+                    if keyword == 'map':
+                        result.append(f"[{block_content} for _ in {list_expr}]")
+                    else:  # grep
+                        result.append(f"[_ for _ in {list_expr} if {block_content}]")
+
+                    i = list_end
+                else:
+                    # No matching brace found, just add what we have
+                    result.append(text[i:])
+                    break
+
+            return ''.join(result)
+
+        return find_map_grep_blocks(line)
 
     # ------------------------------------------------------------------
     # Grammar and parsing
