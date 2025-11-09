@@ -418,21 +418,85 @@ class PGPreprocessor:
                     i += 1
                 last_line = block_lines[-1] if block_lines else ""
                 until_match = re.search(r'\}\s*until\s*\(([^)]+)\)', last_line)
+                
+                # If 'until' is not on the closing brace line, check the next line
+                if not until_match and i < len(lines):
+                    next_line = lines[i]
+                    until_match_next = re.match(r'^\s*until\s+', next_line)
+                    if until_match_next:
+                        # Found 'until' on the next line, need to collect the full condition
+                        # which may span multiple lines (e.g., until (...) && (...) && (...);)
+                        condition_lines = [next_line]
+                        condition_line_idx = i
+                        i += 1
+                        
+                        # Keep collecting lines until we find a semicolon that ends the statement
+                        while i < len(lines) and ';' not in condition_lines[-1]:
+                            ln = lines[i]
+                            condition_lines.append(ln)
+                            i += 1
+                        
+                        # Concatenate all condition lines
+                        full_condition = ' '.join(ln.strip() for ln in condition_lines)
+                        # Extract the condition from "until ... ;"
+                        condition_match = re.match(r'^\s*until\s+(.+?);?\s*$', full_condition)
+                        if condition_match:
+                            condition_raw = condition_match.group(1).strip()
+                            # Remove surrounding parens if present
+                            if condition_raw.startswith('(') and condition_raw.endswith(')'):
+                                condition = condition_raw[1:-1].strip()
+                            else:
+                                condition = condition_raw
+                            until_match = True  # Mark as found
+                            # DO NOT add condition lines to block_lines!
+                            # They are part of the 'until' clause, not the 'do { }' body
+                        else:
+                            until_match = None
+                    else:
+                        until_match = None
+                        
                 if until_match:
-                    condition = until_match.group(1).strip()
+                    if isinstance(until_match, bool):
+                        # Already extracted condition from next line
+                        pass
+                    else:
+                        # Extract from same-line pattern
+                        condition = until_match.group(1).strip()
                     # Extract body lines: remove 'do {' and '} until (...)'
                     inner_lines: List[str] = []
-                    # Remove the first line's 'do {'
-                    first_body = re.sub(r'^\s*do\s*\{', '', block_lines[0]).strip()
-                    if first_body:
-                        inner_lines.append(first_body)
-                    # Middle lines
-                    for middle in block_lines[1:-1]:
-                        inner_lines.append(middle)
-                    # Remove the closing pattern
-                    last_body = re.sub(r'\}\s*until\s*\([^)]+\)\s*', '', last_line).strip()
-                    if last_body:
-                        inner_lines.append(last_body)
+                    
+                    # All lines in block_lines are now part of the body (not the condition)
+                    # since we don't add condition lines to block_lines anymore
+                    
+                    if len(block_lines) == 1 and block_lines[0].count('{') == block_lines[0].count('}'):
+                        # Extract content between 'do {' and '}'
+                        body_match = re.match(r'^\s*do\s*\{(.*)\}\s*$', block_lines[0])
+                        if body_match:
+                            body_content = body_match.group(1).strip()
+                            if body_content:
+                                inner_lines.append(body_content)
+                    else:
+                        # Multi-line case: shouldn't happen since we only collect until brace_depth > 0
+                        # But handle it just in case
+                        # Remove the first line's 'do {'
+                        first_body = re.sub(r'^\s*do\s*\{', '', block_lines[0]).strip()
+                        if first_body:
+                            inner_lines.append(first_body)
+                        
+                        # Middle lines
+                        body_end_idx = len(block_lines) - 1
+                        
+                        for middle_idx in range(1, body_end_idx):
+                            inner_lines.append(block_lines[middle_idx])
+                        
+                        # Process the line with the closing brace (if it's not the first line)
+                        if body_end_idx > 0:
+                            last_body_line = block_lines[body_end_idx]
+                            # Remove the closing }
+                            last_body = re.sub(r'\}\s*$', '', last_body_line).strip()
+                            if last_body:
+                                inner_lines.append(last_body)
+                    
                     # Compile body lines
                     compiled_body: List[str] = []
                     for ln in inner_lines:
@@ -580,8 +644,8 @@ class PGPreprocessor:
             // Ternary: cond ? true : false
             ?ternary_expr: or_expr ("?" or_expr ":" ternary_expr)?  -> ternary_expr
 
-            ?or_expr: and_expr (("||" | "or") and_expr)*      -> binary_expr
-            ?and_expr: comp_expr (("&&" | "and") comp_expr)*  -> binary_expr
+            ?or_expr: and_expr ((OR_OP | "or") and_expr)*      -> binary_expr
+            ?and_expr: comp_expr ((AND_OP | "and") comp_expr)*  -> binary_expr
 
             // Comparison operators (eq, ne, lt, gt, le, ge, ==, !=, <, >, <=, >=)
             ?comp_expr: range_expr (comp_op range_expr)*     -> binary_expr
@@ -598,6 +662,10 @@ class PGPreprocessor:
             RANGLE: ">"
             LTEQ: "<="
             GTEQ: ">="
+            
+            // Logical operators (must be terminals, not literal strings, to avoid Lark confusion)
+            OR_OP: "||"
+            AND_OP: "&&"
 
             // Range operator: 0..10
             ?range_expr: add_expr (".." add_expr)?           -> range_expr
@@ -1230,6 +1298,8 @@ class PGPreprocessor:
         i = 0
         # Track brace context: True if in hash literal, False if in code block
         brace_context_stack: List[bool] = []
+        # Track bracket context: nesting level of [...]
+        bracket_depth = 0
         
         while i < len(tokens):
             _, ttype, text = tokens[i]
@@ -1409,8 +1479,31 @@ class PGPreprocessor:
                     # Inside hash literal, treat as dict colon
                     if brace_context_stack and brace_context_stack[-1]:
                         result.append(': ')
+                    # Inside bracket (list) context, quote the key and use comma
+                    elif bracket_depth > 0:
+                        # Need to quote the previous bareword if it exists
+                        # Look back to find it
+                        j = len(result) - 1
+                        while j >= 0 and result[j].strip() == '':
+                            j -= 1
+                        if j >= 0:
+                            # Check if previous token looks like a bareword
+                            prev = result[j].strip()
+                            if prev and prev.isidentifier() and prev not in ('True', 'False', 'None'):
+                                # Replace it with quoted version
+                                result[j] = f'"{prev}"'
+                        result.append(', ')
                     else:
-                        result.append(' = ')
+                        # Check if previous token is ] or ) - then it's a pair separator
+                        j = len(result) - 1
+                        while j >= 0 and result[j].strip() == '':
+                            j -= 1
+                        if j >= 0 and result[j].strip() in (']', ')'):
+                            # It's separating elements, use comma
+                            result.append(', ')
+                        else:
+                            # Otherwise it's an assignment
+                            result.append(' = ')
                     i += 2
                     continue
                 # Handle Perl string concatenation operator '.'
@@ -1471,10 +1564,34 @@ class PGPreprocessor:
                 # Inside hash literal, treat as dict colon
                 if brace_context_stack and brace_context_stack[-1]:
                     result.append(': ')
+                # Inside bracket (list) context, quote the key and use comma
+                elif bracket_depth > 0:
+                    # Need to quote the previous bareword if it exists
+                    j = len(result) - 1
+                    while j >= 0 and result[j].strip() == '':
+                        j -= 1
+                    if j >= 0:
+                        prev = result[j].strip()
+                        if prev and prev.isidentifier() and prev not in ('True', 'False', 'None'):
+                            result[j] = f'"{prev}"'
+                    result.append(', ')
                 else:
-                    result.append(' = ')
+                    # Check if previous token is ] or ) - then it's a pair separator
+                    j = len(result) - 1
+                    while j >= 0 and result[j].strip() == '':
+                        j -= 1
+                    if j >= 0 and result[j].strip() in (']', ')'):
+                        result.append(', ')
+                    else:
+                        result.append(' = ')
                 i += 1
                 continue
+            # Track bracket context for list literals
+            if text == '[':
+                bracket_depth += 1
+            elif text == ']':
+                bracket_depth = max(0, bracket_depth - 1)
+            
             # Track brace context for hash literal detection
             if text == '{':
                 # Determine if this is a hash literal or code block
@@ -1533,14 +1650,103 @@ class PGPreprocessor:
         rewritten = re.sub(r'([)\]\w])\s+ge\s+', r'\1 >= ', rewritten)
 
         # Convert ternary operator: cond ? true : false  -->  true if cond else false
-        # Match pattern like: $a > 0 ? 1 : 2
-        ternary_pattern = r'(.+?)\s*\?\s*(.+?)\s*:\s*(.+)'
-        ternary_match = re.match(ternary_pattern, rewritten)
-        if ternary_match and '?' in rewritten:
-            cond = ternary_match.group(1).strip()
-            true_val = ternary_match.group(2).strip()
-            false_val = ternary_match.group(3).strip()
-            rewritten = f"{true_val} if ({cond}) else {false_val}"
+        # This is complex because ternaries can appear in various contexts.
+        # The key insight: We need to find ternaries at the RIGHT nesting level.
+        # For example: `foo(bar, x > 0 ? 1 : 2)` should convert the ternary INSIDE the call.
+        def convert_ternaries(text: str) -> str:
+            """Recursively convert ternary operators, handling nesting correctly."""
+            if '?' not in text or ':' not in text:
+                return text
+            
+            # Find all ? positions and their matching : at the same paren/bracket depth
+            depth = 0
+            ternary_positions = []  # List of (question_pos, colon_pos) tuples
+            
+            i = 0
+            while i < len(text):
+                ch = text[i]
+                if ch in '([{':
+                    depth += 1
+                elif ch in ')]}':
+                    depth -= 1
+                elif ch == '?' and depth >= 0:
+                    # Found a ?, now find its matching :
+                    question_depth = depth
+                    j = i + 1
+                    local_depth = depth
+                    while j < len(text):
+                        if text[j] in '([{':
+                            local_depth += 1
+                        elif text[j] in ')]}':
+                            local_depth -= 1
+                        elif text[j] == ':' and local_depth == question_depth:
+                            ternary_positions.append((i, j))
+                            break
+                        j += 1
+                i += 1
+            
+            # Process ternaries from innermost (rightmost) to outermost
+            # This handles nested ternaries correctly
+            for question_pos, colon_pos in reversed(ternary_positions):
+                # Extract the parts
+                # Need to find where this ternary starts (the condition)
+                # Work backwards from ? to find the start of the condition
+                # The condition starts after the previous operator or delimiter
+                
+                # Find the start of the condition by working backwards
+                cond_start = 0
+                depth = 0
+                for k in range(question_pos - 1, -1, -1):
+                    if text[k] in ')]}':
+                        depth += 1
+                    elif text[k] in '([{':
+                        depth -= 1
+                        if depth < 0:
+                            # Hit an unmatched opening bracket
+                            cond_start = k + 1
+                            break
+                    elif depth == 0 and text[k] in ',;=(':
+                        # Hit a delimiter at depth 0
+                        cond_start = k + 1
+                        break
+                
+                # Find the end of the false value
+                # Work forward from : to find where it ends
+                false_end = len(text)
+                depth = 0
+                for k in range(colon_pos + 1, len(text)):
+                    if text[k] in '([{':
+                        depth += 1
+                    elif text[k] in ')]}':
+                        depth -= 1
+                        if depth < 0:
+                            # Hit an unmatched closing bracket
+                            false_end = k
+                            break
+                    elif depth == 0 and text[k] in ',;)':
+                        # Hit a delimiter at depth 0
+                        false_end = k
+                        break
+                
+                cond = text[cond_start:question_pos].strip()
+                true_val = text[question_pos + 1:colon_pos].strip()
+                false_val = text[colon_pos + 1:false_end].strip()
+                
+                # Build the replacement
+                replacement = f"{true_val} if ({cond}) else {false_val}"
+                
+                # Replace in the text
+                text = text[:cond_start] + replacement + text[false_end:]
+                
+                # Only process one ternary at a time, then restart
+                # (because positions change after replacement)
+                if len(ternary_positions) > 1:
+                    return convert_ternaries(text)
+                
+            return text
+        
+        if '?' in rewritten and ':' in rewritten:
+            rewritten = convert_ternaries(rewritten)
 
         # Convert logical operators
         rewritten = rewritten.replace('||', ' or ')

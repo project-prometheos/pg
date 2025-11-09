@@ -1,0 +1,241 @@
+================================================================================
+              pypg.py vs pg_solve.py - Side-by-Side Comparison
+================================================================================
+
+EXAMPLE PROBLEM: FormulaAnswer.pg
+--------------------------------------------------------------------------------
+
+SOURCE CODE (Perl):
+  $a = non_zero_random(-9, 9);
+  do { $b = random(2, 9) } until $b != $a;
+  $answer2 = Compute("($a x^($b) + $b)/x")->reduce();
+  
+  BEGIN_PGML
+  Enter [``[$answer2]``]: [____]{$answer2}
+  END_PGML
+
+================================================================================
+
+                            pypg.py EXECUTION
+--------------------------------------------------------------------------------
+STEP 1: Parse
+  Method: Simple regex extraction
+  Result: Extracts BEGIN_PGML...END_PGML block
+  
+STEP 2: Execute Setup Code
+  Method: Direct Python eval()
+  Problem: "$a = non_zero_random(-9, 9)" is PERL syntax!
+  Result: ❌ Fails or ignores
+
+STEP 3: Variable Substitution
+  Method: Simple string replacement
+  Problem: Variables never assigned (Step 2 failed)
+  Result: ❌ $b remains literal
+
+STEP 4: Render PGML
+  Method: Basic markdown conversion
+  Result: Enter $$(-1 x^($b) + $b)/x$$: [____]
+          ^^^^^^^^^^^^^^^^^^^^^^^^
+          ❌ WRONG - literal $b!
+
+--------------------------------------------------------------------------------
+
+OUTPUT:
+  Enter $$(-1 x^($b) + $b)/x$$: [____]
+  
+CORRECTNESS: ⚠️ Renders but INCORRECT - variables not expanded
+ERRORS: None (silently incorrect)
+
+================================================================================
+
+                          pg_solve.py EXECUTION
+--------------------------------------------------------------------------------
+STEP 1: Preprocess with Pygments+Lark
+  Method: Tokenize, parse Perl syntax, convert to Python
+  
+  Input:  $a = non_zero_random(-9, 9);
+  Output: a = non_zero_random(-9, 9)
+  
+  Input:  do { $b = random(2, 9) } until $b != $a;
+  Output: while True:
+              b = random(2, 9)
+              if b != a:
+                  break
+  
+  Input:  $answer2 = Compute("($a x^($b) + $b)/x")->reduce();
+  Output: answer2 = Compute(f"({a} x^({b}) + {b})/x").reduce()
+  
+  Result: ✅ Valid Python code generated
+
+STEP 2: Execute in Sandbox
+  Method: RestrictedPython with macro stubs
+  
+  a = non_zero_random(-9, 9)     → a = -1
+  while True:
+      b = random(2, 9)            → b = 9 (first iteration)
+      if b != a:                  → 9 != -1 → True
+          break                   → Exit loop
+  answer2 = Compute(f"({-1} x^({9}) + {9})/x").reduce()
+                                  → "(-1*x^9 + 9)/x" → "(9 - x**9)/x"
+  
+  Result: ✅ Variables properly evaluated
+
+STEP 3: Render PGML with Variables
+  Method: PGMLRenderer with variable substitution
+  
+  Input:  [``[$answer2]``]
+  Lookup: answer2 = "(9 - x**9)/x"
+  Output: (9 - x**9)/x
+  
+  Result: ✅ Correct formula
+
+STEP 4: Generate HTML
+  Method: PGML to HTML conversion
+  Result: Enter (9 - x**9)/x : ___ANSWER_BLANK_AnSwEr0002___
+                 ^^^^^^^^^^^^^
+                 ✅ CORRECT!
+
+--------------------------------------------------------------------------------
+
+OUTPUT:
+  Enter (9 - x**9)/x : ___
+  
+CORRECTNESS: ✅ CORRECT - variables fully expanded
+ERRORS: None
+
+================================================================================
+
+                        KEY DIFFERENCES SUMMARY
+================================================================================
+
+┌─────────────────────────┬──────────────────────┬──────────────────────┐
+│ Feature                 │ pypg.py              │ pg_solve.py          │
+├─────────────────────────┼──────────────────────┼──────────────────────┤
+│ Parsing Method          │ Regex                │ Pygments + Lark      │
+│ Perl Syntax Support     │ ❌ No                │ ✅ Yes               │
+│ do-until Loops          │ ❌ Broken            │ ✅ Works             │
+│ Variable Expansion      │ ⚠️ Limited           │ ✅ Full              │
+│ Syntax Errors           │ Rare (ignores)       │ Possible (fails)     │
+│ Correctness             │ ⚠️ May be wrong      │ ✅ Accurate          │
+│ Speed                   │ ⚠️ Fast              │ ⚠️ Slower            │
+│ Dependencies            │ Minimal (sympy)      │ Many (5+ packages)   │
+└─────────────────────────┴──────────────────────┴──────────────────────┘
+
+================================================================================
+
+                      WHY SYNTAX ERRORS DIFFER
+================================================================================
+
+pypg.py:
+  - Assumes code is already Python
+  - Doesn't translate Perl syntax
+  - Silently ignores unsupported constructs
+  - Result: ❌ NO ERRORS but WRONG OUTPUT
+  
+pg_solve.py:
+  - Actively translates Perl to Python
+  - Can fail on complex Perl constructs
+  - Raises SyntaxError when translation incomplete
+  - Result: ✅ ERRORS but attempts to be CORRECT
+
+Example causing syntax error in pg_solve.py:
+
+  Perl: $text = "Hello " . $name . "!";
+        └────────────────────────────┘
+               Concatenation with .
+  
+  pg_solve.py: Tries to convert . to +
+               May produce: text = "Hello " . name . "!"
+               Result: SyntaxError: invalid syntax
+  
+  pypg.py: Doesn't execute this line
+           Result: No error, but $text undefined
+
+================================================================================
+
+                          PACKAGE USAGE
+================================================================================
+
+pypg.py imports:
+  ┌───────────────┐
+  │   pypg.py     │
+  └───────┬───────┘
+          │
+          ├─→ pg_renderer.PGRenderer
+          │   ├─→ parser.py (regex)
+          │   ├─→ evaluator.py (direct exec)
+          │   ├─→ pgml.py (markdown)
+          │   └─→ answer_checker.py
+          │
+          └─→ pg_renderer.answer_checker.AnswerChecker
+
+pg_solve.py imports:
+  ┌───────────────┐
+  │ pg_solve.py   │
+  └───────┬───────┘
+          │
+          ├─→ pg_translator.PGTranslator
+          │   ├─→ pg_preprocessor_pygment.py
+          │   │   ├─→ Pygments (tokenizer)
+          │   │   └─→ Lark (parser)
+          │   │
+          │   ├─→ executor.py
+          │   │   ├─→ RestrictedPython (sandbox)
+          │   │   └─→ in_process_sandbox.py
+          │   │
+          │   ├─→ macro_loader.py
+          │   │   └─→ pg_macros/
+          │   │       ├─→ core/
+          │   │       ├─→ answers/
+          │   │       ├─→ choice/
+          │   │       ├─→ parsers/
+          │   │       └─→ ui/
+          │   │
+          │   ├─→ translator.py
+          │   └─→ post_processor.py
+          │
+          └─→ Dependencies:
+              ├─→ pg_parser (Context)
+              ├─→ pg_math (Formula, Real, etc.)
+              ├─→ pg_answer (AnswerResult, etc.)
+              └─→ pg_pgml (rendering)
+
+================================================================================
+
+                         REAL TEST RESULTS
+================================================================================
+
+Test 1: ExpandedPolynomial.pg (simple PGML)
+  pypg.py:     ✅ SUCCESS - "Enter $x^2 - 6x + 4$"
+  pg_solve.py: ✅ SUCCESS - "Enter [ x^2 - 6x + 4 ]"
+  
+Test 2: FormulaAnswer.pg (with do-until)
+  pypg.py:     ⚠️ WRONG - "Enter $$(-1 x^($b) + $b)/x$$"
+  pg_solve.py: ✅ CORRECT - "Enter (9 - x**9)/x"
+  
+Test 3: ps1-prob01.pg (basic)
+  pypg.py:     ✅ SUCCESS
+  pg_solve.py: ✅ SUCCESS
+
+================================================================================
+
+                            RECOMMENDATIONS
+================================================================================
+
+Use pypg.py when:
+  ✅ Quick testing of simple problems
+  ✅ Problems written in Python-style
+  ✅ No advanced Perl features needed
+  ✅ Need fast startup
+  
+Use pg_solve.py when:
+  ✅ Working with real WeBWorK problems
+  ✅ Need Perl syntax support
+  ✅ Need do-until, complex randomization
+  ✅ Need accurate variable expansion
+  ✅ Production use
+
+Default recommendation: **Use pg_solve.py** for correctness
+
+================================================================================
+

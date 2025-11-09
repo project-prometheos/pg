@@ -1,0 +1,42 @@
+## DESCRIPTION
+## An equation defining a function
+## ENDDESCRIPTION
+## DBsubject(WeBWorK)
+## DBchapter(WeBWorK tutorial)
+## DBsection(PGML tutorial 2015)
+## Date(06/01/2015)
+## Institution(Hope College)
+## Author(Paul Pearson)
+## Static(1)
+## MO(1)
+## KEYWORDS('algebra', 'equation defining a function')
+#:% name = Answer is an Equation
+#:% type = Sample
+#:% subject = [algebra, precalculus]
+#:% categories = [equations, function, answers]
+#:% section = preamble
+#: The macro file PODLINK('parserAssignment.pl') needs to be included.
+DOCUMENT()
+#:% section = setup
+#: To allow assignments in the current context call `parser::Assignment->Allow`.
+#: To allow students to enter an assignment in which the left side is a function
+#: use `parser::Assignment->Function('f')`. For more details, see
+#: PODLINK('parserAssignment.pl').
+Context().variables.are(x = 'Real', y = 'Real')
+parser.Assignment.Allow()
+parser.Assignment.Function('f')
+eqn = Formula('y = 5x + 2')
+fun = Formula('f(x) = 3x^2 + 2x')
+#:% section = statement
+pgml_block_0 = '''
+Enter [`[$eqn]`]: [_]{eqn}{10}
+
+Enter [`[$fun]`]: [_]{fun}{10}
+'''
+TEXT(PGML(pgml_block_0))
+#:% section = solution
+pgml_block_1 = '''
+Solution explanation goes here.
+'''
+SOLUTION(PGML(pgml_block_1))
+ENDDOCUMENT()

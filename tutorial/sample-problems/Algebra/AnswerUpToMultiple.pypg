@@ -1,0 +1,36 @@
+## DESCRIPTION
+## Answers up to multiplication
+## ENDDESCRIPTION
+## DBsubject(WeBWorK)
+## DBchapter(WeBWorK tutorial)
+## DBsection(PGML tutorial 2015)
+## Date(06/01/2015)
+## Institution(Hope College)
+## Author(Paul Pearson)
+## MO(1)
+## KEYWORDS('algebra', 'answer up to multiplication')
+#:% name = Answer up to a Constant Multiple
+#:% type = Sample
+#:% subject = [algebra, precalculus]
+#:% categories = [answers, adaptive parameters]
+#:% section = preamble
+DOCUMENT()
+#:% section = setup
+#: The answer checker uses a local context with an adaptive parameter to check
+#: if the student answer is a parameter `C0` multiple of the correct answer.
+#: For more on adaptive parameters, see PROBLINK('AdaptiveParameters.pg').
+ans = Compute('(x + 1)(x - 2)').cmp( checker = lambda *args, **kwargs: None )  # Stubbed Perl closure
+#:% section = statement
+pgml_block_0 = '''
+Find a quadratic equation in terms of the variable
+[`x`] with roots [`-1`] and [`2`].
+
+[`y =`] [_]{ans}{15}
+'''
+TEXT(PGML(pgml_block_0))
+#:% section = solution
+pgml_block_1 = '''
+Solution explanation goes here.
+'''
+SOLUTION(PGML(pgml_block_1))
+ENDDOCUMENT()

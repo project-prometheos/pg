@@ -1,0 +1,56 @@
+## DESCRIPTION
+## scaffolding template
+## ENDDESCRIPTION
+## KEYWORDS('scaffold','scaffolding', 'sequentially revealed')
+## DBsubject(WeBWorK)
+## DBchapter(WeBWorK tutorial)
+## DBsection(PGML tutorial 2015)
+## Date(06/01/2015)
+## Institution(Hope College)
+## Author(Paul Pearson)
+#:% name = Scaffolded Problem
+#:% type = [Sample, technique]
+#:% categories = [misc]
+#:% section = preamble
+#: Load the PODLINK('scaffold.pl') macro to use scaffolding.
+DOCUMENT()
+#:% section = statement
+#: Call `Scaffold::Begin()` to start scaffolding, and `Scaffold::End()` to end
+#: the scaffold.
+#:
+#: Inside a scaffold block call `Section::Begin()` to start a scaffold section,
+#: and `Section::End()` to end it.
+#:
+#: See the PODLINK('scaffold.pl') macro file for more details.
+Scaffold.Begin()
+Section.Begin('Part 1: The first part')
+pgml_block_0 = '''
+This is the text for part 1.
+
+[`1 + 1 = `] [_]{2}{10}
+'''
+TEXT(PGML(pgml_block_0))
+Section.End()
+Section.Begin('Part 2: The second part')
+pgml_block_1 = '''
+This is text for the second part.
+
+[`2 * 2 = `] [_]{4}{10}
+'''
+TEXT(PGML(pgml_block_1))
+Section.End()
+Section.Begin('Part 3: The third part')
+pgml_block_2 = '''
+This is text for the third part.
+
+[`1 + 2 + 4 = `] [_]{7}{10}
+'''
+TEXT(PGML(pgml_block_2))
+Section.End()
+Scaffold.End()
+#:% section = solution
+pgml_block_3 = '''
+Solution explanation goes here.
+'''
+SOLUTION(PGML(pgml_block_3))
+ENDDOCUMENT()

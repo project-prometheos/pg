@@ -1,0 +1,70 @@
+## DESCRIPTION
+## Use a custom answer checkers for ODEs to determine the general solution of a
+## Differential Equation
+## ENDDESCRIPTION
+## DBsubject(WeBWorK)
+## DBchapter(WeBWorK tutorial)
+## DBsection(PGML tutorial 2015)
+## Date(06/01/2015)
+## Institution(Hope College)
+## Author(Paul Pearson)
+## MO(1)
+## KEYWORDS('differential equations', 'custom answer checker')
+#:% name = General Solution to a Differential Equation
+#:% type = Sample
+#:% subject = differential equations
+#:% categories = [answers, custom checker]
+#:% section = preamble
+#: We load `parserAssignment.pl` to require student answers to be of the
+#: form `y = ...`.
+DOCUMENT()
+#:% section = setup
+#: Add the arbitrary constants `c1`, `c2`, and `c3` to the context as variables
+#: so that they can be used in evaluations.
+#:
+#: Use `parser::Assignment->Allow` to allow equation answers of the form
+#: `y = ...`. See PODLINK('parserAssignment.pl') for additional information.
+#:
+#: In the checker `my $stu = Formula($student->{tree}{rop});` is used to get
+#: the right side of the assignment in the student answer (to get the left side
+#: of the assignment use `lop`). Use `Formula($stu->D('c1')) == Formula(0)` to
+#: verify that the student answer uses the variable `c1`.
+#:
+#: Substitute numerical values for the variables `c1`, `c2`, and `c3` and apply
+#: the Wronskian test for independence. Note that zero level tolerance in
+#: WeBWorK is much more stringent that non-zero level tolerance. So the terms
+#: of the Wronskian equation are rearranged so that there are nonzero terms on
+#: both sides of the equation to give a more reliable check.
+#:
+#: Finally, several derivatives of the student answer are computed and used to
+#: check that the student answer satisfies the differential equation. Again,
+#: to check that differential equation, the terms are rearanged to have nonzero
+#: terms on both sides, in order to give a more reliable check.
+Context().variables.add( c1 = 'Real', c2 = 'Real', c3 = 'Real', y = 'Real', )
+Context().flags.set( formatStudentAnswer = 'parsed', reduceConstants = 0, reduceConstantFunctions = 0, )
+parser.Assignment.Allow()
+a = list_random(2, 3, 5, 6, 7, 8)
+# The characteristic polynomial is (r - 1)(r^2 + $a).
+answer = Compute(f"y = c1 e^x + c2 cos(sqrt({a}) x) + c3 sin(sqrt({a}) x)")
+cmp = answer.cmp( checker = lambda *args, **kwargs: None )  # Stubbed Perl closure
+#:% section = statement
+#: Give students detailed instructions about the format of the answer that is
+#: expected.
+pgml_block_0 = '''
+Find the general solution to
+[`y^{\\,\\prime\\prime\\prime} - y^{\\,\\prime\\prime} + [$a] y^{\\,\\prime} - [$a] y = 0`].
+
+In your answer, use [`c_1`], [`c_2`] and [`c_3`] to denote arbitrary constants
+and [`x`] the independent variable.  Your answer should be an equation of the
+form [`y = \\ldots`] and you should enter [`c_1`] as [|c1|]*,
+[`c_2`] as [|c2|]*, and [`c_3`] as [|c3|]*.
+
+[_]{cmp}{30}
+'''
+TEXT(PGML(pgml_block_0))
+#:% section = solution
+pgml_block_1 = '''
+Solution explanation goes here.
+'''
+SOLUTION(PGML(pgml_block_1))
+ENDDOCUMENT()

@@ -1,4 +1,22 @@
 """
+⚠️  DEPRECATED - DO NOT USE THIS FILE ⚠️
+
+THIS PREPROCESSOR HAS BEEN REPLACED BY pg_preprocessor_pygment.py
+
+The regex-based preprocessor in this file is DEPRECATED and should NOT be used.
+It has been replaced by the Lark grammar-based preprocessor in pg_preprocessor_pygment.py
+which provides proper parsing and transformation of PG/Perl syntax to Python.
+
+ALWAYS use PygmentPreprocessor from pg_preprocessor_pygment.py instead.
+
+DO NOT fallback to this preprocessor under any circumstances.
+
+This file is kept only for historical reference and will be removed in a future version.
+
+---
+
+OLD DESCRIPTION (for reference only):
+
 PG Preprocessor - Transform PG syntactic sugar.
 
 Handles:
@@ -10,6 +28,8 @@ Handles:
 - Backslash handling
 
 Reference: Translator.pm::default_preprocess_code() (lines 1348-1378)
+
+⚠️  DEPRECATED - USE pg_preprocessor_pygment.py INSTEAD ⚠️
 """
 
 import re
@@ -21,7 +41,10 @@ from .pgml_parser import PGMLParser, PGMLRenderer
 
 @dataclass
 class PreprocessResult:
-    """Result of preprocessing a PG file."""
+    """Result of preprocessing a PG file.
+    
+    ⚠️ DEPRECATED - Use pg_preprocessor_pygment.PreprocessResult instead
+    """
 
     code: str
     """Preprocessed Python code"""
@@ -35,6 +58,19 @@ class PreprocessResult:
 
 class PGPreprocessor:
     """
+    ⚠️  DEPRECATED - DO NOT USE ⚠️
+    
+    This class has been replaced by PygmentPreprocessor in pg_preprocessor_pygment.py
+    
+    Use PygmentPreprocessor instead - it provides proper Lark grammar-based parsing
+    of PG/Perl syntax and correct transformation to Python.
+    
+    This regex-based preprocessor has known bugs and should not be used.
+    
+    ---
+    
+    OLD DESCRIPTION (for reference):
+    
     Preprocess PG files to transform syntactic sugar into executable Python.
 
     PG files use Perl-like syntax with special blocks:
@@ -45,6 +81,8 @@ class PGPreprocessor:
 
     This preprocessor transforms these into Python function calls that
     accumulate text in the execution environment.
+    
+    ⚠️  DEPRECATED - USE PygmentPreprocessor INSTEAD ⚠️
     """
 
     # Block markers
@@ -60,6 +98,8 @@ class PGPreprocessor:
 
     def preprocess(self, pg_source: str, use_sandbox_macros: bool = True) -> PreprocessResult:
         """
+        ⚠️ DEPRECATED - Use PygmentPreprocessor.preprocess() instead ⚠️
+        
         Preprocess PG source code.
 
         Args:
@@ -68,7 +108,19 @@ class PGPreprocessor:
 
         Returns:
             PreprocessResult with transformed code and metadata
+            
+        WARNING: This method uses regex-based transformation and has known bugs.
+        Use PygmentPreprocessor from pg_preprocessor_pygment.py instead.
         """
+        import warnings
+        warnings.warn(
+            "PGPreprocessor is deprecated. Use PygmentPreprocessor from "
+            "pg_preprocessor_pygment.py instead. This regex-based preprocessor "
+            "has known bugs and will be removed in a future version.",
+            DeprecationWarning,
+            stacklevel=2
+        )
+        
         lines = pg_source.split("\n")
         output_lines: list[str] = []
         text_blocks: list[tuple[str, str]] = []

@@ -1,0 +1,59 @@
+## DESCRIPTION
+## Linear approximation
+## ENDDESCRIPTION
+
+## DBsubject(WeBWorK)
+## DBchapter(WeBWorK tutorial)
+## DBsection(PGML tutorial 2015)
+## Date(06/01/2015)
+## Institution(Hope College)
+## Author(Paul Pearson)
+## MO(1)
+## KEYWORDS('differential calculus', 'linear approximation')
+
+#:% name = Linear Approximation
+#:% type = Sample
+#:% subject = differential calculus
+#:% categories = [linear approximation]
+
+#:% section = preamble
+#: Load PODLINK('parserAssignment.pl') to require students to enter their answer
+#: as an equation of the form `y = ...`. Load PODLINK('answerHints.pl') to
+#: provide customized answer hints, particularly for students who enter the
+#: slope of the line instead of the equation of the line.
+DOCUMENT()
+
+
+#:% section = setup
+#: Allow assignments in the context by calling `parser.Assignment.Allow`.
+#:
+#: Answer hints are used to remind students to enter an equation for a line, not
+#: just the slope of the line.
+Context().variables.add(y = 'Real')
+parser.Assignment.Allow()
+
+a  = random(2, 5)
+aa = a**2
+a2 = 2 * a
+
+f = Compute('sqrt(x)')
+
+answer = Compute(f"y = {a} + (1 / {a2}) * (x - {aa})")
+cmp    = answer.cmp().withPostFilter(AnswerHints( ([ Formula(f"1 / {a2}"), Formula(f"y = 1 / {a2}") ], [ 'Your answer should be an equation for a non-horizontal line.', {'replaceMessage': 1} ]), ))
+
+#:% section = statement
+#: The variable `cmp` is used for the answer associated with the answer rule.
+#: It was defined by calling the `cmp` method of the `answer` in the setup
+#: section above.
+pgml_block_0 = '''\nFind the linear approximation of [`f(x) = [$f]`] at [`x = [$aa]`].  Your
+answer should be an equation in the variables [`x`] and [`y`].
+
+[_]{cmp}{10}\n'''
+TEXT(PGML(pgml_block_0))
+
+#:% section = solution
+pgml_block_1 = '''\nSolution explanation goes here.\n'''
+SOLUTION(PGML(pgml_block_1))
+
+ENDDOCUMENT();
+

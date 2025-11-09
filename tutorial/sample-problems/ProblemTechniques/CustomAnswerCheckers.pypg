@@ -1,0 +1,55 @@
+## DESCRIPTION
+## This provides a custom answer checker.
+## ENDDESCRIPTION
+## DBsubject(WeBWorK)
+## DBchapter(WeBWorK tutorial)
+## DBsection(Problem Techniques)
+## Date(06/01/2008)
+## Institution(University of Michigan)
+## Author(Gavin LaRose)
+## MO(1)
+## KEYWORDS('answer', 'custom')
+#:% name = Custom Answer Checker
+#:% type = technique
+#:% categories = [answers, custom checker]
+#:% section = preamble
+DOCUMENT()
+#:% section = setup
+#: This problem asks the student to enter a value of `x` such that
+#: `cos(x) = cos($ans)`. A custom checker is needed since the particular correct
+#: answer computed in the setup will only be one of the actual correct answers
+#: for the problem.
+#:
+#: To set up the custom answer checker pass the custom checker subroutine for
+#: the `checker` option to the `cmp` method.
+#:
+#: The custom checker subroutine checks that the cosine of the student answer is
+#: equal to the cosine of the particular correct answer computed in the setup.
+#:
+#: An error message can be set in the answer checker by calling
+#: `Value->Error("message")`. This will set the message that is displayed to the
+#: student and exit the checker with an incorrect return value.
+#:
+#: Another tip for troubleshooting. To see all of the keys and values in the
+#: `$ansHash` when the submit answers button is pressed, include the following
+#: in the custom answer checker.
+#:
+#: ```{.perl}
+#: for my $key (keys %$ansHash) {
+#:     warn "key: $key, value: $ansHash->{$key}";
+#: }
+#: ```
+ans = Compute('pi/3').cmp( checker = lambda *args, **kwargs: None; return cos(correct) == cos(student); } )  # Stubbed Perl closure
+#:% section = statement
+pgml_block_0 = '''
+Enter a value of [`x`] for which [`\\cos(x) = [@ Compute('cos(pi/3)') @]`]
+
+[`x =`] [___]{ans}
+'''
+TEXT(PGML(pgml_block_0))
+#:% section = solution
+pgml_block_1 = '''
+Solution explanation goes here.
+'''
+SOLUTION(PGML(pgml_block_1))
+ENDDOCUMENT()
