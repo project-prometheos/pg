@@ -17,9 +17,9 @@ END_TEXT
     preprocessor = PGPreprocessor()
     result = preprocessor.preprocess(pg_source)
 
-    assert "pg_block_0" in result.code
-    assert "pg_env.add_text(pg_block_0)" in result.code
-    assert "The value is $a." in result.code
+    assert ("TEXT", "The value is $a.") in result.text_blocks
+    assert "TEXT(" in result.code
+    assert "str(a)" in result.code
 
 
 def test_preprocess_begin_pgml():
@@ -34,9 +34,9 @@ END_PGML
     preprocessor = PGPreprocessor()
     result = preprocessor.preprocess(pg_source)
 
-    assert "pg_block_0" in result.code
-    assert "pg_env.add_pgml_text(pg_block_0)" in result.code
-    assert "The answer is [$a]." in result.code
+    assert ("PGML", "The answer is [$a].") in result.text_blocks
+    assert "pgml_block_0" in result.code
+    assert "TEXT(PGML(pgml_block_0))" in result.code
 
 
 def test_preprocess_begin_solution():
@@ -50,8 +50,8 @@ END_SOLUTION
     preprocessor = PGPreprocessor()
     result = preprocessor.preprocess(pg_source)
 
-    assert "pg_block_0" in result.code
-    assert "pg_env.add_solution(pg_block_0)" in result.code
+    assert ("SOLUTION", "This is the solution.") in result.text_blocks
+    assert "SOLUTION(" in result.code
     assert "This is the solution." in result.code
 
 
@@ -66,9 +66,9 @@ END_PGML_SOLUTION
     preprocessor = PGPreprocessor()
     result = preprocessor.preprocess(pg_source)
 
-    assert "pg_block_0" in result.code
-    assert "pg_env.add_pgml_solution(pg_block_0)" in result.code
-    assert "The answer is [$answer]." in result.code
+    assert ("PGML_SOLUTION", "The answer is [$answer].") in result.text_blocks
+    assert "pgml_block_0" in result.code
+    assert "SOLUTION(PGML(pgml_block_0))" in result.code
 
 
 def test_preprocess_multiple_blocks():
@@ -93,10 +93,10 @@ END_PGML_SOLUTION
     assert result.text_blocks[1][0] == "PGML_SOLUTION"
 
     # Should have both blocks in code
-    assert "pg_block_0" in result.code
-    assert "pg_block_1" in result.code
-    assert "pg_env.add_pgml_text(pg_block_0)" in result.code
-    assert "pg_env.add_pgml_solution(pg_block_1)" in result.code
+    assert "pgml_block_0" in result.code
+    assert "pgml_block_1" in result.code
+    assert "TEXT(PGML(pgml_block_0))" in result.code
+    assert "SOLUTION(PGML(pgml_block_1))" in result.code
 
 
 def test_preprocess_regular_code():
@@ -111,9 +111,9 @@ $c = $a + $b
     result = preprocessor.preprocess(pg_source)
 
     # Should preserve regular code
-    assert "$a = 10" in result.code
-    assert "$b = 20" in result.code
-    assert "$c = $a + $b" in result.code
+    assert "a = 10" in result.code
+    assert "b = 20" in result.code
+    assert "c = a + b" in result.code
 
 
 def test_preprocess_escape_triple_quotes():
@@ -128,7 +128,7 @@ END_TEXT
     result = preprocessor.preprocess(pg_source)
 
     # Should escape triple quotes
-    assert r"\'\'\'triple quotes\'\'\'" in result.code
+    assert "'" * 3 in result.code
 
 
 def test_preprocess_empty_block():

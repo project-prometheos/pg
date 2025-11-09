@@ -1,0 +1,163 @@
+(pytorch-5090) PS D:\pg> pytest packages/pg_translator/tests/test_preprocessor.py 
+==================================================================================== test session starts ====================================================================================
+platform win32 -- Python 3.12.7, pytest-8.4.2, pluggy-1.6.0
+rootdir: D:\pg\packages\pg_translator
+configfile: pyproject.toml
+plugins: anyio-4.10.0, hypothesis-6.140.2, asyncio-1.2.0, cov-7.0.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 9 items                                                                                                                                                                            
+
+packages\pg_translator\tests\test_preprocessor.py FFFFFFF..                                                                                                                            [100%]
+
+========================================================================================= FAILURES ========================================================================================== 
+________________________________________________________________________________ test_preprocess_begin_text _________________________________________________________________________________ 
+
+    def test_preprocess_begin_text():
+        """Test preprocessing BEGIN_TEXT...END_TEXT."""
+        pg_source = """
+    $a = 2
+    BEGIN_TEXT
+    The value is $a.
+    END_TEXT
+    """
+
+        preprocessor = PGPreprocessor()
+        result = preprocessor.preprocess(pg_source)
+
+>       assert "pg_block_0" in result.code
+E       assert 'pg_block_0' in "\na = 2\nTEXT('The value is ', str(a), '.')\n"
+E        +  where "\na = 2\nTEXT('The value is ', str(a), '.')\n" = PreprocessResult(code="\na = 2\nTEXT('The value is ', str(a), '.')\n", text_blocks=[('TEXT', 'The value is $a.')], line_map={1: 1, 2: 2, 3: 3, 4: 6}).code
+
+packages\pg_translator\tests\test_preprocessor.py:20: AssertionError
+________________________________________________________________________________ test_preprocess_begin_pgml _________________________________________________________________________________ 
+
+    def test_preprocess_begin_pgml():
+        """Test preprocessing BEGIN_PGML...END_PGML."""
+        pg_source = """
+    $a = 3
+    BEGIN_PGML
+    The answer is [$a].
+    END_PGML
+    """
+
+        preprocessor = PGPreprocessor()
+        result = preprocessor.preprocess(pg_source)
+
+>       assert "pg_block_0" in result.code
+E       assert 'pg_block_0' in "\na = 3\npgml_block_0 = '''\\nThe answer is [$a].\\n'''\nTEXT(PGML(pgml_block_0))\n"
+E        +  where "\na = 3\npgml_block_0 = '''\\nThe answer is [$a].\\n'''\nTEXT(PGML(pgml_block_0))\n" = PreprocessResult(code="\na = 3\npgml_block_0 = '''\\nThe answer is [$a].\\n'''\nTEXT(PGML(pgml_block_0))\n", text_blocks=[('PGML', 'The answer is [$a].')], line_map={1: 1, 2: 2, 3: 3, 5: 6}).code
+
+packages\pg_translator\tests\test_preprocessor.py:37: AssertionError
+______________________________________________________________________________ test_preprocess_begin_solution _______________________________________________________________________________ 
+
+    def test_preprocess_begin_solution():
+        """Test preprocessing BEGIN_SOLUTION...END_SOLUTION."""
+        pg_source = """
+    BEGIN_SOLUTION
+    This is the solution.
+    END_SOLUTION
+    """
+
+        preprocessor = PGPreprocessor()
+        result = preprocessor.preprocess(pg_source)
+
+>       assert "pg_block_0" in result.code
+E       assert 'pg_block_0' in "\nSOLUTION('This is the solution.')\n"
+E        +  where "\nSOLUTION('This is the solution.')\n" = PreprocessResult(code="\nSOLUTION('This is the solution.')\n", text_blocks=[('SOLUTION', 'This is the solution.')], line_map={1: 1, 2: 2, 3: 5}).code
+
+packages\pg_translator\tests\test_preprocessor.py:53: AssertionError
+____________________________________________________________________________ test_preprocess_begin_pgml_solution ____________________________________________________________________________ 
+
+    def test_preprocess_begin_pgml_solution():
+        """Test preprocessing BEGIN_PGML_SOLUTION...END_PGML_SOLUTION."""
+        pg_source = """
+    BEGIN_PGML_SOLUTION
+    The answer is [$answer].
+    END_PGML_SOLUTION
+    """
+
+        preprocessor = PGPreprocessor()
+        result = preprocessor.preprocess(pg_source)
+
+>       assert "pg_block_0" in result.code
+E       assert 'pg_block_0' in "\npgml_block_0 = '''\\nThe answer is [$answer].\\n'''\nSOLUTION(PGML(pgml_block_0))\n"
+E        +  where "\npgml_block_0 = '''\\nThe answer is [$answer].\\n'''\nSOLUTION(PGML(pgml_block_0))\n" = PreprocessResult(code="\npgml_block_0 = '''\\nThe answer is [$answer].\\n'''\nSOLUTION(PGML(pgml_block_0))\n", text_blocks=[('PGML_SOLUTION', 'The answer is [$answer].')], line_map={1: 1, 2: 2, 4: 5}).code
+
+packages\pg_translator\tests\test_preprocessor.py:69: AssertionError
+______________________________________________________________________________ test_preprocess_multiple_blocks ______________________________________________________________________________ 
+
+    def test_preprocess_multiple_blocks():
+        """Test preprocessing multiple blocks."""
+        pg_source = """
+    $a = 5
+    BEGIN_PGML
+    Problem: [$a]
+    END_PGML
+
+    BEGIN_PGML_SOLUTION
+    Solution: [$a]
+    END_PGML_SOLUTION
+    """
+
+        preprocessor = PGPreprocessor()
+        result = preprocessor.preprocess(pg_source)
+
+        # Should have two blocks
+        assert len(result.text_blocks) == 2
+        assert result.text_blocks[0][0] == "PGML"
+        assert result.text_blocks[1][0] == "PGML_SOLUTION"
+
+        # Should have both blocks in code
+>       assert "pg_block_0" in result.code
+E       assert 'pg_block_0' in "\na = 5\npgml_block_0 = '''\\nProblem: [$a]\\n'''\nTEXT(PGML(pgml_block_0))\n\npgml_block_1 = '''\\nSolution: [$a]\\n'''\nSOLUTION(PGML(pgml_block_1))\n"     
+E        +  where "\na = 5\npgml_block_0 = '''\\nProblem: [$a]\\n'''\nTEXT(PGML(pgml_block_0))\n\npgml_block_1 = '''\\nSolution: [$a]\\n'''\nSOLUTION(PGML(pgml_block_1))\n" = PreprocessResult(code="\na = 5\npgml_block_0 = '''\\nProblem: [$a]\\n'''\nTEXT(PGML(pgml_block_0))\n\npgml_block_1 = '...locks=[('PGML', 'Problem: [$a]'), ('PGML_SOLUTION', 'Solution: [$a]')], line_map={1: 1, 2: 2, 3: 3, 5: 6, 6: 7, 8: 10}).code
+
+packages\pg_translator\tests\test_preprocessor.py:96: AssertionError
+_______________________________________________________________________________ test_preprocess_regular_code ________________________________________________________________________________ 
+
+    def test_preprocess_regular_code():
+        """Test that regular code passes through."""
+        pg_source = """
+    $a = 10
+    $b = 20
+    $c = $a + $b
+    """
+
+        preprocessor = PGPreprocessor()
+        result = preprocessor.preprocess(pg_source)
+
+        # Should preserve regular code
+>       assert "$a = 10" in result.code
+E       AssertionError: assert '$a = 10' in '\na = 10\nb = 20\nc = a + b\n'
+E        +  where '\na = 10\nb = 20\nc = a + b\n' = PreprocessResult(code='\na = 10\nb = 20\nc = a + b\n', text_blocks=[], line_map={1: 1, 2: 2, 3: 3, 4: 4, 5: 5}).code
+
+packages\pg_translator\tests\test_preprocessor.py:114: AssertionError
+___________________________________________________________________________ test_preprocess_escape_triple_quotes ____________________________________________________________________________ 
+
+    def test_preprocess_escape_triple_quotes():
+        """Test escaping triple quotes in text blocks."""
+        pg_source = """
+    BEGIN_TEXT
+    This has '''triple quotes''' inside.
+    END_TEXT
+    """
+
+        preprocessor = PGPreprocessor()
+        result = preprocessor.preprocess(pg_source)
+
+        # Should escape triple quotes
+>       assert r"\'\'\'triple quotes\'\'\'" in result.code
+E       assert "\\'\\'\\'triple quotes\\'\\'\\'" in '\nTEXT("This has \'\'\'triple quotes\'\'\' inside.")\n'
+E        +  where '\nTEXT("This has \'\'\'triple quotes\'\'\' inside.")\n' = PreprocessResult(code='\nTEXT("This has \'\'\'triple quotes\'\'\' inside.")\n', text_blocks=[('TEXT', "This has '''triple quotes''' inside.")], line_map={1: 1, 2: 2, 3: 5}).code
+
+packages\pg_translator\tests\test_preprocessor.py:131: AssertionError
+================================================================================== short test summary info ==================================================================================
+FAILED packages\pg_translator\tests\test_preprocessor.py::test_preprocess_begin_text - assert 'pg_block_0' in "\na = 2\nTEXT('The value is ', str(a), '.')\n"
+FAILED packages\pg_translator\tests\test_preprocessor.py::test_preprocess_begin_pgml - assert 'pg_block_0' in "\na = 3\npgml_block_0 = '''\\nThe answer is [$a].\\n'''\nTEXT(PGML(pgml_block_0))\n"
+FAILED packages\pg_translator\tests\test_preprocessor.py::test_preprocess_begin_solution - assert 'pg_block_0' in "\nSOLUTION('This is the solution.')\n"
+FAILED packages\pg_translator\tests\test_preprocessor.py::test_preprocess_begin_pgml_solution - assert 'pg_block_0' in "\npgml_block_0 = '''\\nThe answer is [$answer].\\n'''\nSOLUTION(PGML(pgml_block_0))\n"
+FAILED packages\pg_translator\tests\test_preprocessor.py::test_preprocess_multiple_blocks - assert 'pg_block_0' in "\na = 5\npgml_block_0 = '''\\nProblem: [$a]\\n'''\nTEXT(PGML(pgml_block_0))\n\npgml_block_1 = '''\\nSolution: [$a]\\n'''\nSOLUTION(PGML(pgml_block_1))\n"
+FAILED packages\pg_translator\tests\test_preprocessor.py::test_preprocess_regular_code - AssertionError: assert '$a = 10' in '\na = 10\nb = 20\nc = a + b\n'
+FAILED packages\pg_translator\tests\test_preprocessor.py::test_preprocess_escape_triple_quotes - assert "\\'\\'\\'triple quotes\\'\\'\\'" in '\nTEXT("This has \'\'\'triple quotes\'\'\' inside.")\n'
+================================================================================ 7 failed, 2 passed in 1.20s ================================================================================ 
+(pytorch-5090) PS D:\pg> 
