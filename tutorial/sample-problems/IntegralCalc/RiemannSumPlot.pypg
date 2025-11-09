@@ -34,7 +34,20 @@ plot = Plot( xmin = 0, xmax = 5, ymin = 0, ymax = 20, aria_label = 'Riemann Sum 
 f = Formula('x^2 + 3')
 plot.add_function( f, 'x', 0, 5, color = 'blue', name = 'A', fill = 'xaxis', fill_min = 0, fill_max = 4, fill_color = 'green', fill_opacity = 0.2 )
 dx = 0.5
-for i (0 .. 7) { my x0 = i * dx; my x1 = x0 + dx; my y = f.eval(x = x0 + dx / 2); plot.add_dataset( [ x0, 0 ], [ x0, y ], [ x1, y ], [ x1, 0 ], [ x0, 0 ], fill = 'self', fill_color = 'blue', fill_opacity = 0.2, ); }
+for i in range(0, (7) + 1):
+        x0 = i * dx
+        x1 = x0 + dx
+        y = f.eval(x = x0 + dx / 2)
+        plot.add_dataset(
+            [ x0, 0 ],
+            [ x0, y ],
+            [ x1, y ],
+            [ x1, 0 ],
+            [ x0, 0 ],
+            fill = 'self',
+            fill_color = 'blue',
+            fill_opacity = 0.2,
+        )
 image = image(plot)
 #:% section = statement
 #: The `[! !]{}{}` is a PGML format for inserting an image.

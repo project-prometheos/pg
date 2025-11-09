@@ -1,0 +1,1653 @@
+{
+  "summary": {
+    "total": 157,
+    "passed": 112,
+    "failed": 44,
+    "warnings": 0,
+    "no_output": 1,
+    "exceptions": 0
+  },
+  "categories": {
+    "Algebra": 29,
+    "Arithmetic": 1,
+    "Complex": 3,
+    "DiffCalc": 4,
+    "DiffCalcMV": 3,
+    "DiffEq": 3,
+    "Geometry": 3,
+    "IntegralCalc": 8,
+    "LinearAlgebra": 5,
+    "Misc": 17,
+    "Parametric": 11,
+    "ProblemTechniques": 43,
+    "Sequences": 4,
+    "Snippets": 1,
+    "Statistics": 4,
+    "Trig": 7,
+    "VectorCalc": 10,
+    "VectorFieldGraph3D": 1
+  },
+  "errors_by_type": {
+    "SyntaxError": {
+      "count": 25,
+      "problems": [
+        "GraphToolCustomChecker.pg",
+        "TableOfValues.pg",
+        "RowOperations.pg",
+        "ChemicalReaction.pg",
+        "DynamicGraphPolygon.pg",
+        "MatchingAlt.pg",
+        "MatchingGraphs.pg",
+        "MultipleChoiceCheckbox.pg",
+        "MultipleChoiceRadio.pg",
+        "ParametricPlot.pg"
+      ]
+    },
+    "NameError": {
+      "count": 8,
+      "problems": [
+        "StringOrOtherType.pg",
+        "PrimesInFormulas.pg",
+        "QuadrilateralGraphTool.pg",
+        "TriangleGraphTool.pg",
+        "RiemannSums.pg",
+        "ManyMultipleChoice.pg",
+        "Matching.pg",
+        "Scaffolding.pg"
+      ]
+    },
+    "TypeError": {
+      "count": 9,
+      "problems": [
+        "GraphShading.pg",
+        "GraphShadingPlot.pg",
+        "MatrixAnswer1.pg",
+        "CalculatingWithPoints.pg",
+        "ExtractingCoordinatesFromPoint.pg",
+        "LayoutTable.pg",
+        "SeriesTest.pg",
+        "MeanStdDev.pg",
+        "VectorOperations.pg"
+      ]
+    },
+    "AttributeError": {
+      "count": 2,
+      "problems": [
+        "RiemannSumPlot.pg",
+        "CustomAnswerListChecker.pg"
+      ]
+    }
+  },
+  "all_results": [
+    {
+      "name": "AlgebraicFractionAnswer.pg",
+      "path": "tutorial\\sample-problems\\Algebra\\AlgebraicFractionAnswer.pg",
+      "category": "Algebra",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "AnswerBlankInExponent.pg",
+      "path": "tutorial\\sample-problems\\Algebra\\AnswerBlankInExponent.pg",
+      "category": "Algebra",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "AnswerUpToMultiple.pg",
+      "path": "tutorial\\sample-problems\\Algebra\\AnswerUpToMultiple.pg",
+      "category": "Algebra",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "DomainRange.pg",
+      "path": "tutorial\\sample-problems\\Algebra\\DomainRange.pg",
+      "category": "Algebra",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "DynamicGraph.pg",
+      "path": "tutorial\\sample-problems\\Algebra\\DynamicGraph.pg",
+      "category": "Algebra",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "EquationDefiningFunction.pg",
+      "path": "tutorial\\sample-problems\\Algebra\\EquationDefiningFunction.pg",
+      "category": "Algebra",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "EquationImplicitFunction.pg",
+      "path": "tutorial\\sample-problems\\Algebra\\EquationImplicitFunction.pg",
+      "category": "Algebra",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "ExpandedPolynomial.pg",
+      "path": "tutorial\\sample-problems\\Algebra\\ExpandedPolynomial.pg",
+      "category": "Algebra",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "FactoredPolynomial.pg",
+      "path": "tutorial\\sample-problems\\Algebra\\FactoredPolynomial.pg",
+      "category": "Algebra",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "FractionAnswer.pg",
+      "path": "tutorial\\sample-problems\\Algebra\\FractionAnswer.pg",
+      "category": "Algebra",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "FunctionDecomposition.pg",
+      "path": "tutorial\\sample-problems\\Algebra\\FunctionDecomposition.pg",
+      "category": "Algebra",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "FunctionPlot.pg",
+      "path": "tutorial\\sample-problems\\Algebra\\FunctionPlot.pg",
+      "category": "Algebra",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "GraphToolCircle.pg",
+      "path": "tutorial\\sample-problems\\Algebra\\GraphToolCircle.pg",
+      "category": "Algebra",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "GraphToolCubic.pg",
+      "path": "tutorial\\sample-problems\\Algebra\\GraphToolCubic.pg",
+      "category": "Algebra",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "GraphToolCustomChecker.pg",
+      "path": "tutorial\\sample-problems\\Algebra\\GraphToolCustomChecker.pg",
+      "category": "Algebra",
+      "status": "failed",
+      "error_type": "SyntaxError",
+      "error_snippet": "SyntaxError: closing parenthesis ')' does not match opening parenthesis '{' (<problem>, line 69)",
+      "errors_full": "SyntaxError: closing parenthesis ')' does not match opening parenthesis '{' (<problem>, line 69)\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1755, in execute\n    compiled = compile(code, '<problem>', 'exec')\n  File \"<problem>\", line 69\n    gt = GraphTool(f\"{{circle, solid, ({h}, {k}), ({h} + {r}, {k})}}\").with_params( bBox = [ -11, 11, 11, -11 ], cmpOptions = { 'list_checker' :  lambda *args, **kwargs: None )  # Stubbed Perl closure\n                                                                                                                                                                               ^\nSyntaxError: closing parenthesis ')' does not match opening parenthesis '{'\n",
+      "has_output": false
+    },
+    {
+      "name": "GraphToolLine.pg",
+      "path": "tutorial\\sample-problems\\Algebra\\GraphToolLine.pg",
+      "category": "Algebra",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "GraphToolNumberLine.pg",
+      "path": "tutorial\\sample-problems\\Algebra\\GraphToolNumberLine.pg",
+      "category": "Algebra",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "GraphToolPoints.pg",
+      "path": "tutorial\\sample-problems\\Algebra\\GraphToolPoints.pg",
+      "category": "Algebra",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "InequalityAnswer.pg",
+      "path": "tutorial\\sample-problems\\Algebra\\InequalityAnswer.pg",
+      "category": "Algebra",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "LinearInequality.pg",
+      "path": "tutorial\\sample-problems\\Algebra\\LinearInequality.pg",
+      "category": "Algebra",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "Logarithms.pg",
+      "path": "tutorial\\sample-problems\\Algebra\\Logarithms.pg",
+      "category": "Algebra",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "NoSolution.pg",
+      "path": "tutorial\\sample-problems\\Algebra\\NoSolution.pg",
+      "category": "Algebra",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "PointAnswers.pg",
+      "path": "tutorial\\sample-problems\\Algebra\\PointAnswers.pg",
+      "category": "Algebra",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "ScalingTranslating.pg",
+      "path": "tutorial\\sample-problems\\Algebra\\ScalingTranslating.pg",
+      "category": "Algebra",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "SimpleFactoring.pg",
+      "path": "tutorial\\sample-problems\\Algebra\\SimpleFactoring.pg",
+      "category": "Algebra",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "SolutionForEquation.pg",
+      "path": "tutorial\\sample-problems\\Algebra\\SolutionForEquation.pg",
+      "category": "Algebra",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "StringOrOtherType.pg",
+      "path": "tutorial\\sample-problems\\Algebra\\StringOrOtherType.pg",
+      "category": "Algebra",
+      "status": "failed",
+      "error_type": "NameError",
+      "error_snippet": "NameError: name 'String' is not defined",
+      "errors_full": "NameError: name 'String' is not defined\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1758, in execute\n    exec(compiled, self.namespace)\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<problem>\", line 38, in <module>\nNameError: name 'String' is not defined\n",
+      "has_output": false
+    },
+    {
+      "name": "TableOfValues.pg",
+      "path": "tutorial\\sample-problems\\Algebra\\TableOfValues.pg",
+      "category": "Algebra",
+      "status": "failed",
+      "error_type": "SyntaxError",
+      "error_snippet": "SyntaxError: invalid syntax (<problem>, line 23)",
+      "errors_full": "SyntaxError: invalid syntax (<problem>, line 23)\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1755, in execute\n    compiled = compile(code, '<problem>', 'exec')\n  File \"<problem>\", line 23\n    answer = map { f.eval(x = _) } 0 .. 2\n                 ^\nSyntaxError: invalid syntax\n",
+      "has_output": false
+    },
+    {
+      "name": "UnorderedAnswers.pg",
+      "path": "tutorial\\sample-problems\\Algebra\\UnorderedAnswers.pg",
+      "category": "Algebra",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "UnitConversion.pg",
+      "path": "tutorial\\sample-problems\\Arithmetic\\UnitConversion.pg",
+      "category": "Arithmetic",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "ComplexOperations.pg",
+      "path": "tutorial\\sample-problems\\Complex\\ComplexOperations.pg",
+      "category": "Complex",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "LimitedComplex.pg",
+      "path": "tutorial\\sample-problems\\Complex\\LimitedComplex.pg",
+      "category": "Complex",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "OtherOperations.pg",
+      "path": "tutorial\\sample-problems\\Complex\\OtherOperations.pg",
+      "category": "Complex",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "AnswerWithUnits.pg",
+      "path": "tutorial\\sample-problems\\DiffCalc\\AnswerWithUnits.pg",
+      "category": "DiffCalc",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "DifferenceQuotient.pg",
+      "path": "tutorial\\sample-problems\\DiffCalc\\DifferenceQuotient.pg",
+      "category": "DiffCalc",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "DifferentiateFunction.pg",
+      "path": "tutorial\\sample-problems\\DiffCalc\\DifferentiateFunction.pg",
+      "category": "DiffCalc",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "LinearApprox.pg",
+      "path": "tutorial\\sample-problems\\DiffCalc\\LinearApprox.pg",
+      "category": "DiffCalc",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "ContourPlot.pg",
+      "path": "tutorial\\sample-problems\\DiffCalcMV\\ContourPlot.pg",
+      "category": "DiffCalcMV",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "ImplicitPlane.pg",
+      "path": "tutorial\\sample-problems\\DiffCalcMV\\ImplicitPlane.pg",
+      "category": "DiffCalcMV",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "VectorFieldPlot.pg",
+      "path": "tutorial\\sample-problems\\DiffCalcMV\\VectorFieldPlot.pg",
+      "category": "DiffCalcMV",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "GeneralSolutionODE.pg",
+      "path": "tutorial\\sample-problems\\DiffEq\\GeneralSolutionODE.pg",
+      "category": "DiffEq",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "HeavisideStep.pg",
+      "path": "tutorial\\sample-problems\\DiffEq\\HeavisideStep.pg",
+      "category": "DiffEq",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "PrimesInFormulas.pg",
+      "path": "tutorial\\sample-problems\\DiffEq\\PrimesInFormulas.pg",
+      "category": "DiffEq",
+      "status": "failed",
+      "error_type": "NameError",
+      "error_snippet": "NameError: name 're' is not defined",
+      "errors_full": "NameError: name 're' is not defined\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1758, in execute\n    exec(compiled, self.namespace)\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<problem>\", line 28, in <module>\nNameError: name 're' is not defined. Did you forget to import 're'?\n",
+      "has_output": false
+    },
+    {
+      "name": "LineSegmentGraphTool.pg",
+      "path": "tutorial\\sample-problems\\Geometry\\LineSegmentGraphTool.pg",
+      "category": "Geometry",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "QuadrilateralGraphTool.pg",
+      "path": "tutorial\\sample-problems\\Geometry\\QuadrilateralGraphTool.pg",
+      "category": "Geometry",
+      "status": "failed",
+      "error_type": "NameError",
+      "error_snippet": "NameError: name 'x3' is not defined",
+      "errors_full": "NameError: name 'x3' is not defined\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1758, in execute\n    exec(compiled, self.namespace)\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<problem>\", line 34, in <module>\nNameError: name 'x3' is not defined\n",
+      "has_output": false
+    },
+    {
+      "name": "TriangleGraphTool.pg",
+      "path": "tutorial\\sample-problems\\Geometry\\TriangleGraphTool.pg",
+      "category": "Geometry",
+      "status": "failed",
+      "error_type": "NameError",
+      "error_snippet": "NameError: name 'x3' is not defined",
+      "errors_full": "NameError: name 'x3' is not defined\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1758, in execute\n    exec(compiled, self.namespace)\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<problem>\", line 31, in <module>\nNameError: name 'x3' is not defined\n",
+      "has_output": false
+    },
+    {
+      "name": "DoubleIntegral.pg",
+      "path": "tutorial\\sample-problems\\IntegralCalc\\DoubleIntegral.pg",
+      "category": "IntegralCalc",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "GraphShading.pg",
+      "path": "tutorial\\sample-problems\\IntegralCalc\\GraphShading.pg",
+      "category": "IntegralCalc",
+      "status": "failed",
+      "error_type": "TypeError",
+      "error_snippet": "TypeError: can only concatenate str (not \"int\") to str",
+      "errors_full": "TypeError: can only concatenate str (not \"int\") to str\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1758, in execute\n    exec(compiled, self.namespace)\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<problem>\", line 56, in <module>\nTypeError: can only concatenate str (not \"int\") to str\n",
+      "has_output": false
+    },
+    {
+      "name": "GraphShadingPlot.pg",
+      "path": "tutorial\\sample-problems\\IntegralCalc\\GraphShadingPlot.pg",
+      "category": "IntegralCalc",
+      "status": "failed",
+      "error_type": "TypeError",
+      "error_snippet": "TypeError: can only concatenate str (not \"int\") to str",
+      "errors_full": "TypeError: can only concatenate str (not \"int\") to str\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1758, in execute\n    exec(compiled, self.namespace)\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<problem>\", line 32, in <module>\nTypeError: can only concatenate str (not \"int\") to str\n",
+      "has_output": false
+    },
+    {
+      "name": "IndefiniteIntegrals.pg",
+      "path": "tutorial\\sample-problems\\IntegralCalc\\IndefiniteIntegrals.pg",
+      "category": "IntegralCalc",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "LimitsOfIntegration.pg",
+      "path": "tutorial\\sample-problems\\IntegralCalc\\LimitsOfIntegration.pg",
+      "category": "IntegralCalc",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "RiemannSumPlot.pg",
+      "path": "tutorial\\sample-problems\\IntegralCalc\\RiemannSumPlot.pg",
+      "category": "IntegralCalc",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error_snippet": "AttributeError: 'Plot' object has no attribute 'add_dataset'",
+      "errors_full": "AttributeError: 'Plot' object has no attribute 'add_dataset'\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1758, in execute\n    exec(compiled, self.namespace)\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<problem>\", line 41, in <module>\nAttributeError: 'Plot' object has no attribute 'add_dataset'\n",
+      "has_output": false
+    },
+    {
+      "name": "RiemannSums.pg",
+      "path": "tutorial\\sample-problems\\IntegralCalc\\RiemannSums.pg",
+      "category": "IntegralCalc",
+      "status": "failed",
+      "error_type": "NameError",
+      "error_snippet": "NameError: name 'x' is not defined",
+      "errors_full": "NameError: name 'x' is not defined\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1758, in execute\n    exec(compiled, self.namespace)\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<problem>\", line 46, in <module>\nNameError: name 'x' is not defined\n",
+      "has_output": false
+    },
+    {
+      "name": "VolumeOfRevolution.pg",
+      "path": "tutorial\\sample-problems\\IntegralCalc\\VolumeOfRevolution.pg",
+      "category": "IntegralCalc",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "MatrixAnswer1.pg",
+      "path": "tutorial\\sample-problems\\LinearAlgebra\\MatrixAnswer1.pg",
+      "category": "LinearAlgebra",
+      "status": "failed",
+      "error_type": "TypeError",
+      "error_snippet": "TypeError: 'Matrix' object is not callable",
+      "errors_full": "TypeError: 'Matrix' object is not callable\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1758, in execute\n    exec(compiled, self.namespace)\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<problem>\", line 32, in <module>\nTypeError: 'Matrix' object is not callable\n",
+      "has_output": false
+    },
+    {
+      "name": "MatrixAnswer2.pg",
+      "path": "tutorial\\sample-problems\\LinearAlgebra\\MatrixAnswer2.pg",
+      "category": "LinearAlgebra",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "MatrixCustomAnswerChecker.pg",
+      "path": "tutorial\\sample-problems\\LinearAlgebra\\MatrixCustomAnswerChecker.pg",
+      "category": "LinearAlgebra",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "MatrixOperations.pg",
+      "path": "tutorial\\sample-problems\\LinearAlgebra\\MatrixOperations.pg",
+      "category": "LinearAlgebra",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "RowOperations.pg",
+      "path": "tutorial\\sample-problems\\LinearAlgebra\\RowOperations.pg",
+      "category": "LinearAlgebra",
+      "status": "failed",
+      "error_type": "SyntaxError",
+      "error_snippet": "SyntaxError: invalid syntax (<problem>, line 29)",
+      "errors_full": "SyntaxError: invalid syntax (<problem>, line 29)\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1755, in execute\n    compiled = compile(code, '<problem>', 'exec')\n  File \"<problem>\", line 29\n    if ((A.row(1):\n                 ^\nSyntaxError: invalid syntax\n",
+      "has_output": false
+    },
+    {
+      "name": "ChemicalReaction.pg",
+      "path": "tutorial\\sample-problems\\Misc\\ChemicalReaction.pg",
+      "category": "Misc",
+      "status": "failed",
+      "error_type": "SyntaxError",
+      "error_snippet": "SyntaxError: invalid syntax (<problem>, line 46)",
+      "errors_full": "SyntaxError: invalid syntax (<problem>, line 46)\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1755, in execute\n    compiled = compile(code, '<problem>', 'exec')\n  File \"<problem>\", line 46\n    for i in range(0, (3) + 1):\n    ^^^\nSyntaxError: invalid syntax\n",
+      "has_output": false
+    },
+    {
+      "name": "DraggableProof.pg",
+      "path": "tutorial\\sample-problems\\Misc\\DraggableProof.pg",
+      "category": "Misc",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "DynamicGraphPolygon.pg",
+      "path": "tutorial\\sample-problems\\Misc\\DynamicGraphPolygon.pg",
+      "category": "Misc",
+      "status": "failed",
+      "error_type": "SyntaxError",
+      "error_snippet": "SyntaxError: invalid syntax (<problem>, line 39)",
+      "errors_full": "SyntaxError: invalid syntax (<problem>, line 39)\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1755, in execute\n    compiled = compile(code, '<problem>', 'exec')\n  File \"<problem>\", line 39\n    plot_setup = qq/\n                    ^\nSyntaxError: invalid syntax\n",
+      "has_output": false
+    },
+    {
+      "name": "EssayAnswer.pg",
+      "path": "tutorial\\sample-problems\\Misc\\EssayAnswer.pg",
+      "category": "Misc",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "FormulaAnswer.pg",
+      "path": "tutorial\\sample-problems\\Misc\\FormulaAnswer.pg",
+      "category": "Misc",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "FormulaDomain.pg",
+      "path": "tutorial\\sample-problems\\Misc\\FormulaDomain.pg",
+      "category": "Misc",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "FormulaTestPoints.pg",
+      "path": "tutorial\\sample-problems\\Misc\\FormulaTestPoints.pg",
+      "category": "Misc",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "IframeEmbedding.pg",
+      "path": "tutorial\\sample-problems\\Misc\\IframeEmbedding.pg",
+      "category": "Misc",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "ManyMultipleChoice.pg",
+      "path": "tutorial\\sample-problems\\Misc\\ManyMultipleChoice.pg",
+      "category": "Misc",
+      "status": "failed",
+      "error_type": "NameError",
+      "error_snippet": "NameError: name 'install_problem_grader' is not defined",
+      "errors_full": "NameError: name 'install_problem_grader' is not defined\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1758, in execute\n    exec(compiled, self.namespace)\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<problem>\", line 40, in <module>\nNameError: name 'install_problem_grader' is not defined\n",
+      "has_output": false
+    },
+    {
+      "name": "Matching.pg",
+      "path": "tutorial\\sample-problems\\Misc\\Matching.pg",
+      "category": "Misc",
+      "status": "failed",
+      "error_type": "NameError",
+      "error_snippet": "NameError: name 'install_problem_grader' is not defined",
+      "errors_full": "NameError: name 'install_problem_grader' is not defined\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1758, in execute\n    exec(compiled, self.namespace)\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<problem>\", line 44, in <module>\nNameError: name 'install_problem_grader' is not defined\n",
+      "has_output": false
+    },
+    {
+      "name": "MatchingAlt.pg",
+      "path": "tutorial\\sample-problems\\Misc\\MatchingAlt.pg",
+      "category": "Misc",
+      "status": "failed",
+      "error_type": "SyntaxError",
+      "error_snippet": "SyntaxError: invalid syntax (<problem>, line 56)",
+      "errors_full": "SyntaxError: invalid syntax (<problem>, line 56)\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1755, in execute\n    compiled = compile(code, '<problem>', 'exec')\n  File \"<problem>\", line 56\n    q_and_a = map { splice(q_and_a, random(0, #q_and_a)) } 0 .. #q_and_a\n                  ^\nSyntaxError: invalid syntax\n",
+      "has_output": false
+    },
+    {
+      "name": "MatchingGraphs.pg",
+      "path": "tutorial\\sample-problems\\Misc\\MatchingGraphs.pg",
+      "category": "Misc",
+      "status": "failed",
+      "error_type": "SyntaxError",
+      "error_snippet": "SyntaxError: invalid syntax. Perhaps you forgot a comma? (<problem>, line 34)",
+      "errors_full": "SyntaxError: invalid syntax. Perhaps you forgot a comma? (<problem>, line 34)\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1755, in execute\n    compiled = compile(code, '<problem>', 'exec')\n  File \"<problem>\", line 34\n    for (plots) { my graph = createTikZImage(); graph.tikzLibraries('arrows.meta'); graph.BEGIN_TIKZ() \\tikzset{>={Stealth[scale = 1.5]}} \\filldraw[ draw = LightBlue, fill = white, rounded corners = 10pt, thick, use as bounding box ] (-6, -6) rectangle (6, 6); \\draw[., thick] (-6, 0) -- (6, 0) node[above left, outer sep = 3pt] {\\(x\\)}; \\foreach \\x in {-5, ..., -1, 1, 2, ..., 5} \\draw (\\x, 5pt) -- (\\x, -5pt) node[below] {\\(\\x\\)}; \\draw[., thick] (0, -6) -- (0, 6) node[below right, outer sep = 3pt] {\\(y\\)}; \\foreach \\y in {-5, ..., -1, 1, 2, ..., 5} \\draw (5pt, \\y) -- (-5pt, \\y) node[left] {\\(\\y\\)}; \\draw[blue, ultra thick] plot[domain = _['domain'], smooth] (\\x, {_['form']}); END_TIKZ _['graph'] = graph; }\n                  ^^^^^^^^\nSyntaxError: invalid syntax. Perhaps you forgot a comma?\n",
+      "has_output": false
+    },
+    {
+      "name": "MultipleChoiceCheckbox.pg",
+      "path": "tutorial\\sample-problems\\Misc\\MultipleChoiceCheckbox.pg",
+      "category": "Misc",
+      "status": "failed",
+      "error_type": "SyntaxError",
+      "error_snippet": "SyntaxError: invalid syntax. Perhaps you forgot a comma? (<problem>, line 40)",
+      "errors_full": "SyntaxError: invalid syntax. Perhaps you forgot a comma? (<problem>, line 40)\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1755, in execute\n    compiled = compile(code, '<problem>', 'exec')\n  File \"<problem>\", line 40\n    checks3 = CheckboxList( [ \"\\\\(e^{x^2} e^{1/x}\\\\)\", \"\\\\(e^{x^2} e^{x^{-1}}\\\\)\", \"\\\\(\\\\displaystyle\\\\frac{e^{x^2}}{e^x}\\\\)\", 'None of the above' ], [ 0, 1 ], separator = SPACE x 10 )\n                                                                                                                                                                            ^^^^^^^\nSyntaxError: invalid syntax. Perhaps you forgot a comma?\n",
+      "has_output": false
+    },
+    {
+      "name": "MultipleChoicePopup.pg",
+      "path": "tutorial\\sample-problems\\Misc\\MultipleChoicePopup.pg",
+      "category": "Misc",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "MultipleChoiceRadio.pg",
+      "path": "tutorial\\sample-problems\\Misc\\MultipleChoiceRadio.pg",
+      "category": "Misc",
+      "status": "failed",
+      "error_type": "SyntaxError",
+      "error_snippet": "SyntaxError: invalid syntax. Perhaps you forgot a comma? (<problem>, line 32)",
+      "errors_full": "SyntaxError: invalid syntax. Perhaps you forgot a comma? (<problem>, line 32)\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1755, in execute\n    compiled = compile(code, '<problem>', 'exec')\n  File \"<problem>\", line 32\n    radio2 = RadioButtons( [ [ 'Red', 'Blue', 'Green' ], 'None of these' ], 2, separator = SPACE x 5 )\n                                                                                           ^^^^^^^\nSyntaxError: invalid syntax. Perhaps you forgot a comma?\n",
+      "has_output": false
+    },
+    {
+      "name": "RandomPerson.pg",
+      "path": "tutorial\\sample-problems\\Misc\\RandomPerson.pg",
+      "category": "Misc",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "Scaffolding.pg",
+      "path": "tutorial\\sample-problems\\Misc\\Scaffolding.pg",
+      "category": "Misc",
+      "status": "failed",
+      "error_type": "NameError",
+      "error_snippet": "NameError: name 'Scaffold' is not defined",
+      "errors_full": "NameError: name 'Scaffold' is not defined\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1758, in execute\n    exec(compiled, self.namespace)\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<problem>\", line 25, in <module>\nNameError: name 'Scaffold' is not defined\n",
+      "has_output": false
+    },
+    {
+      "name": "ParametricEquationAnswers.pg",
+      "path": "tutorial\\sample-problems\\Parametric\\ParametricEquationAnswers.pg",
+      "category": "Parametric",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "ParametricPlot.pg",
+      "path": "tutorial\\sample-problems\\Parametric\\ParametricPlot.pg",
+      "category": "Parametric",
+      "status": "failed",
+      "error_type": "SyntaxError",
+      "error_snippet": "SyntaxError: invalid syntax (<problem>, line 61)",
+      "errors_full": "SyntaxError: invalid syntax (<problem>, line 61)\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1755, in execute\n    compiled = compile(code, '<problem>', 'exec')\n  File \"<problem>\", line 61\n    m = y.D('t').eval(t = 'pi/3') / x->D('t')->eval(t => 'pi/3')\n                                     ^^\nSyntaxError: invalid syntax\n",
+      "has_output": false
+    },
+    {
+      "name": "ParametricPlotAlt.pg",
+      "path": "tutorial\\sample-problems\\Parametric\\ParametricPlotAlt.pg",
+      "category": "Parametric",
+      "status": "failed",
+      "error_type": "SyntaxError",
+      "error_snippet": "SyntaxError: invalid syntax (<problem>, line 32)",
+      "errors_full": "SyntaxError: invalid syntax (<problem>, line 32)\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1755, in execute\n    compiled = compile(code, '<problem>', 'exec')\n  File \"<problem>\", line 32\n    n = random(1,  $x = Compute('2sin(2t)'); x0 = x.eval(t = tvals[n]); y = Compute('2sin(3t)'); y0 = y.eval(t = tvals[n])\n                   ^\nSyntaxError: invalid syntax\n",
+      "has_output": false
+    },
+    {
+      "name": "PolarGraph.pg",
+      "path": "tutorial\\sample-problems\\Parametric\\PolarGraph.pg",
+      "category": "Parametric",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "PolarGraphPlot.pg",
+      "path": "tutorial\\sample-problems\\Parametric\\PolarGraphPlot.pg",
+      "category": "Parametric",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "Spacecurve.pg",
+      "path": "tutorial\\sample-problems\\Parametric\\Spacecurve.pg",
+      "category": "Parametric",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "SpaceCurveGraph.pg",
+      "path": "tutorial\\sample-problems\\Parametric\\SpaceCurveGraph.pg",
+      "category": "Parametric",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "SurfaceGraph.pg",
+      "path": "tutorial\\sample-problems\\Parametric\\SurfaceGraph.pg",
+      "category": "Parametric",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "VectorParametricDerivative.pg",
+      "path": "tutorial\\sample-problems\\Parametric\\VectorParametricDerivative.pg",
+      "category": "Parametric",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "VectorParametricFunction.pg",
+      "path": "tutorial\\sample-problems\\Parametric\\VectorParametricFunction.pg",
+      "category": "Parametric",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "VectorParametricLines.pg",
+      "path": "tutorial\\sample-problems\\Parametric\\VectorParametricLines.pg",
+      "category": "Parametric",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "AdaptiveParameters.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\AdaptiveParameters.pg",
+      "category": "ProblemTechniques",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "AnswerHints.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\AnswerHints.pg",
+      "category": "ProblemTechniques",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "AnswerInExponent.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\AnswerInExponent.pg",
+      "category": "ProblemTechniques",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "AnswerIsSolutionToEquation.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\AnswerIsSolutionToEquation.pg",
+      "category": "ProblemTechniques",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "AnyAnswerMarkedCorrect.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\AnyAnswerMarkedCorrect.pg",
+      "category": "ProblemTechniques",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "CalculatingWithPoints.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\CalculatingWithPoints.pg",
+      "category": "ProblemTechniques",
+      "status": "failed",
+      "error_type": "TypeError",
+      "error_snippet": "TypeError: 'list' object is not callable",
+      "errors_full": "TypeError: 'list' object is not callable\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1758, in execute\n    exec(compiled, self.namespace)\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<problem>\", line 43, in <module>\nTypeError: 'list' object is not callable\n",
+      "has_output": false
+    },
+    {
+      "name": "ComposingFunctions.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\ComposingFunctions.pg",
+      "category": "ProblemTechniques",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "ConstantsInProblems.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\ConstantsInProblems.pg",
+      "category": "ProblemTechniques",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "CustomAnswerCheckers.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\CustomAnswerCheckers.pg",
+      "category": "ProblemTechniques",
+      "status": "failed",
+      "error_type": "SyntaxError",
+      "error_snippet": "SyntaxError: closing parenthesis '}' does not match opening parenthesis '(' (<problem>, line 42)",
+      "errors_full": "SyntaxError: closing parenthesis '}' does not match opening parenthesis '(' (<problem>, line 42)\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1755, in execute\n    compiled = compile(code, '<problem>', 'exec')\n  File \"<problem>\", line 42\n    ans = Compute('pi/3').cmp( checker = lambda *args, **kwargs: None; return cos(correct) == cos(student); } )  # Stubbed Perl closure\n                                                                                                            ^\nSyntaxError: closing parenthesis '}' does not match opening parenthesis '('\n",
+      "has_output": false
+    },
+    {
+      "name": "CustomAnswerListChecker.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\CustomAnswerListChecker.pg",
+      "category": "ProblemTechniques",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error_snippet": "AttributeError: 'List' object has no attribute 'cmp'",
+      "errors_full": "AttributeError: 'List' object has no attribute 'cmp'\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1758, in execute\n    exec(compiled, self.namespace)\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<problem>\", line 66, in <module>\nAttributeError: 'List' object has no attribute 'cmp'\n",
+      "has_output": false
+    },
+    {
+      "name": "DataTables.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\DataTables.pg",
+      "category": "ProblemTechniques",
+      "status": "failed",
+      "error_type": "SyntaxError",
+      "error_snippet": "SyntaxError: invalid syntax (<problem>, line 61)",
+      "errors_full": "SyntaxError: invalid syntax (<problem>, line 61)\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1755, in execute\n    compiled = compile(code, '<problem>', 'exec')\n  File \"<problem>\", line 61\n    rows = map { [ _, random(1, 10) ] } 1 .. 5\n               ^\nSyntaxError: invalid syntax\n",
+      "has_output": false
+    },
+    {
+      "name": "DefiningFunctions.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\DefiningFunctions.pg",
+      "category": "ProblemTechniques",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "DifferentiatingFormulas.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\DifferentiatingFormulas.pg",
+      "category": "ProblemTechniques",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "DigitsTolType.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\DigitsTolType.pg",
+      "category": "ProblemTechniques",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "DisableFunctions.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\DisableFunctions.pg",
+      "category": "ProblemTechniques",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "DraggableSubsets.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\DraggableSubsets.pg",
+      "category": "ProblemTechniques",
+      "status": "failed",
+      "error_type": "SyntaxError",
+      "error_snippet": "SyntaxError: invalid syntax (<problem>, line 44)",
+      "errors_full": "SyntaxError: invalid syntax (<problem>, line 44)\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1755, in execute\n    compiled = compile(code, '<problem>', 'exec')\n  File \"<problem>\", line 44\n    draggable = DraggableSubsets( [ 'mouse',        'ebola bacteria', 'flu virus',    'krill', 'house cat',    'emu', 'coyote',       'tapir', 'hippopotamus', 'elephant', 'blue whale',   'eagle' ], [ [], [ 0, 4, 6, 7, 8, 9, 10 ], [ 5, 11 ], [ 1, 2, 3 ] ], DefaultSubsets = [ { 'label' :  'Animals', 'indices' :  [ 0 .. 11 ] }, { 'label' :  'Mammals', 'indices' :  [] }, { 'label' :  'Birds',   'indices' :  [] }, { 'label' :  'Other',   'indices' :  [] } ], AllowNewBuckets = 0, OrderedSubsets = 1 )\n                                                                                                                                                                                                                                                                                                                             ^\nSyntaxError: invalid syntax\n",
+      "has_output": false
+    },
+    {
+      "name": "EquationEvaluators.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\EquationEvaluators.pg",
+      "category": "ProblemTechniques",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "EquationsDefiningFunctions.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\EquationsDefiningFunctions.pg",
+      "category": "ProblemTechniques",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "ErrorMessageCustomization.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\ErrorMessageCustomization.pg",
+      "category": "ProblemTechniques",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "EvalVersusSubstitute.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\EvalVersusSubstitute.pg",
+      "category": "ProblemTechniques",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "ExtractingCoordinatesFromPoint.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\ExtractingCoordinatesFromPoint.pg",
+      "category": "ProblemTechniques",
+      "status": "failed",
+      "error_type": "TypeError",
+      "error_snippet": "TypeError: 'list' object is not callable",
+      "errors_full": "TypeError: 'list' object is not callable\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1758, in execute\n    exec(compiled, self.namespace)\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<problem>\", line 52, in <module>\nTypeError: 'list' object is not callable\n",
+      "has_output": false
+    },
+    {
+      "name": "FactoringAndExpanding.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\FactoringAndExpanding.pg",
+      "category": "ProblemTechniques",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "FormattingDecimals.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\FormattingDecimals.pg",
+      "category": "ProblemTechniques",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "FormulasToConstants.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\FormulasToConstants.pg",
+      "category": "ProblemTechniques",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "GraphsInTables.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\GraphsInTables.pg",
+      "category": "ProblemTechniques",
+      "status": "failed",
+      "error_type": "SyntaxError",
+      "error_snippet": "SyntaxError: unexpected character after line continuation character (<problem>, line 46)",
+      "errors_full": "SyntaxError: unexpected character after line continuation character (<problem>, line 46)\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1755, in execute\n    compiled = compile(code, '<problem>', 'exec')\n  File \"<problem>\", line 46\n    \\tikzset{>={Stealth[scale = 1.5]}}\n     ^\nSyntaxError: unexpected character after line continuation character\n",
+      "has_output": false
+    },
+    {
+      "name": "HtmlLinks.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\HtmlLinks.pg",
+      "category": "ProblemTechniques",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "Images.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\Images.pg",
+      "category": "ProblemTechniques",
+      "status": "failed",
+      "error_type": "SyntaxError",
+      "error_snippet": "SyntaxError: unexpected character after line continuation character (<problem>, line 31)",
+      "errors_full": "SyntaxError: unexpected character after line continuation character (<problem>, line 31)\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1755, in execute\n    compiled = compile(code, '<problem>', 'exec')\n  File \"<problem>\", line 31\n    \\xymatrix{ A \\ar[r] & B \\ar[d] \\\\\\\\ D \\ar[u] & C \\ar[l] }\n     ^\nSyntaxError: unexpected character after line continuation character\n",
+      "has_output": false
+    },
+    {
+      "name": "InequalityEvaluators.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\InequalityEvaluators.pg",
+      "category": "ProblemTechniques",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "IntervalEvaluators.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\IntervalEvaluators.pg",
+      "category": "ProblemTechniques",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "Knowls.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\Knowls.pg",
+      "category": "ProblemTechniques",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "LayoutTable.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\LayoutTable.pg",
+      "category": "ProblemTechniques",
+      "status": "failed",
+      "error_type": "TypeError",
+      "error_snippet": "TypeError: can only concatenate str (not \"int\") to str",
+      "errors_full": "TypeError: can only concatenate str (not \"int\") to str\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1758, in execute\n    exec(compiled, self.namespace)\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<problem>\", line 78, in <module>\nTypeError: can only concatenate str (not \"int\") to str\n",
+      "has_output": false
+    },
+    {
+      "name": "Multianswer.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\Multianswer.pg",
+      "category": "ProblemTechniques",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "NumericalTolerance.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\NumericalTolerance.pg",
+      "category": "ProblemTechniques",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "OtherVariables.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\OtherVariables.pg",
+      "category": "ProblemTechniques",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "Percent.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\Percent.pg",
+      "category": "ProblemTechniques",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "RandomFunction.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\RandomFunction.pg",
+      "category": "ProblemTechniques",
+      "status": "failed",
+      "error_type": "SyntaxError",
+      "error_snippet": "SyntaxError: '(' was never closed (<problem>, line 31)",
+      "errors_full": "SyntaxError: '(' was never closed (<problem>, line 31)\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1755, in execute\n    compiled = compile(code, '<problem>', 'exec')\n  File \"<problem>\", line 31\n    f = Formula(functions[ random(0, #functions) ]).reduce\n                                 ^\nSyntaxError: '(' was never closed\n",
+      "has_output": false
+    },
+    {
+      "name": "RestrictAnswerToFraction.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\RestrictAnswerToFraction.pg",
+      "category": "ProblemTechniques",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "RestrictingFunctions.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\RestrictingFunctions.pg",
+      "category": "ProblemTechniques",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "SimplePopUp.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\SimplePopUp.pg",
+      "category": "ProblemTechniques",
+      "status": "failed",
+      "error_type": "SyntaxError",
+      "error_snippet": "SyntaxError: invalid syntax (<problem>, line 37)",
+      "errors_full": "SyntaxError: invalid syntax (<problem>, line 37)\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1755, in execute\n    compiled = compile(code, '<problem>', 'exec')\n  File \"<problem>\", line 37\n    BEGIN_PGML - [_]{popup} (Answer: 'three')\n                    ^\nSyntaxError: invalid syntax\n",
+      "has_output": false
+    },
+    {
+      "name": "StaticImages.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\StaticImages.pg",
+      "category": "ProblemTechniques",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "StringsInContext.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\StringsInContext.pg",
+      "category": "ProblemTechniques",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "TikZImages.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\TikZImages.pg",
+      "category": "ProblemTechniques",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "WeightedGrader.pg",
+      "path": "tutorial\\sample-problems\\ProblemTechniques\\WeightedGrader.pg",
+      "category": "ProblemTechniques",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "AnswerOrderedList.pg",
+      "path": "tutorial\\sample-problems\\Sequences\\AnswerOrderedList.pg",
+      "category": "Sequences",
+      "status": "failed",
+      "error_type": "SyntaxError",
+      "error_snippet": "SyntaxError: invalid syntax (<problem>, line 24)",
+      "errors_full": "SyntaxError: invalid syntax (<problem>, line 24)\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1755, in execute\n    compiled = compile(code, '<problem>', 'exec')\n  File \"<problem>\", line 24\n    for (2 .. 6) { seq[_] = seq[ _ - 1 ] + seq[ _ - 2 ]; }\n            ^\nSyntaxError: invalid syntax\n",
+      "has_output": false
+    },
+    {
+      "name": "ExplicitSequence.pg",
+      "path": "tutorial\\sample-problems\\Sequences\\ExplicitSequence.pg",
+      "category": "Sequences",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "RecursiveSequence.pg",
+      "path": "tutorial\\sample-problems\\Sequences\\RecursiveSequence.pg",
+      "category": "Sequences",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "SeriesTest.pg",
+      "path": "tutorial\\sample-problems\\Sequences\\SeriesTest.pg",
+      "category": "Sequences",
+      "status": "failed",
+      "error_type": "TypeError",
+      "error_snippet": "TypeError: can only concatenate str (not \"int\") to str",
+      "errors_full": "TypeError: can only concatenate str (not \"int\") to str\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1758, in execute\n    exec(compiled, self.namespace)\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<problem>\", line 48, in <module>\nTypeError: can only concatenate str (not \"int\") to str\n",
+      "has_output": false
+    },
+    {
+      "name": "CommentsForInstructors.pg",
+      "path": "tutorial\\sample-problems\\Snippets\\CommentsForInstructors.pg",
+      "category": "Snippets",
+      "status": "no_output",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": false
+    },
+    {
+      "name": "BarGraph.pg",
+      "path": "tutorial\\sample-problems\\Statistics\\BarGraph.pg",
+      "category": "Statistics",
+      "status": "failed",
+      "error_type": "SyntaxError",
+      "error_snippet": "SyntaxError: invalid syntax (<problem>, line 60)",
+      "errors_full": "SyntaxError: invalid syntax (<problem>, line 60)\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1755, in execute\n    compiled = compile(code, '<problem>', 'exec')\n  File \"<problem>\", line 60\n    num_students += _ for grades\n                      ^^^\nSyntaxError: invalid syntax\n",
+      "has_output": false
+    },
+    {
+      "name": "LinearRegression.pg",
+      "path": "tutorial\\sample-problems\\Statistics\\LinearRegression.pg",
+      "category": "Statistics",
+      "status": "failed",
+      "error_type": "SyntaxError",
+      "error_snippet": "SyntaxError: invalid syntax (<problem>, line 27)",
+      "errors_full": "SyntaxError: invalid syntax (<problem>, line 27)\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1755, in execute\n    compiled = compile(code, '<problem>', 'exec')\n  File \"<problem>\", line 27\n    for (0 .. 9) { x.[_] = random(2.5, 7.5, 0.5); y.[_] = m * x.[_] + b; }\n            ^\nSyntaxError: invalid syntax\n",
+      "has_output": false
+    },
+    {
+      "name": "MeanStdDev.pg",
+      "path": "tutorial\\sample-problems\\Statistics\\MeanStdDev.pg",
+      "category": "Statistics",
+      "status": "failed",
+      "error_type": "TypeError",
+      "error_snippet": "TypeError: type 'map' is not subscriptable",
+      "errors_full": "TypeError: type 'map' is not subscriptable\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1758, in execute\n    exec(compiled, self.namespace)\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<problem>\", line 22, in <module>\nTypeError: type 'map' is not subscriptable\n",
+      "has_output": false
+    },
+    {
+      "name": "ScatterPlot.pg",
+      "path": "tutorial\\sample-problems\\Statistics\\ScatterPlot.pg",
+      "category": "Statistics",
+      "status": "failed",
+      "error_type": "SyntaxError",
+      "error_snippet": "SyntaxError: invalid syntax (<problem>, line 33)",
+      "errors_full": "SyntaxError: invalid syntax (<problem>, line 33)\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1755, in execute\n    compiled = compile(code, '<problem>', 'exec')\n  File \"<problem>\", line 33\n    x = [ map { _.[0] } data ]\n              ^\nSyntaxError: invalid syntax\n",
+      "has_output": false
+    },
+    {
+      "name": "DisableFunctionsTrig.pg",
+      "path": "tutorial\\sample-problems\\Trig\\DisableFunctionsTrig.pg",
+      "category": "Trig",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "DraggableIdentity.pg",
+      "path": "tutorial\\sample-problems\\Trig\\DraggableIdentity.pg",
+      "category": "Trig",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "PeriodicAnswers.pg",
+      "path": "tutorial\\sample-problems\\Trig\\PeriodicAnswers.pg",
+      "category": "Trig",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "ProvingTrigIdentities.pg",
+      "path": "tutorial\\sample-problems\\Trig\\ProvingTrigIdentities.pg",
+      "category": "Trig",
+      "status": "failed",
+      "error_type": "SyntaxError",
+      "error_snippet": "SyntaxError: invalid syntax (<problem>, line 31)",
+      "errors_full": "SyntaxError: invalid syntax (<problem>, line 31)\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1755, in execute\n    compiled = compile(code, '<problem>', 'exec')\n  File \"<problem>\", line 31\n    our ISA = qw(Parser::Function::numeric)\n        ^^^\nSyntaxError: invalid syntax\n",
+      "has_output": false
+    },
+    {
+      "name": "SpecialTrigValues.pg",
+      "path": "tutorial\\sample-problems\\Trig\\SpecialTrigValues.pg",
+      "category": "Trig",
+      "status": "failed",
+      "error_type": "SyntaxError",
+      "error_snippet": "SyntaxError: invalid syntax (<problem>, line 31)",
+      "errors_full": "SyntaxError: invalid syntax (<problem>, line 31)\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1755, in execute\n    compiled = compile(code, '<problem>', 'exec')\n  File \"<problem>\", line 31\n    (d, n) = random_coprime([ 2, 3, 4, 6 ], [ 1 .. 12 ])\n                                                 ^\nSyntaxError: invalid syntax\n",
+      "has_output": false
+    },
+    {
+      "name": "TrigDegrees.pg",
+      "path": "tutorial\\sample-problems\\Trig\\TrigDegrees.pg",
+      "category": "Trig",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "TrigIdentities.pg",
+      "path": "tutorial\\sample-problems\\Trig\\TrigIdentities.pg",
+      "category": "Trig",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "CylindricalGraph3D.pg",
+      "path": "tutorial\\sample-problems\\VectorCalc\\CylindricalGraph3D.pg",
+      "category": "VectorCalc",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "DirectionField.pg",
+      "path": "tutorial\\sample-problems\\VectorCalc\\DirectionField.pg",
+      "category": "VectorCalc",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "GraphToolVectors.pg",
+      "path": "tutorial\\sample-problems\\VectorCalc\\GraphToolVectors.pg",
+      "category": "VectorCalc",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "RectangularGraph3D.pg",
+      "path": "tutorial\\sample-problems\\VectorCalc\\RectangularGraph3D.pg",
+      "category": "VectorCalc",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "VectorFieldGraph2D.pg",
+      "path": "tutorial\\sample-problems\\VectorCalc\\VectorFieldGraph2D.pg",
+      "category": "VectorCalc",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "VectorFieldGraph3D1.pg",
+      "path": "tutorial\\sample-problems\\VectorCalc\\VectorFieldGraph3D\\VectorFieldGraph3D1.pg",
+      "category": "VectorFieldGraph3D",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "VectorLineSegment1.pg",
+      "path": "tutorial\\sample-problems\\VectorCalc\\VectorLineSegment1.pg",
+      "category": "VectorCalc",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "VectorLineSegment2.pg",
+      "path": "tutorial\\sample-problems\\VectorCalc\\VectorLineSegment2.pg",
+      "category": "VectorCalc",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "VectorOperations.pg",
+      "path": "tutorial\\sample-problems\\VectorCalc\\VectorOperations.pg",
+      "category": "VectorCalc",
+      "status": "failed",
+      "error_type": "TypeError",
+      "error_snippet": "TypeError: 'list' object is not callable",
+      "errors_full": "TypeError: 'list' object is not callable\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1758, in execute\n    exec(compiled, self.namespace)\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<problem>\", line 40, in <module>\nTypeError: 'list' object is not callable\n",
+      "has_output": false
+    },
+    {
+      "name": "VectorParametricLine.pg",
+      "path": "tutorial\\sample-problems\\VectorCalc\\VectorParametricLine.pg",
+      "category": "VectorCalc",
+      "status": "passed",
+      "error_type": null,
+      "error_snippet": null,
+      "errors_full": null,
+      "has_output": true
+    },
+    {
+      "name": "Vectors.pg",
+      "path": "tutorial\\sample-problems\\VectorCalc\\Vectors.pg",
+      "category": "VectorCalc",
+      "status": "failed",
+      "error_type": "SyntaxError",
+      "error_snippet": "SyntaxError: invalid syntax (<problem>, line 75)",
+      "errors_full": "SyntaxError: invalid syntax (<problem>, line 75)\nTraceback (most recent call last):\n  File \"D:\\pg\\packages\\pg_translator\\pg_translator\\in_process_sandbox.py\", line 1755, in execute\n    compiled = compile(code, '<problem>', 'exec')\n  File \"<problem>\", line 75\n    v6 = v3 x v4;         # cross product\n            ^\nSyntaxError: invalid syntax\n",
+      "has_output": false
+    }
+  ]
+}

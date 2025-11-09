@@ -1,0 +1,739 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.12.7, pytest-8.4.2, pluggy-1.6.0 -- C:\Users\mdahl\.conda\envs\pytorch-5090\python.exe
+cachedir: .pytest_cache
+hypothesis profile 'default'
+rootdir: d:\pg\packages\pg_translator
+configfile: pyproject.toml
+plugins: anyio-4.10.0, hypothesis-6.140.2, asyncio-1.2.0, cov-7.0.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 160 items
+
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[AlgebraicFractionAnswer] PASSED [  0%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[AnswerBlankInExponent] PASSED [  1%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[AnswerUpToMultiple] PASSED [  1%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[DomainRange] PASSED [  2%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[DynamicGraph] PASSED [  3%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[EquationDefiningFunction] PASSED [  3%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[EquationImplicitFunction] PASSED [  4%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[ExpandedPolynomial] PASSED [  5%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[FactoredPolynomial] PASSED [  5%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[FractionAnswer] PASSED [  6%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[FunctionDecomposition] PASSED [  6%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[FunctionPlot] PASSED [  7%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[GraphToolCircle] PASSED [  8%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[GraphToolCubic] PASSED [  8%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[GraphToolCustomChecker] FAILED [  9%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[GraphToolLine] PASSED [ 10%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[GraphToolNumberLine] PASSED [ 10%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[GraphToolPoints] PASSED [ 11%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[InequalityAnswer] PASSED [ 11%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[LinearInequality] PASSED [ 12%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[Logarithms] PASSED [ 13%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[NoSolution] PASSED [ 13%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[PointAnswers] PASSED [ 14%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[ScalingTranslating] PASSED [ 15%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[SimpleFactoring] PASSED [ 15%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[SolutionForEquation] PASSED [ 16%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[StringOrOtherType] FAILED [ 16%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[TableOfValues] FAILED [ 17%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[UnorderedAnswers] PASSED [ 18%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[UnitConversion] PASSED [ 18%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[ComplexOperations] PASSED [ 19%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[LimitedComplex] PASSED [ 20%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[OtherOperations] PASSED [ 20%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[AnswerWithUnits] PASSED [ 21%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[DifferenceQuotient] PASSED [ 21%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[DifferentiateFunction] PASSED [ 22%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[LinearApprox] PASSED [ 23%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[ContourPlot] PASSED [ 23%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[ImplicitPlane] PASSED [ 24%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[VectorFieldPlot] PASSED [ 25%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[GeneralSolutionODE] PASSED [ 25%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[HeavisideStep] PASSED [ 26%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[PrimesInFormulas] FAILED [ 26%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[LineSegmentGraphTool] PASSED [ 27%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[QuadrilateralGraphTool] FAILED [ 28%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[TriangleGraphTool] FAILED [ 28%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[DoubleIntegral] PASSED [ 29%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[GraphShading] FAILED [ 30%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[GraphShadingPlot] FAILED [ 30%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[IndefiniteIntegrals] PASSED [ 31%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[LimitsOfIntegration] PASSED [ 31%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[RiemannSumPlot] FAILED [ 32%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[RiemannSums] FAILED [ 33%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[VolumeOfRevolution] PASSED [ 33%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[MatrixAnswer1] FAILED [ 34%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[MatrixAnswer2] PASSED [ 35%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[MatrixCustomAnswerChecker] PASSED [ 35%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[MatrixOperations] PASSED [ 36%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[RowOperations] FAILED [ 36%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[ChemicalReaction] FAILED [ 37%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[DraggableProof] PASSED [ 38%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[DynamicGraphPolygon] FAILED [ 38%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[EssayAnswer] PASSED [ 39%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[FormulaAnswer] PASSED [ 40%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[FormulaDomain] PASSED [ 40%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[FormulaTestPoints] PASSED [ 41%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[IframeEmbedding] PASSED [ 41%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[ManyMultipleChoice] FAILED [ 42%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[Matching] FAILED [ 43%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[MatchingAlt] FAILED [ 43%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[MatchingGraphs] FAILED [ 44%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[MultipleChoiceCheckbox] FAILED [ 45%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[MultipleChoicePopup] PASSED [ 45%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[MultipleChoiceRadio] FAILED [ 46%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[RandomPerson] PASSED [ 46%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[Scaffolding] FAILED [ 47%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[ParametricEquationAnswers] PASSED [ 48%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[ParametricPlot] FAILED [ 48%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[ParametricPlotAlt] FAILED [ 49%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[PolarGraph] PASSED [ 50%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[PolarGraphPlot] PASSED [ 50%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[Spacecurve] PASSED [ 51%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[SpaceCurveGraph] PASSED [ 51%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[SurfaceGraph] PASSED [ 52%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[VectorParametricDerivative] PASSED [ 53%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[VectorParametricFunction] PASSED [ 53%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[VectorParametricLines] PASSED [ 54%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[AdaptiveParameters] PASSED [ 55%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[AnswerHints] PASSED [ 55%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[AnswerInExponent] PASSED [ 56%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[AnswerIsSolutionToEquation] PASSED [ 56%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[AnyAnswerMarkedCorrect] PASSED [ 57%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[CalculatingWithPoints] FAILED [ 58%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[ComposingFunctions] PASSED [ 58%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[ConstantsInProblems] PASSED [ 59%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[CustomAnswerCheckers] FAILED [ 60%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[CustomAnswerListChecker] FAILED [ 60%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[DataTables] FAILED [ 61%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[DefiningFunctions] PASSED [ 61%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[DifferentiatingFormulas] PASSED [ 62%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[DigitsTolType] PASSED [ 63%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[DisableFunctions] PASSED [ 63%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[DraggableSubsets] FAILED [ 64%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[EquationEvaluators] PASSED [ 65%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[EquationsDefiningFunctions] PASSED [ 65%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[ErrorMessageCustomization] PASSED [ 66%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[EvalVersusSubstitute] PASSED [ 66%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[ExtractingCoordinatesFromPoint] FAILED [ 67%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[FactoringAndExpanding] PASSED [ 68%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[FormattingDecimals] PASSED [ 68%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[FormulasToConstants] PASSED [ 69%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[GraphsInTables] FAILED [ 70%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[HtmlLinks] PASSED [ 70%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[Images] FAILED [ 71%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[InequalityEvaluators] PASSED [ 71%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[IntervalEvaluators] PASSED [ 72%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[Knowls] PASSED [ 73%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[LayoutTable] FAILED [ 73%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[Multianswer] PASSED [ 74%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[NumericalTolerance] PASSED [ 75%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[OtherVariables] PASSED [ 75%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[Percent] PASSED [ 76%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[RandomFunction] FAILED [ 76%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[RestrictAnswerToFraction] PASSED [ 77%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[RestrictingFunctions] PASSED [ 78%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[SimplePopUp] FAILED [ 78%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[StaticImages] PASSED [ 79%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[StringsInContext] PASSED [ 80%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[TikZImages] PASSED [ 80%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[WeightedGrader] PASSED [ 81%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[AnswerOrderedList] FAILED [ 81%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[ExplicitSequence] PASSED [ 82%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[RecursiveSequence] PASSED [ 83%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[SeriesTest] FAILED [ 83%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[CommentsForInstructors] PASSED [ 84%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[BarGraph] FAILED [ 85%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[LinearRegression] FAILED [ 85%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[MeanStdDev] FAILED [ 86%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[ScatterPlot] FAILED [ 86%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[DisableFunctionsTrig] PASSED [ 87%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[DraggableIdentity] PASSED [ 88%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[PeriodicAnswers] PASSED [ 88%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[ProvingTrigIdentities] FAILED [ 89%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[SpecialTrigValues] FAILED [ 90%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[TrigDegrees] PASSED [ 90%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[TrigIdentities] PASSED [ 91%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[CylindricalGraph3D] PASSED [ 91%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[DirectionField] PASSED [ 92%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[GraphToolVectors] PASSED [ 93%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[RectangularGraph3D] PASSED [ 93%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[VectorFieldGraph2D] PASSED [ 94%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[VectorFieldGraph3D1] PASSED [ 95%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[VectorLineSegment1] PASSED [ 95%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[VectorLineSegment2] PASSED [ 96%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[VectorOperations] FAILED [ 96%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[VectorParametricLine] PASSED [ 97%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[Vectors] FAILED [ 98%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problems_count PASSED [ 98%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_categories_coverage PASSED [ 99%]
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problems_batch_rendering PASSED [100%]
+
+================================== FAILURES ===================================
+____________ test_tutorial_problem_renders[GraphToolCustomChecker] ____________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem GraphToolCustomChecker.pg failed with errors:
+E   SyntaxError: closing parenthesis ')' does not match opening parenthesis '{' (<problem>, line 69)
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+E       compiled = compile(code, '<problem>', 'exec')
+E                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E     File "<problem>", line 69
+E       gt = GraphTool(f"{{circle, solid, ({h}, {k}), ({h} + {r}, {k})}}").with_params( bBox = [ -11, 11, 11, -11 ], cmpOptions = { 'list_checker' :  lambda *args, **kwargs: None )  # Stubbed Perl closure
+E                                                                                                                                                                                  ^
+E   SyntaxError: closing parenthesis ')' does not match opening parenthesis '{'
+______________ test_tutorial_problem_renders[StringOrOtherType] _______________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem StringOrOtherType.pg failed with errors:
+E   NameError: name 'String' is not defined
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1758, in execute
+E       exec(compiled, self.namespace)
+E     File "<problem>", line 38, in <module>
+E   NameError: name 'String' is not defined
+________________ test_tutorial_problem_renders[TableOfValues] _________________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem TableOfValues.pg failed with errors:
+E   SyntaxError: invalid syntax (<problem>, line 23)
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+E       compiled = compile(code, '<problem>', 'exec')
+E                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E     File "<problem>", line 23
+E       answer = map { f.eval(x = _) } 0 .. 2
+E                    ^
+E   SyntaxError: invalid syntax
+_______________ test_tutorial_problem_renders[PrimesInFormulas] _______________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem PrimesInFormulas.pg failed with errors:
+E   NameError: name 're' is not defined
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1758, in execute
+E       exec(compiled, self.namespace)
+E     File "<problem>", line 28, in <module>
+E   NameError: name 're' is not defined. Did you forget to import 're'
+____________ test_tutorial_problem_renders[QuadrilateralGraphTool] ____________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem QuadrilateralGraphTool.pg failed with errors:
+E   NameError: name 'x3' is not defined
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1758, in execute
+E       exec(compiled, self.namespace)
+E     File "<problem>", line 34, in <module>
+E   NameError: name 'x3' is not defined
+______________ test_tutorial_problem_renders[TriangleGraphTool] _______________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem TriangleGraphTool.pg failed with errors:
+E   NameError: name 'x3' is not defined
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1758, in execute
+E       exec(compiled, self.namespace)
+E     File "<problem>", line 31, in <module>
+E   NameError: name 'x3' is not defined
+_________________ test_tutorial_problem_renders[GraphShading] _________________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem GraphShading.pg failed with errors:
+E   TypeError: can only concatenate str (not "int") to str
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1758, in execute
+E       exec(compiled, self.namespace)
+E     File "<problem>", line 56, in <module>
+E   TypeError: can only concatenate str (not "int") to str
+_______________ test_tutorial_problem_renders[GraphShadingPlot] _______________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem GraphShadingPlot.pg failed with errors:
+E   TypeError: can only concatenate str (not "int") to str
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1758, in execute
+E       exec(compiled, self.namespace)
+E     File "<problem>", line 32, in <module>
+E   TypeError: can only concatenate str (not "int") to str
+________________ test_tutorial_problem_renders[RiemannSumPlot] ________________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem RiemannSumPlot.pg failed with errors:
+E   AttributeError: 'Plot' object has no attribute 'add_dataset'
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1758, in execute
+E       exec(compiled, self.namespace)
+E     File "<problem>", line 41, in <module>
+E   AttributeError: 'Plot' object has no attribute 'add_dataset'
+_________________ test_tutorial_problem_renders[RiemannSums] __________________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem RiemannSums.pg failed with errors:
+E   NameError: name 'x' is not defined
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1758, in execute
+E       exec(compiled, self.namespace)
+E     File "<problem>", line 46, in <module>
+E   NameError: name 'x' is not defined
+________________ test_tutorial_problem_renders[MatrixAnswer1] _________________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem MatrixAnswer1.pg failed with errors:
+E   TypeError: 'Matrix' object is not callable
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1758, in execute
+E       exec(compiled, self.namespace)
+E     File "<problem>", line 32, in <module>
+E   TypeError: 'Matrix' object is not callable
+________________ test_tutorial_problem_renders[RowOperations] _________________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem RowOperations.pg failed with errors:
+E   SyntaxError: invalid syntax (<problem>, line 29)
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+E       compiled = compile(code, '<problem>', 'exec')
+E                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E     File "<problem>", line 29
+E       if ((A.row(1):
+E                    ^
+E   SyntaxError: invalid syntax
+_______________ test_tutorial_problem_renders[ChemicalReaction] _______________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem ChemicalReaction.pg failed with errors:
+E   SyntaxError: invalid syntax (<problem>, line 46)
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+E       compiled = compile(code, '<problem>', 'exec')
+E                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E     File "<problem>", line 46
+E       for i in range(0, (3) + 1):
+E       ^^^
+E   SyntaxError: invalid syntax
+_____________ test_tutorial_problem_renders[DynamicGraphPolygon] ______________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem DynamicGraphPolygon.pg failed with errors:
+E   SyntaxError: invalid syntax (<problem>, line 39)
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+E       compiled = compile(code, '<problem>', 'exec')
+E                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E     File "<problem>", line 39
+E       plot_setup = qq/
+E                       ^
+E   SyntaxError: invalid syntax
+______________ test_tutorial_problem_renders[ManyMultipleChoice] ______________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem ManyMultipleChoice.pg failed with errors:
+E   NameError: name 'install_problem_grader' is not defined
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1758, in execute
+E       exec(compiled, self.namespace)
+E     File "<problem>", line 40, in <module>
+E   NameError: name 'install_problem_grader' is not defined
+___________________ test_tutorial_problem_renders[Matching] ___________________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem Matching.pg failed with errors:
+E   NameError: name 'install_problem_grader' is not defined
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1758, in execute
+E       exec(compiled, self.namespace)
+E     File "<problem>", line 44, in <module>
+E   NameError: name 'install_problem_grader' is not defined
+_________________ test_tutorial_problem_renders[MatchingAlt] __________________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem MatchingAlt.pg failed with errors:
+E   SyntaxError: invalid syntax (<problem>, line 56)
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+E       compiled = compile(code, '<problem>', 'exec')
+E                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E     File "<problem>", line 56
+E       q_and_a = map { splice(q_and_a, random(0, #q_and_a)) } 0 .. #q_and_a
+E                     ^
+E   SyntaxError: invalid syntax
+________________ test_tutorial_problem_renders[MatchingGraphs] ________________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem MatchingGraphs.pg failed with errors:
+E   SyntaxError: invalid syntax. Perhaps you forgot a comma? (<problem>, line 34)
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+E       compiled = compile(code, '<problem>', 'exec')
+E                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E     File "<problem>", line 34
+E       for (plots) { my graph = createTikZImage(); graph.tikzLibraries('arrows.meta'); graph.BEGIN_TIKZ() \tikzset{>={Stealth[scale = 1.5]}} \filldraw[ draw = LightBlue, fill = white, rounded corners = 10pt, thick, use as bounding box ] (-6, -6) rectangle (6, 6); \draw[., thick] (-6, 0) -- (6, 0) node[above left, outer sep = 3pt] {\(x\)}; \foreach \x in {-5, ..., -1, 1, 2, ..., 5} \draw (\x, 5pt) -- (\x, -5pt) node[below] {\(\x\)}; \draw[., thick] (0, -6) -- (0, 6) node[below right, outer sep = 3pt] {\(y\)}; \foreach \y in {-5, ..., -1, 1, 2, ..., 5} \draw (5pt, \y) -- (-5pt, \y) node[left] {\(\y\)}; \draw[blue, ultra thick] plot[domain = _['domain'], smooth] (\x, {_['form']}); END_TIKZ _['graph'] = graph; }
+E                     ^^^^^^^^
+E   SyntaxError: invalid syntax. Perhaps you forgot a comma?
+____________ test_tutorial_problem_renders[MultipleChoiceCheckbox] ____________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem MultipleChoiceCheckbox.pg failed with errors:
+E   SyntaxError: invalid syntax. Perhaps you forgot a comma? (<problem>, line 40)
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+E       compiled = compile(code, '<problem>', 'exec')
+E                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E     File "<problem>", line 40
+E       checks3 = CheckboxList( [ "\\(e^{x^2} e^{1/x}\\)", "\\(e^{x^2} e^{x^{-1}}\\)", "\\(\\displaystyle\\frac{e^{x^2}}{e^x}\\)", 'None of the above' ], [ 0, 1 ], separator = SPACE x 10 )
+E                                                                                                                                                                               ^^^^^^^
+E   SyntaxError: invalid syntax. Perhaps you forgot a comma?
+_____________ test_tutorial_problem_renders[MultipleChoiceRadio] ______________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem MultipleChoiceRadio.pg failed with errors:
+E   SyntaxError: invalid syntax. Perhaps you forgot a comma? (<problem>, line 32)
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+E       compiled = compile(code, '<problem>', 'exec')
+E                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E     File "<problem>", line 32
+E       radio2 = RadioButtons( [ [ 'Red', 'Blue', 'Green' ], 'None of these' ], 2, separator = SPACE x 5 )
+E                                                                                              ^^^^^^^
+E   SyntaxError: invalid syntax. Perhaps you forgot a comma?
+_________________ test_tutorial_problem_renders[Scaffolding] __________________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem Scaffolding.pg failed with errors:
+E   NameError: name 'Scaffold' is not defined
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1758, in execute
+E       exec(compiled, self.namespace)
+E     File "<problem>", line 25, in <module>
+E   NameError: name 'Scaffold' is not defined
+________________ test_tutorial_problem_renders[ParametricPlot] ________________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem ParametricPlot.pg failed with errors:
+E   SyntaxError: invalid syntax (<problem>, line 61)
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+E       compiled = compile(code, '<problem>', 'exec')
+E                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E     File "<problem>", line 61
+E       m = y.D('t').eval(t = 'pi/3') / x->D('t')->eval(t => 'pi/3')
+E                                        ^^
+E   SyntaxError: invalid syntax
+______________ test_tutorial_problem_renders[ParametricPlotAlt] _______________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem ParametricPlotAlt.pg failed with errors:
+E   SyntaxError: invalid syntax (<problem>, line 32)
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+E       compiled = compile(code, '<problem>', 'exec')
+E                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E     File "<problem>", line 32
+E       n = random(1,  $x = Compute('2sin(2t)'); x0 = x.eval(t = tvals[n]); y = Compute('2sin(3t)'); y0 = y.eval(t = tvals[n])
+E                      ^
+E   SyntaxError: invalid syntax
+____________ test_tutorial_problem_renders[CalculatingWithPoints] _____________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem CalculatingWithPoints.pg failed with errors:
+E   TypeError: 'list' object is not callable
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1758, in execute
+E       exec(compiled, self.namespace)
+E     File "<problem>", line 43, in <module>
+E   TypeError: 'list' object is not callable
+_____________ test_tutorial_problem_renders[CustomAnswerCheckers] _____________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem CustomAnswerCheckers.pg failed with errors:
+E   SyntaxError: closing parenthesis '}' does not match opening parenthesis '(' (<problem>, line 42)
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+E       compiled = compile(code, '<problem>', 'exec')
+E                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E     File "<problem>", line 42
+E       ans = Compute('pi/3').cmp( checker = lambda *args, **kwargs: None; return cos(correct) == cos(student); } )  # Stubbed Perl closure
+E                                                                                                               ^
+E   SyntaxError: closing parenthesis '}' does not match opening parenthesis '('
+___________ test_tutorial_problem_renders[CustomAnswerListChecker] ____________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem CustomAnswerListChecker.pg failed with errors:
+E   AttributeError: 'List' object has no attribute 'cmp'
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1758, in execute
+E       exec(compiled, self.namespace)
+E     File "<problem>", line 66, in <module>
+E   AttributeError: 'List' object has no attribute 'cmp'
+__________________ test_tutorial_problem_renders[DataTables] __________________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem DataTables.pg failed with errors:
+E   SyntaxError: invalid syntax (<problem>, line 61)
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+E       compiled = compile(code, '<problem>', 'exec')
+E                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E     File "<problem>", line 61
+E       rows = map { [ _, random(1, 10) ] } 1 .. 5
+E                  ^
+E   SyntaxError: invalid syntax
+_______________ test_tutorial_problem_renders[DraggableSubsets] _______________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem DraggableSubsets.pg failed with errors:
+E   SyntaxError: invalid syntax (<problem>, line 44)
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+E       compiled = compile(code, '<problem>', 'exec')
+E                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E     File "<problem>", line 44
+E       draggable = DraggableSubsets( [ 'mouse',        'ebola bacteria', 'flu virus',    'krill', 'house cat',    'emu', 'coyote',       'tapir', 'hippopotamus', 'elephant', 'blue whale',   'eagle' ], [ [], [ 0, 4, 6, 7, 8, 9, 10 ], [ 5, 11 ], [ 1, 2, 3 ] ], DefaultSubsets = [ { 'label' :  'Animals', 'indices' :  [ 0 .. 11 ] }, { 'label' :  'Mammals', 'indices' :  [] }, { 'label' :  'Birds',   'indices' :  [] }, { 'label' :  'Other',   'indices' :  [] } ], AllowNewBuckets = 0, OrderedSubsets = 1 )
+E                                                                                                                                                                                                                                                                                                                                ^
+E   SyntaxError: invalid syntax
+________ test_tutorial_problem_renders[ExtractingCoordinatesFromPoint] ________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem ExtractingCoordinatesFromPoint.pg failed with errors:
+E   TypeError: 'list' object is not callable
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1758, in execute
+E       exec(compiled, self.namespace)
+E     File "<problem>", line 52, in <module>
+E   TypeError: 'list' object is not callable
+________________ test_tutorial_problem_renders[GraphsInTables] ________________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem GraphsInTables.pg failed with errors:
+E   SyntaxError: unexpected character after line continuation character (<problem>, line 46)
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+E       compiled = compile(code, '<problem>', 'exec')
+E                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E     File "<problem>", line 46
+E       \tikzset{>={Stealth[scale = 1.5]}}
+E        ^
+E   SyntaxError: unexpected character after line continuation character
+____________________ test_tutorial_problem_renders[Images] ____________________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem Images.pg failed with errors:
+E   SyntaxError: unexpected character after line continuation character (<problem>, line 31)
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+E       compiled = compile(code, '<problem>', 'exec')
+E                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E     File "<problem>", line 31
+E       \xymatrix{ A \ar[r] & B \ar[d] \\\\ D \ar[u] & C \ar[l] }
+E        ^
+E   SyntaxError: unexpected character after line continuation character
+_________________ test_tutorial_problem_renders[LayoutTable] __________________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem LayoutTable.pg failed with errors:
+E   TypeError: can only concatenate str (not "int") to str
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1758, in execute
+E       exec(compiled, self.namespace)
+E     File "<problem>", line 78, in <module>
+E   TypeError: can only concatenate str (not "int") to str
+________________ test_tutorial_problem_renders[RandomFunction] ________________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem RandomFunction.pg failed with errors:
+E   SyntaxError: '(' was never closed (<problem>, line 31)
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+E       compiled = compile(code, '<problem>', 'exec')
+E                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E     File "<problem>", line 31
+E       f = Formula(functions[ random(0, #functions) ]).reduce
+E                                    ^
+E   SyntaxError: '(' was never closed
+_________________ test_tutorial_problem_renders[SimplePopUp] __________________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem SimplePopUp.pg failed with errors:
+E   SyntaxError: invalid syntax (<problem>, line 37)
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+E       compiled = compile(code, '<problem>', 'exec')
+E                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E     File "<problem>", line 37
+E       BEGIN_PGML - [_]{popup} (Answer: 'three')
+E                       ^
+E   SyntaxError: invalid syntax
+______________ test_tutorial_problem_renders[AnswerOrderedList] _______________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem AnswerOrderedList.pg failed with errors:
+E   SyntaxError: invalid syntax (<problem>, line 24)
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+E       compiled = compile(code, '<problem>', 'exec')
+E                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E     File "<problem>", line 24
+E       for (2 .. 6) { seq[_] = seq[ _ - 1 ] + seq[ _ - 2 ]; }
+E               ^
+E   SyntaxError: invalid syntax
+__________________ test_tutorial_problem_renders[SeriesTest] __________________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem SeriesTest.pg failed with errors:
+E   TypeError: can only concatenate str (not "int") to str
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1758, in execute
+E       exec(compiled, self.namespace)
+E     File "<problem>", line 48, in <module>
+E   TypeError: can only concatenate str (not "int") to str
+___________________ test_tutorial_problem_renders[BarGraph] ___________________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem BarGraph.pg failed with errors:
+E   SyntaxError: invalid syntax (<problem>, line 60)
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+E       compiled = compile(code, '<problem>', 'exec')
+E                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E     File "<problem>", line 60
+E       num_students += _ for grades
+E                         ^^^
+E   SyntaxError: invalid syntax
+_______________ test_tutorial_problem_renders[LinearRegression] _______________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem LinearRegression.pg failed with errors:
+E   SyntaxError: invalid syntax (<problem>, line 27)
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+E       compiled = compile(code, '<problem>', 'exec')
+E                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E     File "<problem>", line 27
+E       for (0 .. 9) { x.[_] = random(2.5, 7.5, 0.5); y.[_] = m * x.[_] + b; }
+E               ^
+E   SyntaxError: invalid syntax
+__________________ test_tutorial_problem_renders[MeanStdDev] __________________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem MeanStdDev.pg failed with errors:
+E   TypeError: type 'map' is not subscriptable
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1758, in execute
+E       exec(compiled, self.namespace)
+E     File "<problem>", line 22, in <module>
+E   TypeError: type 'map' is not subscriptable
+_________________ test_tutorial_problem_renders[ScatterPlot] __________________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem ScatterPlot.pg failed with errors:
+E   SyntaxError: invalid syntax (<problem>, line 33)
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+E       compiled = compile(code, '<problem>', 'exec')
+E                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E     File "<problem>", line 33
+E       x = [ map { _.[0] } data ]
+E                 ^
+E   SyntaxError: invalid syntax
+____________ test_tutorial_problem_renders[ProvingTrigIdentities] _____________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem ProvingTrigIdentities.pg failed with errors:
+E   SyntaxError: invalid syntax (<problem>, line 31)
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+E       compiled = compile(code, '<problem>', 'exec')
+E                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E     File "<problem>", line 31
+E       our ISA = qw(Parser::Function::numeric)
+E           ^^^
+E   SyntaxError: invalid syntax
+______________ test_tutorial_problem_renders[SpecialTrigValues] _______________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem SpecialTrigValues.pg failed with errors:
+E   SyntaxError: invalid syntax (<problem>, line 31)
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+E       compiled = compile(code, '<problem>', 'exec')
+E                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E     File "<problem>", line 31
+E       (d, n) = random_coprime([ 2, 3, 4, 6 ], [ 1 .. 12 ])
+E                                                    ^
+E   SyntaxError: invalid syntax
+_______________ test_tutorial_problem_renders[VectorOperations] _______________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem VectorOperations.pg failed with errors:
+E   TypeError: 'list' object is not callable
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1758, in execute
+E       exec(compiled, self.namespace)
+E     File "<problem>", line 40, in <module>
+E   TypeError: 'list' object is not callable
+___________________ test_tutorial_problem_renders[Vectors] ____________________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem Vectors.pg failed with errors:
+E   SyntaxError: invalid syntax (<problem>, line 75)
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+E       compiled = compile(code, '<problem>', 'exec')
+E                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E     File "<problem>", line 75
+E       v6 = v3 x v4;         # cross product
+E               ^
+E   SyntaxError: invalid syntax
+============================== warnings summary ===============================
+packages\pg_translator\tests\test_tutorial_sample_problems.py:138
+  D:\pg\packages\pg_translator\tests\test_tutorial_sample_problems.py:138: PytestUnknownMarkWarning: Unknown pytest.mark.slow - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.slow
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[GraphToolCustomChecker]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[StringOrOtherType]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[TableOfValues]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[PrimesInFormulas]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[QuadrilateralGraphTool]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[TriangleGraphTool]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[GraphShading]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[GraphShadingPlot]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[RiemannSumPlot]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[RiemannSums]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[MatrixAnswer1]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[RowOperations]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[ChemicalReaction]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[DynamicGraphPolygon]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[ManyMultipleChoice]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[Matching]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[MatchingAlt]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[MatchingGraphs]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[MultipleChoiceCheckbox]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[MultipleChoiceRadio]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[Scaffolding]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[ParametricPlot]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[ParametricPlotAlt]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[CalculatingWithPoints]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[CustomAnswerCheckers]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[CustomAnswerListChecker]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[DataTables]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[DraggableSubsets]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[ExtractingCoordinatesFromPoint]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[GraphsInTables]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[Images]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[LayoutTable]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[RandomFunction]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[SimplePopUp]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[AnswerOrderedList]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[SeriesTest]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[BarGraph]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[LinearRegression]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[MeanStdDev]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[ScatterPlot]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[ProvingTrigIdentities]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[SpecialTrigValues]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[VectorOperations]
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[Vectors]
+================= 44 failed, 116 passed, 1 warning in 21.51s ==================

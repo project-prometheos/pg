@@ -1,0 +1,621 @@
+DETAILED DIAGNOSTIC REPORT
+================================================================================
+Generated: 2025-11-09T23:35:11.496399
+
+Summary:
+  Total: 157
+  Passed: 112
+  Warnings: 0
+  Failed: 44
+
+Failures by Error Type:
+--------------------------------------------------------------------------------
+
+AttributeError: 2
+----------------------------------------
+  CustomAnswerListChecker.pg
+    Category: ProblemTechniques
+    Error: AttributeError: 'List' object has no attribute 'cmp'
+    Full Error:
+      AttributeError: 'List' object has no attribute 'cmp'
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1758, in execute
+          exec(compiled, self.namespace)
+          ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "<problem>", line 66, in <module>
+      AttributeError: 'List' object has no attribute 'cmp'
+      
+
+  RiemannSumPlot.pg
+    Category: IntegralCalc
+    Error: AttributeError: 'Plot' object has no attribute 'add_dataset'
+    Full Error:
+      AttributeError: 'Plot' object has no attribute 'add_dataset'
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1758, in execute
+          exec(compiled, self.namespace)
+          ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "<problem>", line 41, in <module>
+      AttributeError: 'Plot' object has no attribute 'add_dataset'
+      
+
+
+NameError: 8
+----------------------------------------
+  ManyMultipleChoice.pg
+    Category: Misc
+    Error: NameError: name 'install_problem_grader' is not defined
+    Full Error:
+      NameError: name 'install_problem_grader' is not defined
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1758, in execute
+          exec(compiled, self.namespace)
+          ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "<problem>", line 40, in <module>
+      NameError: name 'install_problem_grader' is not defined
+      
+
+  Matching.pg
+    Category: Misc
+    Error: NameError: name 'install_problem_grader' is not defined
+    Full Error:
+      NameError: name 'install_problem_grader' is not defined
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1758, in execute
+          exec(compiled, self.namespace)
+          ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "<problem>", line 44, in <module>
+      NameError: name 'install_problem_grader' is not defined
+      
+
+  PrimesInFormulas.pg
+    Category: DiffEq
+    Error: NameError: name 're' is not defined
+    Full Error:
+      NameError: name 're' is not defined
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1758, in execute
+          exec(compiled, self.namespace)
+          ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "<problem>", line 28, in <module>
+      NameError: name 're' is not defined. Did you forget to import 're'?
+      
+
+  QuadrilateralGraphTool.pg
+    Category: Geometry
+    Error: NameError: name 'x3' is not defined
+    Full Error:
+      NameError: name 'x3' is not defined
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1758, in execute
+          exec(compiled, self.namespace)
+          ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "<problem>", line 34, in <module>
+      NameError: name 'x3' is not defined
+      
+
+  RiemannSums.pg
+    Category: IntegralCalc
+    Error: NameError: name 'x' is not defined
+    Full Error:
+      NameError: name 'x' is not defined
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1758, in execute
+          exec(compiled, self.namespace)
+          ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "<problem>", line 46, in <module>
+      NameError: name 'x' is not defined
+      
+
+  Scaffolding.pg
+    Category: Misc
+    Error: NameError: name 'Scaffold' is not defined
+    Full Error:
+      NameError: name 'Scaffold' is not defined
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1758, in execute
+          exec(compiled, self.namespace)
+          ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "<problem>", line 25, in <module>
+      NameError: name 'Scaffold' is not defined
+      
+
+  StringOrOtherType.pg
+    Category: Algebra
+    Error: NameError: name 'String' is not defined
+    Full Error:
+      NameError: name 'String' is not defined
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1758, in execute
+          exec(compiled, self.namespace)
+          ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "<problem>", line 38, in <module>
+      NameError: name 'String' is not defined
+      
+
+  TriangleGraphTool.pg
+    Category: Geometry
+    Error: NameError: name 'x3' is not defined
+    Full Error:
+      NameError: name 'x3' is not defined
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1758, in execute
+          exec(compiled, self.namespace)
+          ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "<problem>", line 31, in <module>
+      NameError: name 'x3' is not defined
+      
+
+
+SyntaxError: 25
+----------------------------------------
+  AnswerOrderedList.pg
+    Category: Sequences
+    Error: SyntaxError: invalid syntax (<problem>, line 24)
+    Full Error:
+      SyntaxError: invalid syntax (<problem>, line 24)
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+          compiled = compile(code, '<problem>', 'exec')
+        File "<problem>", line 24
+          for (2 .. 6) { seq[_] = seq[ _ - 1 ] + seq[ _ - 2 ]; }
+                  ^
+      SyntaxError: invalid syntax
+      
+
+  BarGraph.pg
+    Category: Statistics
+    Error: SyntaxError: invalid syntax (<problem>, line 60)
+    Full Error:
+      SyntaxError: invalid syntax (<problem>, line 60)
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+          compiled = compile(code, '<problem>', 'exec')
+        File "<problem>", line 60
+          num_students += _ for grades
+                            ^^^
+      SyntaxError: invalid syntax
+      
+
+  ChemicalReaction.pg
+    Category: Misc
+    Error: SyntaxError: invalid syntax (<problem>, line 46)
+    Full Error:
+      SyntaxError: invalid syntax (<problem>, line 46)
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+          compiled = compile(code, '<problem>', 'exec')
+        File "<problem>", line 46
+          for i in range(0, (3) + 1):
+          ^^^
+      SyntaxError: invalid syntax
+      
+
+  CustomAnswerCheckers.pg
+    Category: ProblemTechniques
+    Error: SyntaxError: closing parenthesis '}' does not match opening parenthesis '(' (<problem>, line 42)
+    Full Error:
+      SyntaxError: closing parenthesis '}' does not match opening parenthesis '(' (<problem>, line 42)
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+          compiled = compile(code, '<problem>', 'exec')
+        File "<problem>", line 42
+          ans = Compute('pi/3').cmp( checker = lambda *args, **kwargs: None; return cos(correct) == cos(student); } )  # Stubbed Perl closure
+                                                                                                                  ^
+      SyntaxError: closing parenthesis '}' does not match opening parenthesis '('
+      
+
+  DataTables.pg
+    Category: ProblemTechniques
+    Error: SyntaxError: invalid syntax (<problem>, line 61)
+    Full Error:
+      SyntaxError: invalid syntax (<problem>, line 61)
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+          compiled = compile(code, '<problem>', 'exec')
+        File "<problem>", line 61
+          rows = map { [ _, random(1, 10) ] } 1 .. 5
+                     ^
+      SyntaxError: invalid syntax
+      
+
+  DraggableSubsets.pg
+    Category: ProblemTechniques
+    Error: SyntaxError: invalid syntax (<problem>, line 44)
+    Full Error:
+      SyntaxError: invalid syntax (<problem>, line 44)
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+          compiled = compile(code, '<problem>', 'exec')
+        File "<problem>", line 44
+          draggable = DraggableSubsets( [ 'mouse',        'ebola bacteria', 'flu virus',    'krill', 'house cat',    'emu', 'coyote',       'tapir', 'hippopotamus', 'elephant', 'blue whale',   'eagle' ], [ [], [ 0, 4, 6, 7, 8, 9, 10 ], [ 5, 11 ], [ 1, 2, 3 ] ], DefaultSubsets = [ { 'label' :  'Animals', 'indices' :  [ 0 .. 11 ] }, { 'label' :  'Mammals', 'indices' :  [] }, { 'label' :  'Birds',   'indices' :  [] }, { 'label' :  'Other',   'indices' :  [] } ], AllowNewBuckets = 0, OrderedSubsets = 1 )
+                                                                                                                                                                                                                                                                                                                                   ^
+      SyntaxError: invalid syntax
+      
+
+  DynamicGraphPolygon.pg
+    Category: Misc
+    Error: SyntaxError: invalid syntax (<problem>, line 39)
+    Full Error:
+      SyntaxError: invalid syntax (<problem>, line 39)
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+          compiled = compile(code, '<problem>', 'exec')
+        File "<problem>", line 39
+          plot_setup = qq/
+                          ^
+      SyntaxError: invalid syntax
+      
+
+  GraphToolCustomChecker.pg
+    Category: Algebra
+    Error: SyntaxError: closing parenthesis ')' does not match opening parenthesis '{' (<problem>, line 69)
+    Full Error:
+      SyntaxError: closing parenthesis ')' does not match opening parenthesis '{' (<problem>, line 69)
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+          compiled = compile(code, '<problem>', 'exec')
+        File "<problem>", line 69
+          gt = GraphTool(f"{{circle, solid, ({h}, {k}), ({h} + {r}, {k})}}").with_params( bBox = [ -11, 11, 11, -11 ], cmpOptions = { 'list_checker' :  lambda *args, **kwargs: None )  # Stubbed Perl closure
+                                                                                                                                                                                     ^
+      SyntaxError: closing parenthesis ')' does not match opening parenthesis '{'
+      
+
+  GraphsInTables.pg
+    Category: ProblemTechniques
+    Error: SyntaxError: unexpected character after line continuation character (<problem>, line 46)
+    Full Error:
+      SyntaxError: unexpected character after line continuation character (<problem>, line 46)
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+          compiled = compile(code, '<problem>', 'exec')
+        File "<problem>", line 46
+          \tikzset{>={Stealth[scale = 1.5]}}
+           ^
+      SyntaxError: unexpected character after line continuation character
+      
+
+  Images.pg
+    Category: ProblemTechniques
+    Error: SyntaxError: unexpected character after line continuation character (<problem>, line 31)
+    Full Error:
+      SyntaxError: unexpected character after line continuation character (<problem>, line 31)
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+          compiled = compile(code, '<problem>', 'exec')
+        File "<problem>", line 31
+          \xymatrix{ A \ar[r] & B \ar[d] \\\\ D \ar[u] & C \ar[l] }
+           ^
+      SyntaxError: unexpected character after line continuation character
+      
+
+  LinearRegression.pg
+    Category: Statistics
+    Error: SyntaxError: invalid syntax (<problem>, line 27)
+    Full Error:
+      SyntaxError: invalid syntax (<problem>, line 27)
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+          compiled = compile(code, '<problem>', 'exec')
+        File "<problem>", line 27
+          for (0 .. 9) { x.[_] = random(2.5, 7.5, 0.5); y.[_] = m * x.[_] + b; }
+                  ^
+      SyntaxError: invalid syntax
+      
+
+  MatchingAlt.pg
+    Category: Misc
+    Error: SyntaxError: invalid syntax (<problem>, line 56)
+    Full Error:
+      SyntaxError: invalid syntax (<problem>, line 56)
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+          compiled = compile(code, '<problem>', 'exec')
+        File "<problem>", line 56
+          q_and_a = map { splice(q_and_a, random(0, #q_and_a)) } 0 .. #q_and_a
+                        ^
+      SyntaxError: invalid syntax
+      
+
+  MatchingGraphs.pg
+    Category: Misc
+    Error: SyntaxError: invalid syntax. Perhaps you forgot a comma? (<problem>, line 34)
+    Full Error:
+      SyntaxError: invalid syntax. Perhaps you forgot a comma? (<problem>, line 34)
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+          compiled = compile(code, '<problem>', 'exec')
+        File "<problem>", line 34
+          for (plots) { my graph = createTikZImage(); graph.tikzLibraries('arrows.meta'); graph.BEGIN_TIKZ() \tikzset{>={Stealth[scale = 1.5]}} \filldraw[ draw = LightBlue, fill = white, rounded corners = 10pt, thick, use as bounding box ] (-6, -6) rectangle (6, 6); \draw[., thick] (-6, 0) -- (6, 0) node[above left, outer sep = 3pt] {\(x\)}; \foreach \x in {-5, ..., -1, 1, 2, ..., 5} \draw (\x, 5pt) -- (\x, -5pt) node[below] {\(\x\)}; \draw[., thick] (0, -6) -- (0, 6) node[below right, outer sep = 3pt] {\(y\)}; \foreach \y in {-5, ..., -1, 1, 2, ..., 5} \draw (5pt, \y) -- (-5pt, \y) node[left] {\(\y\)}; \draw[blue, ultra thick] plot[domain = _['domain'], smooth] (\x, {_['form']}); END_TIKZ _['graph'] = graph; }
+                        ^^^^^^^^
+      SyntaxError: invalid syntax. Perhaps you forgot a comma?
+      
+
+  MultipleChoiceCheckbox.pg
+    Category: Misc
+    Error: SyntaxError: invalid syntax. Perhaps you forgot a comma? (<problem>, line 40)
+    Full Error:
+      SyntaxError: invalid syntax. Perhaps you forgot a comma? (<problem>, line 40)
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+          compiled = compile(code, '<problem>', 'exec')
+        File "<problem>", line 40
+          checks3 = CheckboxList( [ "\\(e^{x^2} e^{1/x}\\)", "\\(e^{x^2} e^{x^{-1}}\\)", "\\(\\displaystyle\\frac{e^{x^2}}{e^x}\\)", 'None of the above' ], [ 0, 1 ], separator = SPACE x 10 )
+                                                                                                                                                                                  ^^^^^^^
+      SyntaxError: invalid syntax. Perhaps you forgot a comma?
+      
+
+  MultipleChoiceRadio.pg
+    Category: Misc
+    Error: SyntaxError: invalid syntax. Perhaps you forgot a comma? (<problem>, line 32)
+    Full Error:
+      SyntaxError: invalid syntax. Perhaps you forgot a comma? (<problem>, line 32)
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+          compiled = compile(code, '<problem>', 'exec')
+        File "<problem>", line 32
+          radio2 = RadioButtons( [ [ 'Red', 'Blue', 'Green' ], 'None of these' ], 2, separator = SPACE x 5 )
+                                                                                                 ^^^^^^^
+      SyntaxError: invalid syntax. Perhaps you forgot a comma?
+      
+
+  ParametricPlot.pg
+    Category: Parametric
+    Error: SyntaxError: invalid syntax (<problem>, line 61)
+    Full Error:
+      SyntaxError: invalid syntax (<problem>, line 61)
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+          compiled = compile(code, '<problem>', 'exec')
+        File "<problem>", line 61
+          m = y.D('t').eval(t = 'pi/3') / x->D('t')->eval(t => 'pi/3')
+                                           ^^
+      SyntaxError: invalid syntax
+      
+
+  ParametricPlotAlt.pg
+    Category: Parametric
+    Error: SyntaxError: invalid syntax (<problem>, line 32)
+    Full Error:
+      SyntaxError: invalid syntax (<problem>, line 32)
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+          compiled = compile(code, '<problem>', 'exec')
+        File "<problem>", line 32
+          n = random(1,  $x = Compute('2sin(2t)'); x0 = x.eval(t = tvals[n]); y = Compute('2sin(3t)'); y0 = y.eval(t = tvals[n])
+                         ^
+      SyntaxError: invalid syntax
+      
+
+  ProvingTrigIdentities.pg
+    Category: Trig
+    Error: SyntaxError: invalid syntax (<problem>, line 31)
+    Full Error:
+      SyntaxError: invalid syntax (<problem>, line 31)
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+          compiled = compile(code, '<problem>', 'exec')
+        File "<problem>", line 31
+          our ISA = qw(Parser::Function::numeric)
+              ^^^
+      SyntaxError: invalid syntax
+      
+
+  RandomFunction.pg
+    Category: ProblemTechniques
+    Error: SyntaxError: '(' was never closed (<problem>, line 31)
+    Full Error:
+      SyntaxError: '(' was never closed (<problem>, line 31)
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+          compiled = compile(code, '<problem>', 'exec')
+        File "<problem>", line 31
+          f = Formula(functions[ random(0, #functions) ]).reduce
+                                       ^
+      SyntaxError: '(' was never closed
+      
+
+  RowOperations.pg
+    Category: LinearAlgebra
+    Error: SyntaxError: invalid syntax (<problem>, line 29)
+    Full Error:
+      SyntaxError: invalid syntax (<problem>, line 29)
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+          compiled = compile(code, '<problem>', 'exec')
+        File "<problem>", line 29
+          if ((A.row(1):
+                       ^
+      SyntaxError: invalid syntax
+      
+
+  ScatterPlot.pg
+    Category: Statistics
+    Error: SyntaxError: invalid syntax (<problem>, line 33)
+    Full Error:
+      SyntaxError: invalid syntax (<problem>, line 33)
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+          compiled = compile(code, '<problem>', 'exec')
+        File "<problem>", line 33
+          x = [ map { _.[0] } data ]
+                    ^
+      SyntaxError: invalid syntax
+      
+
+  SimplePopUp.pg
+    Category: ProblemTechniques
+    Error: SyntaxError: invalid syntax (<problem>, line 37)
+    Full Error:
+      SyntaxError: invalid syntax (<problem>, line 37)
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+          compiled = compile(code, '<problem>', 'exec')
+        File "<problem>", line 37
+          BEGIN_PGML - [_]{popup} (Answer: 'three')
+                          ^
+      SyntaxError: invalid syntax
+      
+
+  SpecialTrigValues.pg
+    Category: Trig
+    Error: SyntaxError: invalid syntax (<problem>, line 31)
+    Full Error:
+      SyntaxError: invalid syntax (<problem>, line 31)
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+          compiled = compile(code, '<problem>', 'exec')
+        File "<problem>", line 31
+          (d, n) = random_coprime([ 2, 3, 4, 6 ], [ 1 .. 12 ])
+                                                       ^
+      SyntaxError: invalid syntax
+      
+
+  TableOfValues.pg
+    Category: Algebra
+    Error: SyntaxError: invalid syntax (<problem>, line 23)
+    Full Error:
+      SyntaxError: invalid syntax (<problem>, line 23)
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+          compiled = compile(code, '<problem>', 'exec')
+        File "<problem>", line 23
+          answer = map { f.eval(x = _) } 0 .. 2
+                       ^
+      SyntaxError: invalid syntax
+      
+
+  Vectors.pg
+    Category: VectorCalc
+    Error: SyntaxError: invalid syntax (<problem>, line 75)
+    Full Error:
+      SyntaxError: invalid syntax (<problem>, line 75)
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1755, in execute
+          compiled = compile(code, '<problem>', 'exec')
+        File "<problem>", line 75
+          v6 = v3 x v4;         # cross product
+                  ^
+      SyntaxError: invalid syntax
+      
+
+
+TypeError: 9
+----------------------------------------
+  CalculatingWithPoints.pg
+    Category: ProblemTechniques
+    Error: TypeError: 'list' object is not callable
+    Full Error:
+      TypeError: 'list' object is not callable
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1758, in execute
+          exec(compiled, self.namespace)
+          ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "<problem>", line 43, in <module>
+      TypeError: 'list' object is not callable
+      
+
+  ExtractingCoordinatesFromPoint.pg
+    Category: ProblemTechniques
+    Error: TypeError: 'list' object is not callable
+    Full Error:
+      TypeError: 'list' object is not callable
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1758, in execute
+          exec(compiled, self.namespace)
+          ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "<problem>", line 52, in <module>
+      TypeError: 'list' object is not callable
+      
+
+  GraphShading.pg
+    Category: IntegralCalc
+    Error: TypeError: can only concatenate str (not "int") to str
+    Full Error:
+      TypeError: can only concatenate str (not "int") to str
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1758, in execute
+          exec(compiled, self.namespace)
+          ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "<problem>", line 56, in <module>
+      TypeError: can only concatenate str (not "int") to str
+      
+
+  GraphShadingPlot.pg
+    Category: IntegralCalc
+    Error: TypeError: can only concatenate str (not "int") to str
+    Full Error:
+      TypeError: can only concatenate str (not "int") to str
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1758, in execute
+          exec(compiled, self.namespace)
+          ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "<problem>", line 32, in <module>
+      TypeError: can only concatenate str (not "int") to str
+      
+
+  LayoutTable.pg
+    Category: ProblemTechniques
+    Error: TypeError: can only concatenate str (not "int") to str
+    Full Error:
+      TypeError: can only concatenate str (not "int") to str
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1758, in execute
+          exec(compiled, self.namespace)
+          ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "<problem>", line 78, in <module>
+      TypeError: can only concatenate str (not "int") to str
+      
+
+  MatrixAnswer1.pg
+    Category: LinearAlgebra
+    Error: TypeError: 'Matrix' object is not callable
+    Full Error:
+      TypeError: 'Matrix' object is not callable
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1758, in execute
+          exec(compiled, self.namespace)
+          ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "<problem>", line 32, in <module>
+      TypeError: 'Matrix' object is not callable
+      
+
+  MeanStdDev.pg
+    Category: Statistics
+    Error: TypeError: type 'map' is not subscriptable
+    Full Error:
+      TypeError: type 'map' is not subscriptable
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1758, in execute
+          exec(compiled, self.namespace)
+          ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "<problem>", line 22, in <module>
+      TypeError: type 'map' is not subscriptable
+      
+
+  SeriesTest.pg
+    Category: Sequences
+    Error: TypeError: can only concatenate str (not "int") to str
+    Full Error:
+      TypeError: can only concatenate str (not "int") to str
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1758, in execute
+          exec(compiled, self.namespace)
+          ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "<problem>", line 48, in <module>
+      TypeError: can only concatenate str (not "int") to str
+      
+
+  VectorOperations.pg
+    Category: VectorCalc
+    Error: TypeError: 'list' object is not callable
+    Full Error:
+      TypeError: 'list' object is not callable
+      Traceback (most recent call last):
+        File "D:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1758, in execute
+          exec(compiled, self.namespace)
+          ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "<problem>", line 40, in <module>
+      TypeError: 'list' object is not callable
+      
+

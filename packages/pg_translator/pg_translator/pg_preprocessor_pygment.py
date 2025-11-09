@@ -156,6 +156,9 @@ class PGPreprocessor:
         Returns:
             PreprocessResult with transformed code and metadata
         """
+        # Convert Perl heredocs (<<END_MARKER) to Python syntax BEFORE splitting into lines
+        pg_source = self._convert_heredocs_global(pg_source)
+        
         lines = pg_source.split("\n")
         output_lines: List[str] = []
         text_blocks: List[Tuple[str, str]] = []
@@ -180,6 +183,8 @@ class PGPreprocessor:
         i = 0
         while i < len(lines):
             original_line = lines[i]
+            line_start_index = i
+
 
             # Join Perl-style implicit continuations to make downstream parsing easier
             is_comment = original_line.lstrip(' \t').startswith('#')
@@ -197,7 +202,10 @@ class PGPreprocessor:
 
                         should_join = False
                         stripped_no_comment = self._strip_inline_comment(stripped)
-                        if stripped_no_comment and stripped_no_comment[-1] in '=,([':
+                        # Don't join if the line ends with a semicolon (complete statement)
+                        if stripped_no_comment and stripped_no_comment[-1] == ';':
+                            should_join = False
+                        elif stripped_no_comment and stripped_no_comment[-1] in '=,([':
                             if next_line and next_line[0] in ' \t':
                                 should_join = True
 
@@ -218,15 +226,18 @@ class PGPreprocessor:
 
                         if not should_join:
                             check_line = self._strip_inline_comment(stripped)
+                            # Account for $# operator which shouldn't affect paren counting
+                            # Replace $#name with a placeholder
+                            check_line_adjusted = re.sub(r'\$#\w+', '_placeholder_', check_line)
                             open_count = (
-                                check_line.count('(')
-                                + check_line.count('[')
-                                + check_line.count('{')
+                                check_line_adjusted.count('(')
+                                + check_line_adjusted.count('[')
+                                + check_line_adjusted.count('{')
                             )
                             close_count = (
-                                check_line.count(')')
-                                + check_line.count(']')
-                                + check_line.count('}')
+                                check_line_adjusted.count(')')
+                                + check_line_adjusted.count(']')
+                                + check_line_adjusted.count('}')
                             )
                             if open_count > close_count:
                                 should_join = True
@@ -243,7 +254,7 @@ class PGPreprocessor:
                             break
 
             output_line_num = len(output_lines) + 1
-            line_map[output_line_num] = i + 1
+            line_map[output_line_num] = line_start_index + 1
 
             # Handle compound lines with loadMacros
             if ';' in original_line and 'loadMacros' in original_line:
@@ -517,6 +528,14 @@ class PGPreprocessor:
                     # Not a proper do-until, fall through: rewind index to process lines normally
                     i = i - len(block_lines) + 1
 
+            # Detect Perl for/foreach loops
+            for_result = self._try_rewrite_for_loop(lines, line_start_index)
+            if for_result is not None:
+                rewritten_loop, consumed_lines = for_result
+                output_lines.extend(rewritten_loop)
+                i = line_start_index + consumed_lines
+                continue
+
             # Block detection: check for BEGIN_* markers
             block_found = False
             for block_type, (begin_pattern, end_pattern) in self.BLOCK_PATTERNS.items():
@@ -696,8 +715,9 @@ class PGPreprocessor:
             var: VAR
             atom: NUMBER | STRING | NAME | regex_literal
 
-            regex_literal: "qr" "/" /[^\/]+/ "/" REGEX_FLAGS?  -> regex_literal
+            regex_literal: QR "/" /[^\/]+/ "/" REGEX_FLAGS?  -> regex_literal
 
+            QR.2: "qr"
             NAME: /[A-Za-z_][A-Za-z0-9_]*/
             VAR: /[\$@%][A-Za-z_][A-Za-z0-9_]*/
             STRING: /"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'/
@@ -909,8 +929,17 @@ class PGPreprocessor:
                 return ("grep", block_expr, list_expr)
 
             # Regex
-            def regex_literal(self, pattern, flags):
+            def regex_literal(self, *args):
                 """Lower regex literal: qr/pattern/flags."""
+                # Can receive (qr_token, pattern, flags) or (pattern, flags) depending on parsing
+                if len(args) == 3:
+                    qr, pattern, flags = args
+                elif len(args) == 2:
+                    pattern, flags = args
+                else:
+                    # Fallback
+                    pattern = args[0] if args else ""
+                    flags = ""
                 return ("regex", str(pattern), str(flags))
 
             # Tokens
@@ -1264,9 +1293,18 @@ class PGPreprocessor:
             # Regex literal
             if head == "regex":
                 _, pattern, flags = expr
-                # Escape quotes in pattern
-                escaped_pattern = pattern.replace('"', '\\"')
-                return f'r"{escaped_pattern}"'
+                # Convert Perl regex flags to Python re flags
+                flag_map = {
+                    'i': 're.IGNORECASE',
+                    'm': 're.MULTILINE',
+                    's': 're.DOTALL',
+                    'x': 're.VERBOSE',
+                }
+                py_flags = ' | '.join(flag_map.get(f, '') for f in str(flags) if f in flag_map)
+                if py_flags:
+                    return f're.compile(r"{pattern}", {py_flags})'
+                else:
+                    return f're.compile(r"{pattern}")'
 
             # Expression statements
             if head == "expr":
@@ -1291,9 +1329,40 @@ class PGPreprocessor:
             return name[1:]
         return name
 
+    def _convert_regexes(self, code: str) -> str:
+        """Convert Perl qr/pattern/flags regexes to Python re.compile() calls."""
+        import re as re_module
+        
+        # Pattern to match Perl regex literals: qr/pattern/flags
+        # This handles patterns with escaped slashes inside
+        pattern = r'qr/([^/]*(?:\\.[^/]*)*)/([imsxo]*)'
+        
+        def replace_regex(match):
+            pattern_content = match.group(1)
+            flags_str = match.group(2)
+            # Convert Perl regex flags to Python re flags
+            flag_map = {
+                'i': 're.IGNORECASE',
+                'm': 're.MULTILINE',
+                's': 're.DOTALL',
+                'x': 're.VERBOSE',
+            }
+            py_flags = ' | '.join(flag_map.get(f, '') for f in flags_str if f in flag_map)
+            if py_flags:
+                return f're.compile(r"{pattern_content}", {py_flags})'
+            else:
+                return f're.compile(r"{pattern_content}")'
+        
+        return re_module.sub(pattern, replace_regex, code)
+
     def _rewrite_with_pygments(self, code: str) -> str:
         """Fallback rewrite using Pygments for conservative token replacement."""
+        # First, replace qr/pattern/flags with re.compile(pattern, flags)
+        import re as re_module
+        code = self._convert_regexes(code)
+        
         tokens = list(self._perl_lexer.get_tokens_unprocessed(code))
+
         result: List[str] = []
         i = 0
         # Track brace context: True if in hash literal, False if in code block
@@ -1345,6 +1414,30 @@ class PGPreprocessor:
                     result.append(text)
                 i += 1
                 continue
+            # Handle qr/pattern/flags regex literals
+            if text.startswith('qr/') and '/' in text[3:]:
+                # Find the closing / and extract pattern and flags
+                import re as re_module
+                match = re_module.match(r'qr/([^/]*)/([imsxo]*)', text)
+                if match:
+                    pattern = match.group(1)
+                    flags_str = match.group(2)
+                    # Convert Perl regex flags to Python re flags
+                    flag_map = {
+                        'i': 're.IGNORECASE',
+                        'm': 're.MULTILINE',
+                        's': 're.DOTALL',
+                        'x': 're.VERBOSE',
+                    }
+                    py_flags = ' | '.join(flag_map.get(f, '') for f in flags_str if f in flag_map)
+                    if py_flags:
+                        result.append(f're.compile(r"{pattern}", {py_flags})')
+                    else:
+                        result.append(f're.compile(r"{pattern}")')
+                else:
+                    result.append(text)
+                i += 1
+                continue
             # String interpolation: convert Perl "$var" to Python f"{var}"
             if ttype in Token.Literal.String:
                 # Only process double-quoted strings (Perl interpolates these)
@@ -1376,11 +1469,35 @@ class PGPreprocessor:
                         result.append(text)
                 i += 1
                 continue
-            # Variables: remove sigil
+            # Variables: handle $# array last index operator specially, then remove sigil
             if ttype in Token.Name.Variable:
-                result.append(self._desigil(text))
-                i += 1
-                continue
+                if text == '$#':
+                    # $# followed by array name -> len(array_name) - 1
+                    # Look ahead for the array name
+                    j = i + 1
+                    while j < len(tokens) and tokens[j][1] in Token.Text.Whitespace:
+                        j += 1
+                    if j < len(tokens) and tokens[j][1] in Token.Name.Variable:
+                        array_token = tokens[j][2]
+                        array_name = self._desigil(array_token)
+                        result.append(f"len({array_name}) - 1")
+                        i = j + 1  # Skip past the array name
+                        continue
+                    else:
+                        # No array name following, just replace $# with an underscore to avoid syntax error
+                        result.append("_")
+                        i += 1
+                        continue
+                elif text.startswith('$#'):
+                    # $#array_name (shouldn't happen with current Pygments, but handle it)
+                    array_name = text[2:]
+                    result.append(f"len({array_name}) - 1")
+                    i += 1
+                    continue
+                else:
+                    result.append(self._desigil(text))
+                    i += 1
+                    continue
             # Namespace tokens: convert :: to .
             if ttype in Token.Name.Namespace:
                 # Pygments returns 'parser::Assignment' as a single token
@@ -1791,6 +1908,139 @@ class PGPreprocessor:
     # Structured rewriting helpers
     # ------------------------------------------------------------------
 
+    def _try_rewrite_for_loop(
+        self, lines: List[str], start_index: int
+    ) -> tuple[List[str], int] | None:
+        """Rewrite simple Perl for/foreach loops into Python for loops."""
+        line = lines[start_index]
+        for_match = re.match(
+            r"(\s*)(?:for|foreach)\s+(?:my\s+)?([$@%]?[A-Za-z_][\w]*)\s*\(([^)]*)\)\s*\{",
+            line,
+        )
+        if not for_match:
+            return None
+
+        indent = for_match.group(1)
+        iterator_token = for_match.group(2)
+        iterable_expr = for_match.group(3).strip()
+
+        block_lines: List[str] = [line]
+        brace_depth = line.count('{') - line.count('}')
+        idx = start_index + 1
+        while idx < len(lines) and brace_depth > 0:
+            current_line = lines[idx]
+            block_lines.append(current_line)
+            brace_depth += current_line.count('{') - current_line.count('}')
+            idx += 1
+
+        if brace_depth != 0:
+            return None
+
+        loop_var = self._desigil(iterator_token)
+        iterable_py = self._convert_for_iterable(iterable_expr)
+        if not iterable_py:
+            return None
+
+        body_lines: List[str] = []
+        tail_lines: List[str] = []
+
+        open_index = line.find('{')
+        if open_index == -1:
+            return None
+
+        body_candidates: List[str] = [line[open_index + 1 :]]
+        body_candidates.extend(block_lines[1:])
+
+        for idx, candidate in enumerate(body_candidates):
+            if candidate is None:
+                continue
+            candidate_text = candidate.rstrip('\n')
+            is_last = idx == len(body_candidates) - 1
+            if is_last:
+                closing_index = candidate_text.rfind('}')
+                if closing_index != -1:
+                    body_part = candidate_text[:closing_index].rstrip()
+                    if body_part.strip():
+                        body_lines.append(body_part)
+                    tail = candidate_text[closing_index + 1 :].strip()
+                    if tail:
+                        tail_lines.append(f"{indent}{tail}")
+                else:
+                    if candidate_text.strip():
+                        body_lines.append(candidate_text)
+            else:
+                if candidate_text.strip():
+                    body_lines.append(candidate_text)
+
+        compiled_body_lines: List[str] = []
+        body_indent = indent + '    '
+        for body_line in body_lines:
+            compiled = self._compile_line(body_line)
+            for compiled_line in compiled:
+                stripped_total = compiled_line.strip()
+                if not stripped_total:
+                    continue
+                inner_indent, inner_body = self._split_indent(compiled_line)
+                inner_body = re.sub(r'^my\s+', '', inner_body)
+                compiled_body_lines.append(f"{body_indent}{inner_indent}{inner_body}")
+
+        if not compiled_body_lines:
+            compiled_body_lines.append(f"{body_indent}pass")
+
+        rewritten_loop = [f"{indent}for {loop_var} in {iterable_py}:"]
+        rewritten_loop.extend(compiled_body_lines)
+
+        for tail_line in tail_lines:
+            tail_compiled = self._compile_line(tail_line)
+            rewritten_loop.extend(tail_compiled)
+
+        return rewritten_loop, len(block_lines)
+
+    def _convert_for_iterable(self, iterable_expr: str) -> str | None:
+        expr = iterable_expr.strip()
+        if not expr:
+            return None
+
+        if '..' in expr:
+            start_raw, end_raw = expr.split('..', 1)
+            start_py = self._convert_range_bound(start_raw.strip())
+            end_py = self._convert_range_bound(end_raw.strip())
+            if start_py is None or end_py is None:
+                return None
+            return f"range({start_py}, ({end_py}) + 1)"
+
+        if expr.startswith('$#'):
+            array_name = expr[2:].strip()
+            if array_name.startswith('{') and array_name.endswith('}'):
+                array_name = array_name[1:-1].strip()
+            array_py = self._desigil(f'@{array_name}')
+            return f"len({array_py}) - 1"
+
+        compiled = self._compile_expr(expr).strip()
+        if compiled.startswith('(') and compiled.endswith(')'):
+            compiled = compiled[1:-1]
+        return compiled
+
+    def _convert_range_bound(self, expr: str) -> str | None:
+        expr = expr.strip()
+        if not expr:
+            return '0'
+
+        if expr.startswith('$#'):
+            array_name = expr[2:].strip()
+            if array_name.startswith('{') and array_name.endswith('}'):
+                array_name = array_name[1:-1].strip()
+            array_py = self._desigil(f'@{array_name}')
+            return f"len({array_py}) - 1"
+
+        if expr.startswith('$') or expr.startswith('@'):
+            return self._desigil(expr)
+
+        compiled = self._compile_expr(expr).strip()
+        if compiled.startswith('(') and compiled.endswith(')'):
+            compiled = compiled[1:-1]
+        return compiled
+
     def _rewrite_statement(self, line: str) -> str:
         """Rewrite a single Perl-like statement using Pygments and helpers."""
         indent, body = self._split_indent(line)
@@ -1999,6 +2249,11 @@ class PGPreprocessor:
                     string_char = None
 
             elif char == '#' and not in_string:
+                # Check if this is a comment or the $# operator
+                # $# is a Perl operator for array last index, not a comment
+                if i > 0 and line[i-1] == '$':
+                    # This is $#, not a comment - continue processing
+                    continue
                 # Found comment start - return everything before it
                 return line[:i].rstrip()
 
@@ -2035,6 +2290,71 @@ class PGPreprocessor:
             result.append(pgml_content[i])
             i += 1
         return ''.join(result)
+
+    def _convert_heredocs_global(self, pg_source: str) -> str:
+        """Convert Perl heredocs (<<END_MARKER) to Python triple-quoted strings at the source level.
+        
+        Processes the entire source before line splitting to handle heredocs properly.
+        
+        Converts:
+            HEADER_TEXT(MODES(TeX => '', HTML => <<END_STYLE));
+            <style>...</style>
+            END_STYLE
+        
+        To a form like:
+            HEADER_TEXT(MODES(TeX => '', HTML => '''<style>
+            
+            </style>'''))
+        
+        Note: The result will be re-split into lines by the caller, so embedded newlines
+        in the triple-quoted strings are preserved.
+        """
+        import re as re_module
+        
+        lines = pg_source.split('\n')
+        result_lines: List[str] = []
+        i = 0
+        
+        while i < len(lines):
+            line = lines[i]
+            
+            # Check if this line contains a heredoc start (<<MARKER)
+            heredoc_match = re_module.search(r'<<([A-Z_][A-Z0-9_]*)', line)
+            if heredoc_match:
+                marker = heredoc_match.group(1)
+                
+                # Split the line at the heredoc marker
+                before = line[:heredoc_match.start()]
+                after_marker = line[heredoc_match.end():]  # Everything after <<MARKER on same line
+                
+                # Collect the content until we find the marker on its own line
+                content_lines: List[str] = []
+                i += 1
+                while i < len(lines):
+                    current = lines[i]
+                    # Check if this line is just the marker (with optional whitespace)
+                    if re_module.match(rf'^\s*{re_module.escape(marker)}\s*$', current):
+                        break
+                    content_lines.append(current)
+                    i += 1
+                
+                # Build the replacement: join content with actual newlines
+                content = '\n'.join(content_lines)
+                # Escape backslashes in the content (for regex characters, etc.)
+                content = content.replace('\\', '\\\\')
+                # Escape triple quotes
+                content = content.replace("'''", "\\'''")
+                
+                # Build the new line with triple-quoted string
+                # Include the content with embedded newlines
+                new_line = f"{before}'''{content}'''{after_marker}"
+                result_lines.append(new_line)
+            else:
+                result_lines.append(line)
+            
+            i += 1
+        
+        return '\n'.join(result_lines)
 
     def _transform_load_macros(self, macro_list_str: str) -> Tuple[List[str], str]:
         """Transform loadMacros() call to Python imports."""

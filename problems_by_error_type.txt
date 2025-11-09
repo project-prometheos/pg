@@ -1,0 +1,59 @@
+PROBLEMS GROUPED BY ERROR TYPE
+================================================================================
+
+AttributeError (2 problems)
+--------------------------------------------------------------------------------
+  - tutorial\sample-problems\ProblemTechniques\CustomAnswerListChecker.pg
+  - tutorial\sample-problems\IntegralCalc\RiemannSumPlot.pg
+
+NameError (8 problems)
+--------------------------------------------------------------------------------
+  - tutorial\sample-problems\Misc\ManyMultipleChoice.pg
+  - tutorial\sample-problems\Misc\Matching.pg
+  - tutorial\sample-problems\DiffEq\PrimesInFormulas.pg
+  - tutorial\sample-problems\Geometry\QuadrilateralGraphTool.pg
+  - tutorial\sample-problems\IntegralCalc\RiemannSums.pg
+  - tutorial\sample-problems\Misc\Scaffolding.pg
+  - tutorial\sample-problems\Algebra\StringOrOtherType.pg
+  - tutorial\sample-problems\Geometry\TriangleGraphTool.pg
+
+SyntaxError (25 problems)
+--------------------------------------------------------------------------------
+  - tutorial\sample-problems\Sequences\AnswerOrderedList.pg
+  - tutorial\sample-problems\Statistics\BarGraph.pg
+  - tutorial\sample-problems\Misc\ChemicalReaction.pg
+  - tutorial\sample-problems\ProblemTechniques\CustomAnswerCheckers.pg
+  - tutorial\sample-problems\ProblemTechniques\DataTables.pg
+  - tutorial\sample-problems\ProblemTechniques\DraggableSubsets.pg
+  - tutorial\sample-problems\Misc\DynamicGraphPolygon.pg
+  - tutorial\sample-problems\Algebra\GraphToolCustomChecker.pg
+  - tutorial\sample-problems\ProblemTechniques\GraphsInTables.pg
+  - tutorial\sample-problems\ProblemTechniques\Images.pg
+  - tutorial\sample-problems\Statistics\LinearRegression.pg
+  - tutorial\sample-problems\Misc\MatchingAlt.pg
+  - tutorial\sample-problems\Misc\MatchingGraphs.pg
+  - tutorial\sample-problems\Misc\MultipleChoiceCheckbox.pg
+  - tutorial\sample-problems\Misc\MultipleChoiceRadio.pg
+  - tutorial\sample-problems\Parametric\ParametricPlot.pg
+  - tutorial\sample-problems\Parametric\ParametricPlotAlt.pg
+  - tutorial\sample-problems\Trig\ProvingTrigIdentities.pg
+  - tutorial\sample-problems\ProblemTechniques\RandomFunction.pg
+  - tutorial\sample-problems\LinearAlgebra\RowOperations.pg
+  - tutorial\sample-problems\Statistics\ScatterPlot.pg
+  - tutorial\sample-problems\ProblemTechniques\SimplePopUp.pg
+  - tutorial\sample-problems\Trig\SpecialTrigValues.pg
+  - tutorial\sample-problems\Algebra\TableOfValues.pg
+  - tutorial\sample-problems\VectorCalc\Vectors.pg
+
+TypeError (9 problems)
+--------------------------------------------------------------------------------
+  - tutorial\sample-problems\ProblemTechniques\CalculatingWithPoints.pg
+  - tutorial\sample-problems\ProblemTechniques\ExtractingCoordinatesFromPoint.pg
+  - tutorial\sample-problems\IntegralCalc\GraphShading.pg
+  - tutorial\sample-problems\IntegralCalc\GraphShadingPlot.pg
+  - tutorial\sample-problems\ProblemTechniques\LayoutTable.pg
+  - tutorial\sample-problems\LinearAlgebra\MatrixAnswer1.pg
+  - tutorial\sample-problems\Statistics\MeanStdDev.pg
+  - tutorial\sample-problems\Sequences\SeriesTest.pg
+  - tutorial\sample-problems\VectorCalc\VectorOperations.pg
+

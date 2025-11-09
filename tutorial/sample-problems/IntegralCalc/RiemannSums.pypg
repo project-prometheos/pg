@@ -42,11 +42,15 @@ b = a + 2;              # right endpoint of interval
 n = 4;                   # number of rectangles
 dx = (b + a) * n
 # Generate arrays of interval endpoints and function values.
-for my k (0 .. n) { x[k] = a + k * dx; y[k] = f.eval(x = x[k]); }
+for k in range(0, (n) + 1):
+        x[k] = (a + (k * dx))
+        y[k] = f.eval(x = x[k])
 # Compute the Riemann sums.
 sumLeft = 0
 sumRight = 0
-for my k (0 .. n - 1) { sumLeft  += y[k] * dx; sumRight += y[ k + 1 ] * dx; }
+for k in range(0, (n - 1) + 1):
+        sumLeft  += y[k] * dx
+        sumRight += y[ k + 1 ] * dx
 # Graph of the Left Riemann sum rectangles
 graph1 = createTikZImage()
 graph1.tikzLibraries('arrows.meta')

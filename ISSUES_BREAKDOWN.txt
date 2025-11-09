@@ -1,0 +1,227 @@
+================================================================================
+                    SAMPLE PROBLEMS FIX INITIATIVE
+                         Status & Breakdown
+================================================================================
+
+OVERALL METRICS
+===============
+Total Sample Problems:  160
+Currently Passing:      116 (72.5%)
+Currently Failing:       44 (27.5%)
+
+Target: 160/160 (100%)
+
+FAILURES BY CATEGORY
+====================
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ CATEGORY 1: SyntaxError - Lambda/Closure Issues                     [10 fix]│
+├─────────────────────────────────────────────────────────────────────────────┤
+│ Problem: Perl closures sub { } not translating to proper Python functions  │
+│ Impact: HIGH - affects 10+ problems, mostly GraphTool related              │
+│                                                                              │
+│ Examples:                                                                    │
+│  • GraphToolCustomChecker.pg   - lambda in dict context                    │
+│  • ParametricPlot.pg           - similar lambda issue                      │
+│  • ParametricPlotAlt.pg        - similar lambda issue                      │
+│  • GraphShading.pg             - similar lambda issue                      │
+│  • GraphShadingPlot.pg         - similar lambda issue                      │
+│  • QuadrilateralGraphTool.pg   - similar lambda issue                      │
+│  • TriangleGraphTool.pg        - similar lambda issue                      │
+│  + 3 more                                                                   │
+│                                                                              │
+│ Fix: Either improve translator or rewrite to avoid closures                │
+│ Difficulty: MEDIUM                                                          │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ CATEGORY 2: AttributeError - Missing Methods                        [8 fix] │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ Problem: .cmp() method called on String/Vector/Matrix objects              │
+│ Impact: MEDIUM - affects 8 problems, math object related                   │
+│                                                                              │
+│ Examples:                                                                    │
+│  • StringOrOtherType.pg        - String.cmp() doesn't exist                │
+│  • VectorOperations.pg         - Vector.cmp() issue                        │
+│  • Vectors.pg                  - Vector.cmp() issue                        │
+│  • MatrixAnswer1.pg            - Matrix.cmp() issue                        │
+│  • RowOperations.pg            - Matrix/Vector.cmp() issue                 │
+│  + 3 more                                                                   │
+│                                                                              │
+│ Fix: Add .cmp() method to MathObject classes or find equivalent            │
+│ Difficulty: MEDIUM                                                          │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ CATEGORY 3: Complex Syntax Issues                                   [8 fix] │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ Problem: Complex nested structures, method chaining, special syntax         │
+│ Impact: MEDIUM - affects 8 problems, various types                         │
+│                                                                              │
+│ Examples:                                                                    │
+│  • TableOfValues.pg            - invalid syntax somewhere                  │
+│  • RiemannSums.pg              - complex structure                         │
+│  • RiemannSumPlot.pg           - complex structure                         │
+│  • Matching.pg                 - complex list/hash structure               │
+│  • MatchingAlt.pg              - similar structure                         │
+│  • MatchingGraphs.pg           - similar structure                         │
+│  • ManyMultipleChoice.pg       - similar structure                         │
+│  • MultipleChoice*.pg          - similar structure                         │
+│                                                                              │
+│ Fix: Individual analysis and fix per problem                               │
+│ Difficulty: MEDIUM-HIGH                                                    │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ CATEGORY 4: Statistics/Special Macros                                [8 fix]│
+├─────────────────────────────────────────────────────────────────────────────┤
+│ Problem: Macros not fully implemented in Python or translator issues       │
+│ Impact: MEDIUM - affects specialized problems                              │
+│                                                                              │
+│ Examples:                                                                    │
+│  • BarGraph.pg                 - stats macro                               │
+│  • LinearRegression.pg         - stats macro                               │
+│  • MeanStdDev.pg               - stats macro                               │
+│  • ScatterPlot.pg              - stats macro                               │
+│  • ChemicalReaction.pg         - chemistry macro                           │
+│  • DraggableSubsets.pg         - special UI macro                          │
+│  • DynamicGraphPolygon.pg      - special graph macro                       │
+│  + 1 more                                                                   │
+│                                                                              │
+│ Fix: Check macro implementations, add stubs or full implementations        │
+│ Difficulty: MEDIUM-HIGH                                                    │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ CATEGORY 5: UI/Layout Issues                                        [8 fix] │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ Problem: HTML/Layout generation, image handling not translating             │
+│ Impact: MEDIUM - affects UI-specific problems                              │
+│                                                                              │
+│ Examples:                                                                    │
+│  • Images.pg                   - image handling                            │
+│  • LayoutTable.pg              - table layout                              │
+│  • GraphsInTables.pg           - graphs in tables                          │
+│  • Scaffolding.pg              - scaffolding UI                            │
+│  • SimplePopUp.pg              - popup UI                                  │
+│  + 3 more                                                                   │
+│                                                                              │
+│ Fix: Analyze macros, implement or stub as needed                           │
+│ Difficulty: MEDIUM                                                          │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ CATEGORY 6: Data/Answer Checking Issues                             [10 fix]│
+├─────────────────────────────────────────────────────────────────────────────┤
+│ Problem: Custom answer checking, data structures, evaluation functions      │
+│ Impact: MEDIUM - affects advanced answer checking problems                 │
+│                                                                              │
+│ Examples:                                                                    │
+│  • CustomAnswerCheckers.pg     - custom checker code                       │
+│  • CustomAnswerListChecker.pg  - custom checker for lists                  │
+│  • CalculatingWithPoints.pg    - point calculations                        │
+│  • ExtractingCoordinatesFromPoint.pg - coordinate extraction               │
+│  • DataTables.pg               - data table structures                     │
+│  • AnswerOrderedList.pg        - list order checking                       │
+│  • SeriesTest.pg               - series evaluation                         │
+│  + 3 more                                                                   │
+│                                                                              │
+│ Fix: Implement custom checking or update syntax                            │
+│ Difficulty: HIGH                                                            │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ CATEGORY 7: Edge Cases                                              [3 fix] │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ Problem: Specific to individual problems, requires analysis                 │
+│ Impact: LOW - only 3 problems                                              │
+│                                                                              │
+│ Examples:                                                                    │
+│  • ProvingTrigIdentities.pg    - trig specific                             │
+│  • SpecialTrigValues.pg        - trig specific                             │
+│  • PrimesInFormulas.pg         - math specific                             │
+│  • RandomFunction.pg           - function/random specific                  │
+│                                                                              │
+│ Fix: Individual analysis and implementation                                │
+│ Difficulty: VARIES                                                          │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+RECOMMENDED FIX ORDER
+====================
+
+PHASE 1 (HIGH IMPACT - FIX TRANSLATOR)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 1. Fix Lambda/Closure translator issue → Fixes 10 problems                 │
+│ 2. Fix .cmp() method issue → Fixes 8 problems                              │
+│ 3. Analyze complex syntax patterns → Fixes 8 problems                      │
+│                                                                              │
+│ Expected Result: 26+ problems fixed                                        │
+│ Time: ~1 hour (if translator-level)                                        │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+PHASE 2 (MEDIUM IMPACT - INDIVIDUAL FIXES)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 4. Fix macro-related issues (8 problems)                                   │
+│ 5. Fix UI/Layout issues (8 problems)                                       │
+│ 6. Fix data/answer checking (10 problems)                                  │
+│ 7. Fix edge cases (3 problems)                                             │
+│                                                                              │
+│ Expected Result: 29 more problems fixed = 55 total                         │
+│ Time: ~2 hours                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+TOTAL ESTIMATED EFFORT: 2-3 hours for 100% pass rate
+
+TOOLS & COMMANDS
+================
+
+Test Single Problem:
+  "C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe" -m pytest \
+    "d:\pg\packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[ProblemName]" \
+    -v --tb=short
+
+Test All:
+  "C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe" -m pytest \
+    "d:\pg\packages\pg_translator\tests\test_tutorial_sample_problems.py" \
+    -v --tb=short
+
+Count Failures:
+  "C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe" -m pytest \
+    "d:\pg\packages\pg_translator\tests\test_tutorial_sample_problems.py" \
+    -v --tb=line 2>&1 | grep FAILED | wc -l
+
+DOCUMENTATION
+==============
+
+Read These (in order):
+  1. SAMPLE_PROBLEMS_FIX_STATUS.md        - This document
+  2. FIX_SAMPLE_PROBLEMS_PLAN.md          - Detailed analysis
+  3. QUICK_START_SAMPLE_FIXES.md          - Implementation guide
+  4. ISSUES_BREAKDOWN.txt                 - This breakdown
+
+NEXT STEPS
+===========
+
+1. Read the documentation above
+2. Decide: Fix translator-level or problem-level?
+3. Pick first problem (GraphToolCustomChecker.pg recommended)
+4. Run test to confirm error
+5. Analyze and implement fix
+6. Test and verify
+7. Repeat for next problem
+
+STATUS TRACKING
+================
+
+As you fix problems, update:
+  - SAMPLE_PROBLEMS_FIX_STATUS.md (success criteria section)
+  - Todo list in this session
+
+Current: 116/160 passing (72.5%)
+Goal:    160/160 passing (100%)
+
+================================================================================
+Created: 2025-11-10
+Ready to start: YES
+Next Action: Read FIX_SAMPLE_PROBLEMS_PLAN.md
+================================================================================

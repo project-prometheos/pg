@@ -48,7 +48,11 @@
       "Bash(do echo \"Testing $test...\" C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe py_port/run_pg_snippet.py tests/snippets/$test.pg 12345 build/$test_final.json)",
       "Bash(git stash:*)",
       "Bash(git log:*)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(git checkout:*)",
+      "Bash(dir:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
