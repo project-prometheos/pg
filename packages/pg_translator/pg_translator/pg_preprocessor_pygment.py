@@ -911,16 +911,8 @@ class PGPreprocessor:
                 return result_lines if result_lines else []
             except LarkError:
                 pass
-        # Manual parse for simple assignments and calls
-        manual_ir = self._manual_parse_line(stripped)
-        if manual_ir is not None:
-            out = self._emit_ir(manual_ir)
-            if out is None:
-                return []
-            if indent_prefix:
-                out = indent_prefix + out
-            return [out]
 
+        # Fallback to Pygments-based token rewriting
         rewritten = self._rewrite_statement(line)
         if not rewritten:
             return []
@@ -1214,8 +1206,6 @@ class PGPreprocessor:
 
         # Otherwise, treat as raw string and apply rewrite
         rewritten = self._rewrite_with_pygments(str(expr))
-        # Apply post-processing transformations
-        rewritten = self._convert_string_operators(rewritten)
         return rewritten
 
     # ------------------------------------------------------------------
@@ -1454,10 +1444,8 @@ class PGPreprocessor:
             return control
 
         rewritten = self._rewrite_with_pygments(body)
-        rewritten = self._convert_string_operators(rewritten)
+        # Apply string interpolation (still needed for token-level $var → f-string)
         rewritten = self._convert_string_interpolation(rewritten)
-        rewritten = self._convert_string_comparisons(rewritten)
-        rewritten = self._convert_regex_literals(rewritten)
         return indent + rewritten if rewritten else ''
 
     def _split_indent(self, line: str) -> tuple[str, str]:
@@ -1528,11 +1516,6 @@ class PGPreprocessor:
             tail = tail[:-1].rstrip()
         return keyword, condition, tail
 
-    def _convert_string_operators(self, line: str) -> str:
-        line = re.sub(r'(?<=\S)\s+\.\s+(?=\S)', ' + ', line)
-        line = re.sub(r'(?<=\S)\s+x\s+(?=\S)', ' * ', line)
-        return line
-
     def _convert_string_interpolation(self, line: str) -> str:
         def repl(match: re.Match[str]) -> str:
             quote = match.group(1)
@@ -1545,138 +1528,8 @@ class PGPreprocessor:
 
         return re.sub(r'(["\'])((?:[^\\]|\\.)*?)\1', repl, line)
 
-    def _convert_string_comparisons(self, line: str) -> str:
-        replacements = {
-            r'\beq\b': '==',
-            r'\bne\b': '!=',
-            r'\blt\b': '<',
-            r'\bgt\b': '>',
-            r'\ble\b': '<=',
-            r'\bge\b': '>=',
-        }
-        for pattern, replacement in replacements.items():
-            line = re.sub(pattern, replacement, line)
-        return line
-
-    def _convert_regex_literals(self, line: str) -> str:
-        def repl(match: re.Match[str]) -> str:
-            pattern = match.group(1)
-            escaped = pattern.replace('"', '\\"')
-            return f'r"{escaped}"'
-
-        return re.sub(r'qr/([^/]+)/\w*', repl, line)
-
-    def _transform_text_block(self, content: str) -> str:
-        r"""
-        Transform TEXT block content to Python expression(s).
-
-        Handles:
-        - Variable interpolation: $a → ", a, "
-        - Function calls: \{ ans_rule(20) \} → ", ans_rule(20), "
-        - LaTeX math: \( ... \) → keep as-is
-        - Special vars: $PAR → ", PAR(), "
-
-        Returns:
-            Python expression string suitable for TEXT() call
-        """
-        import re
-        segments: List[str] = []
-        pos = 0
-        while pos < len(content):
-            var_match = re.search(r'\$([a-zA-Z_][a-zA-Z0-9_]*)', content[pos:])
-            func_match = re.search(r'\\{([^}]+)\\}', content[pos:])
-            next_var_pos = pos + var_match.start() if var_match else len(content)
-            next_func_pos = pos + func_match.start() if func_match else len(content)
-            if next_var_pos < next_func_pos:
-                if next_var_pos > pos:
-                    text_segment = content[pos:next_var_pos]
-                    segments.append(repr(text_segment))
-                var_name = var_match.group(1)
-                if var_name in ('PAR', 'BR', 'BBOLD', 'EBOLD', 'BITALIC', 'EITALIC', 'BCENTER', 'ECENTER', 'BUL', 'EUL'):
-                    segments.append(f"{var_name}()")
-                else:
-                    segments.append(f"str({var_name})")
-                pos = next_var_pos + len(var_match.group(0))
-            elif next_func_pos < len(content):
-                if next_func_pos > pos:
-                    text_segment = content[pos:next_func_pos]
-                    segments.append(repr(text_segment))
-                func_code = func_match.group(1).strip()
-                transformed_code = self._compile_expr(func_code)
-                segments.append(transformed_code)
-                pos = next_func_pos + len(func_match.group(0))
-            else:
-                if pos < len(content):
-                    text_segment = content[pos:]
-                    segments.append(repr(text_segment))
-                break
-        if not segments:
-            return '""'
-        return ', '.join(segments)
-
-
     # ------------------------------------------------------------------
-    # Manual parsing fallback
-    # ------------------------------------------------------------------
-
-    def _manual_parse_line(self, line: str) -> Optional[Tuple[str, Any, Any]]:
-        """
-        Manual parser for simple PG statements.  Used when Lark is not
-        available.  This recognises assignments of the form:
-
-            my $x = expr
-            $x = expr
-
-        and function calls like `FOO(arg1, arg2)` as well as
-        DOCUMENT()/ENDDOCUMENT().  All other constructs return None
-        so that the caller can fall back to the Pygments rewrite.
-
-        Returns:
-            A tuple representing an IR node, or None if the line is not recognised.
-        """
-        stripped = line.strip()
-        if not stripped or stripped.startswith('#'):
-            return None
-        # Assignment or declaration: my $x = expr; or $x = expr;
-        m = re.match(r'^(?:my\s+)?([\$@%][A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.+)$', stripped)
-        if m:
-            var_name = m.group(1)
-            expr = m.group(2).rstrip(';').strip()
-            # Represent variable as a tuple consistent with VAR token
-            return ("assign", ("var", var_name), expr)
-        # Function call: NAME(args)
-        m = re.match(r'^([A-Za-z_][A-Za-z0-9_]*)\s*\((.*)\)\s*;?\s*$', stripped)
-        if m:
-            name = m.group(1)
-            args_str = m.group(2).strip()
-            args: List[str] = []
-            if args_str:
-                # Split by commas not inside parentheses or quotes
-                # This naive splitter is sufficient for typical PG calls
-                depth = 0
-                start = 0
-                for i, ch in enumerate(args_str):
-                    if ch == '(':
-                        depth += 1
-                    elif ch == ')':
-                        depth -= 1
-                    elif ch == ',' and depth == 0:
-                        args.append(args_str[start:i].strip())
-                        start = i + 1
-                args.append(args_str[start:].strip())
-            # Special case: loadMacros should be dropped (handled elsewhere)
-            if name == 'loadMacros':
-                return ("noop", )
-            return ("call", name, args)
-        # DOCUMENT and ENDDOCUMENT as calls
-        if re.match(r'^DOCUMENT\(\s*\)$', stripped):
-            return ("call", "DOCUMENT", [])
-        if re.match(r'^ENDDOCUMENT\(\s*\)$', stripped):
-            return ("call", "ENDDOCUMENT", [])
-        return None
-
-    # ------------------------------------------------------------------
-    # Text block processing (unchanged from original)
+    # Text block processing
     # ------------------------------------------------------------------
 
     def _transform_text_block(self, content: str) -> str:
