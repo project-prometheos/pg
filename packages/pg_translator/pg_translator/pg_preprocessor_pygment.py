@@ -549,7 +549,7 @@ class PGPreprocessor:
             while_stmt: "while" "(" expr ")" block
             for_stmt: "for" "my"? var "(" expr ")" block
             foreach_stmt: "foreach" "my"? var "(" expr ")" block
-            do_until_stmt: "do" block "until" "(" expr ")"
+            do_until_stmt: "do" block "until" "("? expr ")"?
 
             block: "{" (stmt ";"?)* "}"
 
@@ -1388,12 +1388,13 @@ class PGPreprocessor:
                                     has_arrow = True  # Another -> follows, so this is property access
                                 elif lookahead_text == '{':
                                     has_brace = True  # Hash subscript follows
+                            # Always append the method/property name
+                            result.append(next_text)
                             # Only add () if no parens AND no arrow AND no brace (i.e., final method in chain)
                             if not has_parens and not has_arrow and not has_brace:
-                                result.append(next_text)
                                 result.append('()')
-                                i += 1
-                                continue
+                            i += 1
+                            continue
                     else:
                         # Nothing after ->, just append .
                         result.append('.')
@@ -1412,6 +1413,59 @@ class PGPreprocessor:
                         result.append(' = ')
                     i += 2
                     continue
+                # Handle Perl string concatenation operator '.'
+                # In Perl: "str" . "ing" concatenates strings
+                # In Python: "str" + "ing"
+                # We need to distinguish from method access: obj.method()
+                if text == '.':
+                    # Check if this is string concatenation (binary operator) or method access
+                    # Look at previous and next tokens to determine context
+                    is_concat = False
+                    if i > 0 and i + 1 < len(tokens):
+                        # Skip whitespace before
+                        j = i - 1
+                        while j >= 0 and tokens[j][1] in Token.Text.Whitespace:
+                            j -= 1
+                        # Skip whitespace after
+                        k = i + 1
+                        while k < len(tokens) and tokens[k][1] in Token.Text.Whitespace:
+                            k += 1
+
+                        if j >= 0 and k < len(tokens):
+                            prev_text = tokens[j][2]
+                            prev_ttype = tokens[j][1]
+                            next_text = tokens[k][2]
+                            next_ttype = tokens[k][1]
+
+                            # It's concatenation if there's whitespace around the dot
+                            # In Perl: "str" . "ing" has spaces
+                            # In Perl: obj.method() has no spaces
+                            # Check if preceded by string, closing paren, or ends with expression
+                            is_expr_before = (
+                                prev_ttype in Token.Literal.String or
+                                prev_text == ')' or
+                                prev_text == ']' or
+                                prev_ttype in Token.Literal.Number
+                            )
+                            # Check if followed by string, function call, or expression
+                            is_expr_after = (
+                                next_ttype in Token.Literal.String or
+                                next_ttype in Token.Literal.Number or
+                                next_ttype in Token.Name  # Function call like ans_rule()
+                            )
+                            # It's concatenation if both sides look like expressions
+                            # and we have whitespace (i != j+1 or k != i+1)
+                            if is_expr_before and is_expr_after:
+                                # Check for whitespace
+                                has_space_before = (j < i - 1)
+                                has_space_after = (k > i + 1)
+                                if has_space_before or has_space_after:
+                                    is_concat = True
+
+                    if is_concat:
+                        result.append(' + ')
+                        i += 1
+                        continue
             # Fat comma '=>' collapsed as a single text (rare)
             if text == '=>':
                 # Inside hash literal, treat as dict colon
@@ -1467,12 +1521,16 @@ class PGPreprocessor:
         rewritten = re.sub(r'\s+=\s+', ' = ', rewritten)
 
         # Convert string comparison operators
-        rewritten = re.sub(r'\beq\b', '==', rewritten)
-        rewritten = re.sub(r'\bne\b', '!=', rewritten)
-        rewritten = re.sub(r'\blt\b', '<', rewritten)
-        rewritten = re.sub(r'\bgt\b', '>', rewritten)
-        rewritten = re.sub(r'\ble\b', '<=', rewritten)
-        rewritten = re.sub(r'\bge\b', '>=', rewritten)
+        # Be careful: these are only operators when surrounded by expressions/values,
+        # not variable names. Look for operators preceded/followed by closing parens,
+        # numbers, closing brackets, or the words 'not', 'and', 'or'
+        # Pattern: (expression) OPERATOR (expression)
+        rewritten = re.sub(r'([)\]\w])\s+eq\s+', r'\1 == ', rewritten)
+        rewritten = re.sub(r'([)\]\w])\s+ne\s+', r'\1 != ', rewritten)
+        rewritten = re.sub(r'([)\]\w])\s+lt\s+', r'\1 < ', rewritten)
+        rewritten = re.sub(r'([)\]\w])\s+gt\s+', r'\1 > ', rewritten)
+        rewritten = re.sub(r'([)\]\w])\s+le\s+', r'\1 <= ', rewritten)
+        rewritten = re.sub(r'([)\]\w])\s+ge\s+', r'\1 >= ', rewritten)
 
         # Convert ternary operator: cond ? true : false  -->  true if cond else false
         # Match pattern like: $a > 0 ? 1 : 2
