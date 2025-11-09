@@ -32,7 +32,10 @@ from .grading import (
 )
 from .macro_loader import MacroLoader
 from .post_processor import ContentPostProcessor
-from .preprocessor import PGPreprocessor
+# Use the structured Pygments/Lark preprocessor by default.
+# The legacy regex-based preprocessor remains available via
+# pg_translator.LegacyPGPreprocessor if needed.
+from .pg_preprocessor_pygment import PGPreprocessor
 
 
 @dataclass

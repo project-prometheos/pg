@@ -17,7 +17,7 @@ Results:
 FILES WITH DIFFERENT OUTPUTS (20):
 --------------------------------------------------------------------------------
   • AlgebraicFractionAnswer.pg
-    Regex: 99 lines, Grammar: 91 lines
+    Regex: 99 lines, Grammar: 93 lines
   • AnswerBlankInExponent.pg
     Regex: 65 lines, Grammar: 55 lines
   • AnswerUpToMultiple.pg
@@ -55,7 +55,7 @@ File: AlgebraicFractionAnswer.pg
  ## DBsubject(WeBWorK)
  ## DBchapter(WeBWorK tutorial)
  ## DBsection(PGML tutorial 2015)
-@@ -10,61 +9,52 @@
+@@ -10,61 +9,54 @@
  ## Author(Paul Pearson)
  ## MO(1)
  ## KEYWORDS('algebra', 'algebraic fraction answer')
@@ -127,29 +127,29 @@ File: AnswerBlankInExponent.pg
  #:% section = setup
  #: Set the context to allow only the variables `a` and `b` and choose a random
  #: exponent.
-@@ -28,38 +23,33 @@
+@@ -27,39 +22,34 @@
+ #: The exponential layout is in HTML using a pair of adjacent `span` elements
  #: with the right one shifted up using the CSS style `vertical-align`.
  #: In hardcopy mode, a LaTeX exponent is used.
- Context().variables.are(a = 'Real', b = 'Real')
+-Context().variables.are(a = 'Real', b = 'Real')
 -
++Context().variables().are(a = 'Real', b = 'Real')
  n = random(3, 9)
 -
  # TeX
  expression = f"a^{{{n}}} b^{{{n}}}"
--
- # MathObjects
--base     = Formula("a*b")
++# MathObjects
 +base = Formula("a*b")
- exponent = Formula(f"{n}")
--
- # Display exponents nicely
- if (displayMode == 'TeX'):
--    exp = f"\( \displaystyle {expression} = (" + ans_rule(4) + ")^{" + ans_rule(4) + "}\)"
++exponent = Formula(f"{n}")
++# Display exponents nicely
++if ((displayMode Tree(Token('RULE', 'comp_op'), []) 'TeX')):
 +exp = f"\( \displaystyle {expression} = (" + ans_rule(4) + ")^{" + ans_rule(4) + "}\)"
- else:
--    exp = f"<span>\(\displaystyle {expression} = \Big(\)" + ans_rule(4) + '\(\Big)\)</span><span style="vertical-align: 12pt;">' + ans_rule(4) + '</span>'
-+    exp = f"<span>\(\displaystyle {expression} = \Big(\)" . ans_rule(4) . '\(\Big)\)</span><span style="vertical-align: 12pt;">' . ans_rule(4) . '</span>'
++else:
++    exp = ((((f"<span>\(\displaystyle {expression} = \Big(\)" Tree(Token('RULE', 'add_op'), []) ans_rule(4)) Tree(Token('RULE', 'add_op'), []) '\(\Big)\)</span><span style="vertical-align: 12pt;">') Tree(Token('RULE', 'add_op'), []) ans_rule(4)) Tree(Token('RULE', 'add_op'), []) '</span>')
 +#:% section = statement
++#: Insert the exponential stored as `$exp`.
++pgml_block_0 = '''
++Rewrite the following using a single exponent.
 
 
 ================================================================================
@@ -352,11 +352,12 @@ File: EquationDefiningFunction.pg
 -#: use `parser.Assignment.Function('f')`. For more details, see
 +#: use `parser::Assignment->Function('f')`. For more details, see
  #: PODLINK('parserAssignment.pl').
- Context().variables.are(x = 'Real', y = 'Real')
+-Context().variables.are(x = 'Real', y = 'Real')
 -parser.Assignment.Allow()
 -parser.Assignment.Function('f')
 -
-+parser::Assignment.Allow
++Context().variables().are(x = 'Real', y = 'Real')
++parser::Assignment.Allow()
 +parser::Assignment.Function('f')
  eqn = Formula('y = 5x + 2')
  fun = Formula('f(x) = 3x^2 + 2x')
@@ -369,7 +370,6 @@ File: EquationDefiningFunction.pg
 -
 -Enter [`[$fun]`]: [_]{fun}{10}\n'''
 +Enter [`[$fun]`]: [_]{fun}{10}
-+'''
 
 
 ================================================================================
@@ -414,7 +414,7 @@ File: EquationImplicitFunction.pg
 -
 +Context().{error}{msg}{"Can't find any solutions to your equation"} = ' '
 +Context().{error}{msg}{"Can't generate enough valid points for comparison"} = ' '
-+Context().variables.set( x = { limits = [ -6, 11 ] }, y = { limits = [ -6, 11 ] }, )
++Context().variables().set( x = { limits = [ -6, 11 ] }, y = { limits = [ -6, 11 ] }, )
  a = random(1, 5)
  b = random(1, 5)
  r = random(2, 5)
@@ -533,7 +533,7 @@ File: FactoredPolynomial.pg
 -
  # Factored form
  Context('PolynomialFactors-Strict')
- Context().flags.set(singleFactors = 0)
+-Context().flags.set(singleFactors = 0)
 -LimitedPowers.OnlyIntegers( minPower = 0, maxPower = 1, message  = 'either 0 or 1', )
 
 
@@ -629,9 +629,10 @@ File: FunctionDecomposition.pg
  #: This problem asks the students for functions `y = f(u)` and `u = g(x)` such
  #: that `f(g(x))` is a given function. Therefore, the variable `u` needs to be
 -#: added to the context, and the functions `f` and `g` defined.
-+#: added to the context, and the functions `$f` and `$g` defined.
- Context().variables.add(u = 'Real')
+-Context().variables.add(u = 'Real')
 -
++#: added to the context, and the functions `$f` and `$g` defined.
++Context().variables().add(u = 'Real')
  a = random(2, 9)
 -
  f = Formula("sqrt(u)")
@@ -644,7 +645,6 @@ File: FunctionDecomposition.pg
  of two simpler functions [`y = f(u)`] and [`u = g(x)`].
  
  * [`f(u) =`] [_]{ width => 15 }
- 
 
 
 ================================================================================
@@ -680,26 +680,26 @@ File: FunctionPlot.pg
  #: generated. Create a Plot object with the given plotting window and other
  #: axis properties.
  #:
-@@ -29,13 +24,9 @@
+@@ -29,13 +24,10 @@
  #: the plot. The `{-3,3}` is the domain of the plot where curly braces produces
  #: arrows.  Other formats for this are `(-3,3)` for open endpoints and `[-3,3]`
  #: are closed endpoints.  They can be mixed.
 -
- a = non_zero_random(-3, 3)
+-a = non_zero_random(-3, 3)
 -
 -plot = Plot( xmin        = -3.2, xmax        =  3.2, ymin        = -10, ymax        =  10, xtick_delta =  1, ytick_delta =  2, xlabel      = '\(x\)', ylabel      = '\(y\)', )
 -
 -plot.add_function(f"{a} x^2 for * in {{-3,3}} using 'color':blue, 'width':3")
 -
-+plot = Plot( xmin = -3.2, xmax = 3.2, ymin = -10, ymax = 10, xtick_delta = 1, ytick_delta = 2, xlabel = '\(x\)', ylabel = '\(y\)', )
-+plot.add_function(f"{a} x^2 for * in {{-3,3}} using color:blue, width:3")
++a = non_zero_random((-3), 3)
++plot = Plot
++{xmin: (-3.2), xmax: 3.2, ymin: (-10), ymax: 10, xtick_delta: 1, ytick_delta: 2, xlabel: '\(x\)', ylabel: '\(y\)'}
++plot.add_function(f"{a} x^2 for x in {{-3,3}} using color:blue, width:3")
  #:% section = statement
  #: By default, the plot uses JSXGraph to plot the graph in HTML and will use
  #: tikz/pgfplots to produce the hardcopy.
-@@ -43,16 +34,18 @@
+@@ -43,16 +35,18 @@
  #: The `[! !]{}{}` is a PGML format for inserting an image, with the first
- #: argument is the alternate text for the image, the second argument is the
- #: plot and the third is the width of the plot.
 
 
 ================================================================================
@@ -808,8 +808,8 @@ File: GraphToolCubic.pg
 -
  Context('Fraction')
 -
- x1 = random(-8, -4)
- x2 = non_zero_random(-3, -3)
+-x1 = random(-8, -4)
+-x2 = non_zero_random(-3, -3)
 
 
 ================================================================================
@@ -915,9 +915,9 @@ File: GraphToolLine.pg
  #: student answer that 'looks' like the correct one. For simple graphs,
  #: the default should be sufficient. See PROBLINK('GraphToolCustomChecker.pg')
  #: for an example of how to use a custom checker.
-+x0 = non_zero_random(-6, 6)
-+y0 = non_zero_random(-6, 6)
-+line = nicestring([ y0, x0 ], [ 'x', 'y' ])
++x0 = non_zero_random((-6), 6)
++y0 = non_zero_random((-6), 6)
++line = nicestring([y0, x0], ['x', 'y'])
 +gt = GraphTool(f"{{line, solid, ({x0}, 0), (0, {y0})}}").with( bBox = [ -11, 11, 11, -11 ], availableTools = [ 'PointTool',  'LineTool', 'CircleTool', 'QuadraticTool', 'CubicTool',  'FillTool', 'SolidDashTool' ], )
 +#:% section = statement.
 
@@ -1023,13 +1023,13 @@ File: GraphToolPoints.pg
  #:
  #: * `bBox`: This is an array reference of four values `xmin, ymax, xmax, ymin`
  #:   indicating the upper left and lower right corners of the visible graph.
-@@ -47,21 +42,20 @@
+@@ -45,23 +40,22 @@
+ #:   would show the coordinates of the point the cursor is over.
+ #:
  #: For more details, see the PODLINK('POD','parserGraphTool.pl').
- x1 = non_zero_random(-5, 5)
- y1 = non_zero_random(-5, 5)
--
- x2 = non_zero_random(-5, 5)
- y2 = non_zero_random(-5, 5)
+-x1 = non_zero_random(-5, 5)
+-y1 = non_zero_random(-5, 5)
++x1 = non_zero_random((-5), 5)
 
 
 ================================================================================
@@ -1070,9 +1070,10 @@ File: InequalityAnswer.pg
 +#: The context flag `formatStudentAnswer => 'parsed'` is used so that the
  #: student's answer is left as a fraction rather than reduced to a decimal.
  Context('Inequalities-Only')
- Context().flags.set(formatStudentAnswer = 'parsed')
+-Context().flags.set(formatStudentAnswer = 'parsed')
 -
 -a   = random(3, 9)
++Context().flags().set(formatStudentAnswer = 'parsed')
 +a = random(3, 9)
  ans = Compute(f"x >= -10 / {a}")
 -
@@ -1084,7 +1085,6 @@ File: InequalityAnswer.pg
  
  [_]{ans}
  
--[@ helpLink('inequalities') @]*\n'''
 
 
 ================================================================================
@@ -1100,7 +1100,7 @@ File: LinearInequality.pg
  ## DBsubject(WeBWorK)
  ## DBchapter(WeBWorK tutorial)
  ## DBsection(PGML tutorial 2015)
-@@ -10,40 +9,35 @@
+@@ -10,40 +9,36 @@
  ## Author(Peter Staab)
  ## MO(1)
  ## KEYWORDS('algebra', 'linear inequality')
@@ -1120,12 +1120,15 @@ File: LinearInequality.pg
  Context("LinearRelation")
 -
  while True:
-     a = random(2, 6); b = random(2, 6)
+-    a = random(2, 6); b = random(2, 6)
 -    if ((a != b)):
-+    if not (a != b):
++    a = random(2, 6)
++    b = random(2, 6)
++    if not ((a Tree(Token('RULE', 'comp_op'), []) b)):
          break
- ab = a * b
+-ab = a * b
 -
++ab = (a Tree(Token('RULE', 'mul_op'), []) b)
  lr = LinearRelation(f"{a} x + {b} y < {ab}").reduce
 -
  #:% section = statement
@@ -1137,7 +1140,4 @@ File: LinearInequality.pg
  on the line?
  
 -[__]{lr}\n'''
-+[__]{lr}
-+'''
- TEXT(PGML(pgml_block_0))
 

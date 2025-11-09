@@ -47,6 +47,7 @@ lark==1.1.5 pygments==2.18.0`).
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 import re
 from typing import List, Tuple, Dict, Optional, Any
 
@@ -317,14 +318,33 @@ class PGPreprocessor:
                 closure_lines = [original_line]
                 brace_depth = original_line.count('{') - original_line.count('}')
                 i += 1
-                while i < len(lines) and brace_depth > 0:
+                max_closure_lines = 100  # Safety limit to prevent infinite loops
+                lines_collected = 0
+                while i < len(lines) and brace_depth > 0 and lines_collected < max_closure_lines:
                     current_line = lines[i]
                     closure_lines.append(current_line)
                     brace_depth += current_line.count('{') - current_line.count('}')
                     i += 1
+                    lines_collected += 1
+                
+                if lines_collected >= max_closure_lines:
+                    # Hit the safety limit - something went wrong
+                    # Just skip this and treat it as a comment
+                    output_lines.append(f"# {original_line[:80]}... # Closure too complex, skipped")
+                    continue
 
                 first_line = closure_lines[0]
                 last_line = closure_lines[-1] if closure_lines else ''
+                
+                # Check if there's a continuation line after the closure (like );)
+                continuation_suffix = ''
+                if i < len(lines):
+                    next_line = lines[i].strip()
+                    # Check for closing syntax like );
+                    if re.match(r'^\s*\);?\s*$', lines[i]):
+                        continuation_suffix = ' ' + next_line
+                        i += 1  # Skip this line since we're incorporating it
+                
                 param_match = re.search(r'(\w+)\s*=>\s*sub\s*\{', first_line)
                 if param_match:
                     sub_start = first_line.find('sub')
@@ -333,15 +353,18 @@ class PGPreprocessor:
                     close_brace_match = re.search(r'\}(.*)$', last_line)
                     if close_brace_match:
                         suffix = close_brace_match.group(1)
+                    
+                    # Add any continuation suffix
+                    suffix += continuation_suffix
+                    
+                    # Create the stubbed line: replace 'sub { ... }' with lambda
                     stubbed_line = f"{prefix}lambda *args, **kwargs: None{suffix}"
+                    
+                    # Transform the line (this handles => to =, -> to ., removes trailing ;)
                     transformed = self._rewrite_statement(stubbed_line)
+                    
                     if transformed:
-                        stub_lines = transformed.split('\n')
-                        for idx, stub_line in enumerate(stub_lines):
-                            if idx == len(stub_lines) - 1:
-                                output_lines.append(f"{stub_line}  # Stubbed Perl closure")
-                            else:
-                                output_lines.append(stub_line)
+                        output_lines.append(transformed + "  # Stubbed Perl closure")
                 else:
                     assign_match = re.search(r'(\w+)\s*=\s*sub\s*\{', first_line)
                     if assign_match:
@@ -370,10 +393,12 @@ class PGPreprocessor:
                 body_lines = self._compile_line(body)
                 # Flatten to a single statement; indent body lines
                 compiled_cond = self._compile_expr(condition)
+                # do-until means: execute body, then repeat UNTIL condition is true
+                # In Python: while True: body; if condition: break
                 output_lines.append(f'while True:')
                 for bl in body_lines:
                     output_lines.append('    ' + bl)
-                output_lines.append(f'    if not ({compiled_cond}):')
+                output_lines.append(f'    if {compiled_cond}:')
                 output_lines.append('        break')
                 i += 1
                 continue
@@ -410,10 +435,13 @@ class PGPreprocessor:
                     for ln in inner_lines:
                         compiled_body.extend(self._compile_line(ln))
                     compiled_cond = self._compile_expr(condition)
-                    # Emit Python loop
-                    output_lines.append(f'while not ({compiled_cond}):')
+                    # Emit Python loop: do-until means execute body, then repeat UNTIL condition is true
+                    # In Python: while True: body; if condition: break
+                    output_lines.append(f'while True:')
                     for cb in compiled_body:
                         output_lines.append('    ' + cb)
+                    output_lines.append(f'    if {compiled_cond}:')
+                    output_lines.append('        break')
                     continue
                 else:
                     # Not a proper do-until, fall through: rewind index to process lines normally
@@ -498,6 +526,7 @@ class PGPreprocessor:
             stmt: if_stmt
                 | while_stmt
                 | for_stmt
+                | foreach_stmt
                 | do_until_stmt
                 | decl
                 | assign
@@ -513,6 +542,7 @@ class PGPreprocessor:
             unless_stmt: "unless" "(" expr ")" block
             while_stmt: "while" "(" expr ")" block
             for_stmt: "for" "my"? var "(" expr ")" block
+            foreach_stmt: "foreach" "my"? var "(" expr ")" block
             do_until_stmt: "do" block "until" "(" expr ")"
 
             block: "{" (stmt ";"?)* "}"
@@ -570,7 +600,7 @@ class PGPreprocessor:
 
             ?primary: call_expr | var | atom | "(" expr ")"
 
-            call_expr: NAME "(" args? ")"                    -> call_expr
+            call_expr: NAME "(" args? ")"          -> call_expr
 
             // Map and grep blocks
             map_expr: "map" "{" expr "}" expr                -> map_expr
@@ -579,12 +609,13 @@ class PGPreprocessor:
             var: VAR
             atom: NUMBER | STRING | NAME | regex_literal
 
-            regex_literal: "qr" "/" /[^\/]+/ "/" /[imsxo]*/  -> regex_literal
+            regex_literal: "qr" "/" /[^\/]+/ "/" REGEX_FLAGS?  -> regex_literal
 
             NAME: /[A-Za-z_][A-Za-z0-9_]*/
             VAR: /[\$@%][A-Za-z_][A-Za-z0-9_]*/
             STRING: /"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'/
             NUMBER: /[0-9]+(?:\.[0-9]+)?/
+            REGEX_FLAGS: /[imsxo]+/
 
             %import common.WS
             %ignore WS
@@ -638,6 +669,10 @@ class PGPreprocessor:
                 """Lower for loop."""
                 return ("for", var, expr, block)
 
+            def foreach_stmt(self, var, expr, block):
+                """Lower foreach loop."""
+                return ("foreach", var, expr, block)
+
             def do_until_stmt(self, block, condition):
                 """Lower do-until loop."""
                 return ("do_until", block, condition)
@@ -688,13 +723,46 @@ class PGPreprocessor:
                     cond, true_val, false_val = parts
                     return ("ternary", cond, true_val, false_val)
                 return parts[0]
-
             def binary_expr(self, left, *rest):
                 """Lower binary operations."""
                 expr = left
                 for op, right in zip(rest[::2], rest[1::2]):
-                    expr = ("bin", expr, op, right)
+                    # Extract operator string from Tree or Token
+                    if hasattr(op, 'children') and op.children:
+                        # If op is a Tree with children, get the first child
+                        op_tok = op.children[0]
+                    elif hasattr(op, 'data'):
+                        # If op is a Tree without children (inline rules), use a Token
+                        # This shouldn't happen with properly defined grammars
+                        op_tok = op
+                    else:
+                        # op is already a Token or string
+                        op_tok = op
+                    
+                    # Extract the actual operator string value
+                    if hasattr(op_tok, 'value'):
+                        op_str = op_tok.value
+                    elif hasattr(op_tok, 'type'):
+                        # Token without value attribute
+                        op_str = str(op_tok)
+                    else:
+                        op_str = str(op_tok)
+                    
+                    expr = ("bin", expr, op_str, right)
                 return expr
+
+            # Operator extractors - these are needed because operators are defined as rules
+            def add_op(self, tok):
+                """Extract add operator token."""
+                return tok
+
+            def mul_op(self, tok):
+                """Extract mul operator token."""
+                return tok
+
+            def comp_op(self, tok):
+                """Extract comparison operator token."""
+                return tok
 
             def range_expr(self, *parts):
                 """Lower range operator: 0..10."""
@@ -886,7 +954,7 @@ class PGPreprocessor:
             lines.extend(block_stmts)
             return "\n".join(lines)
 
-        if typ == "for":
+        if typ in {"for", "foreach"}:
             _, var, expr, block = ir
             var_name = self._desigil(var[1] if isinstance(var, tuple) else var)
             expr_py = self._expr_to_py(expr)
@@ -1082,7 +1150,10 @@ class PGPreprocessor:
                 return f"{self._desigil(var[1])} = {self._expr_to_py(val)}"
 
         # Otherwise, treat as raw string and apply rewrite
-        return self._rewrite_with_pygments(str(expr))
+        rewritten = self._rewrite_with_pygments(str(expr))
+        # Apply post-processing transformations
+        rewritten = self._convert_string_operators(rewritten)
+        return rewritten
 
     # ------------------------------------------------------------------
     # Pygments based rewriting
@@ -1112,14 +1183,29 @@ class PGPreprocessor:
                 if text.startswith('"') and '$' in text:
                     # Extract content without quotes
                     content = text[1:-1] if len(text) >= 2 else text
+                    # Escape backslashes first (before processing braces)
+                    # This handles LaTeX sequences like \( \) \Big etc.
+                    escaped = content.replace('\\', '\\\\')
                     # Escape literal braces for f-strings
-                    escaped = content.replace('{', '{{').replace('}', '}}')
+                    escaped = escaped.replace('{', '{{').replace('}', '}}')
                     # Convert $var to {var}
                     import re
                     converted = re.sub(r'\$([a-zA-Z_][a-zA-Z0-9_]*)', r'{\1}', escaped)
                     result.append(f'f"{converted}"')
                 else:
-                    result.append(text)
+                    # For non-interpolated strings, escape backslashes
+                    # This handles LaTeX in single-quoted strings
+                    if '\\' in text and not text.startswith('r"') and not text.startswith("r'"):
+                        # Extract quotes and content
+                        if len(text) >= 2:
+                            quote_char = text[0]
+                            content = text[1:-1]
+                            escaped_content = content.replace('\\', '\\\\')
+                            result.append(f'{quote_char}{escaped_content}{quote_char}')
+                        else:
+                            result.append(text)
+                    else:
+                        result.append(text)
                 i += 1
                 continue
             # Variables: remove sigil
@@ -1188,6 +1274,9 @@ class PGPreprocessor:
         # Post-processing: Apply additional transformations
         import re
 
+        # Convert .with( to .with_params( because 'with' is a Python reserved keyword
+        rewritten = re.sub(r'\.with\(', '.with_params(', rewritten)
+
         # Condense spaces around equals from fat comma conversion
         rewritten = re.sub(r'\s+=\s+', ' = ', rewritten)
 
@@ -1206,6 +1295,33 @@ class PGPreprocessor:
 
         # Convert Perl reference operator ~~& to just the function name
         rewritten = re.sub(r'~~&([a-zA-Z_]\w*)', r'\1', rewritten)
+
+        # Special case: Wrap CapitalizedWord(...) = "string" patterns in parens for tuple pairs
+        # This happens with AnswerHints( Formula(...) => "msg", ... )
+        rewritten = re.sub(
+            r'(?<![a-z])([A-Z][a-zA-Z0-9_]*\([^)]*\))\s*=\s*("(?:[^"\\]|\\.)*"|\'(?:[^\'\\]|\\.)*\')',
+            r'(\1, \2)',
+            rewritten,
+        )
+
+        # string literal = value (legacy keyword style) → positional args
+        rewritten = re.sub(
+            r'"([^"]*?)"\s*=\s*(["\'][^"\']*["\'])',
+            r'"\1", \2',
+            rewritten,
+        )
+        rewritten = re.sub(
+            r"'([^']*?)'\s*=\s*([\"'][^\"']*[\"'])",
+            r"'\1', \2",
+            rewritten,
+        )
+
+        # Context().functions.add(name => { ... }) expects positional string key
+        rewritten = re.sub(
+            r'(\.add\(\s*)([a-z_][a-zA-Z0-9_]*)\s*=\s*\{',
+            r"\1'\2', {",
+            rewritten,
+        )
 
         return rewritten
 
@@ -1240,7 +1356,7 @@ class PGPreprocessor:
         rewritten = self._convert_string_interpolation(rewritten)
         rewritten = self._convert_string_comparisons(rewritten)
         rewritten = self._convert_regex_literals(rewritten)
-        return rewritten
+        return indent + rewritten if rewritten else ''
 
     def _split_indent(self, line: str) -> tuple[str, str]:
         match = re.match(r'(\s*)(.*)', line)
@@ -1620,3 +1736,31 @@ class PGPreprocessor:
         comment = (f"# loadMacros({', '.join(repr(m) for m in loaded_macros)}) - loaded"
                    if loaded_macros else "# loadMacros() - no recognized macros")
         return import_lines, comment
+
+
+def convert_pg_file(
+    source_path: str | Path,
+    *,
+    output_path: str | Path | None = None,
+    use_sandbox_macros: bool = True,
+    overwrite: bool = False,
+    encoding: str = "utf-8",
+    preprocessor: PGPreprocessor | None = None,
+) -> tuple[Path, PreprocessResult]:
+    """Convert a .pg file to Python using the Pygments/Lark preprocessor."""
+
+    pg_path = Path(source_path)
+    if not pg_path.exists():
+        raise FileNotFoundError(f"PG source file not found: {pg_path}")
+
+    processor = preprocessor or PGPreprocessor()
+    pg_source = pg_path.read_text(encoding=encoding)
+    result = processor.preprocess(pg_source, use_sandbox_macros=use_sandbox_macros)
+
+    output = Path(output_path) if output_path else pg_path.with_suffix('.pyg')
+    if output.exists() and not overwrite:
+        raise FileExistsError(f"Refusing to overwrite existing file: {output}")
+
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(result.code, encoding=encoding)
+    return output, result
