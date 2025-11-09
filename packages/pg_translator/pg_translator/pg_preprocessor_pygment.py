@@ -1223,11 +1223,51 @@ class PGPreprocessor:
         tokens = list(self._perl_lexer.get_tokens_unprocessed(code))
         result: List[str] = []
         i = 0
+        # Track brace context: True if in hash literal, False if in code block
+        brace_context_stack: List[bool] = []
+        
         while i < len(tokens):
             _, ttype, text = tokens[i]
             # Preserve comments verbatim
             if ttype in Token.Comment:
                 result.append(text)
+                i += 1
+                continue
+            # Quote bare words before => in hash literals
+            if ttype in Token.Name and brace_context_stack and brace_context_stack[-1]:
+                # We're inside a hash literal, look ahead to see if next non-whitespace token is =>
+                j = i + 1
+                while j < len(tokens) and tokens[j][1] in Token.Text.Whitespace:
+                    j += 1
+                if j < len(tokens):
+                    next_token = tokens[j]
+                    # Check if it's => (either as two tokens = > or single =>)
+                    is_fat_comma = False
+                    if next_token[2] == '=>':
+                        is_fat_comma = True
+                    elif next_token[2] == '=' and j + 1 < len(tokens) and tokens[j + 1][2] == '>':
+                        is_fat_comma = True
+                    
+                    if is_fat_comma:
+                        # Quote the bare word
+                        result.append(f"'{text}'")
+                        i += 1
+                        continue
+            # Handle false-positive regex tokens BEFORE string check (Regex is subclass of String)
+            # Pygments misidentifies / division as regex
+            if ttype in Token.Literal.String.Regex:
+                # If it starts/ends with / and contains $variables, it might be division operators
+                # Example: "/ 2, $b + $r * sqrt(2) /" is actually division, not regex
+                if text.startswith('/') and text.endswith('/') and '$' in text:
+                    # Strip the / delimiters and process as normal code
+                    import re
+                    content = text[1:-1] if len(text) > 2 else text
+                    # Remove sigils from variables
+                    converted = re.sub(r'\$([a-zA-Z_][a-zA-Z0-9_]*)', r'\1', content)
+                    # Re-add the / as division operators
+                    result.append('/' + converted + '/')
+                else:
+                    result.append(text)
                 i += 1
                 continue
             # String interpolation: convert Perl "$var" to Python f"{var}"
@@ -1266,29 +1306,45 @@ class PGPreprocessor:
                 result.append(self._desigil(text))
                 i += 1
                 continue
-            # Hash access: $h{key} -> h['key']
-            if text == '{' and i > 0 and tokens[i-1][1] in Token.Name.Variable:
-                # gather until closing brace
-                inner: List[str] = []
-                depth = 1
-                j = i + 1
-                while j < len(tokens) and depth > 0:
-                    _, t2, s2 = tokens[j]
-                    if s2 == '{':
-                        depth += 1
-                    elif s2 == '}':
-                        depth -= 1
-                        if depth == 0:
-                            break
-                    inner.append(s2)
-                    j += 1
-                inner_text = ''.join(inner).strip()
-                # quote bare words if not already quoted
-                if inner_text and inner_text[0] not in "'\"":
-                    inner_text = f"'{inner_text}'"
-                result.append('[' + inner_text + ']')
-                i = j + 1
+            # Namespace tokens: convert :: to .
+            if ttype in Token.Name.Namespace:
+                # Pygments returns 'parser::Assignment' as a single token
+                # Convert :: to .
+                converted = text.replace('::', '.')
+                result.append(converted)
+                i += 1
                 continue
+            # Hash access: $h{key} -> h['key']
+            # Also handle chained subscripts: Context()->{error}{msg} -> Context()['error']['msg']
+            if text == '{' and i > 0:
+                prev_token = tokens[i-1]
+                # Handle if previous token is a variable, closing paren, closing brace, or >
+                # (> indicates we just processed -> which was converted to .)
+                if (prev_token[1] in Token.Name.Variable or 
+                    prev_token[2] == ')' or 
+                    prev_token[2] == '}' or
+                    prev_token[2] == '>'):
+                    # gather until closing brace
+                    inner: List[str] = []
+                    depth = 1
+                    j = i + 1
+                    while j < len(tokens) and depth > 0:
+                        _, t2, s2 = tokens[j]
+                        if s2 == '{':
+                            depth += 1
+                        elif s2 == '}':
+                            depth -= 1
+                            if depth == 0:
+                                break
+                        inner.append(s2)
+                        j += 1
+                    inner_text = ''.join(inner).strip()
+                    # quote bare words if not already quoted
+                    if inner_text and inner_text[0] not in "'\"":
+                        inner_text = f"'{inner_text}'"
+                    result.append('[' + inner_text + ']')
+                    i = j + 1
+                    continue
             # Combine operator pairs into single tokens for arrows, namespace
             # separators and fat comma.  Pygments splits '->' into two
             # separate Operator tokens '-' and '>' and likewise '=' and '>'
@@ -1297,15 +1353,19 @@ class PGPreprocessor:
             if ttype in Token.Operator or ttype in Token.Punctuation:
                 # Handle method arrow '->'
                 if text == '-' and i + 1 < len(tokens) and tokens[i+1][2] == '>':
-                    result.append('.')
                     i += 2
                     # Skip any empty tokens after ->
                     while i < len(tokens) and tokens[i][2] == '':
                         i += 1
-                    # Check if next token is a method name without ()
-                    # Only add () if it's NOT followed by another -> (chained calls)
+                    # Check what comes after ->
                     if i < len(tokens):
                         next_idx, next_ttype, next_text = tokens[i]
+                        # If next token is {, it's a hash subscript - don't append . (let [ handle it)
+                        if next_text == '{':
+                            # Don't append anything, let the hash subscript code handle {
+                            continue
+                        # Otherwise append . for method/property access
+                        result.append('.')
                         # If it's a method/property name
                         if next_ttype in Token.Name or next_ttype == Token.Operator.Word:
                             # Look ahead to see what follows (skip empty tokens)
@@ -1314,18 +1374,24 @@ class PGPreprocessor:
                                 j += 1
                             has_parens = False
                             has_arrow = False
+                            has_brace = False
                             if j < len(tokens):
                                 lookahead_idx, lookahead_ttype, lookahead_text = tokens[j]
                                 if lookahead_text == '(':
                                     has_parens = True
                                 elif lookahead_text == '-' and j + 1 < len(tokens) and tokens[j + 1][2] == '>':
                                     has_arrow = True  # Another -> follows, so this is property access
-                            # Only add () if no parens AND no arrow (i.e., final method in chain)
-                            if not has_parens and not has_arrow:
+                                elif lookahead_text == '{':
+                                    has_brace = True  # Hash subscript follows
+                            # Only add () if no parens AND no arrow AND no brace (i.e., final method in chain)
+                            if not has_parens and not has_arrow and not has_brace:
                                 result.append(next_text)
                                 result.append('()')
                                 i += 1
                                 continue
+                    else:
+                        # Nothing after ->, just append .
+                        result.append('.')
                     continue
                 # Handle namespace separator '::'
                 if text == ':' and i + 1 < len(tokens) and tokens[i+1][2] == ':':
@@ -1334,14 +1400,44 @@ class PGPreprocessor:
                     continue
                 # Handle fat comma '=>'
                 if text == '=' and i + 1 < len(tokens) and tokens[i+1][2] == '>':
-                    result.append(' = ')
+                    # Inside hash literal, treat as dict colon
+                    if brace_context_stack and brace_context_stack[-1]:
+                        result.append(': ')
+                    else:
+                        result.append(' = ')
                     i += 2
                     continue
             # Fat comma '=>' collapsed as a single text (rare)
             if text == '=>':
-                result.append(' = ')
+                # Inside hash literal, treat as dict colon
+                if brace_context_stack and brace_context_stack[-1]:
+                    result.append(': ')
+                else:
+                    result.append(' = ')
                 i += 1
                 continue
+            # Track brace context for hash literal detection
+            if text == '{':
+                # Determine if this is a hash literal or code block
+                # Hash literals typically follow: =>, (, [, ,, or start of line
+                is_hash_literal = False
+                if i > 0:
+                    # Look back for previous non-whitespace token
+                    j = i - 1
+                    while j >= 0 and tokens[j][1] in Token.Text.Whitespace:
+                        j -= 1
+                    if j >= 0:
+                        prev_token = tokens[j][2]
+                        # Hash literal indicators
+                        if prev_token in ('=>', '>', '(', '[', ',', '='):
+                            is_hash_literal = True
+                else:
+                    # At start, assume hash literal
+                    is_hash_literal = True
+                brace_context_stack.append(is_hash_literal)
+            elif text == '}':
+                if brace_context_stack:
+                    brace_context_stack.pop()
             # Drop trailing semicolon at end
             if text == ';' and i == len(tokens) - 1:
                 i += 1
