@@ -17,33 +17,33 @@ This plan tracks migrating PG preprocessing logic from ad‑hoc regex/token rewr
 
 ### 1) Feature Inventory (what to migrate)
 
-- [ ] Build a checklist of all transforms currently handled by `_rewrite_statement`/`_rewrite_with_pygments`.
-- [ ] Mark each as “grammar‑friendly” vs “token‑fallback”.
+- [x] Build a checklist of all transforms currently handled by `_rewrite_statement`/`_rewrite_with_pygments`.
+- [x] Mark each as “grammar‑friendly” vs “token‑fallback”.
 
-Initial inventory (to classify):
+Initial inventory (with current status):
 
-- [ ] Control flow: `if`/`elsif`/`else`, `unless`, `while`
-- [ ] Loop forms: `for my $i (...)`, `foreach my $i (...)`
-- [ ] Statement modifiers: `stmt if/unless cond`
-- [ ] `do { ... } until (cond)` loops
-- [ ] Ranges: `START .. END`
-- [ ] Ternary `cond ? a : b`
-- [ ] Method chaining: `$obj->method(args)` (+ auto‑parens rules)
-- [ ] Hash/array subscripting: `$h{key}`, `$a[idx]`
-- [ ] Hash/array literals: `{ key => value }`, `[ a, b ]`
-- [ ] Map/grep blocks: `map { expr } list`, `grep { expr } list`
-- [ ] Regex literals: `qr/pattern/flags`
-- [ ] String ops: concatenation `.`, repetition `x`
-- [ ] String comparisons: `eq`, `ne`, `lt`, `gt`, `le`, `ge`
-- [ ] Sigils: `$`, `@`, `%` (context‑aware removal)
-- [ ] Special shims: AnswerHints tuple wrapping, `Context().functions.add(name => {…})`, quoted‑string `= value` pairs
-- [ ] Perl specials: `$#array` → `len(array)-1`, `~~&func` → `func`
+- [x] Control flow: `if`/`elsif`/`else`, `unless`, `while` (in grammar)
+- [x] Loop forms: `for my $i (...)`, `foreach my $i (...)` (in grammar)
+- [x] Statement modifiers: `stmt if/unless cond` (in grammar)
+- [x] `do { ... } until (cond)` loops (in grammar + collector)
+- [x] Ranges: `START .. END` (in grammar)
+- [x] Ternary `cond ? a : b` (in grammar)
+- [x] Method chaining: `$obj->method(args)` (+ basic auto‑parens rules) (grammar + token post‑proc)
+- [x] Hash/array subscripting: `$h{key}`, `$a[idx]` (in grammar)
+- [x] Hash/array literals: `{ key => value }`, `[ a, b ]` (in grammar)
+- [x] Map/grep blocks: `map { expr } list`, `grep { expr } list` (in grammar)
+- [x] Regex literals: `qr/pattern/flags` (grammar + fixed flags token)
+- [x] String ops: concatenation `.`, repetition `x` (in grammar)
+- [x] String comparisons: `eq`, `ne`, `lt`, `gt`, `le`, `ge` (in grammar)
+- [~] Sigils: `$`, `@`, `%` (removed via token layer; acceptable fallback)
+- [~] Special shims: AnswerHints tuple wrapping, `Context().functions.add(name => {…})`, quoted‑string `= value` pairs (kept in token layer by design)
+- [~] Perl specials: `$#array` → `len(array)-1`, `~~&func` → `func` (token layer)
 
 ### 2) Grammar Roadmap
 
-- [ ] Extend `_grammar` to cover all grammar‑friendly items.
-- [ ] Define/extend transformer rules to lower into IR (`("if", ...)`, `("for", ...)`, `("map", ...)`, etc.).
-- [ ] Note parser strategy (Earley w/ dynamic) and avoid zero‑width tokens.
+- [x] Extend `_grammar` to cover grammar‑friendly items listed above.
+- [x] Define/extend transformer rules to lower into IR (`("if", ...)`, `("for", ...)`, `("map", ...)`, etc.).
+- [x] Note parser strategy (Earley) and avoid zero‑width tokens (fixed regex flags with `REGEX_FLAGS?`).
 
 ### 3) Incremental Ports (repeat per feature)
 
@@ -56,20 +56,20 @@ For each chosen slice:
 - [ ] Remove matching case from `_rewrite_statement` / `_rewrite_with_pygments`.
 - [ ] Run full preprocessor + translator suites; fix regressions.
 
-Suggested order of migration:
+Suggested order of migration (current status):
 
-1. [ ] Control flow headers (`if`/`elsif`/`else`/`unless`/`while`)
-2. [ ] Loops (`for`/`foreach`, ranges)
-3. [ ] Statement modifiers (`stmt if/unless cond`)
-4. [ ] Ternary operator
-5. [ ] Map/grep blocks
-6. [ ] Method chaining + auto‑parens
-7. [ ] Regex literals w/ flags
-8. [ ] AnswerHints/Context `.add` shims (keep in token layer if grammar gets messy)
+1. [x] Control flow headers (`if`/`elsif`/`else`/`unless`/`while`)
+2. [x] Loops (`for`/`foreach`, ranges)
+3. [x] Statement modifiers (`stmt if/unless cond`)
+4. [x] Ternary operator
+5. [x] Map/grep blocks
+6. [x] Method chaining + auto‑parens (partial: auto‑parens post‑proc retained)
+7. [x] Regex literals w/ flags
+8. [~] AnswerHints/Context `.add` shims (intentionally kept in token layer)
 
 ### 4) Fallback Cleanup
 
-- [ ] After each feature ports to grammar, prune redundant logic from `_rewrite_statement` and keep Pygments layer focused on:
+- [x] After each feature ports to grammar, prune redundant logic from `_rewrite_statement` and keep Pygments layer focused on:
   - Sigil removal in residual contexts
   - Simple token joins (`->`, `::`, `=>`)
   - String interpolation/conversion
@@ -77,9 +77,10 @@ Suggested order of migration:
 
 ### 5) Validation & Rollout
 
-- [ ] Ensure `packages/pg_translator/tests/test_preprocessor.py` (legacy) and `test_preprocessor_pygments.py` (structured) remain green.
+- [x] Ensure `packages/pg_translator/tests/test_preprocessor_pygments.py` (structured) remains green.
+- [ ] Ensure `packages/pg_translator/tests/test_preprocessor.py` (legacy) remains green under new defaults (translator now imports structured preprocessor).
 - [ ] Run broader translator/integration suites (OPL/realworld if available).
-- [ ] Document migration in `CHANGELOG`/README and keep `LegacyPGPreprocessor` available.
+- [x] Document default switch; keep `LegacyPGPreprocessor` available via package exports.
 
 ## Testing Strategy
 
@@ -95,10 +96,10 @@ Suggested order of migration:
 
 ## Status Tracking
 
-- [ ] Inventory complete
-- [ ] Roadmap approved
-- [ ] First migration (control flow) merged
-- [ ] Fallback cleanup phase started
-- [ ] Full suite green
-- [ ] Rollout complete
-
+- [x] Inventory complete
+- [x] Roadmap approved
+- [x] First migrations (control flow, loops, modifiers, ternary, map/grep) merged
+- [x] Fallback cleanup phase started
+- [x] Pygments preprocessor suite green
+- [ ] Full translator/OPL suite green
+- [x] Default import switches completed (convert, solve)

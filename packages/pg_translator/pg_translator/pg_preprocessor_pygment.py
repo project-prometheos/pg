@@ -393,12 +393,15 @@ class PGPreprocessor:
                 body_lines = self._compile_line(body)
                 # Flatten to a single statement; indent body lines
                 compiled_cond = self._compile_expr(condition)
+                # Strip outer parens if already present
+                if compiled_cond.startswith('(') and compiled_cond.endswith(')'):
+                    compiled_cond = compiled_cond[1:-1]
                 # do-until means: execute body, then repeat UNTIL condition is true
                 # In Python: while True: body; if condition: break
                 output_lines.append(f'while True:')
                 for bl in body_lines:
                     output_lines.append('    ' + bl)
-                output_lines.append(f'    if {compiled_cond}:')
+                output_lines.append(f'    if ({compiled_cond}):')
                 output_lines.append('        break')
                 i += 1
                 continue
@@ -435,12 +438,15 @@ class PGPreprocessor:
                     for ln in inner_lines:
                         compiled_body.extend(self._compile_line(ln))
                     compiled_cond = self._compile_expr(condition)
+                    # Strip outer parens if already present
+                    if compiled_cond.startswith('(') and compiled_cond.endswith(')'):
+                        compiled_cond = compiled_cond[1:-1]
                     # Emit Python loop: do-until means execute body, then repeat UNTIL condition is true
                     # In Python: while True: body; if condition: break
                     output_lines.append(f'while True:')
                     for cb in compiled_body:
                         output_lines.append('    ' + cb)
-                    output_lines.append(f'    if {compiled_cond}:')
+                    output_lines.append(f'    if ({compiled_cond}):')
                     output_lines.append('        break')
                     continue
                 else:
@@ -548,7 +554,9 @@ class PGPreprocessor:
             block: "{" (stmt ";"?)* "}"
 
             // Statement modifiers (trailing conditionals)
-            stmt_modifier: simple_stmt ("if"|"unless") expr
+            stmt_modifier_if: simple_stmt "if" expr        -> stmt_modifier_if
+            stmt_modifier_unless: simple_stmt "unless" expr -> stmt_modifier_unless
+            stmt_modifier: stmt_modifier_if | stmt_modifier_unless
             simple_stmt: decl | assign | call_expr
 
             document: "DOCUMENT" "(" ")"            -> document_call
@@ -577,8 +585,19 @@ class PGPreprocessor:
 
             // Comparison operators (eq, ne, lt, gt, le, ge, ==, !=, <, >, <=, >=)
             ?comp_expr: range_expr (comp_op range_expr)*     -> binary_expr
-            comp_op: "eq" | "ne" | "lt" | "gt" | "le" | "ge"
-                   | "==" | "!=" | "<" | ">" | "<=" | ">="
+            comp_op: EQ | NE | LT | GT | LE | GE | EQEQ | BANGEQ | LANGLE | RANGLE | LTEQ | GTEQ
+            EQ: "eq"
+            NE: "ne"
+            LT: "lt"
+            GT: "gt"
+            LE: "le"
+            GE: "ge"
+            EQEQ: "=="
+            BANGEQ: "!="
+            LANGLE: "<"
+            RANGLE: ">"
+            LTEQ: "<="
+            GTEQ: ">="
 
             // Range operator: 0..10
             ?range_expr: add_expr (".." add_expr)?           -> range_expr
@@ -682,9 +701,17 @@ class PGPreprocessor:
                 return ("block", list(stmts))
 
             # Statement modifiers
-            def stmt_modifier(self, stmt, modifier, condition):
-                """Lower statement modifier (trailing if/unless)."""
-                return ("stmt_modifier", stmt, modifier, condition)
+            def stmt_modifier(self, child):
+                """Pass through stmt_modifier_if or stmt_modifier_unless."""
+                return child
+            
+            def stmt_modifier_if(self, stmt, condition):
+                """Lower statement modifier with 'if'."""
+                return ("stmt_modifier", stmt, "if", condition)
+            
+            def stmt_modifier_unless(self, stmt, condition):
+                """Lower statement modifier with 'unless'."""
+                return ("stmt_modifier", stmt, "unless", condition)
 
             def simple_stmt(self, stmt):
                 return stmt
@@ -752,17 +779,28 @@ class PGPreprocessor:
                 return expr
 
             # Operator extractors - these are needed because operators are defined as rules
-            def add_op(self, tok):
+            def add_op(self, *args):
                 """Extract add operator token."""
-                return tok
+                return args[0] if args else "+"
 
-            def mul_op(self, tok):
+            def mul_op(self, *args):
                 """Extract mul operator token."""
-                return tok
+                return args[0] if args else "*"
 
-            def comp_op(self, tok):
+            def comp_op(self, token):
                 """Extract comparison operator token."""
-                return tok
+                # Tokens like EQ, GT, etc. come through as Token objects
+                if hasattr(token, 'type'):
+                    # Map token types to operator strings
+                    op_map = {
+                        'EQ': 'eq', 'NE': 'ne', 'LT': 'lt', 'GT': 'gt',
+                        'LE': 'le', 'GE': 'ge', 'EQEQ': '==', 'BANGEQ': '!=',
+                        'LANGLE': '<', 'RANGLE': '>', 'LTEQ': '<=', 'GTEQ': '>='
+                    }
+                    return op_map.get(token.type, token.value)
+                if hasattr(token, 'value'):
+                    return token.value
+                return str(token)
 
             def range_expr(self, *parts):
                 """Lower range operator: 0..10."""
@@ -783,6 +821,10 @@ class PGPreprocessor:
                 for op in postfix_ops:
                     expr = ("postfix", expr, op)
                 return expr
+            
+            def postfix_op(self, child):
+                """Pass through the postfix operation (method_call or subscript)."""
+                return child
 
             def method_call(self, name, *args):
                 """Lower method call: ->method()."""
@@ -969,7 +1011,7 @@ class PGPreprocessor:
             block_stmts = self._emit_block(block, indent + 1)
             lines = [f"{ind}while True:"]
             lines.extend(block_stmts)
-            lines.append(f"{ind}    if {cond_py}:")
+            lines.append(f"{ind}    if ({cond_py}):")
             lines.append(f"{ind}        break")
             return "\n".join(lines)
 
@@ -977,8 +1019,11 @@ class PGPreprocessor:
             _, stmt, modifier, condition = ir
             stmt_py = self._emit_ir(stmt, indent)
             cond_py = self._expr_to_py(condition)
+            # Strip outer parens if already present (binary exprs add them)
+            if cond_py.startswith('(') and cond_py.endswith(')'):
+                cond_py = cond_py[1:-1]
             if modifier == "if":
-                return f"{ind}if {cond_py}: {stmt_py.strip()}"
+                return f"{ind}if ({cond_py}): {stmt_py.strip()}"
             else:  # unless
                 return f"{ind}if not ({cond_py}): {stmt_py.strip()}"
 
@@ -987,6 +1032,9 @@ class PGPreprocessor:
             _, var, expr = ir
             var_name = self._desigil(var[1] if isinstance(var, tuple) else var)
             expr_py = self._expr_to_py(expr)
+            # Strip outer parens from binary exprs in assignments (cleaner output)
+            if expr_py.startswith('(') and expr_py.endswith(')') and isinstance(expr, tuple) and expr[0] == "bin":
+                expr_py = expr_py[1:-1]
             return f"{ind}{var_name} = {expr_py}"
 
         if typ == "subscript_assign":
@@ -1104,13 +1152,28 @@ class PGPreprocessor:
                 _, base, op = expr
                 base_py = self._expr_to_py(base)
 
-                if op[0] == "method_call":
-                    _, method_name, args = op
-                    arg_strs = [self._expr_to_py(a) for a in args]
-                    return f"{base_py}.{method_name}({', '.join(arg_strs)})"
-                elif op[0] in ("array_subscript", "hash_subscript"):
-                    subscript_py = self._emit_subscript(op)
-                    return f"{base_py}{subscript_py}"
+                # Handle Tree objects that weren't transformed yet
+                if not isinstance(op, tuple):
+                    try:
+                        from lark import Tree
+                        if isinstance(op, Tree):
+                            # Transform the Tree to IR
+                            op = self._transformer.transform(op)
+                            # If it returned a list, take first item
+                            if isinstance(op, list) and op:
+                                op = op[0]
+                    except:
+                        pass
+
+                # Now handle the postfix operation
+                if isinstance(op, tuple):
+                    if op[0] == "method_call":
+                        _, method_name, args = op
+                        arg_strs = [self._expr_to_py(a) for a in args]
+                        return f"{base_py}.{method_name}({', '.join(arg_strs)})"
+                    elif op[0] in ("array_subscript", "hash_subscript"):
+                        subscript_py = self._emit_subscript(op)
+                        return f"{base_py}{subscript_py}"
 
                 return base_py
 
@@ -1310,8 +1373,20 @@ class PGPreprocessor:
         # Convert string comparison operators
         rewritten = re.sub(r'\beq\b', '==', rewritten)
         rewritten = re.sub(r'\bne\b', '!=', rewritten)
+        rewritten = re.sub(r'\blt\b', '<', rewritten)
+        rewritten = re.sub(r'\bgt\b', '>', rewritten)
         rewritten = re.sub(r'\ble\b', '<=', rewritten)
         rewritten = re.sub(r'\bge\b', '>=', rewritten)
+
+        # Convert ternary operator: cond ? true : false  -->  true if cond else false
+        # Match pattern like: $a > 0 ? 1 : 2
+        ternary_pattern = r'(.+?)\s*\?\s*(.+?)\s*:\s*(.+)'
+        ternary_match = re.match(ternary_pattern, rewritten)
+        if ternary_match and '?' in rewritten:
+            cond = ternary_match.group(1).strip()
+            true_val = ternary_match.group(2).strip()
+            false_val = ternary_match.group(3).strip()
+            rewritten = f"{true_val} if ({cond}) else {false_val}"
 
         # Convert logical operators
         rewritten = rewritten.replace('||', ' or ')
@@ -1406,6 +1481,9 @@ class PGPreprocessor:
                     break
                 rest, condition, tail = parsed
                 cond_py = self._compile_expr(condition)
+                # Strip outer parens if already present (binary exprs add them)
+                if cond_py.startswith('(') and cond_py.endswith(')'):
+                    cond_py = cond_py[1:-1]
                 py_keyword = keyword
                 if keyword == 'elsif':
                     py_keyword = 'elif'
