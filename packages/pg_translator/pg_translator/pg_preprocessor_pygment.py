@@ -326,8 +326,22 @@ class PGPreprocessor:
             # Stub Perl sub { ... } closures so downstream execution sees Python callables
             sub_match = re.search(r'(=>|=)\s*sub\s*\{', original_line)
             if sub_match:
+                # Check if this is a single-line closure (all braces balanced on this line)
+                sub_start = original_line.find('sub {')
+                after_sub = original_line[sub_start + 5:]  # Everything after "sub {"
+                single_line_brace_count = after_sub.count('{') - after_sub.count('}')
+
+                # For single-line closures where all braces are balanced, extract and replace them
+                # But we need to be careful with strings, hashes, etc.
+                # For now, skip this and only handle multi-line closures
+                # The issue is that line joining can create single "lines" that actually contain
+                # multiple statements that have been merged together.
+
+                # Multi-line closure
                 closure_lines = [original_line]
-                brace_depth = original_line.count('{') - original_line.count('}')
+                # Start with brace depth from the opening sub {
+                brace_depth = 1 + single_line_brace_count
+
                 i += 1
                 max_closure_lines = 100  # Safety limit to prevent infinite loops
                 lines_collected = 0
@@ -346,31 +360,48 @@ class PGPreprocessor:
 
                 first_line = closure_lines[0]
                 last_line = closure_lines[-1] if closure_lines else ''
-                
-                # Check if there's a continuation line after the closure (like );)
+
+                # Look for everything after the closing brace of the closure
+                # This might include }, }, );  or other closing syntax
                 continuation_suffix = ''
-                if i < len(lines):
-                    next_line = lines[i].strip()
-                    # Check for closing syntax like );
-                    if re.match(r'^\s*\);?\s*$', lines[i]):
-                        continuation_suffix = ' ' + next_line
-                        i += 1  # Skip this line since we're incorporating it
-                
+                closing_brace_idx = None
+
+                # Find where the closure-ending brace is on the last line
+                close_brace_match = re.search(r'\}(.*)$', last_line)
+                if close_brace_match:
+                    # Get everything after the closing brace of the closure
+                    suffix_from_last_line = close_brace_match.group(1)
+                else:
+                    suffix_from_last_line = ''
+
+                # Check if there are continuation lines with more closing syntax
+                temp_i = i
+                continuation_lines = []
+                while temp_i < len(lines) and len(continuation_lines) < 5:  # Safety limit
+                    next_line = lines[temp_i].strip()
+                    # Stop if we hit a line that's not just closing syntax (}, }, );, etc.)
+                    if next_line and not re.match(r'^[}\);]*$', next_line):
+                        break
+                    if next_line:  # Don't add empty lines
+                        continuation_lines.append(next_line)
+                        temp_i += 1
+                    else:
+                        break
+
+                # Incorporate continuation lines
+                continuation_suffix = ' ' + ' '.join(continuation_lines)
+                if continuation_lines:
+                    i = temp_i  # Skip the lines we incorporated
+
                 param_match = re.search(r'(\w+)\s*=>\s*sub\s*\{', first_line)
                 if param_match:
                     sub_start = first_line.find('sub')
                     prefix = first_line[:sub_start]
-                    suffix = ''
-                    close_brace_match = re.search(r'\}(.*)$', last_line)
-                    if close_brace_match:
-                        suffix = close_brace_match.group(1)
-                    
-                    # Add any continuation suffix
-                    suffix += continuation_suffix
-                    
+                    suffix = suffix_from_last_line + continuation_suffix
+
                     # Create the stubbed line: replace 'sub { ... }' with lambda
                     stubbed_line = f"{prefix}lambda *args, **kwargs: None{suffix}"
-                    
+
                     # Transform the line (this handles => to =, -> to ., removes trailing ;)
                     transformed = self._rewrite_statement(stubbed_line)
                     
