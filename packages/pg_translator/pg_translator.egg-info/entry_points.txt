@@ -1,0 +1,2 @@
+[console_scripts]
+pg-convert = pg_translator.cli:main

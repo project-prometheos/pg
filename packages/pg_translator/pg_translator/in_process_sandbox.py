@@ -207,7 +207,17 @@ class InProcessSandbox:
 
             # Context function that delegates to pg_math
             def Context(name=None):
-                """Context function - delegates to pg_math.context.get_context."""
+                """
+                Context function - delegates to pg_math.context.get_context.
+                
+                When called without arguments, returns the current context.
+                When called with a name, switches to that context and returns it.
+                
+                Examples:
+                    ctx = Context()           # Get current context
+                    ctx = Context('Numeric')  # Switch to Numeric context
+                    Context().variables.are(x='Real', y='Real')
+                """
                 return _get_context(name)
 
             # Compute function that delegates to pg_math
@@ -269,9 +279,29 @@ class InProcessSandbox:
 
         except ImportError:
             # Fallback: provide minimal stubs
+            # Create a minimal context object with variables attribute
+            class _StubContext:
+                """Minimal stub context with variables support."""
+                def __init__(self, name='Numeric'):
+                    self.name = name
+                    self.variables = _StubVariables()
+                    
+            class _StubVariables:
+                """Stub variables manager."""
+                def are(self, *args, **kwargs):
+                    """Stub are() method - does nothing but doesn't error."""
+                    pass
+                def add(self, *args, **kwargs):
+                    """Stub add() method - does nothing but doesn't error."""
+                    pass
+            
+            _stub_context = _StubContext()
+            
             def Context(name=None):
-                """Stub Context function."""
-                return None
+                """Stub Context function - returns minimal context object."""
+                if name is None:
+                    return _stub_context
+                return _StubContext(name)
 
             def Formula(expr):
                 """Stub Formula function - returns string."""

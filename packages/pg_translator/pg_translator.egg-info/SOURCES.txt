@@ -1,6 +1,7 @@
 README.md
 pyproject.toml
 pg_translator/__init__.py
+pg_translator/cli.py
 pg_translator/error_handler.py
 pg_translator/executor.py
 pg_translator/executor_old.py
@@ -19,10 +20,12 @@ pg_translator/translator_enhanced.py
 pg_translator.egg-info/PKG-INFO
 pg_translator.egg-info/SOURCES.txt
 pg_translator.egg-info/dependency_links.txt
+pg_translator.egg-info/entry_points.txt
 pg_translator.egg-info/requires.txt
 pg_translator.egg-info/top_level.txt
 tests/test_advanced_checkers.py
 tests/test_calculus_problems.py
+tests/test_cli.py
 tests/test_executor.py
 tests/test_golden_suite.py
 tests/test_grading.py

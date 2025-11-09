@@ -13,6 +13,7 @@ Reference: Translator.pm::default_preprocess_code() (lines 1348-1378)
 """
 
 import re
+from pathlib import Path
 from dataclasses import dataclass
 
 from .pgml_parser import PGMLParser, PGMLRenderer
@@ -105,56 +106,62 @@ class PGPreprocessor:
             # Skip this for comment lines
             is_comment = original_line.lstrip(' \t').startswith('#')
             if not is_comment:
-                while i + 1 < len(lines):
-                    stripped = original_line.rstrip()
-                    next_line = lines[i + 1] if i + 1 < len(lines) else ""
+                # Don't join if this is a } else { line - it should stay on its own line
+                if not re.match(r'^\s*\}\s*else\s*\{\s*$', original_line):
+                    while i + 1 < len(lines):
+                        stripped = original_line.rstrip()
+                        next_line = lines[i + 1] if i + 1 < len(lines) else ""
 
-                    # Don't join if next line is a comment
-                    if next_line.lstrip(' \t').startswith('#'):
-                        break
+                        # Don't join if next line is a comment
+                        if next_line.lstrip(' \t').startswith('#'):
+                            break
 
-                    # Check if this looks like a continuation
-                    should_join = False
+                        # Don't join TO a } else { line either!
+                        if re.match(r'^\s*\}\s*else\s*\{\s*$', next_line):
+                            break
 
-                    # Case 1: Line ends with = or , or ( or [
-                    # Strip inline comments first to check actual ending
-                    stripped_no_comment = self._strip_inline_comment(stripped)
-                    if stripped_no_comment and stripped_no_comment[-1] in '=,([':
-                        if next_line and next_line[0] in ' \t':
-                            should_join = True
+                        # Check if this looks like a continuation
+                        should_join = False
 
-                    # Case 2: Next line starts with binary operator (., +, -, etc.) for continuation
-                    # This handles Perl string concatenation: "str" \n . "more"
-                    if not should_join:
-                        next_stripped = next_line.lstrip(' \t')
-                        if next_stripped and next_stripped[0] in '.+-':
-                            # Make sure it's not a unary minus or method call
-                            if next_stripped[0] == '.' or (next_stripped[0] in '+-' and len(next_stripped) > 1 and next_stripped[1] in ' \t"\''):
+                        # Case 1: Line ends with = or , or ( or [
+                        # Strip inline comments first to check actual ending
+                        stripped_no_comment = self._strip_inline_comment(stripped)
+                        if stripped_no_comment and stripped_no_comment[-1] in '=,([':
+                            if next_line and next_line[0] in ' \t':
                                 should_join = True
 
-                    # Case 2b: Next line starts with -> (Perl method chaining)
-                    # This handles: $obj = Func(...) \n ->method(...)
-                    if not should_join:
-                        next_stripped = next_line.lstrip(' \t')
-                        if next_stripped and next_stripped.startswith('->'):
-                            should_join = True
+                        # Case 2: Next line starts with binary operator (., +, -, etc.) for continuation
+                        # This handles Perl string concatenation: "str" \n . "more"
+                        if not should_join:
+                            next_stripped = next_line.lstrip(' \t')
+                            if next_stripped and next_stripped[0] in '.+-':
+                                # Make sure it's not a unary minus or method call
+                                if next_stripped[0] == '.' or (next_stripped[0] in '+-' and len(next_stripped) > 1 and next_stripped[1] in ' \t"\''):
+                                    should_join = True
 
-                    # Case 3: Unmatched parentheses/brackets (check without comments)
-                    if not should_join:
-                        check_line = self._strip_inline_comment(stripped)
-                        open_count = check_line.count('(') + check_line.count('[') + check_line.count('{')
-                        close_count = check_line.count(')') + check_line.count(']') + check_line.count('}')
-                        if open_count > close_count:
-                            should_join = True
+                        # Case 2b: Next line starts with -> (Perl method chaining)
+                        # This handles: $obj = Func(...) \n ->method(...)
+                        if not should_join:
+                            next_stripped = next_line.lstrip(' \t')
+                            if next_stripped and next_stripped.startswith('->'):
+                                should_join = True
 
-                    if should_join and next_line.strip():
-                        # Strip inline comment from current line before joining
-                        # to prevent comment from eating subsequent joined content
-                        line_without_comment = self._strip_inline_comment(original_line.rstrip())
-                        original_line = line_without_comment + ' ' + next_line.lstrip(' \t')
-                        i += 1
-                    else:
-                        break
+                        # Case 3: Unmatched parentheses/brackets (check without comments)
+                        if not should_join:
+                            check_line = self._strip_inline_comment(stripped)
+                            open_count = check_line.count('(') + check_line.count('[') + check_line.count('{')
+                            close_count = check_line.count(')') + check_line.count(']') + check_line.count('}')
+                            if open_count > close_count:
+                                should_join = True
+
+                        if should_join and next_line.strip():
+                            # Strip inline comment from current line before joining
+                            # to prevent comment from eating subsequent joined content
+                            line_without_comment = self._strip_inline_comment(original_line.rstrip())
+                            original_line = line_without_comment + ' ' + next_line.lstrip(' \t')
+                            i += 1
+                        else:
+                            break
 
             output_line_num = len(output_lines) + 1
 
@@ -521,8 +528,16 @@ class PGPreprocessor:
             # Check for inline if-else statements: if (cond) { stmt; } else { stmt; }
             # Python requires these on separate lines with indentation
             # Pattern: if (condition) { statements } else { statements }
-            inline_if_match = re.match(r'^(\s*)if\s*\(([^)]+)\)\s*\{([^}]+)\}\s*else\s*\{([^}]+)\}', original_line)
-            if inline_if_match:
+            # DISABLED: This pattern causes issues with complex multi-line if-else blocks
+            # that get joined. Multi-line blocks should be handled line-by-line.
+            inline_if_match = None  # Temporarily disable
+            if False and inline_if_match:  # inline_if_match = re.match(r'^(\s*)if\s*\(([^)]+)\)\s*\{(.+)\}\s*else\s*\{(.+)\}\s*$', original_line)
+                import sys
+                print(f"DEBUG: inline if-else matched!", file=sys.stderr)
+                print(f"  Line length: {len(original_line)}", file=sys.stderr)
+                print(f"  else_body length: {len(inline_if_match.group(4))}", file=sys.stderr)
+                print(f"  else_body: {inline_if_match.group(4)!r}", file=sys.stderr)
+                
                 indent = inline_if_match.group(1)
                 condition = inline_if_match.group(2).strip()
                 if_body = inline_if_match.group(3).strip()
@@ -549,7 +564,9 @@ class PGPreprocessor:
                 continue
 
             # Check for inline if statements (no else): if (cond) { stmt; }
-            inline_if_only_match = re.match(r'^(\s*)if\s*\(([^)]+)\)\s*\{([^}]+)\}(?!\s*else)', original_line)
+            # Note: This regex must handle braces inside strings, so we use a more robust pattern
+            # that matches to the last } on the line, not the first one
+            inline_if_only_match = re.match(r'^(\s*)if\s*\(([^)]+)\)\s*\{(.+)\}\s*$', original_line)
             if inline_if_only_match:
                 indent = inline_if_only_match.group(1)
                 condition = inline_if_only_match.group(2).strip()
@@ -779,6 +796,63 @@ class PGPreprocessor:
         """
         import re
 
+        # Handle } else { followed by content → split into else: and content on next line
+        # This happens when line joining joins } else { with the next line
+        else_match = re.match(r'^(\s*)\}\s*else\s*\{\s*(.+)$', line)
+        if else_match:
+            # Return just "else:" and let the content be handled separately
+            # But we can't split it here since we return a single line
+            # Instead, we'll need to NOT join these lines in the first place
+            # For now, just handle the transformation
+            indent = else_match.group(1)
+            rest = else_match.group(2)
+            # Transform the rest and return as "else: <content>" but that's not valid Python
+            # We need to return multiple lines, but _transform_line returns a single string
+            # WORKAROUND: Return with embedded newline
+            transformed_rest = self._transform_line(rest)
+            return f'{indent}else:\n{indent}    {transformed_rest}'
+        
+        # Handle } else { → else:
+        else_bracket_match = re.match(r'^\s*\}\s*else\s*\{\s*$', line)
+        if else_bracket_match:
+            # Don't preserve indentation - else should be at same level as if
+            return 'else:'
+        
+        # Handle multi-line if statements: if (...) { → if (...)  :
+        # This handles if blocks that span multiple lines (body on next line)
+        if_block_match = re.match(r'^(\s*)(if|elsif|while|for|foreach|until|unless)\s*\(([^)]+)\)\s*\{\s*(.*)$', line, re.IGNORECASE)
+        if if_block_match:
+            indent = if_block_match.group(1)
+            keyword = if_block_match.group(2).lower()
+            condition = if_block_match.group(3)
+            rest = if_block_match.group(4).strip()
+            
+            # Convert elsif → elif
+            if keyword == 'elsif':
+                keyword = 'elif'
+            # Convert unless → if not
+            if keyword == 'unless':
+                keyword = 'if not'
+            
+            # If there's content after the {, we need to handle it differently
+            # For now, just convert the opening line
+            if rest:
+                # Single-line block with content: if (...) { stmt
+                # This will be handled by inline-if pattern or needs special handling
+                # For now, convert to: if (...): stmt
+                transformed_condition = self._transform_line(condition)
+                transformed_rest = self._transform_line(rest)
+                return f'{indent}{keyword} ({transformed_condition}):\n{indent}    {transformed_rest}'
+            else:
+                # Multi-line block: if (...) {
+                # Convert to: if (...):
+                transformed_condition = self._transform_line(condition)
+                return f'{indent}{keyword} ({transformed_condition}):'
+        
+        # Handle closing braces (convert to pass or remove)
+        if re.match(r'^\s*\}\s*$', line):
+            return ''  # Remove standalone closing braces
+        
         # Skip loadMacros() - already handled in first pass
         if 'loadMacros' in line:
             # If it's on the same line as other code, remove just the loadMacros call
@@ -818,9 +892,14 @@ class PGPreprocessor:
             if quote_char == '"':
                 # Check if contains $var
                 if '$' in content:
-                    # Convert $var to {var}
+                    # First, escape literal braces that should remain as-is
+                    # In f-strings, { and } need to be {{ and }} if they're literal
+                    # We need to escape braces BEFORE converting $var to {var}
+                    escaped_content = content.replace('{', '{{').replace('}', '}}')
+                    
+                    # Now convert $var to {var} - these will be unescaped single braces
                     new_content = re.sub(
-                        r'\$([a-zA-Z_][a-zA-Z0-9_]*)', r'{\1}', content)
+                        r'\$([a-zA-Z_][a-zA-Z0-9_]*)', r'{\1}', escaped_content)
                     return f'f"{new_content}"'
 
             # Return as-is for single quotes or strings without variables
@@ -856,6 +935,15 @@ class PGPreprocessor:
         line = line.replace('->with(', '.with_params(')
         # Don't split method names starting with 'with' - they're valid Python identifiers
         line = line.replace('->', '.')
+
+        # Add parentheses to Perl method calls that don't have them
+        # In Perl: $obj->method is equivalent to $obj->method()
+        # In Python: obj.method() is a call, obj.method is a property
+        # Pattern: .method_name followed by whitespace, semicolon, closing paren/bracket, or end of line
+        # Match: .cmp; or .cmp) or .cmp at end of line
+        # Don't match: .reduce() (already has parens) or .key (hash access)
+        # Common PG methods without parens: cmp, eval, TeX, string, value, etc.
+        line = re.sub(r'\.([a-zA-Z_][a-zA-Z0-9_]*)(?=\s*[;,)\]\}]|\s*$)', r'.\1()', line)
 
         # Remove empty parentheses after methods that should be properties
         # In Perl, ->reduce() and ->reduce are equivalent
@@ -1582,3 +1670,29 @@ class PGPreprocessor:
         comment = f'# loadMacros({", ".join(repr(m) for m in loaded_macros)}) - loaded' if loaded_macros else "# loadMacros() - no recognized macros"
 
         return (import_lines, comment)
+
+def convert_pg_file(
+    source_path: str | Path,
+    *,
+    output_path: str | Path | None = None,
+    use_sandbox_macros: bool = True,
+    overwrite: bool = False,
+    encoding: str = "utf-8",
+    preprocessor: PGPreprocessor | None = None,
+) -> tuple[Path, PreprocessResult]:
+    """Convert a .pg file to Python and persist the result as .pyg."""
+    pg_path = Path(source_path)
+    if not pg_path.exists():
+        raise FileNotFoundError(f"PG source file not found: {pg_path}")
+
+    processor = preprocessor or PGPreprocessor()
+    pg_source = pg_path.read_text(encoding=encoding)
+    result = processor.preprocess(pg_source, use_sandbox_macros=use_sandbox_macros)
+
+    output = Path(output_path) if output_path else pg_path.with_suffix('.pyg')
+    if output.exists() and not overwrite:
+        raise FileExistsError(f"Refusing to overwrite existing file: {output}")
+
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(result.code, encoding=encoding)
+    return output, result

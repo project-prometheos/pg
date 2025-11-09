@@ -1,14 +1,22 @@
-lines = [
-    "#: of being stored in another variable, as in the first two answer rules. Either",
-    "#: method is correct. Usually you would only need store the answer in a variable",
-    "#: if it will be used in other places in the code as well which is not done even",
-    "#: for the first two answers rules in this case.",
-]
+from pg_translator.preprocessor import PGPreprocessor
 
-for i, line in enumerate(lines):
-    stripped_for_check = line.lstrip(' \t')
-    print(f"Line {i}: {repr(line)}")
-    print(f"  After lstrip(' \\t'): {repr(stripped_for_check)}")
-    print(f"  Starts with #: {stripped_for_check.startswith('#')}")
-    print(f"  Should skip join: {not stripped_for_check.startswith('#')}")
-    print()
+# Actual Perl from AnswerBlankInExponent.pg lines 44-47
+perl_code = r'''if ($displayMode eq 'TeX') {
+    $exp =
+        "\( \displaystyle $expression = ("
+        . ans_rule(4) . ")^{"
+        . ans_rule(4) . "}\)";
+}'''
+
+print("Input Perl code:")
+for i, line in enumerate(perl_code.split('\n'), 1):
+    print(f'{i:3}: {repr(line)}')
+print("\n" + "="*60 + "\n")
+
+p = PGPreprocessor()
+result = p.preprocess(perl_code)
+
+print("Preprocessed Python code:")
+lines = result.code.split('\n')
+for i, line in enumerate(lines, 1):
+    print(f'{i:3}: {repr(line)}')

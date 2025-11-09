@@ -2,7 +2,7 @@
 
 import pytest
 
-from pg_translator.preprocessor import PGPreprocessor
+from pg_translator.preprocessor import PGPreprocessor, convert_pg_file
 
 
 def test_preprocess_begin_text():
@@ -143,3 +143,18 @@ END_TEXT
 
     assert len(result.text_blocks) == 1
     assert result.text_blocks[0][1] == ""
+
+def test_convert_pg_file_writes_pyg(tmp_path):
+    """Ensure convert_pg_file writes the translated code to disk."""
+    source = tmp_path / "sample.pg"
+    source.write_text(
+        """DOCUMENT();\nBEGIN_TEXT\nHello world!\nEND_TEXT\nENDDOCUMENT();\n""",
+        encoding="utf-8",
+    )
+
+    output_path = tmp_path / "build" / "sample_output.pyg"
+    written_path, result = convert_pg_file(source, output_path=output_path)
+
+    assert written_path == output_path
+    assert written_path.read_text(encoding="utf-8") == result.code
+    assert "TEXT(" in result.code
