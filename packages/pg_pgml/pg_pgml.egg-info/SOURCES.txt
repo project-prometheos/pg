@@ -3,6 +3,7 @@ pyproject.toml
 pg_pgml/__init__.py
 pg_pgml/parser.py
 pg_pgml/parser_parity.py
+pg_pgml/pgml_macros.py
 pg_pgml/renderer.py
 pg_pgml/tokenizer.py
 pg_pgml.egg-info/PKG-INFO

@@ -595,6 +595,42 @@ def WARN_MESSAGE(*messages: Any) -> None:
         warnings.warn(str(msg))
 
 
+def MODES(*, HTML: str = None, TeX: str = None, PTX: str = None, **kwargs) -> str:
+    """
+    Return content based on current display mode.
+
+    Usage:
+        MODES(HTML="<b>bold</b>", TeX="\\textbf{bold}")
+
+    Reference: PGbasicmacros.pl::MODES
+    """
+    try:
+        env = get_environment()
+        mode = env.display_mode
+    except RuntimeError:
+        mode = "HTML"
+
+    # Map mode to argument (case-insensitive)
+    mode_upper = mode.upper()
+
+    if mode_upper == "HTML" and HTML is not None:
+        return HTML
+    elif mode_upper == "TEX" and TeX is not None:
+        return TeX
+    elif mode_upper == "PTX" and PTX is not None:
+        return PTX
+
+    # Return first available mode
+    if HTML is not None:
+        return HTML
+    elif TeX is not None:
+        return TeX
+    elif PTX is not None:
+        return PTX
+
+    return ""
+
+
 # ============================================================================
 # RANDOM NUMBER FUNCTIONS
 # ============================================================================

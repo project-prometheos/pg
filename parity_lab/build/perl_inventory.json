@@ -1,0 +1,3088 @@
+{
+  "PGstandard.pl": {
+    "file": "PGstandard.pl",
+    "symbols": [],
+    "globals": [],
+    "exports": [],
+    "line_count": 33
+  },
+  "PGcourse.pl": {
+    "file": "PGcourse.pl",
+    "symbols": [],
+    "globals": [],
+    "exports": [],
+    "line_count": 16
+  },
+  "MathObjects.pl": {
+    "file": "MathObjects.pl",
+    "symbols": [],
+    "globals": [],
+    "exports": [],
+    "line_count": 24
+  },
+  "PGchoicemacros.pl": {
+    "file": "PGchoicemacros.pl",
+    "symbols": [
+      {
+        "name": "new_match_list",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "$ml = new_match_list(); new_match_list() creates a new Match object and initializes it with sensible\ndefaults. It is equivalent to: $ml = new Match(random(1,2000,1), ~~&std_print_q, ~~&std_print_a); T",
+        "line": 108
+      },
+      {
+        "name": "new_select_list",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "$sl = new_select_list(); C<new_select_list()> creates a new C<Select> object and initializes it with sensible\ndefaults. It is equivalent to: $sl = new Select(random(1,2000,1), ~~&std_print_q, ~~&std_p",
+        "line": 137
+      },
+      {
+        "name": "new_pop_up_select_list",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "$sl = new_pop_up_select_list(); C<new_popup_select_list()> creates a new C<Select> object and initializes it such that\nit will render as a popup list. It is equivalent to: $selectlist = new Select(ran",
+        "line": 157
+      },
+      {
+        "name": "new_multiple_choice",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "$mc = new_multiple_choice(); C<new_multiple_choice()> creates a new C<Multiple> object that presents a question and\na number possible answers, only one of which can be chosen. It is equivalent to: $mc",
+        "line": 180
+      },
+      {
+        "name": "new_checkbox_multiple_choice",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "$mc = new_checkbox_multiple_choice(); C<new_checkbox_multiple_choice()> creates a new C<Multiple> object that presents a\nquestion and a number possible answers, any number of which can be chosen. It i",
+        "line": 200
+      },
+      {
+        "name": "std_print_q",
+        "type": "sub",
+        "params": [
+          "@questions"
+        ],
+        "defaults": {},
+        "pod": "C<$list> can be a matching list, a select list, or a multiple choice list $list->rf_print_q(~~&std_print_q); TEXT($list->print_q); This formatting routine is the default method for formatting the way ",
+        "line": 221
+      },
+      {
+        "name": "pop_up_list_print_q",
+        "type": "sub",
+        "params": [
+          "@questions"
+        ],
+        "defaults": {},
+        "pod": "$sl->rf_print_q(~~&pop_up_list_print_q); $sl->ra_pop_up_list([T => 'True', F => 'False']); TEXT($sl->print_q); Alternate method for print questions with pop up lists. This printing routine is used to ",
+        "line": 276
+      },
+      {
+        "name": "quest_first_pop_up_list_print_q",
+        "type": "sub",
+        "params": [
+          "@questions"
+        ],
+        "defaults": {},
+        "pod": "$sl->rf_print_q(~~&quest_first_pop_up_list_print_q); $sl->ra_pop_up_list([T => 'True', F => 'False']); TEXT($sl->print_q); Similar to C<pop_up_list_print_q()>, but places the popup list after the ques",
+        "line": 327
+      },
+      {
+        "name": "ans_in_middle_pop_up_list_print_q",
+        "type": "sub",
+        "params": [
+          "@questions"
+        ],
+        "defaults": {},
+        "pod": "$sl->rf_print_q(~~&ans_in_middle_pop_up_list_print_q); $sl->ra_pop_up_list([T => 'True', F => 'False']); TEXT($sl->print_q); Similar to C<quest_first_pop_up_list_print_q()>, except that no linebreaks ",
+        "line": 383
+      },
+      {
+        "name": "units_list_print_q",
+        "type": "sub",
+        "params": [
+          "@questions"
+        ],
+        "defaults": {},
+        "pod": "A simple popup question printer. No question text is printed, instead the\npop_up_list contents only are printed as a popup menu.",
+        "line": 434
+      },
+      {
+        "name": "std_print_a",
+        "type": "sub",
+        "params": [
+          "@array"
+        ],
+        "defaults": {},
+        "pod": "# $list can be a matching list, a select list, or a multiple choice list $list->rf_print_a(~~&std_print_a); TEXT($list->print_a); This simple formatting routine is the default method for formatting th",
+        "line": 459
+      },
+      {
+        "name": "radio_print_a",
+        "type": "sub",
+        "params": [
+          "@answers"
+        ],
+        "defaults": {},
+        "pod": "C<$list> can be a matching list, a select list, or a multiple choice list $list->rf_print_q(~~&radio_print_q); TEXT($list->print_q); This simple printing routine is used to print the answers to multip",
+        "line": 510
+      },
+      {
+        "name": "checkbox_print_a",
+        "type": "sub",
+        "params": [
+          "@answers"
+        ],
+        "defaults": {},
+        "pod": "C<$list> can be a matching list, a select list, or a multiple choice list $list->rf_print_q(~~&radio_print_q); TEXT($list->print_q); This simple printing routine is used to print the answers to multip",
+        "line": 563
+      },
+      {
+        "name": "qa",
+        "type": "sub",
+        "params": [
+          "$questionsRef",
+          "$answersRef",
+          "@questANDanswer"
+        ],
+        "defaults": {},
+        "pod": "qa($questions, $answers, @new_qa); $questions and $answers are references to arrays, and @new_qa is a list of\nquestions and answers to add to the $questions and $answers arrays.",
+        "line": 617
+      },
+      {
+        "name": "invert",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "@b = invert(@a); Inverts an arrays values and indexes. For example, C<invert(1,2,4,8)> returns\nC<undef,0,1,undef,2,undef,undef,undef,4>.",
+        "line": 636
+      },
+      {
+        "name": "NchooseK",
+        "type": "sub",
+        "params": [
+          "$n",
+          "$k"
+        ],
+        "defaults": {},
+        "pod": "@b = NchooseK($N, $K); Selects $K random nonrepeating elements in the range 0 to $N-1.\nThis is a wrapper for random_subset($K, 0 .. $N - 1);",
+        "line": 657
+      },
+      {
+        "name": "shuffle",
+        "type": "sub",
+        "params": [
+          "$i"
+        ],
+        "defaults": {},
+        "pod": "@b = shuffle($i); Returns the integers from 0 to $i-1 in random order. Note: this can be reproduced with the function @b = random_subset($n, 0..$n-1);",
+        "line": 678
+      },
+      {
+        "name": "match_questions_list",
+        "type": "sub",
+        "params": [
+          "@questions"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 691
+      },
+      {
+        "name": "match_questions_list_varbox",
+        "type": "sub",
+        "params": [
+          "$length",
+          "@questions"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 724
+      }
+    ],
+    "globals": [
+      "$ALPHABET",
+      "$K",
+      "$N"
+    ],
+    "exports": [],
+    "line_count": 752
+  },
+  "PGML.pl": {
+    "file": "PGML.pl",
+    "symbols": [
+      {
+        "name": "show",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 6
+      },
+      {
+        "name": "Warning",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 17
+      },
+      {
+        "name": "ClearWarnings",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 25
+      },
+      {
+        "name": "Eval",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 27
+      },
+      {
+        "name": "Sort",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 29
+      },
+      {
+        "name": "isRegexp",
+        "type": "sub",
+        "params": [
+          "$ref"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 31
+      },
+      {
+        "name": "new",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$string"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 64
+      },
+      {
+        "name": "Split",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$string"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 79
+      },
+      {
+        "name": "Error",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$message"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 86
+      },
+      {
+        "name": "Unwind",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 95
+      },
+      {
+        "name": "blockError",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$message"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 106
+      },
+      {
+        "name": "isLineEnd",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$block"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 113
+      },
+      {
+        "name": "nextChar",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$default"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 129
+      },
+      {
+        "name": "prevChar",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$default"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 136
+      },
+      {
+        "name": "Parse",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 147
+      },
+      {
+        "name": "All",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$token"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 179
+      },
+      {
+        "name": "Begin",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$token",
+          "$id",
+          "$options"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 210
+      },
+      {
+        "name": "End",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$action",
+          "$endAt"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 235
+      },
+      {
+        "name": "Terminate",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$token"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 253
+      },
+      {
+        "name": "EndContainer",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$token"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 278
+      },
+      {
+        "name": "Unbalanced",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$token"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 287
+      },
+      {
+        "name": "Text",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$text",
+          "$force"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 294
+      },
+      {
+        "name": "Item",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$type",
+          "$token"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 304
+      },
+      {
+        "name": "Break",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$token"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 313
+      },
+      {
+        "name": "ForceBreak",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$token"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 329
+      },
+      {
+        "name": "Par",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$token"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 346
+      },
+      {
+        "name": "Indent",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$token"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 359
+      },
+      {
+        "name": "Slash",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$token"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 376
+      },
+      {
+        "name": "Brace",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$token"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 382
+      },
+      {
+        "name": "Verbatim",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$token"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 390
+      },
+      {
+        "name": "Image",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$token"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 399
+      },
+      {
+        "name": "Answer",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$token"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 404
+      },
+      {
+        "name": "Emphasis",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$token"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 412
+      },
+      {
+        "name": "Star",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$token"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 433
+      },
+      {
+        "name": "Rule",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$token"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 441
+      },
+      {
+        "name": "Bullet",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$token",
+          "$bullet"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 453
+      },
+      {
+        "name": "Heading",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$token"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 470
+      },
+      {
+        "name": "Center",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$token"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 497
+      },
+      {
+        "name": "Align",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$token"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 514
+      },
+      {
+        "name": "Code",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$token"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 526
+      },
+      {
+        "name": "Preformatted",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$token"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 537
+      },
+      {
+        "name": "Quoted",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$hash"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 548
+      },
+      {
+        "name": "Quote",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$token"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 581
+      },
+      {
+        "name": "NOOP",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 587
+      },
+      {
+        "name": "terminateGetString",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$token"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 779
+      },
+      {
+        "name": "terminateBalance",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$token"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 787
+      },
+      {
+        "name": "terminateCode",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$token"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 804
+      },
+      {
+        "name": "terminatePre",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$token"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 817
+      },
+      {
+        "name": "terminateOptions",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$token"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 831
+      },
+      {
+        "name": "StarOption",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$token"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 861
+      },
+      {
+        "name": "stackText",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$stack"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 890
+      },
+      {
+        "name": "stackString",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 907
+      },
+      {
+        "name": "replaceBalance",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 913
+      },
+      {
+        "name": "replaceText",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 919
+      },
+      {
+        "name": "replaceQuote",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 925
+      },
+      {
+        "name": "replaceVariable",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 931
+      },
+      {
+        "name": "replaceCommand",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 946
+      },
+      {
+        "name": "new",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$type",
+          "$fields"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 961
+      },
+      {
+        "name": "stringifyHash",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$hash"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 969
+      },
+      {
+        "name": "show",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$indent"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 984
+      },
+      {
+        "name": "quote",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$string"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1002
+      },
+      {
+        "name": "new",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$type",
+          "$fields"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1015
+      },
+      {
+        "name": "pushText",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$text",
+          "$force"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1027
+      },
+      {
+        "name": "pushItem",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1037
+      },
+      {
+        "name": "topItem",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$i"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1042
+      },
+      {
+        "name": "popItem",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1048
+      },
+      {
+        "name": "combineTopItems",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$i"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1053
+      },
+      {
+        "name": "show",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$indent"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1142
+      },
+      {
+        "name": "new",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$parser"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1168
+      },
+      {
+        "name": "pushItem",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1174
+      },
+      {
+        "name": "pushItem",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1202
+      },
+      {
+        "name": "new",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1224
+      },
+      {
+        "name": "pushText",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1229
+      },
+      {
+        "name": "pushItem",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1238
+      },
+      {
+        "name": "show",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$indent"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1243
+      },
+      {
+        "name": "new",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$parser"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1256
+      },
+      {
+        "name": "format",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1263
+      },
+      {
+        "name": "string",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$block"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1268
+      },
+      {
+        "name": "nl",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1309
+      },
+      {
+        "name": "Escape",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 1316
+      },
+      {
+        "name": "Indent",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 1318
+      },
+      {
+        "name": "Align",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 1319
+      },
+      {
+        "name": "Par",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 1320
+      },
+      {
+        "name": "List",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 1321
+      },
+      {
+        "name": "Bullet",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 1322
+      },
+      {
+        "name": "Bold",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 1323
+      },
+      {
+        "name": "Italic",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 1324
+      },
+      {
+        "name": "Heading",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 1325
+      },
+      {
+        "name": "Quote",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 1326
+      },
+      {
+        "name": "Rule",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 1327
+      },
+      {
+        "name": "Code",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 1328
+      },
+      {
+        "name": "Pre",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 1329
+      },
+      {
+        "name": "Verbatim",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 1330
+      },
+      {
+        "name": "Break",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 1331
+      },
+      {
+        "name": "Forced",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 1332
+      },
+      {
+        "name": "Comment",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 1333
+      },
+      {
+        "name": "Table",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1335
+      },
+      {
+        "name": "Tag",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1357
+      },
+      {
+        "name": "Math",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1362
+      },
+      {
+        "name": "Answer",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1388
+      },
+      {
+        "name": "Command",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1458
+      },
+      {
+        "name": "Variable",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item",
+          "$cur"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1467
+      },
+      {
+        "name": "Text",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1477
+      },
+      {
+        "name": "Image",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1485
+      },
+      {
+        "name": "Escape",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$string"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1511
+      },
+      {
+        "name": "Indent",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1525
+      },
+      {
+        "name": "Align",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1539
+      },
+      {
+        "name": "List",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1564
+      },
+      {
+        "name": "Bullet",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1577
+      },
+      {
+        "name": "Code",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1583
+      },
+      {
+        "name": "Pre",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1590
+      },
+      {
+        "name": "Heading",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1596
+      },
+      {
+        "name": "Par",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1606
+      },
+      {
+        "name": "Break",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 1612
+      },
+      {
+        "name": "Bold",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1614
+      },
+      {
+        "name": "Italic",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1620
+      },
+      {
+        "name": "Quote",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1629
+      },
+      {
+        "name": "Rule",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1637
+      },
+      {
+        "name": "Verbatim",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1666
+      },
+      {
+        "name": "Math",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1674
+      },
+      {
+        "name": "Tag",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1679
+      },
+      {
+        "name": "Escape",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$string"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1723
+      },
+      {
+        "name": "Indent",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1731
+      },
+      {
+        "name": "Align",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1739
+      },
+      {
+        "name": "List",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1746
+      },
+      {
+        "name": "Bullet",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1757
+      },
+      {
+        "name": "Code",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1763
+      },
+      {
+        "name": "Pre",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1769
+      },
+      {
+        "name": "Heading",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1775
+      },
+      {
+        "name": "Par",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1785
+      },
+      {
+        "name": "Break",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 1791
+      },
+      {
+        "name": "Bold",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1793
+      },
+      {
+        "name": "Italic",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1799
+      },
+      {
+        "name": "Quote",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1808
+      },
+      {
+        "name": "Rule",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1816
+      },
+      {
+        "name": "Verbatim",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1831
+      },
+      {
+        "name": "Math",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1839
+      },
+      {
+        "name": "Tag",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1844
+      },
+      {
+        "name": "Escape",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$string"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1861
+      },
+      {
+        "name": "Indent",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1872
+      },
+      {
+        "name": "Align",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1879
+      },
+      {
+        "name": "List",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1897
+      },
+      {
+        "name": "Bullet",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1904
+      },
+      {
+        "name": "Code",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1910
+      },
+      {
+        "name": "Pre",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1927
+      },
+      {
+        "name": "Heading",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1936
+      },
+      {
+        "name": "Par",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1942
+      },
+      {
+        "name": "Break",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 1948
+      },
+      {
+        "name": "Bold",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1950
+      },
+      {
+        "name": "Italic",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1956
+      },
+      {
+        "name": "Quote",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1965
+      },
+      {
+        "name": "Rule",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1974
+      },
+      {
+        "name": "Verbatim",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1980
+      },
+      {
+        "name": "Math",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1997
+      },
+      {
+        "name": "Tag",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$item"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 2002
+      },
+      {
+        "name": "Format",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 2016
+      },
+      {
+        "name": "Format2",
+        "type": "sub",
+        "params": [
+          "$string"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 2033
+      },
+      {
+        "name": "LaTeX",
+        "type": "sub",
+        "params": [
+          "$text"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 2039
+      }
+    ],
+    "globals": [
+      "$B",
+      "$_",
+      "%B"
+    ],
+    "exports": [],
+    "line_count": 2069
+  },
+  "PGgraphmacros.pl": {
+    "file": "PGgraphmacros.pl",
+    "symbols": [
+      {
+        "name": "init_graph",
+        "type": "sub",
+        "params": [
+          "$xmin",
+          "$ymin",
+          "$xmax",
+          "$ymax",
+          "%options"
+        ],
+        "defaults": {},
+        "pod": "$graphObject = init_graph(xmin,ymin,xmax,ymax,'ticks'=>[4,4],'axes'=>[0,0]) options are 'grid' =>[8,8] or # there are 8 evenly spaced lines intersecting the horizontal axis 'ticks'=>[8,8] and/or # the",
+        "line": 54
+      },
+      {
+        "name": "init_graph_no_labels",
+        "type": "sub",
+        "params": [
+          "$xmin",
+          "$ymin",
+          "$xmax",
+          "$ymax",
+          "%options"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 170
+      },
+      {
+        "name": "add_functions",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 276
+      },
+      {
+        "name": "plot_functions",
+        "type": "sub",
+        "params": [
+          "$graph",
+          "$x"
+        ],
+        "defaults": {},
+        "pod": "Usage: ($f1, $f2, $f3) = plot_functions($graph, $f1, $f2, $f3); Synonym: ($f1, $f2, $f3) = add_functions($graph, $f1, $f2, $f3); Where $f1 is a string of the form $f1 = qq! x^2 - 3*x + 45 for x in [0,",
+        "line": 280
+      },
+      {
+        "name": "open_circle",
+        "type": "sub",
+        "params": [
+          "$cx",
+          "$cy",
+          "$color"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 401
+      },
+      {
+        "name": "closed_circle",
+        "type": "sub",
+        "params": [
+          "$cx",
+          "$cy",
+          "$color"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 406
+      },
+      {
+        "name": "my_math_constants",
+        "type": "sub",
+        "params": [
+          "$in"
+        ],
+        "defaults": {},
+        "pod": "These are internal macros which govern the interpretation of equations. Usage: $string = my_math_constants($string) $subroutine_reference = string_to_sub($string) C<my_math_constants>\ninterprets pi, e",
+        "line": 434
+      },
+      {
+        "name": "string_to_sub",
+        "type": "sub",
+        "params": [
+          "$str_in",
+          "$var"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 442
+      }
+    ],
+    "globals": [
+      "$BR",
+      "$PG",
+      "$PG_",
+      "$XVAR"
+    ],
+    "exports": [],
+    "line_count": 477
+  },
+  "AnswerFormatHelp.pl": {
+    "file": "AnswerFormatHelp.pl",
+    "symbols": [
+      {
+        "name": "AnswerFormatHelp",
+        "type": "sub",
+        "params": [
+          "$helptype",
+          "$customstring"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 43
+      }
+    ],
+    "globals": [
+      "$PAR"
+    ],
+    "exports": [],
+    "line_count": 49
+  },
+  "parserPopUp.pl": {
+    "file": "parserPopUp.pl",
+    "symbols": [
+      {
+        "name": "Init",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 199
+      },
+      {
+        "name": "new",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$choices",
+          "$value"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 208
+      },
+      {
+        "name": "getChoiceOrder",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 255
+      },
+      {
+        "name": "randomOrder",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$choices"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 266
+      },
+      {
+        "name": "addLabelsValues",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 277
+      },
+      {
+        "name": "getCorrectChoice",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$label"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 303
+      },
+      {
+        "name": "flattenChoices",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 321
+      },
+      {
+        "name": "getIndexByValue",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$value"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 333
+      },
+      {
+        "name": "string",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 343
+      },
+      {
+        "name": "cmp_preprocess",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$ans"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 354
+      },
+      {
+        "name": "quoteTeX",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$s"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 367
+      },
+      {
+        "name": "quoteHTML",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$s"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 373
+      },
+      {
+        "name": "answerLabel",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$value"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 380
+      },
+      {
+        "name": "cmp",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 387
+      },
+      {
+        "name": "menu",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 396
+      },
+      {
+        "name": "MENU",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$extend",
+          "$name",
+          "$size"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 398
+      },
+      {
+        "name": "ans_rule",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 530
+      },
+      {
+        "name": "named_ans_rule",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 531
+      },
+      {
+        "name": "named_ans_rule_extension",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 532
+      },
+      {
+        "name": "DropDown",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$choices",
+          "$value"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 538
+      },
+      {
+        "name": "DropDownTF",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 553
+      },
+      {
+        "name": "new",
+        "type": "sub",
+        "params": [
+          "$equation",
+          "$value",
+          "$ref"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 585
+      }
+    ],
+    "globals": [
+      "$PG_",
+      "$_"
+    ],
+    "exports": [],
+    "line_count": 595
+  },
+  "parserMultiAnswer.pl": {
+    "file": "parserMultiAnswer.pl",
+    "symbols": [
+      {
+        "name": "new",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 23
+      },
+      {
+        "name": "setCmpFlags",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$cmp_number",
+          "%flags"
+        ],
+        "defaults": {},
+        "pod": "$multianswer_obj->setCmpFlags($which_rule, %flags) Configure a specific comparison object within the C<MathObject> instance by setting various flags\nand their corresponding values. C<$which_rule> begi",
+        "line": 66
+      },
+      {
+        "name": "cmp",
+        "type": "sub",
+        "params": [
+          "$self",
+          "%options"
+        ],
+        "defaults": {},
+        "pod": "This is a hash of options that will be passed to the cmp method. For example,\nC<< cmpOpts => { weight => 0.5 } >>. This option is provided to make it more convenient to pass\noptions to cmp when utiliz",
+        "line": 77
+      },
+      {
+        "name": "single_cmp",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$ans"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 136
+      },
+      {
+        "name": "single_check",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$ans"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 169
+      },
+      {
+        "name": "check_string",
+        "type": "sub",
+        "params": [
+          "$s"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 244
+      },
+      {
+        "name": "entry_cmp",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$i",
+          "$ans"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 256
+      },
+      {
+        "name": "entry_check",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$ans"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 276
+      },
+      {
+        "name": "perform_check",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$rh_ans"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 304
+      },
+      {
+        "name": "setMessage",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$i",
+          "$message"
+        ],
+        "defaults": {},
+        "pod": "$multianswer_obj->setMessage($which_rule, $message_string) Meant for use in C<checker>, setMessage provides feedback targeting the specified answer rule. Note that using C<Value::Error(\"message\")> wil",
+        "line": 351
+      },
+      {
+        "name": "addMessage",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$message"
+        ],
+        "defaults": {},
+        "pod": "$multianswer_obj->addMessage($message_string) Meant for use in C<checker> when using C<singleResult> to add feedback messages for the\ncombined answer rules.  This will add the message to a message arr",
+        "line": 360
+      },
+      {
+        "name": "ANS_NAME",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$i"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 373
+      },
+      {
+        "name": "NEW_NAME",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 389
+      },
+      {
+        "name": "ans_rule",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$size"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 399
+      },
+      {
+        "name": "ans_array",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$size"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 428
+      }
+    ],
+    "globals": [
+      "$ANS",
+      "$HTML",
+      "$_"
+    ],
+    "exports": [],
+    "line_count": 666
+  },
+  "contextFraction.pl": {
+    "file": "contextFraction.pl",
+    "symbols": [
+      {
+        "name": "extending",
+        "type": "sub",
+        "params": [
+          "$from",
+          "%options"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 275
+      },
+      {
+        "name": "Init",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 354
+      },
+      {
+        "name": "contFrac",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 383
+      },
+      {
+        "name": "toFraction",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 384
+      },
+      {
+        "name": "gcd",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 389
+      },
+      {
+        "name": "lcm",
+        "type": "sub",
+        "params": [
+          "$a",
+          "$b"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 404
+      },
+      {
+        "name": "reduce",
+        "type": "sub",
+        "params": [
+          "$a",
+          "$b"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 412
+      },
+      {
+        "name": "class",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 425
+      },
+      {
+        "name": "continuedFraction",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$x"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 432
+      },
+      {
+        "name": "toFraction",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$x",
+          "$max"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 466
+      },
+      {
+        "name": "extensionContext",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 489
+      },
+      {
+        "name": "extensionID",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 500
+      },
+      {
+        "name": "extensionClassMatch",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 502
+      },
+      {
+        "name": "setExtensionClass",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 503
+      },
+      {
+        "name": "reduce",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 549
+      },
+      {
+        "name": "TeX",
+        "type": "sub",
+        "params": [
+          "$precedence",
+          "$showparens",
+          "$position",
+          "$outerRight"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 570
+      },
+      {
+        "name": "D",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 587
+      },
+      {
+        "name": "reduce",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 671
+      },
+      {
+        "name": "D",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 691
+      },
+      {
+        "name": "check",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 723
+      },
+      {
+        "name": "reduce",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 732
+      },
+      {
+        "name": "string",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$precedence"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 744
+      },
+      {
+        "name": "TeX",
+        "type": "sub",
+        "params": [
+          "$precedence",
+          "$noparens"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 757
+      },
+      {
+        "name": "makeMatrix",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 771
+      },
+      {
+        "name": "new",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 782
+      },
+      {
+        "name": "new",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$x"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 798
+      },
+      {
+        "name": "make",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$x"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 811
+      },
+      {
+        "name": "cmp_defaults",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 823
+      },
+      {
+        "name": "new",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$x"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 839
+      },
+      {
+        "name": "make",
+        "type": "sub",
+        "params": [
+          "$a",
+          "$b"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 868
+      },
+      {
+        "name": "promote",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 886
+      },
+      {
+        "name": "formula",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$value"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 903
+      },
+      {
+        "name": "typeRef",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 915
+      },
+      {
+        "name": "length",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 916
+      },
+      {
+        "name": "isZero",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 918
+      },
+      {
+        "name": "isOne",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 919
+      },
+      {
+        "name": "eval",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 924
+      },
+      {
+        "name": "transferFlags",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 933
+      },
+      {
+        "name": "isInteger",
+        "type": "sub",
+        "params": [
+          "$n"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 938
+      },
+      {
+        "name": "getFlagWithAlias",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$flag",
+          "$alias"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 947
+      },
+      {
+        "name": "add",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 959
+      },
+      {
+        "name": "sub",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 966
+      },
+      {
+        "name": "mult",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 973
+      },
+      {
+        "name": "div",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 979
+      },
+      {
+        "name": "power",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 986
+      },
+      {
+        "name": "compare",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$other",
+          "$flag"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1008
+      },
+      {
+        "name": "abs",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1035
+      },
+      {
+        "name": "neg",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1036
+      },
+      {
+        "name": "exp",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1037
+      },
+      {
+        "name": "log",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1038
+      },
+      {
+        "name": "sqrt",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1039
+      },
+      {
+        "name": "sin",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1046
+      },
+      {
+        "name": "cos",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1047
+      },
+      {
+        "name": "atan2",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 1049
+      },
+      {
+        "name": "D",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1059
+      },
+      {
+        "name": "reduce",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1069
+      },
+      {
+        "name": "isReduced",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1075
+      },
+      {
+        "name": "num",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 1081
+      },
+      {
+        "name": "den",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 1082
+      },
+      {
+        "name": "string",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$equation",
+          "$skip1",
+          "$skip2",
+          "$prec"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1089
+      },
+      {
+        "name": "TeX",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$equation",
+          "$skip1",
+          "$skip2",
+          "$prec"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1103
+      },
+      {
+        "name": "pdot",
+        "type": "sub",
+        "params": [
+          "$self"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1121
+      },
+      {
+        "name": "cmp_defaults",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 1133
+      },
+      {
+        "name": "cmp_contextFlags",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$ans"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1141
+      },
+      {
+        "name": "cmp_class",
+        "type": "sub",
+        "params": [],
+        "defaults": {},
+        "pod": "",
+        "line": 1146
+      },
+      {
+        "name": "typeMatch",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$other",
+          "$ans"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1148
+      },
+      {
+        "name": "cmp_postprocess",
+        "type": "sub",
+        "params": [
+          "$self",
+          "$ans"
+        ],
+        "defaults": {},
+        "pod": "",
+        "line": 1157
+      }
+    ],
+    "globals": [
+      "$FRACTION",
+      "$INTEGER",
+      "$M",
+      "$MINUS",
+      "$MIXED",
+      "$R",
+      "$T",
+      "$V",
+      "$_"
+    ],
+    "exports": [],
+    "line_count": 1173
+  }
+}

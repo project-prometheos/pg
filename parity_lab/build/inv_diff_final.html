@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset='utf-8'>
+<title>Perl-Python Macro Inventory Diff</title>
+<style>
+body { font-family: 'Segoe UI', Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+h1 { color: #333; border-bottom: 3px solid #0066cc; padding-bottom: 10px; }
+h2 { color: #0066cc; margin-top: 30px; background: #e6f2ff; padding: 10px; border-radius: 5px; }
+.summary { background: white; padding: 20px; margin: 20px 0; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.summary-item { display: inline-block; margin: 10px 20px 10px 0; padding: 10px 15px; border-radius: 3px; }
+.summary-ok { background: #d4edda; color: #155724; }
+.summary-warn { background: #fff3cd; color: #856404; }
+.summary-error { background: #f8d7da; color: #721c24; }
+table { border-collapse: collapse; width: 100%; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+th, td { border: 1px solid #ddd; padding: 12px 8px; text-align: left; }
+th { background-color: #0066cc; color: white; font-weight: 600; position: sticky; top: 0; }
+tr:nth-child(even) { background-color: #f9f9f9; }
+tr:hover { background-color: #e6f2ff; }
+.OK { background-color: #d4edda; }
+.MISSING_IN_PYTHON { background-color: #f8d7da; font-weight: 600; }
+.ADDED_IN_PYTHON { background-color: #fff3cd; }
+.SIGNATURE_MISMATCH { background-color: #f8d7da; font-weight: 600; }
+.DEFAULT_MISMATCH { background-color: #fff3cd; }
+.status { font-weight: 600; text-transform: uppercase; font-size: 0.85em; }
+.severity-high { color: #d32f2f; }
+.severity-medium { color: #f57c00; }
+.severity-none { color: #388e3c; }
+code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-family: 'Consolas', monospace; }
+.filter { margin: 20px 0; }
+.filter button { margin: 5px; padding: 8px 15px; border: none; border-radius: 3px; cursor: pointer; }
+.filter button:hover { opacity: 0.8; }
+</style>
+</head>
+<body>
+<h1>Perl-Python Macro Inventory Diff Report</h1>
+<div class='summary'>
+<h3>Summary</h3>
+<div class='summary-item summary-ok'>✓ Matching: 0</div>
+<div class='summary-item summary-error'>✗ Missing in Python: 197</div>
+<div class='summary-item summary-error'>⚠ Signature Mismatches: 2</div>
+<div class='summary-item summary-warn'>+ Added in Python: 100</div>
+</div>
+<h2>AnswerFormatHelp.pl (0 OK, 1 issues)</h2>
+<table>
+<tr>
+<th>Symbol</th>
+<th>Status</th>
+<th>Perl Type</th>
+<th>Perl Params</th>
+<th>Python Type</th>
+<th>Python Params</th>
+<th>Details</th>
+</tr>
+<tr class='MISSING_IN_PYTHON'><td><code>AnswerFormatHelp</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$helptype, $customstring</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+</table>
+<h2>MathObjects.pl (0 OK, 13 issues)</h2>
+<table>
+<tr>
+<th>Symbol</th>
+<th>Status</th>
+<th>Perl Type</th>
+<th>Perl Params</th>
+<th>Python Type</th>
+<th>Python Params</th>
+<th>Details</th>
+</tr>
+<tr class='ADDED_IN_PYTHON'><td><code>Complex</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>class</td><td><code>real, imag, context</code></td><td>Python has 3 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>Compute</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>expr, options</code></td><td>Python has 2 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>Formula</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>class</td><td><code>expression, variables, context, test_points, num_test_points, limits</code></td><td>Python has 6 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>Infinity</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>class</td><td><code>sign, context</code></td><td>Python has 2 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>Interval</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>class</td><td><code>args</code></td><td>Python has 1 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>List</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>class</td><td><code>elements</code></td><td>Python has 1 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>Matrix</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>class</td><td><code>rows</code></td><td>Python has 1 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>Point</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>class</td><td><code>args</code></td><td>Python has 1 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>Real</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>class</td><td><code>value, context</code></td><td>Python has 2 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>Set</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>class</td><td><code>elements</code></td><td>Python has 1 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>String</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>class</td><td><code>value</code></td><td>Python has 1 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>Union</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>class</td><td><code>sets</code></td><td>Python has 1 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>Vector</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>class</td><td><code>args</code></td><td>Python has 1 params</td></tr>
+</table>
+<h2>PGML.pl (0 OK, 88 issues)</h2>
+<table>
+<tr>
+<th>Symbol</th>
+<th>Status</th>
+<th>Perl Type</th>
+<th>Perl Params</th>
+<th>Python Type</th>
+<th>Python Params</th>
+<th>Details</th>
+</tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Align</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $item</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>All</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $token</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Answer</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $item</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>BEGIN_PGML</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>—</code></td><td>Python has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Begin</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $token, $id, $options</code></td><td>—</td><td><code>—</code></td><td>Perl has 4 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Bold</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $item</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Brace</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $token</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Break</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Bullet</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $item</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Center</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $token</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>ClearWarnings</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Code</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $item</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Command</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $item</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Comment</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>END_PGML</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>—</code></td><td>Python has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Emphasis</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $token</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>End</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $action, $endAt</code></td><td>—</td><td><code>—</code></td><td>Perl has 3 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>EndContainer</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $token</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Error</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $message</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Escape</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $string</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Eval</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>ForceBreak</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $token</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Forced</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Format</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Format2</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$string</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>HTMLRenderer</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>class</td><td><code>context, answer_counter, code_executor</code></td><td>Python has 3 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Heading</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $item</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Image</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $item</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Indent</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $item</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Italic</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $item</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Item</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $type, $token</code></td><td>—</td><td><code>—</code></td><td>Perl has 3 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>LaTeX</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$text</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>List</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $item</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Math</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>NOOP</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>PGML</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>text, kwargs</code></td><td>Python has 2 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>PGMLParser</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>class</td><td><code>tokens</code></td><td>Python has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Par</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $item</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Parse</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Pre</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $item</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Preformatted</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $token</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Quote</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $item</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Quoted</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $hash</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Rule</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $item</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Slash</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $token</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Sort</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Split</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $string</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Star</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $token</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>StarOption</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $token</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Table</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $item</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Tag</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $item</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>TeXRenderer</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>class</td><td><code>context</code></td><td>Python has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Terminate</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $token</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Text</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $item</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Unbalanced</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $token</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Unwind</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Variable</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $item, $cur</code></td><td>—</td><td><code>—</code></td><td>Perl has 3 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Verbatim</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $item</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Warning</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>blockError</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $message</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>combineTopItems</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $i</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>format</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>isLineEnd</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $block</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>isRegexp</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$ref</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>new</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $parser</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>nextChar</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $default</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>nl</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>popItem</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>prevChar</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $default</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>pushItem</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>pushText</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>quote</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $string</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>replaceBalance</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $item</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>replaceCommand</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $item</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>replaceQuote</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $item</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>replaceText</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $item</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>replaceVariable</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $item</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>show</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $indent</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>stackString</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>stackText</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $stack</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>string</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $block</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>stringifyHash</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $hash</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>terminateBalance</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $token</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>terminateCode</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $token</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>terminateGetString</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $token</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>terminateOptions</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $token</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>terminatePre</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $token</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>topItem</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $i</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+</table>
+<h2>PGchoicemacros.pl (0 OK, 19 issues)</h2>
+<table>
+<tr>
+<th>Symbol</th>
+<th>Status</th>
+<th>Perl Type</th>
+<th>Perl Params</th>
+<th>Python Type</th>
+<th>Python Params</th>
+<th>Details</th>
+</tr>
+<tr class='MISSING_IN_PYTHON'><td><code>NchooseK</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$n, $k</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>ans_in_middle_pop_up_list_print_q</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>@questions</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>checkbox_print_a</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>@answers</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>invert</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>match_questions_list</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>@questions</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>match_questions_list_varbox</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$length, @questions</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>new_checkbox_multiple_choice</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>new_match_list</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>new_multiple_choice</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>new_pop_up_select_list</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>new_select_list</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>pop_up_list_print_q</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>@questions</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>qa</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$questionsRef, $answersRef, @questANDanswer</code></td><td>—</td><td><code>—</code></td><td>Perl has 3 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>quest_first_pop_up_list_print_q</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>@questions</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>radio_print_a</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>@answers</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>shuffle</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$i</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>std_print_a</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>@array</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>std_print_q</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>@questions</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>units_list_print_q</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>@questions</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+</table>
+<h2>PGcourse.pl (0 OK, 33 issues)</h2>
+<table>
+<tr>
+<th>Symbol</th>
+<th>Status</th>
+<th>Perl Type</th>
+<th>Perl Params</th>
+<th>Python Type</th>
+<th>Python Params</th>
+<th>Details</th>
+</tr>
+<tr class='ADDED_IN_PYTHON'><td><code>BBOLD</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>—</code></td><td>Python has 0 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>BCENTER</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>—</code></td><td>Python has 0 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>BITALIC</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>—</code></td><td>Python has 0 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>BR</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>—</code></td><td>Python has 0 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>BRBR</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>—</code></td><td>Python has 0 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>BUL</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>—</code></td><td>Python has 0 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>E</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>—</code></td><td>Python has 0 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>EBOLD</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>—</code></td><td>Python has 0 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>ECENTER</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>—</code></td><td>Python has 0 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>EITALIC</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>—</code></td><td>Python has 0 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>EUL</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>—</code></td><td>Python has 0 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>HR</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>—</code></td><td>Python has 0 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>LQ</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>—</code></td><td>Python has 0 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>MODES</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>HTML, TeX, PTX</code></td><td>Python has 3 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>NAMED_ANS_BOX</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>name, rows, cols, answer_value</code></td><td>Python has 4 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>NAMED_ANS_RADIO_BUTTONS</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>name, options</code></td><td>Python has 2 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>NAMED_ANS_RULE</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>name, width, answer_value</code></td><td>Python has 3 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>NAMED_POP_UP_LIST</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>name, options</code></td><td>Python has 2 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>NBSP</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>—</code></td><td>Python has 0 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>NEW_ANS_NAME</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>—</code></td><td>Python has 0 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>PAR</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>—</code></td><td>Python has 0 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>PI</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>—</code></td><td>Python has 0 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>RECORD_ANS_NAME</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>name, value</code></td><td>Python has 2 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>RECORD_FORM_LABEL</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>name</code></td><td>Python has 1 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>RECORD_IMPLICIT_ANS_NAME</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>name</code></td><td>Python has 1 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>RQ</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>—</code></td><td>Python has 0 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>ans_box</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>rows, cols</code></td><td>Python has 2 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>ans_radio_buttons</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>options</code></td><td>Python has 1 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>ans_rule</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>width</code></td><td>Python has 1 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>beginproblem</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>—</code></td><td>Python has 0 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>get_environment</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>—</code></td><td>Python has 0 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>image</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>filename, options</code></td><td>Python has 2 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>pop_up_list</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>options</code></td><td>Python has 1 params</td></tr>
+</table>
+<h2>PGgraphmacros.pl (0 OK, 8 issues)</h2>
+<table>
+<tr>
+<th>Symbol</th>
+<th>Status</th>
+<th>Perl Type</th>
+<th>Perl Params</th>
+<th>Python Type</th>
+<th>Python Params</th>
+<th>Details</th>
+</tr>
+<tr class='MISSING_IN_PYTHON'><td><code>add_functions</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>closed_circle</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$cx, $cy, $color</code></td><td>—</td><td><code>—</code></td><td>Perl has 3 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>init_graph</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$xmin, $ymin, $xmax, $ymax, %options</code></td><td>—</td><td><code>—</code></td><td>Perl has 5 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>init_graph_no_labels</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$xmin, $ymin, $xmax, $ymax, %options</code></td><td>—</td><td><code>—</code></td><td>Perl has 5 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>my_math_constants</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$in</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>open_circle</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$cx, $cy, $color</code></td><td>—</td><td><code>—</code></td><td>Perl has 3 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>plot_functions</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$graph, $x</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>string_to_sub</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$str_in, $var</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+</table>
+<h2>PGstandard.pl (0 OK, 44 issues)</h2>
+<table>
+<tr>
+<th>Symbol</th>
+<th>Status</th>
+<th>Perl Type</th>
+<th>Perl Params</th>
+<th>Python Type</th>
+<th>Python Params</th>
+<th>Details</th>
+</tr>
+<tr class='ADDED_IN_PYTHON'><td><code>ANS</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>evaluators, kwargs</code></td><td>Python has 2 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>ANS_NUM_TO_NAME</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>num</code></td><td>Python has 1 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>BEGIN_TEXT</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>—</code></td><td>Python has 0 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>COMMENT</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>args</code></td><td>Python has 1 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>DEBUG_MESSAGE</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>messages</code></td><td>Python has 1 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>DOCUMENT</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>—</code></td><td>Python has 0 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>ENDDOCUMENT</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>—</code></td><td>Python has 0 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>END_TEXT</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>—</code></td><td>Python has 0 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>HEADER_TEXT</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>args</code></td><td>Python has 1 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>HINT</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>args</code></td><td>Python has 1 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>LABELED_ANS</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>name, evaluator</code></td><td>Python has 2 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>MODES</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>HTML, TeX, PTX, kwargs</code></td><td>Python has 4 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>NAMED_ANS</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>name, evaluator</code></td><td>Python has 2 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>NEW_ANS_NAME</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>—</code></td><td>Python has 0 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>PGEnvironment</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>class</td><td><code>envir</code></td><td>Python has 1 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>POST_HEADER_TEXT</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>args</code></td><td>Python has 1 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>RECORD_ANS_NAME</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>name, value</code></td><td>Python has 2 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>RECORD_EXTRA_ANSWERS</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>name</code></td><td>Python has 1 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>RECORD_FORM_LABEL</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>name</code></td><td>Python has 1 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>RECORD_IMPLICIT_ANS_NAME</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>name</code></td><td>Python has 1 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>SOLUTION</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>args</code></td><td>Python has 1 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>STOP_RENDERING</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>—</code></td><td>Python has 0 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>TEXT</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>args</code></td><td>Python has 1 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>WARN_MESSAGE</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>messages</code></td><td>Python has 1 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>ans_rule</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>width</code></td><td>Python has 1 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>ans_rule_count</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>—</code></td><td>Python has 0 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>beginproblem</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>—</code></td><td>Python has 0 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>bold</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>text</code></td><td>Python has 1 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>get_environment</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>—</code></td><td>Python has 0 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>hint</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>args</code></td><td>Python has 1 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>image</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>filename, options</code></td><td>Python has 2 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>install_problem_grader</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>grader</code></td><td>Python has 1 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>italic</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>text</code></td><td>Python has 1 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>list_random</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>items</code></td><td>Python has 1 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>loadMacros</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>macro_files</code></td><td>Python has 1 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>non_zero_random</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>low, high, step</code></td><td>Python has 3 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>not_null</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>value</code></td><td>Python has 1 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>persistent_data</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>label, value</code></td><td>Python has 2 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>random</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>low, high, step</code></td><td>Python has 3 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>random_subset</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>n, items</code></td><td>Python has 2 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>set_environment</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>env</code></td><td>Python has 1 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>shuffle</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>items</code></td><td>Python has 1 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>solution</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>args</code></td><td>Python has 1 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>underline</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>text</code></td><td>Python has 1 params</td></tr>
+</table>
+<h2>contextFraction.pl (0 OK, 54 issues)</h2>
+<table>
+<tr>
+<th>Symbol</th>
+<th>Status</th>
+<th>Perl Type</th>
+<th>Perl Params</th>
+<th>Python Type</th>
+<th>Python Params</th>
+<th>Details</th>
+</tr>
+<tr class='ADDED_IN_PYTHON'><td><code>Context</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>function</td><td><code>name</code></td><td>Python has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>D</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Init</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>TeX</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $equation, $skip1, $skip2, $prec</code></td><td>—</td><td><code>—</code></td><td>Perl has 5 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>abs</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>add</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>atan2</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>check</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>class</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>cmp_class</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>cmp_contextFlags</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $ans</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>cmp_defaults</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>cmp_postprocess</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $ans</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>compare</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $other, $flag</code></td><td>—</td><td><code>—</code></td><td>Perl has 3 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>contFrac</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>continuedFraction</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $x</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>cos</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>den</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>div</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>eval</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>exp</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>extending</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$from, %options</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>extensionClassMatch</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>extensionContext</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>extensionID</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>formula</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $value</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>gcd</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>getFlagWithAlias</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $flag, $alias</code></td><td>—</td><td><code>—</code></td><td>Perl has 3 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>isInteger</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$n</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>isOne</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>isReduced</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>isZero</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>lcm</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$a, $b</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>length</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>log</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>make</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$a, $b</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>makeMatrix</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>mult</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>neg</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>new</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $x</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>num</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>pdot</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>power</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>promote</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>reduce</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>setExtensionClass</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>sin</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>sqrt</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>string</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $equation, $skip1, $skip2, $prec</code></td><td>—</td><td><code>—</code></td><td>Perl has 5 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>sub</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>toFraction</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $x, $max</code></td><td>—</td><td><code>—</code></td><td>Perl has 3 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>transferFlags</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>typeMatch</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $other, $ans</code></td><td>—</td><td><code>—</code></td><td>Perl has 3 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>typeRef</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+</table>
+<h2>parserMultiAnswer.pl (0 OK, 16 issues)</h2>
+<table>
+<tr>
+<th>Symbol</th>
+<th>Status</th>
+<th>Perl Type</th>
+<th>Perl Params</th>
+<th>Python Type</th>
+<th>Python Params</th>
+<th>Details</th>
+</tr>
+<tr class='MISSING_IN_PYTHON'><td><code>ANS_NAME</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $i</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>MultiAnswer</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>class</td><td><code>correct_answers</code></td><td>Python has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>NEW_NAME</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>addMessage</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $message</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>ans_array</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $size</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>ans_rule</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $size</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>check_string</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$s</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>cmp</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, %options</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>entry_check</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $ans</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>entry_cmp</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $i, $ans</code></td><td>—</td><td><code>—</code></td><td>Perl has 3 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>new</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>perform_check</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $rh_ans</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>setCmpFlags</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $cmp_number, %flags</code></td><td>—</td><td><code>—</code></td><td>Perl has 3 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>setMessage</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $i, $message</code></td><td>—</td><td><code>—</code></td><td>Perl has 3 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>single_check</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $ans</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>single_cmp</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $ans</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+</table>
+<h2>parserPopUp.pl (0 OK, 23 issues)</h2>
+<table>
+<tr>
+<th>Symbol</th>
+<th>Status</th>
+<th>Perl Type</th>
+<th>Perl Params</th>
+<th>Python Type</th>
+<th>Python Params</th>
+<th>Details</th>
+</tr>
+<tr class='SIGNATURE_MISMATCH'><td><code>DropDown</code></td><td class='status severity-high'>SIGNATURE MISMATCH</td><td>sub</td><td><code>$self, $choices, $value</code></td><td>class</td><td><code>choices, correct, options</code></td><td>Missing in Python: self, value; Extra in Python: correct, options</td></tr>
+<tr class='SIGNATURE_MISMATCH'><td><code>DropDownTF</code></td><td class='status severity-high'>SIGNATURE MISMATCH</td><td>sub</td><td><code>$self</code></td><td>function</td><td><code>correct, options</code></td><td>Missing in Python: self; Extra in Python: correct, options</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>Init</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>MENU</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $extend, $name, $size</code></td><td>—</td><td><code>—</code></td><td>Perl has 4 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>PopUp</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>class</td><td><code>choices, correct, options</code></td><td>Python has 3 params</td></tr>
+<tr class='ADDED_IN_PYTHON'><td><code>RadioButtons</code></td><td class='status severity-medium'>ADDED IN PYTHON</td><td>—</td><td><code>—</code></td><td>class</td><td><code>choices, correct, options</code></td><td>Python has 3 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>addLabelsValues</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>ans_rule</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>answerLabel</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $value</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>cmp</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>cmp_preprocess</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $ans</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>flattenChoices</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>getChoiceOrder</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>getCorrectChoice</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $label</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>getIndexByValue</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $value</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>menu</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>named_ans_rule</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>named_ans_rule_extension</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>—</code></td><td>—</td><td><code>—</code></td><td>Perl has 0 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>new</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$equation, $value, $ref</code></td><td>—</td><td><code>—</code></td><td>Perl has 3 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>quoteHTML</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $s</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>quoteTeX</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $s</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>randomOrder</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self, $choices</code></td><td>—</td><td><code>—</code></td><td>Perl has 2 params</td></tr>
+<tr class='MISSING_IN_PYTHON'><td><code>string</code></td><td class='status severity-high'>MISSING IN PYTHON</td><td>sub</td><td><code>$self</code></td><td>—</td><td><code>—</code></td><td>Perl has 1 params</td></tr>
+</table>
+</body>
+</html>

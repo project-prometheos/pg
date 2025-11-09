@@ -7,6 +7,7 @@ Reference: macros/core/PGML.pl in legacy Perl codebase
 """
 
 from .parser import PGMLParser
+from .pgml_macros import BEGIN_PGML, END_PGML, PGML
 from .renderer import HTMLRenderer, TeXRenderer
 from .tokenizer import PGMLTokenizer, Token, TokenType
 
@@ -17,4 +18,7 @@ __all__ = [
     "PGMLParser",
     "HTMLRenderer",
     "TeXRenderer",
+    "PGML",
+    "BEGIN_PGML",
+    "END_PGML",
 ]

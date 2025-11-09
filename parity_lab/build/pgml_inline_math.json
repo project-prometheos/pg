@@ -1,0 +1,7 @@
+{
+  "answers": [],
+  "errors": [],
+  "html": "<div class=\"pgml-document\">\n<p>Compute [`<span class=\"pgml-variable\">[$a]</span> \\times <span class=\"pgml-variable\">[$b]</span>`].</p>\n<p>Answer: <input type=\"text\" name=\"AnSwEr0001\" id=\"AnSwEr0001\" class=\"pgml-answer-blank\" size=\"5\" style=\"width: 50px;\" aria-label=\"Answer 1\"></p>\n<h2>Explanation</h2>\n<p>When you multiply <span class=\"pgml-variable\">[$a]</span> by <span class=\"pgml-variable\">[$b]</span>, you get [`<span class=\"pgml-variable\">[$ans]</span>`]. </p>\n</div>",
+  "tex": "<div class=\"pgml-document\">\n<p>Compute [`<span class=\"pgml-variable\">[$a]</span> \\times <span class=\"pgml-variable\">[$b]</span>`].</p>\n<p>Answer: <input type=\"text\" name=\"AnSwEr0001\" id=\"AnSwEr0001\" class=\"pgml-answer-blank\" size=\"5\" style=\"width: 50px;\" aria-label=\"Answer 1\"></p>\n<h2>Explanation</h2>\n<p>When you multiply <span class=\"pgml-variable\">[$a]</span> by <span class=\"pgml-variable\">[$b]</span>, you get [`<span class=\"pgml-variable\">[$ans]</span>`]. </p>\n</div>",
+  "warnings": []
+}

@@ -1,0 +1,1231 @@
+{
+  "PGstandard.pl": {
+    "file": "pg_macros.core",
+    "symbols": [
+      {
+        "name": "ANS",
+        "type": "function",
+        "params": [
+          "evaluators",
+          "kwargs"
+        ],
+        "defaults": {},
+        "doc": "Register answer evaluators (implicit pairing).\n\nEvaluators are paired with answer blanks in order.\n\nUsage:\n    TEXT(ans_rule(), ans_rule())\n    ANS(num_cmp(42), num_cmp(17))\n    ANS(cmp(...), vars => ",
+        "line": 327
+      },
+      {
+        "name": "ANS_NUM_TO_NAME",
+        "type": "function",
+        "params": [
+          "num"
+        ],
+        "defaults": {},
+        "doc": "Generate answer name from number (DEPRECATED).\n\nReference: PG.pl::ANS_NUM_TO_NAME (line 529)",
+        "line": 413
+      },
+      {
+        "name": "BEGIN_TEXT",
+        "type": "function",
+        "params": [],
+        "defaults": {},
+        "doc": "Begin text block marker.\n\nReference: PG.pl (used with END_TEXT in preprocessor)",
+        "line": 270
+      },
+      {
+        "name": "COMMENT",
+        "type": "function",
+        "params": [
+          "args"
+        ],
+        "defaults": {},
+        "doc": "Add comment (not shown to students).\n\nReference: PG.pl (COMMENT handling)",
+        "line": 491
+      },
+      {
+        "name": "DEBUG_MESSAGE",
+        "type": "function",
+        "params": [
+          "messages"
+        ],
+        "defaults": {},
+        "doc": "Add debug message.\n\nReference: PG.pl::DEBUG_MESSAGE (line 95)",
+        "line": 568
+      },
+      {
+        "name": "DOCUMENT",
+        "type": "function",
+        "params": [],
+        "defaults": {},
+        "doc": "Initialize problem document.\n\nThis should be the first statement in every PG problem.\n\nReference: PG.pl::DOCUMENT (line 112)",
+        "line": 191
+      },
+      {
+        "name": "ENDDOCUMENT",
+        "type": "function",
+        "params": [],
+        "defaults": {},
+        "doc": "Finalize problem document.\n\nThis must be the last statement in every PG problem.\nReturns tuple of (text, header, post_header, answers, flags).\n\nReference: PG.pl::ENDDOCUMENT (line 951)",
+        "line": 218
+      },
+      {
+        "name": "END_TEXT",
+        "type": "function",
+        "params": [],
+        "defaults": {},
+        "doc": "End text block marker.\n\nReference: PG.pl (used with BEGIN_TEXT in preprocessor)",
+        "line": 279
+      },
+      {
+        "name": "HEADER_TEXT",
+        "type": "function",
+        "params": [
+          "args"
+        ],
+        "defaults": {},
+        "doc": "Append text to HTML header.\n\nUsage:\n    HEADER_TEXT(\"<script>...</script>\")\n\nReference: PG.pl::HEADER_TEXT (line 201)",
+        "line": 288
+      },
+      {
+        "name": "HINT",
+        "type": "function",
+        "params": [
+          "args"
+        ],
+        "defaults": {},
+        "doc": "Add hint text.\n\nUsage:\n    HINT(\"Try using the quadratic formula\")\n\nReference: PG.pl (HINT handling)",
+        "line": 474
+      },
+      {
+        "name": "LABELED_ANS",
+        "type": "function",
+        "params": [
+          "name",
+          "evaluator"
+        ],
+        "defaults": {},
+        "doc": "Alias for NAMED_ANS.\n\nReference: PG.pl::LABELED_ANS (line 443)",
+        "line": 372
+      },
+      {
+        "name": "MODES",
+        "type": "function",
+        "params": [
+          "HTML",
+          "TeX",
+          "PTX",
+          "kwargs"
+        ],
+        "defaults": {
+          "HTML": "None",
+          "TeX": "None",
+          "PTX": "None"
+        },
+        "doc": "Return content based on current display mode.\n\nUsage:\n    MODES(HTML=\"<b>bold</b>\", TeX=\"\\textbf{bold}\")\n\nReference: PGbasicmacros.pl::MODES",
+        "line": 598
+      },
+      {
+        "name": "NAMED_ANS",
+        "type": "function",
+        "params": [
+          "name",
+          "evaluator"
+        ],
+        "defaults": {},
+        "doc": "Register named answer evaluator (explicit pairing).\n\nUsage:\n    TEXT(NAMED_ANS_RULE(\"answer1\"))\n    NAMED_ANS(\"answer1\", num_cmp(42))\n\nReference: PG.pl::NAMED_ANS (line 432)",
+        "line": 358
+      },
+      {
+        "name": "NEW_ANS_NAME",
+        "type": "function",
+        "params": [],
+        "defaults": {},
+        "doc": "Generate new anonymous answer name.\n\nReference: PG.pl::NEW_ANS_NAME (line 515)",
+        "line": 403
+      },
+      {
+        "name": "PGEnvironment",
+        "type": "class",
+        "params": [
+          "envir"
+        ],
+        "defaults": {},
+        "doc": "PG problem environment - manages problem state.\n\nEquivalent to PGcore in Perl (lib/PGcore.pm)",
+        "line": 20
+      },
+      {
+        "name": "POST_HEADER_TEXT",
+        "type": "function",
+        "params": [
+          "args"
+        ],
+        "defaults": {},
+        "doc": "Append text after header (DEPRECATED).\n\nReference: PG.pl::POST_HEADER_TEXT (line 215)",
+        "line": 302
+      },
+      {
+        "name": "RECORD_ANS_NAME",
+        "type": "function",
+        "params": [
+          "name",
+          "value"
+        ],
+        "defaults": {
+          "value": "''"
+        },
+        "doc": "Record answer name.\n\nUsed internally by answer blank macros.\n\nReference: PG.pl::RECORD_ANS_NAME (line 483)",
+        "line": 381
+      },
+      {
+        "name": "RECORD_EXTRA_ANSWERS",
+        "type": "function",
+        "params": [
+          "name"
+        ],
+        "defaults": {},
+        "doc": "Record extra answer field.\n\nReference: PG.pl::RECORD_EXTRA_ANSWERS (line 598)",
+        "line": 432
+      },
+      {
+        "name": "RECORD_FORM_LABEL",
+        "type": "function",
+        "params": [
+          "name"
+        ],
+        "defaults": {},
+        "doc": "Record form field name.\n\nReference: PG.pl::RECORD_FORM_LABEL (line 594)",
+        "line": 423
+      },
+      {
+        "name": "RECORD_IMPLICIT_ANS_NAME",
+        "type": "function",
+        "params": [
+          "name"
+        ],
+        "defaults": {},
+        "doc": "Record implicit answer name.\n\nReference: PG.pl::RECORD_IMPLICIT_ANS_NAME (line 499)",
+        "line": 393
+      },
+      {
+        "name": "SOLUTION",
+        "type": "function",
+        "params": [
+          "args"
+        ],
+        "defaults": {},
+        "doc": "Add solution text.\n\nUsage:\n    SOLUTION(\"The answer is 42 because...\")\n\nReference: PG.pl (SOLUTION handling)",
+        "line": 457
+      },
+      {
+        "name": "STOP_RENDERING",
+        "type": "function",
+        "params": [],
+        "defaults": {},
+        "doc": "Stop accumulating output text.\n\nReference: PG.pl (part of rendering control)",
+        "line": 313
+      },
+      {
+        "name": "TEXT",
+        "type": "function",
+        "params": [
+          "args"
+        ],
+        "defaults": {},
+        "doc": "Append text to problem output.\n\nUsage:\n    TEXT(\"Problem text\", \"More text\")\n\nReference: PG.pl::TEXT (line 181)",
+        "line": 254
+      },
+      {
+        "name": "WARN_MESSAGE",
+        "type": "function",
+        "params": [
+          "messages"
+        ],
+        "defaults": {},
+        "doc": "Add warning message.\n\nReference: PG.pl::WARN_MESSAGE (line 100)",
+        "line": 587
+      },
+      {
+        "name": "ans_rule",
+        "type": "function",
+        "params": [
+          "width"
+        ],
+        "defaults": {
+          "width": "20"
+        },
+        "doc": "Create answer blank.\n\nReference: PGstandard.pl::ans_rule",
+        "line": 96
+      },
+      {
+        "name": "ans_rule_count",
+        "type": "function",
+        "params": [],
+        "defaults": {},
+        "doc": "Get count of answer rules.\n\nReference: PG.pl::ans_rule_count (line 504)",
+        "line": 443
+      },
+      {
+        "name": "beginproblem",
+        "type": "function",
+        "params": [],
+        "defaults": {},
+        "doc": "Traditional PG problem header (often empty in modern problems).\n\nReference: PGbasicmacros.pl::beginproblem\nReturns empty string by default.",
+        "line": 234
+      },
+      {
+        "name": "bold",
+        "type": "function",
+        "params": [
+          "text"
+        ],
+        "defaults": {},
+        "doc": "Return bolded text.",
+        "line": 81
+      },
+      {
+        "name": "get_environment",
+        "type": "function",
+        "params": [],
+        "defaults": {},
+        "doc": "Get current PG environment.",
+        "line": 156
+      },
+      {
+        "name": "hint",
+        "type": "function",
+        "params": [
+          "args"
+        ],
+        "defaults": {},
+        "doc": "Create hint section.\n\nReference: PGstandard.pl::HINT",
+        "line": 115
+      },
+      {
+        "name": "image",
+        "type": "function",
+        "params": [
+          "filename",
+          "options"
+        ],
+        "defaults": {},
+        "doc": "Insert image.\n\nReference: PGstandard.pl::image",
+        "line": 59
+      },
+      {
+        "name": "install_problem_grader",
+        "type": "function",
+        "params": [
+          "grader"
+        ],
+        "defaults": {},
+        "doc": "Install custom problem grader.\n\nReference: PG.pl::install_problem_grader (line 1583)",
+        "line": 538
+      },
+      {
+        "name": "italic",
+        "type": "function",
+        "params": [
+          "text"
+        ],
+        "defaults": {},
+        "doc": "Return italicized text.",
+        "line": 86
+      },
+      {
+        "name": "list_random",
+        "type": "function",
+        "params": [
+          "items"
+        ],
+        "defaults": {},
+        "doc": "Select random item from list.\n\nReference: PGauxiliaryFunctions.pl::list_random",
+        "line": 672
+      },
+      {
+        "name": "loadMacros",
+        "type": "function",
+        "params": [
+          "macro_files"
+        ],
+        "defaults": {},
+        "doc": "Load macro files.\n\nUsage:\n    loadMacros(\"PGstandard.pl\", \"MathObjects.pl\", \"PGML.pl\")\n\nReference: PG.pl::loadMacros (line 1567)",
+        "line": 506
+      },
+      {
+        "name": "non_zero_random",
+        "type": "function",
+        "params": [
+          "low",
+          "high",
+          "step"
+        ],
+        "defaults": {
+          "step": "None"
+        },
+        "doc": "Generate non-zero random number.\n\nReference: PGauxiliaryFunctions.pl::non_zero_random",
+        "line": 660
+      },
+      {
+        "name": "not_null",
+        "type": "function",
+        "params": [
+          "value"
+        ],
+        "defaults": {},
+        "doc": "Check if value is not null/empty.\n\nReference: PG.pl::not_null (line 86)",
+        "line": 553
+      },
+      {
+        "name": "persistent_data",
+        "type": "function",
+        "params": [
+          "label",
+          "value"
+        ],
+        "defaults": {
+          "value": "None"
+        },
+        "doc": "Store/retrieve persistent data.\n\nReference: PG.pl::persistent_data (line 551)",
+        "line": 749
+      },
+      {
+        "name": "random",
+        "type": "function",
+        "params": [
+          "low",
+          "high",
+          "step"
+        ],
+        "defaults": {
+          "low": "0",
+          "high": "1",
+          "step": "None"
+        },
+        "doc": "Generate random number.\n\nWhen low and high are both integers and step is None, returns an integer.\nOtherwise returns a float.\n\nReference: PGauxiliaryFunctions.pl::random",
+        "line": 638
+      },
+      {
+        "name": "random_subset",
+        "type": "function",
+        "params": [
+          "n",
+          "items"
+        ],
+        "defaults": {},
+        "doc": "Select n random items from list without replacement.\n\nReference: PGstandard.pl::random_subset",
+        "line": 176
+      },
+      {
+        "name": "set_environment",
+        "type": "function",
+        "params": [
+          "env"
+        ],
+        "defaults": {},
+        "doc": "Set current PG environment.",
+        "line": 165
+      },
+      {
+        "name": "shuffle",
+        "type": "function",
+        "params": [
+          "items"
+        ],
+        "defaults": {},
+        "doc": "Shuffle list items.\n\nReference: PGstandard.pl::shuffle",
+        "line": 165
+      },
+      {
+        "name": "solution",
+        "type": "function",
+        "params": [
+          "args"
+        ],
+        "defaults": {},
+        "doc": "Create solution section.\n\nReference: PGstandard.pl::SOLUTION",
+        "line": 105
+      },
+      {
+        "name": "underline",
+        "type": "function",
+        "params": [
+          "text"
+        ],
+        "defaults": {},
+        "doc": "Return underlined text.",
+        "line": 91
+      }
+    ],
+    "globals": [],
+    "exports": [
+      "ANS",
+      "ANS_NUM_TO_NAME",
+      "BEGIN_TEXT",
+      "COMMENT",
+      "DEBUG_MESSAGE",
+      "DOCUMENT",
+      "ENDDOCUMENT",
+      "END_TEXT",
+      "HEADER_TEXT",
+      "HINT",
+      "LABELED_ANS",
+      "MODES",
+      "NAMED_ANS",
+      "NEW_ANS_NAME",
+      "PGEnvironment",
+      "POST_HEADER_TEXT",
+      "RECORD_ANS_NAME",
+      "RECORD_EXTRA_ANSWERS",
+      "RECORD_FORM_LABEL",
+      "RECORD_IMPLICIT_ANS_NAME",
+      "SOLUTION",
+      "STOP_RENDERING",
+      "TEXT",
+      "WARN_MESSAGE",
+      "_PG_init",
+      "ans_rule",
+      "ans_rule_count",
+      "beginproblem",
+      "bold",
+      "get_environment",
+      "hint",
+      "image",
+      "install_problem_grader",
+      "italic",
+      "list_random",
+      "loadMacros",
+      "non_zero_random",
+      "not_null",
+      "persistent_data",
+      "random",
+      "random_subset",
+      "set_environment",
+      "shuffle",
+      "solution",
+      "underline"
+    ],
+    "module_doc": "Core PG macros."
+  },
+  "PGcourse.pl": {
+    "file": "pg_macros.core.pg_basic_macros",
+    "symbols": [
+      {
+        "name": "BBOLD",
+        "type": "function",
+        "params": [],
+        "defaults": {},
+        "doc": "Begin bold.",
+        "line": 122
+      },
+      {
+        "name": "BCENTER",
+        "type": "function",
+        "params": [],
+        "defaults": {},
+        "doc": "Begin center.",
+        "line": 182
+      },
+      {
+        "name": "BITALIC",
+        "type": "function",
+        "params": [],
+        "defaults": {},
+        "doc": "Begin italic.",
+        "line": 142
+      },
+      {
+        "name": "BR",
+        "type": "function",
+        "params": [],
+        "defaults": {},
+        "doc": "Line break.",
+        "line": 85
+      },
+      {
+        "name": "BRBR",
+        "type": "function",
+        "params": [],
+        "defaults": {},
+        "doc": "Double line break.",
+        "line": 97
+      },
+      {
+        "name": "BUL",
+        "type": "function",
+        "params": [],
+        "defaults": {},
+        "doc": "Begin underline.",
+        "line": 162
+      },
+      {
+        "name": "E",
+        "type": "function",
+        "params": [],
+        "defaults": {},
+        "doc": "Euler's number.",
+        "line": 228
+      },
+      {
+        "name": "EBOLD",
+        "type": "function",
+        "params": [],
+        "defaults": {},
+        "doc": "End bold.",
+        "line": 132
+      },
+      {
+        "name": "ECENTER",
+        "type": "function",
+        "params": [],
+        "defaults": {},
+        "doc": "End center.",
+        "line": 192
+      },
+      {
+        "name": "EITALIC",
+        "type": "function",
+        "params": [],
+        "defaults": {},
+        "doc": "End italic.",
+        "line": 152
+      },
+      {
+        "name": "EUL",
+        "type": "function",
+        "params": [],
+        "defaults": {},
+        "doc": "End underline.",
+        "line": 172
+      },
+      {
+        "name": "HR",
+        "type": "function",
+        "params": [],
+        "defaults": {},
+        "doc": "Horizontal rule.",
+        "line": 202
+      },
+      {
+        "name": "LQ",
+        "type": "function",
+        "params": [],
+        "defaults": {},
+        "doc": "Left quote.",
+        "line": 102
+      },
+      {
+        "name": "MODES",
+        "type": "function",
+        "params": [
+          "HTML",
+          "TeX",
+          "PTX"
+        ],
+        "defaults": {
+          "HTML": "''",
+          "TeX": "''",
+          "PTX": "''"
+        },
+        "doc": "Return text based on display mode.\n\nArgs:\n    HTML: HTML mode text\n    TeX: TeX mode text\n    PTX: PreTeXt mode text\n\nReturns:\n    Text for current display mode\n\nReference: PGbasicmacros.pl (MODES pat",
+        "line": 551
+      },
+      {
+        "name": "NAMED_ANS_BOX",
+        "type": "function",
+        "params": [
+          "name",
+          "rows",
+          "cols",
+          "answer_value"
+        ],
+        "defaults": {
+          "rows": "5",
+          "cols": "80",
+          "answer_value": "''"
+        },
+        "doc": "Create named answer box (textarea).\n\nArgs:\n    name: Answer name/id\n    rows: Number of rows\n    cols: Number of columns\n    answer_value: Default value\n\nReturns:\n    HTML for textarea\n\nReference: PGb",
+        "line": 329
+      },
+      {
+        "name": "NAMED_ANS_RADIO_BUTTONS",
+        "type": "function",
+        "params": [
+          "name",
+          "options"
+        ],
+        "defaults": {},
+        "doc": "Create named radio button group.\n\nArgs:\n    name: Answer name\n    *options: List of options\n\nReturns:\n    List of HTML strings for each radio button\n\nReference: PGbasicmacros.pl::NAMED_ANS_RADIO_BUTTO",
+        "line": 418
+      },
+      {
+        "name": "NAMED_ANS_RULE",
+        "type": "function",
+        "params": [
+          "name",
+          "width",
+          "answer_value"
+        ],
+        "defaults": {
+          "width": "20",
+          "answer_value": "''"
+        },
+        "doc": "Create named answer blank.\n\nArgs:\n    name: Answer name/id\n    width: Width of input field\n    answer_value: Default value (for sticky answers)\n\nReturns:\n    HTML for answer input field\n\nReference: PG",
+        "line": 265
+      },
+      {
+        "name": "NAMED_POP_UP_LIST",
+        "type": "function",
+        "params": [
+          "name",
+          "options"
+        ],
+        "defaults": {},
+        "doc": "Create named dropdown select list.\n\nArgs:\n    name: Answer name\n    *options: List of options or dict\n\nReturns:\n    HTML for select dropdown\n\nReference: PGbasicmacros.pl::NAMED_POP_UP_LIST (line 737)",
+        "line": 484
+      },
+      {
+        "name": "NBSP",
+        "type": "function",
+        "params": [],
+        "defaults": {},
+        "doc": "Non-breaking space.",
+        "line": 212
+      },
+      {
+        "name": "NEW_ANS_NAME",
+        "type": "function",
+        "params": [],
+        "defaults": {},
+        "doc": "Generate new anonymous answer name.\n\nReference: PG.pl::NEW_ANS_NAME (line 515)",
+        "line": 403
+      },
+      {
+        "name": "PAR",
+        "type": "function",
+        "params": [],
+        "defaults": {},
+        "doc": "Paragraph break.",
+        "line": 73
+      },
+      {
+        "name": "PI",
+        "type": "function",
+        "params": [],
+        "defaults": {},
+        "doc": "Pi constant.",
+        "line": 222
+      },
+      {
+        "name": "RECORD_ANS_NAME",
+        "type": "function",
+        "params": [
+          "name",
+          "value"
+        ],
+        "defaults": {
+          "value": "''"
+        },
+        "doc": "Record answer name.\n\nUsed internally by answer blank macros.\n\nReference: PG.pl::RECORD_ANS_NAME (line 483)",
+        "line": 381
+      },
+      {
+        "name": "RECORD_FORM_LABEL",
+        "type": "function",
+        "params": [
+          "name"
+        ],
+        "defaults": {},
+        "doc": "Record form field name.\n\nReference: PG.pl::RECORD_FORM_LABEL (line 594)",
+        "line": 423
+      },
+      {
+        "name": "RECORD_IMPLICIT_ANS_NAME",
+        "type": "function",
+        "params": [
+          "name"
+        ],
+        "defaults": {},
+        "doc": "Record implicit answer name.\n\nReference: PG.pl::RECORD_IMPLICIT_ANS_NAME (line 499)",
+        "line": 393
+      },
+      {
+        "name": "RQ",
+        "type": "function",
+        "params": [],
+        "defaults": {},
+        "doc": "Right quote.",
+        "line": 112
+      },
+      {
+        "name": "ans_box",
+        "type": "function",
+        "params": [
+          "rows",
+          "cols"
+        ],
+        "defaults": {
+          "rows": "5",
+          "cols": "80"
+        },
+        "doc": "Create answer box (textarea).\n\nArgs:\n    rows: Number of rows\n    cols: Number of columns\n\nReturns:\n    HTML for textarea\n\nReference: PGbasicmacros.pl::ans_box (line 724)",
+        "line": 311
+      },
+      {
+        "name": "ans_radio_buttons",
+        "type": "function",
+        "params": [
+          "options"
+        ],
+        "defaults": {},
+        "doc": "Create radio button group.\n\nArgs:\n    *options: List of options. Use '~' prefix to mark correct answer.\n\nReturns:\n    HTML for radio buttons (as string or list depending on context)\n\nReference: PGbasi",
+        "line": 377
+      },
+      {
+        "name": "ans_rule",
+        "type": "function",
+        "params": [
+          "width"
+        ],
+        "defaults": {
+          "width": "20"
+        },
+        "doc": "Create answer blank (text input).\n\nArgs:\n    width: Width of input field in characters (default 20)\n\nReturns:\n    HTML for answer input field\n\nReference: PGbasicmacros.pl::ans_rule (line 673)",
+        "line": 248
+      },
+      {
+        "name": "beginproblem",
+        "type": "function",
+        "params": [],
+        "defaults": {},
+        "doc": "Traditional PG problem header (often empty in modern problems).\n\nReference: PGbasicmacros.pl::beginproblem\nReturns empty string by default.",
+        "line": 234
+      },
+      {
+        "name": "get_environment",
+        "type": "function",
+        "params": [],
+        "defaults": {},
+        "doc": "Get current PG environment.",
+        "line": 156
+      },
+      {
+        "name": "image",
+        "type": "function",
+        "params": [
+          "filename",
+          "options"
+        ],
+        "defaults": {},
+        "doc": "Insert image.\n\nArgs:\n    filename: Image filename\n    **options: width, height, tex_size, alt, etc.\n\nReturns:\n    HTML or TeX for image\n\nReference: PGbasicmacros.pl (image functions)",
+        "line": 580
+      },
+      {
+        "name": "pop_up_list",
+        "type": "function",
+        "params": [
+          "options"
+        ],
+        "defaults": {},
+        "doc": "Create dropdown select list.\n\nArgs:\n    *options: List of options or dict of value=>label pairs\n\nReturns:\n    HTML for select dropdown\n\nReference: PGbasicmacros.pl (pop_up_list wraps NAMED_POP_UP_LIST",
+        "line": 467
+      }
+    ],
+    "globals": [],
+    "exports": [
+      "BBOLD",
+      "BCENTER",
+      "BITALIC",
+      "BR",
+      "BRBR",
+      "BUL",
+      "E",
+      "EBOLD",
+      "ECENTER",
+      "EITALIC",
+      "EUL",
+      "HR",
+      "LQ",
+      "MODES",
+      "NAMED_ANS_BOX",
+      "NAMED_ANS_RADIO_BUTTONS",
+      "NAMED_ANS_RULE",
+      "NAMED_POP_UP_LIST",
+      "NBSP",
+      "PAR",
+      "PI",
+      "RQ",
+      "_PGbasicmacros_init",
+      "ans_box",
+      "ans_radio_buttons",
+      "ans_rule",
+      "image",
+      "pop_up_list"
+    ],
+    "module_doc": "PGbasicmacros.py - Basic PG macros for answer blanks and formatting.\n\nPython port of macros/core/PGbasicmacros.pl\nProvides answer blank functions, display constants, and basic formatting.\n\nReference: "
+  },
+  "MathObjects.pl": {
+    "file": "pg_macros.core.math_objects",
+    "symbols": [
+      {
+        "name": "Complex",
+        "type": "class",
+        "params": [
+          "real",
+          "imag",
+          "context"
+        ],
+        "defaults": {
+          "imag": "0.0",
+          "context": "None"
+        },
+        "doc": "Complex number value.\n\nRepresents numbers with real and imaginary parts.\n\nReference: lib/Value/Complex.pm",
+        "line": 338
+      },
+      {
+        "name": "Compute",
+        "type": "function",
+        "params": [
+          "expr",
+          "options"
+        ],
+        "defaults": {},
+        "doc": "Compute a mathematical expression.\n\nReference: MathObjects.pl::Compute",
+        "line": 23
+      },
+      {
+        "name": "Formula",
+        "type": "class",
+        "params": [
+          "expression",
+          "variables",
+          "context",
+          "test_points",
+          "num_test_points",
+          "limits"
+        ],
+        "defaults": {
+          "variables": "None",
+          "context": "None",
+          "test_points": "None",
+          "num_test_points": "5",
+          "limits": "None"
+        },
+        "doc": "Formula represents a mathematical expression with deferred evaluation.\n\nUnlike numeric types (Real, Complex) which have immediate values, Formula\nstores an expression that can be:\n- Evaluated with var",
+        "line": 67
+      },
+      {
+        "name": "Infinity",
+        "type": "class",
+        "params": [
+          "sign",
+          "context"
+        ],
+        "defaults": {
+          "sign": "1",
+          "context": "None"
+        },
+        "doc": "Infinity value.\n\nRepresents positive infinity, negative infinity, or undefined (0*inf).\n\nReference: lib/Value/Infinity.pm",
+        "line": 541
+      },
+      {
+        "name": "Interval",
+        "type": "class",
+        "params": [
+          "args"
+        ],
+        "defaults": {},
+        "doc": "Mathematical interval with open/closed endpoints.\n\nExamples:\n- [0, 1] - closed interval\n- (0, 1) - open interval\n- [0, 1) - half-open interval\n- (-inf, inf) - all real numbers\n\nReference: lib/Value/In",
+        "line": 17
+      },
+      {
+        "name": "List",
+        "type": "class",
+        "params": [
+          "elements"
+        ],
+        "defaults": {},
+        "doc": "List/sequence of MathValue elements.\n\nReference: lib/Value/List.pm",
+        "line": 14
+      },
+      {
+        "name": "Matrix",
+        "type": "class",
+        "params": [
+          "rows"
+        ],
+        "defaults": {},
+        "doc": "Matrix (2D array) with matrix operations.\n\nSupports matrix multiplication, transpose, determinant, inverse, etc.\n\nReference: lib/Value/Matrix.pm",
+        "line": 481
+      },
+      {
+        "name": "Point",
+        "type": "class",
+        "params": [
+          "args"
+        ],
+        "defaults": {},
+        "doc": "Point in n-dimensional space.\n\nRepresented as ordered coordinates (x, y, z, ...).\nPoints support distance calculations but not vector operations.\n\nReference: lib/Value/Point.pm",
+        "line": 20
+      },
+      {
+        "name": "Real",
+        "type": "class",
+        "params": [
+          "value",
+          "context"
+        ],
+        "defaults": {
+          "context": "None"
+        },
+        "doc": "Real number value.\n\nThe most common mathematical type, represents floating-point numbers\nwith fuzzy comparison support.\n\nReference: lib/Value/Real.pm",
+        "line": 17
+      },
+      {
+        "name": "Set",
+        "type": "class",
+        "params": [
+          "elements"
+        ],
+        "defaults": {},
+        "doc": "Finite set of elements.\n\nExamples:\n- {1, 2, 3}\n- {a, b, c}\n\nReference: lib/Value/Set.pm",
+        "line": 373
+      },
+      {
+        "name": "String",
+        "type": "class",
+        "params": [
+          "value"
+        ],
+        "defaults": {},
+        "doc": "String value (for answer checking, labels, etc.).\n\nReference: lib/Value/String.pm",
+        "line": 190
+      },
+      {
+        "name": "Union",
+        "type": "class",
+        "params": [
+          "sets"
+        ],
+        "defaults": {},
+        "doc": "Union of intervals and/or sets.\n\nExamples:\n- [0, 1] \u222a [2, 3]\n- (-inf, 0] \u222a [1, inf)\n\nReference: lib/Value/Union.pm",
+        "line": 602
+      },
+      {
+        "name": "Vector",
+        "type": "class",
+        "params": [
+          "args"
+        ],
+        "defaults": {},
+        "doc": "Vector in n-dimensional space.\n\nSupports vector operations: dot product, cross product, norm, etc.\n\nReference: lib/Value/Vector.pm",
+        "line": 200
+      }
+    ],
+    "globals": [],
+    "exports": [
+      "Complex",
+      "Compute",
+      "Formula",
+      "Infinity",
+      "Interval",
+      "List",
+      "Matrix",
+      "Point",
+      "Real",
+      "Set",
+      "String",
+      "Union",
+      "Vector"
+    ],
+    "module_doc": "MathObjects.pl - Load MathObjects system\n\nReference: macros/core/MathObjects.pl (89 lines)"
+  },
+  "PGchoicemacros.pl": {
+    "file": "pg_macros.choice",
+    "symbols": [],
+    "globals": [],
+    "exports": [],
+    "module_doc": "Choice and matching problem macros."
+  },
+  "PGML.pl": {
+    "file": "pg_macros.core.pgml",
+    "symbols": [
+      {
+        "name": "BEGIN_PGML",
+        "type": "function",
+        "params": [],
+        "defaults": {},
+        "doc": "Preprocessor directive - handled by preprocessor.",
+        "line": 47
+      },
+      {
+        "name": "END_PGML",
+        "type": "function",
+        "params": [],
+        "defaults": {},
+        "doc": "Preprocessor directive - handled by preprocessor.",
+        "line": 52
+      },
+      {
+        "name": "HTMLRenderer",
+        "type": "class",
+        "params": [
+          "context",
+          "answer_counter",
+          "code_executor"
+        ],
+        "defaults": {
+          "context": "None",
+          "answer_counter": "1",
+          "code_executor": "None"
+        },
+        "doc": "Render PGML to HTML.\n\nUses KaTeX-compatible syntax for math rendering.",
+        "line": 120
+      },
+      {
+        "name": "PGML",
+        "type": "function",
+        "params": [
+          "text",
+          "kwargs"
+        ],
+        "defaults": {},
+        "doc": "Render PGML text to HTML.\n\nArgs:\n    text: PGML markup\n    **kwargs: Rendering options (context, etc.)\n\nReturns:\n    Rendered HTML\n\nReference: PGML.pl::PGML",
+        "line": 20
+      },
+      {
+        "name": "PGMLParser",
+        "type": "class",
+        "params": [
+          "tokens"
+        ],
+        "defaults": {},
+        "doc": "Parse PGML tokens into a document tree.\n\nThe parser builds a hierarchical structure:\n- Document (root)\n  - Blocks (paragraphs, lists, math blocks)\n    - Inline elements (text, variables, emphasis, mat",
+        "line": 251
+      },
+      {
+        "name": "TeXRenderer",
+        "type": "class",
+        "params": [
+          "context"
+        ],
+        "defaults": {
+          "context": "None"
+        },
+        "doc": "Render PGML to LaTeX/TeX.\n\nGenerates print-ready TeX output for hardcopy generation.",
+        "line": 343
+      }
+    ],
+    "globals": [],
+    "exports": [
+      "BEGIN_PGML",
+      "END_PGML",
+      "HTMLRenderer",
+      "PGML",
+      "PGMLParser",
+      "TeXRenderer"
+    ],
+    "module_doc": "PGML.pl - PGML rendering support\n\nPython port of macros/core/PGML.pl\nProvides PGML text rendering.\n\nReference: PGML.pl"
+  },
+  "PGgraphmacros.pl": {
+    "file": "pg_macros.graph",
+    "symbols": [],
+    "globals": [],
+    "exports": [],
+    "error": "Import failed: No module named 'pg_macros.graph'"
+  },
+  "AnswerFormatHelp.pl": {
+    "file": "pg_macros.answers",
+    "symbols": [],
+    "globals": [],
+    "exports": [],
+    "module_doc": "Answer evaluation macros."
+  },
+  "parserPopUp.pl": {
+    "file": "pg_macros.parsers.parser_popup",
+    "symbols": [
+      {
+        "name": "DropDown",
+        "type": "class",
+        "params": [
+          "choices",
+          "correct",
+          "options"
+        ],
+        "defaults": {},
+        "doc": "DropDown menu object (like PopUp but with placeholder).",
+        "line": 71
+      },
+      {
+        "name": "DropDownTF",
+        "type": "function",
+        "params": [
+          "correct",
+          "options"
+        ],
+        "defaults": {},
+        "doc": "Create a True/False dropdown menu.\n\nArgs:\n    correct: Correct answer ('T', 'F', 1, 0, 'True', 'False')\n    **options: Additional options\n\nReturns:\n    DropDown object with True/False choices",
+        "line": 90
+      },
+      {
+        "name": "PopUp",
+        "type": "class",
+        "params": [
+          "choices",
+          "correct",
+          "options"
+        ],
+        "defaults": {},
+        "doc": "Legacy popup menu object.",
+        "line": 6
+      },
+      {
+        "name": "RadioButtons",
+        "type": "class",
+        "params": [
+          "choices",
+          "correct",
+          "options"
+        ],
+        "defaults": {},
+        "doc": "Radio button menu object for multiple choice answers.\n\nSimilar to PopUp but presents choices as radio buttons instead of a dropdown.",
+        "line": 114
+      }
+    ],
+    "globals": [],
+    "exports": [
+      "DropDown",
+      "DropDownTF",
+      "PopUp",
+      "RadioButtons"
+    ],
+    "module_doc": "PopUp and DropDown menu objects for answer selection."
+  },
+  "parserMultiAnswer.pl": {
+    "file": "pg_macros.parsers",
+    "symbols": [],
+    "globals": [],
+    "exports": [],
+    "module_doc": "Parser-related macros."
+  },
+  "contextFraction.pl": {
+    "file": "pg_macros.contexts",
+    "symbols": [
+      {
+        "name": "Context",
+        "type": "function",
+        "params": [
+          "name"
+        ],
+        "defaults": {
+          "name": "'Numeric'"
+        },
+        "doc": "Load or switch to a context.\n\nCommon contexts:\n- 'Numeric' (default)\n- 'Fraction', 'Fraction-NoDecimals'\n- 'LimitedFraction', 'LimitedProperFraction'\n- 'Complex'\n- 'Point', 'Vector', 'Matrix'\n- 'Inter",
+        "line": 12
+      }
+    ],
+    "globals": [],
+    "exports": [
+      "Context"
+    ],
+    "module_doc": "Context-related macro stubs for PG problems.\n\nProvides stub implementations for various context macros like:\n- contextFraction.pl\n- contextIntegerFunctions.pl\n- contextLimitedPolynomial.pl\netc."
+  }
+}

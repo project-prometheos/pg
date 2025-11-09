@@ -22,6 +22,7 @@ pg_macros/core/pgml.py
 pg_macros/parsers/__init__.py
 pg_macros/parsers/parser_difference_quotient.py
 pg_macros/parsers/parser_linear_relation.py
+pg_macros/parsers/parser_multianswer.py
 pg_macros/parsers/parser_popup.py
 pg_macros/parsers/parser_radio_multianswer.py
 pg_macros/parsers/parser_special_trig.py

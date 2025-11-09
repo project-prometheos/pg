@@ -49,7 +49,8 @@ from .pg_core import (
     not_null,
     DEBUG_MESSAGE,
     WARN_MESSAGE,
-    
+    MODES,
+
     # Random
     random,
     non_zero_random,
@@ -70,6 +71,11 @@ from .pg_standard import (
     hint,
     shuffle,
     random_subset,
+)
+
+# Import from pg_basic_macros
+from .pg_basic_macros import (
+    beginproblem,
 )
 
 __all__ = [
@@ -118,7 +124,8 @@ __all__ = [
     "not_null",
     "DEBUG_MESSAGE",
     "WARN_MESSAGE",
-    
+    "MODES",
+
     # Random
     "random",
     "non_zero_random",
@@ -137,4 +144,7 @@ __all__ = [
     "ans_rule",
     "solution",
     "hint",
+
+    # From pg_basic_macros
+    "beginproblem",
 ]

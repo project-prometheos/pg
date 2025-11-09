@@ -1402,8 +1402,10 @@ class PGPreprocessor:
                     text_segment = content[pos:next_func_pos]
                     segments.append(repr(text_segment))
 
-                # Add function call
+                # Add function call - transform Perl syntax to Python
                 func_code = func_match.group(1).strip()
+                # Convert $var->method() to var.method()
+                func_code = self._transform_line(func_code)
                 segments.append(func_code)
 
                 pos = next_func_pos + len(func_match.group(0))

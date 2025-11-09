@@ -1,0 +1,15 @@
+{
+  "answers": [
+    {
+      "correct": false,
+      "message": "",
+      "name": "AnSwEr0001",
+      "score": 0.0,
+      "type": "dict"
+    }
+  ],
+  "errors": [],
+  "html": "What is the behavior of the function \\(f(x) = x^2\\) for \\(x > 0\\)?\n <br/> \n <select name=\"AnSwEr0001\" id=\"AnSwEr0001\">\n  <option value=\"\">?</option>\n  <option value=\"Choose one\">Choose one</option>\n  <option value=\"Increasing\">Increasing</option>\n  <option value=\"Decreasing\">Decreasing</option>\n  <option value=\"Constant\">Constant</option>\n</select>",
+  "tex": "What is the behavior of the function \\(f(x) = x^2\\) for \\(x > 0\\)?\n <br/> \n <select name=\"AnSwEr0001\" id=\"AnSwEr0001\">\n  <option value=\"\">?</option>\n  <option value=\"Choose one\">Choose one</option>\n  <option value=\"Increasing\">Increasing</option>\n  <option value=\"Decreasing\">Decreasing</option>\n  <option value=\"Constant\">Constant</option>\n</select>",
+  "warnings": []
+}

@@ -35,6 +35,30 @@ class PopUp:
                 result.append(item)
         return result
 
+    def menu(self) -> str:
+        """
+        Generate HTML for popup menu.
+
+        Returns:
+            HTML select element string
+        """
+        # Get placeholder from options (default "?")
+        placeholder = self.options.get('placeholder', '?')
+
+        # Build HTML select element
+        html = '<select name="AnSwEr0001" id="AnSwEr0001">\n'
+
+        # Add placeholder option
+        html += f'  <option value="">{placeholder}</option>\n'
+
+        # Add choice options
+        for choice in self.choices:
+            html += f'  <option value="{choice}">{choice}</option>\n'
+
+        html += '</select>'
+
+        return html
+
     def cmp(self):
         """Return answer evaluator."""
         def check_answer(student_answer: str) -> dict:
