@@ -280,12 +280,20 @@ class InProcessSandbox:
         except ImportError:
             # Fallback: provide minimal stubs
             # Create a minimal context object with variables attribute
-            class _StubContext:
-                """Minimal stub context with variables support."""
-                def __init__(self, name='Numeric'):
-                    self.name = name
-                    self.variables = _StubVariables()
-                    
+            class _StubFlags:
+                """Stub flags manager."""
+                def __init__(self):
+                    self._flags = {}
+
+                def set(self, **kwargs):
+                    """Stub set() method - stores flags."""
+                    self._flags.update(kwargs)
+                    return self
+
+                def get(self, key, default=None):
+                    """Stub get() method - retrieves flags."""
+                    return self._flags.get(key, default)
+
             class _StubVariables:
                 """Stub variables manager."""
                 def are(self, *args, **kwargs):
@@ -294,9 +302,242 @@ class InProcessSandbox:
                 def add(self, *args, **kwargs):
                     """Stub add() method - does nothing but doesn't error."""
                     pass
+                def set(self, *args, **kwargs):
+                    """Stub set() method - does nothing but doesn't error."""
+                    pass
+                def remove(self, *args, **kwargs):
+                    """Stub remove() method - does nothing but doesn't error."""
+                    pass
+                def list(self):
+                    """Stub list() method - returns common variables."""
+                    return ['x', 'y', 'z', 't']
+
+            class _StubFunctions:
+                """Stub functions manager."""
+                def disable(self, *args, **kwargs):
+                    """Stub disable() method - does nothing but doesn't error."""
+                    pass
+                def enable(self, *args, **kwargs):
+                    """Stub enable() method - does nothing but doesn't error."""
+                    pass
+                def add(self, *args, **kwargs):
+                    """Stub add() method - does nothing but doesn't error."""
+                    pass
+                def undefine(self, *args, **kwargs):
+                    """Stub undefine() method - does nothing but doesn't error."""
+                    pass
+
+            class _StubConstants:
+                """Stub constants manager."""
+                def are(self, *args, **kwargs):
+                    """Stub are() method - does nothing but doesn't error."""
+                    pass
+                def add(self, *args, **kwargs):
+                    """Stub add() method - does nothing but doesn't error."""
+                    pass
+
+            class _StubContext:
+                """Minimal stub context with variables support."""
+                def __init__(self, name='Numeric'):
+                    self.name = name
+                    self.variables = _StubVariables()
+                    self.flags = _StubFlags()
+                    self.functions = _StubFunctions()
+                    self.constants = _StubConstants()
+                    self.operators = _StubFunctions()  # Same interface as functions
+                    self.strings = _StubConstants()  # Same interface as constants
+
+                def withUnitsFor(self, *args, **kwargs):
+                    """Stub withUnitsFor() method - returns self."""
+                    return self
+
+                def assignUnits(self, *args, **kwargs):
+                    """Stub assignUnits() method - does nothing."""
+                    pass
+
+                @property
+                def parens(self):
+                    """Stub parens attribute - returns stub functions object."""
+                    return self.functions
+
+                def __getitem__(self, key):
+                    """Make context subscriptable - returns empty dict."""
+                    return {}
+
+                def __setitem__(self, key, value):
+                    """Make context subscriptable - does nothing."""
+                    pass
             
             _stub_context = _StubContext()
             
+            class _AnswerCheckerStub:
+                """Stub answer checker for .cmp() method."""
+                def __init__(self, value):
+                    self.value = value
+
+                def __call__(self, **kwargs):
+                    """Make answer checker callable - returns self."""
+                    return self
+
+                def check(self, student_answer):
+                    """Stub check method - returns neutral result."""
+                    return {'score': 0.5, 'correct': False, 'message': 'Stub checker'}
+
+                def withPostFilter(self, filter_func):
+                    """Stub withPostFilter - returns self for chaining."""
+                    return self
+
+            class _FormulaStub:
+                """Stub Formula class with method chaining support."""
+                def __init__(self, expr):
+                    self.expr = str(expr)
+                    # Make cmp both callable and have withPostFilter attribute
+                    self.cmp = _AnswerCheckerStub(self.expr)
+
+                def reduce(self):
+                    """Stub reduce() method - returns self for chaining."""
+                    return self
+
+                def D(self, var='x'):
+                    """Stub D() method for differentiation - returns self."""
+                    return self
+
+                def eval(self, **kwargs):
+                    """Stub eval() method - returns self."""
+                    return self
+
+                def substitute(self, **kwargs):
+                    """Stub substitute() method - returns self."""
+                    return self
+
+                def with_params(self, **kwargs):
+                    """Stub with_params() method - returns self."""
+                    return self
+
+                def __str__(self):
+                    return self.expr
+
+                def __repr__(self):
+                    return f"Formula({self.expr!r})"
+
+            class _MathObjectStub:
+                """Generic stub for MathObjects (Real, int, float, str with .cmp())."""
+                def __init__(self, value):
+                    self.value = value
+
+                def cmp(self, **kwargs):
+                    """Stub cmp() method - returns answer checker."""
+                    return _AnswerCheckerStub(self.value)
+
+                def reduce(self):
+                    """Stub reduce() method - returns self for chaining."""
+                    return self
+
+                def toUnits(self, *args, **kwargs):
+                    """Stub toUnits() method - returns self."""
+                    return self
+
+                def eval(self, **kwargs):
+                    """Stub eval() method - returns self."""
+                    return self
+
+                def with_params(self, **kwargs):
+                    """Stub with_params() method - returns self."""
+                    return self
+
+                # Operator overloading for arithmetic
+                def __add__(self, other):
+                    """Add two MathObjects or MathObject + number."""
+                    other_val = other.value if isinstance(other, _MathObjectStub) else other
+                    try:
+                        return _MathObjectStub(self.value + other_val)
+                    except:
+                        return _MathObjectStub(f"{self.value} + {other_val}")
+
+                def __radd__(self, other):
+                    """Right add for number + MathObject OR string concatenation."""
+                    # Handle string concatenation
+                    if isinstance(other, str):
+                        return other + str(self.value)
+                    return self.__add__(other)
+
+                def __sub__(self, other):
+                    """Subtract two MathObjects or MathObject - number."""
+                    other_val = other.value if isinstance(other, _MathObjectStub) else other
+                    try:
+                        return _MathObjectStub(self.value - other_val)
+                    except:
+                        return _MathObjectStub(f"{self.value} - {other_val}")
+
+                def __rsub__(self, other):
+                    """Right subtract for number - MathObject."""
+                    try:
+                        return _MathObjectStub(other - self.value)
+                    except:
+                        return _MathObjectStub(f"{other} - {self.value}")
+
+                def __mul__(self, other):
+                    """Multiply two MathObjects or MathObject * number."""
+                    other_val = other.value if isinstance(other, _MathObjectStub) else other
+                    try:
+                        return _MathObjectStub(self.value * other_val)
+                    except:
+                        return _MathObjectStub(f"{self.value} * {other_val}")
+
+                def __rmul__(self, other):
+                    """Right multiply for number * MathObject."""
+                    return self.__mul__(other)
+
+                def __truediv__(self, other):
+                    """Divide two MathObjects or MathObject / number."""
+                    other_val = other.value if isinstance(other, _MathObjectStub) else other
+                    try:
+                        return _MathObjectStub(self.value / other_val)
+                    except:
+                        return _MathObjectStub(f"{self.value} / {other_val}")
+
+                def __rtruediv__(self, other):
+                    """Right divide for number / MathObject."""
+                    try:
+                        return _MathObjectStub(other / self.value)
+                    except:
+                        return _MathObjectStub(f"{other} / {self.value}")
+
+                def __pow__(self, other):
+                    """Power of MathObject."""
+                    other_val = other.value if isinstance(other, _MathObjectStub) else other
+                    try:
+                        return _MathObjectStub(self.value ** other_val)
+                    except:
+                        return _MathObjectStub(f"{self.value} ** {other_val}")
+
+                def __getitem__(self, key):
+                    """Support subscripting for hash-like behavior."""
+                    # If value is a dict, delegate
+                    if isinstance(self.value, dict):
+                        return self.value[key]
+                    # Otherwise, create a dict on-the-fly
+                    if not hasattr(self, '_dict'):
+                        self._dict = {}
+                    return self._dict.get(key)
+
+                def __setitem__(self, key, value):
+                    """Support item assignment for hash-like behavior."""
+                    # If value is a dict, delegate
+                    if isinstance(self.value, dict):
+                        self.value[key] = value
+                    else:
+                        # Create dict on-the-fly
+                        if not hasattr(self, '_dict'):
+                            self._dict = {}
+                        self._dict[key] = value
+
+                def __str__(self):
+                    return str(self.value)
+
+                def __repr__(self):
+                    return f"MathObject({self.value!r})"
+
             def Context(name=None):
                 """Stub Context function - returns minimal context object."""
                 if name is None:
@@ -304,29 +545,170 @@ class InProcessSandbox:
                 return _StubContext(name)
 
             def Formula(expr):
-                """Stub Formula function - returns string."""
-                return str(expr)
+                """Stub Formula function - returns Formula object with method chaining."""
+                return _FormulaStub(expr)
 
             def Real(value):
-                """Stub Real function - returns float."""
-                return float(value)
+                """Stub Real function - handles symbolic constants and returns numeric wrapper."""
+                # Handle symbolic constants
+                if isinstance(value, str):
+                    import math
+                    if value == 'pi':
+                        return _MathObjectStub(math.pi)
+                    elif value == 'e':
+                        return _MathObjectStub(math.e)
+                    # Try to evaluate as expression
+                    try:
+                        result = eval(value.replace('pi', str(math.pi)).replace('e', str(math.e)))
+                        return _MathObjectStub(float(result))
+                    except:
+                        return _MathObjectStub(value)
+                return _MathObjectStub(float(value))
 
             def Compute(expr):
-                """Stub Compute function - tries to eval."""
+                """Stub Compute function - tries to eval, wraps in MathObject."""
                 try:
-                    return eval(str(expr))
+                    result = eval(str(expr))
+                    return _MathObjectStub(result)
                 except:
-                    return str(expr)
+                    return _MathObjectStub(str(expr))
 
             def Complex(real, imag=0):
-                """Stub Complex function - returns Python complex."""
-                return complex(real, imag)
+                """Stub Complex function - returns Python complex wrapped in MathObject."""
+                # Handle list/tuple arguments
+                if isinstance(real, (list, tuple)):
+                    if len(real) >= 2:
+                        return _MathObjectStub(complex(real[0], real[1]))
+                    elif len(real) == 1:
+                        return _MathObjectStub(complex(real[0], 0))
+                    return _MathObjectStub(complex(0, 0))
+
+                # Handle string arguments - just store as string
+                if isinstance(real, str):
+                    return _MathObjectStub(real)
+
+                # Handle numeric arguments
+                try:
+                    return _MathObjectStub(complex(real, imag))
+                except:
+                    # Fallback for any weird cases
+                    return _MathObjectStub(str(real))
+
+            def List(*items):
+                """Stub List function - returns Python list wrapped in MathObject."""
+                return _MathObjectStub(list(items))
+
+            def String(value):
+                """Stub String function - returns string wrapped in MathObject."""
+                return _MathObjectStub(str(value))
+
+            def Point(*coords):
+                """Stub Point function - returns coordinates as tuple wrapped in MathObject."""
+                return _MathObjectStub(tuple(coords))
+
+            def Vector(*components):
+                """Stub Vector function - returns components as list wrapped in MathObject."""
+                return _MathObjectStub(list(components))
+
+            def FormulaUpToConstant(expr):
+                """Stub FormulaUpToConstant - returns Formula stub."""
+                return _FormulaStub(expr)
+
+            class _ScaffoldClass:
+                """Stub Scaffold class with Begin attribute."""
+                class _BeginStub:
+                    """Stub for Scaffold.Begin context manager."""
+                    def __call__(self, *args, **kwargs):
+                        return self
+                    def __enter__(self):
+                        return self
+                    def __exit__(self, *args):
+                        pass
+                Begin = _BeginStub()
+
+                def __call__(self, *args, **kwargs):
+                    """Make Scaffold callable - returns self for chaining."""
+                    return self
+
+                def section(self, *a, **kw):
+                    return self
+
+                def __enter__(self):
+                    return self
+
+                def __exit__(self, *args):
+                    pass
+
+            Scaffold = _ScaffoldClass()
+
+            def install_problem_grader(grader):
+                """Stub install_problem_grader - does nothing."""
+                pass
+
+            def custom_problem_grader_fluid(*args, **kwargs):
+                """Stub custom_problem_grader_fluid - returns stub grader function."""
+                def grader_func(*a, **kw):
+                    return {'score': 0.5, 'answers': {}}
+                return grader_func
+
+            def AnswerHints(*hints):
+                """Stub AnswerHints - returns identity function."""
+                def hint_filter(answer):
+                    return answer
+                return hint_filter
+
+            def Section(*args, **kwargs):
+                """Stub Section - returns object with Begin/End methods."""
+                class _SectionStub:
+                    class _BeginStub:
+                        def __call__(self, *a, **kw):
+                            return self
+                        def __enter__(self):
+                            return self
+                        def __exit__(self, *args):
+                            pass
+                    class _EndStub:
+                        def __call__(self, *a, **kw):
+                            return self
+                    Begin = _BeginStub()
+                    End = _EndStub()
+                return _SectionStub()
+
+            def random_subset(*args, **kwargs):
+                """Stub random_subset - returns first N items."""
+                if args:
+                    items = list(args[0]) if hasattr(args[0], '__iter__') else list(args)
+                    n = args[1] if len(args) > 1 else len(items)
+                    return items[:n]
+                return []
+
+            def new_match_list(*args, **kwargs):
+                """Stub new_match_list - returns stub match list object."""
+                class _MatchListStub:
+                    def qa(self, *a, **kw):
+                        return self
+                    def __iter__(self):
+                        return iter([])
+                return _MatchListStub()
 
             self.namespace['Context'] = Context
             self.namespace['Formula'] = Formula
             self.namespace['Real'] = Real
             self.namespace['Complex'] = Complex
             self.namespace['Compute'] = Compute
+            self.namespace['List'] = List
+            self.namespace['String'] = String
+            self.namespace['Point'] = Point
+            self.namespace['Vector'] = Vector
+            self.namespace['FormulaUpToConstant'] = FormulaUpToConstant
+            self.namespace['Scaffold'] = Scaffold
+            self.namespace['Section'] = Section
+            self.namespace['install_problem_grader'] = install_problem_grader
+            self.namespace['custom_problem_grader_fluid'] = custom_problem_grader_fluid
+            self.namespace['AnswerHints'] = AnswerHints
+            self.namespace['random_subset'] = random_subset
+            self.namespace['new_match_list'] = new_match_list
+            self.namespace['ENV'] = {}  # Environment dictionary
             self.namespace['i'] = complex(0, 1)
 
     def load_macros(self, *macro_names: str) -> None:

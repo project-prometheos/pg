@@ -1161,6 +1161,11 @@ class PGPreprocessor:
                 if isinstance(op, tuple):
                     if op[0] == "method_call":
                         _, method_name, args = op
+                        # Special case: .reduce() is a property in Python MathObjects, not a method
+                        # In Perl: ->reduce() and ->reduce are equivalent
+                        # In Python: reduce is a @property, so .reduce() fails
+                        if method_name == "reduce" and len(args) == 0:
+                            return f"{base_py}.reduce"
                         arg_strs = [self._expr_to_py(a) for a in args]
                         return f"{base_py}.{method_name}({', '.join(arg_strs)})"
                     elif op[0] in ("array_subscript", "hash_subscript"):
@@ -1452,6 +1457,11 @@ class PGPreprocessor:
 
         # Convert .with( to .with_params( because 'with' is a Python reserved keyword
         rewritten = re.sub(r'\.with\(', '.with_params(', rewritten)
+
+        # Convert .reduce() to .reduce (property, not method in Python MathObjects)
+        # In Perl: ->reduce() and ->reduce are equivalent
+        # In Python: reduce is a @property, so calling it with () fails
+        rewritten = re.sub(r'\.reduce\(\)', '.reduce', rewritten)
 
         # Condense spaces around equals from fat comma conversion
         rewritten = re.sub(r'\s+=\s+', ' = ', rewritten)
