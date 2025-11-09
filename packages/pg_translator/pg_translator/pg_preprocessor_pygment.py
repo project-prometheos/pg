@@ -1246,6 +1246,33 @@ class PGPreprocessor:
                 if text == '-' and i + 1 < len(tokens) and tokens[i+1][2] == '>':
                     result.append('.')
                     i += 2
+                    # Skip any empty tokens after ->
+                    while i < len(tokens) and tokens[i][2] == '':
+                        i += 1
+                    # Check if next token is a method name without ()
+                    # Only add () if it's NOT followed by another -> (chained calls)
+                    if i < len(tokens):
+                        next_idx, next_ttype, next_text = tokens[i]
+                        # If it's a method/property name
+                        if next_ttype in Token.Name or next_ttype == Token.Operator.Word:
+                            # Look ahead to see what follows (skip empty tokens)
+                            j = i + 1
+                            while j < len(tokens) and tokens[j][2] == '':
+                                j += 1
+                            has_parens = False
+                            has_arrow = False
+                            if j < len(tokens):
+                                lookahead_idx, lookahead_ttype, lookahead_text = tokens[j]
+                                if lookahead_text == '(':
+                                    has_parens = True
+                                elif lookahead_text == '-' and j + 1 < len(tokens) and tokens[j + 1][2] == '>':
+                                    has_arrow = True  # Another -> follows, so this is property access
+                            # Only add () if no parens AND no arrow (i.e., final method in chain)
+                            if not has_parens and not has_arrow:
+                                result.append(next_text)
+                                result.append('()')
+                                i += 1
+                                continue
                     continue
                 # Handle namespace separator '::'
                 if text == ':' and i + 1 < len(tokens) and tokens[i+1][2] == ':':
