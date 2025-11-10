@@ -1646,7 +1646,7 @@ class PGPreprocessor:
                             return f"{base_py}.reduce"
                         # Special case: properties that shouldn't have parentheses
                         # These are Matrix/Vector properties that shouldn't be called as methods
-                        property_names = {"transpose", "inverse", "norm", "dimensions", "trace", "det", "determinant"}
+                        property_names = {"transpose", "inverse", "norm", "dimensions", "trace", "det", "determinant", "value"}
                         if method_name in property_names and len(args) == 0:
                             return f"{base_py}.{method_name}"
                         # Special case: .with(...) needs to become .with_params(...) to avoid 'with' keyword
@@ -2024,7 +2024,7 @@ class PGPreprocessor:
                             # Always append the method/property name
                             result.append(next_text)
                             # Known properties that shouldn't have parentheses (from MathObject/Matrix/Vector)
-                            property_names = {"transpose", "inverse", "norm", "dimensions", "trace", "det", "determinant", "reduce"}
+                            property_names = {"transpose", "inverse", "norm", "dimensions", "trace", "det", "determinant", "reduce", "value"}
                             # Only add () if no parens AND no arrow AND no brace (i.e., final method in chain)
                             # AND it's not a known property
                             if not has_parens and not has_arrow and not has_brace and next_text not in property_names:

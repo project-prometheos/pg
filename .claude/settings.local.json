@@ -61,7 +61,8 @@
       "Bash(python3:*)",
       "Bash(nul)",
       "Bash(find.exe:*)",
-      "Bash(powershell -Command:*)"
+      "Bash(powershell -Command:*)",
+      "Bash(where:*)"
     ],
     "deny": [],
     "ask": []
