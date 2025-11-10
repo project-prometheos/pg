@@ -1572,6 +1572,11 @@ class PGPreprocessor:
                         # In Python: reduce is a @property, so .reduce() fails
                         if method_name == "reduce" and len(args) == 0:
                             return f"{base_py}.reduce"
+                        # Special case: properties that shouldn't have parentheses
+                        # These are Matrix/Vector properties that shouldn't be called as methods
+                        property_names = {"transpose", "inverse", "norm", "dimensions", "trace", "det", "determinant"}
+                        if method_name in property_names and len(args) == 0:
+                            return f"{base_py}.{method_name}"
                         # Special case: .with(...) needs to become .with_params(...) to avoid 'with' keyword
                         if method_name == "with":
                             method_name = "with_params"
@@ -1946,8 +1951,11 @@ class PGPreprocessor:
                                     has_brace = True  # Hash subscript follows
                             # Always append the method/property name
                             result.append(next_text)
+                            # Known properties that shouldn't have parentheses (from MathObject/Matrix/Vector)
+                            property_names = {"transpose", "inverse", "norm", "dimensions", "trace", "det", "determinant", "reduce"}
                             # Only add () if no parens AND no arrow AND no brace (i.e., final method in chain)
-                            if not has_parens and not has_arrow and not has_brace:
+                            # AND it's not a known property
+                            if not has_parens and not has_arrow and not has_brace and next_text not in property_names:
                                 result.append('()')
                             i += 1
                             continue
