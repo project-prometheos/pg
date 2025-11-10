@@ -1498,6 +1498,7 @@ class PGPreprocessor:
                                 arg_strs.append(f"{key_str} = {val_str}")
                             else:
                                 arg_strs.append(self._expr_to_py(a))
+
                         return f"{base_py}.{method_name}({', '.join(arg_strs)})"
                     elif op[0] in ("array_subscript", "hash_subscript"):
                         subscript_py = self._emit_subscript(op)
