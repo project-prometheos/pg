@@ -306,9 +306,35 @@ class InProcessSandbox:
                 """Stub pop_up_list_print_q - dummy function for printing questions."""
                 return ""
 
+            class Scaffold:
+                """Stub Scaffold class for scaffolding problems."""
+                @staticmethod
+                def Begin(*args, **kwargs):
+                    """Stub Begin - start scaffolding."""
+                    return None
+
+                @staticmethod
+                def End(*args, **kwargs):
+                    """Stub End - end scaffolding."""
+                    return None
+
+            class Section:
+                """Stub Section class for scaffolding sections."""
+                @staticmethod
+                def Begin(*args, **kwargs):
+                    """Stub Begin - start section."""
+                    return None
+
+                @staticmethod
+                def End(*args, **kwargs):
+                    """Stub End - end section."""
+                    return None
+
             self.namespace['random_subset'] = random_subset
             self.namespace['new_match_list'] = new_match_list
             self.namespace['pop_up_list_print_q'] = pop_up_list_print_q
+            self.namespace['Scaffold'] = Scaffold
+            self.namespace['Section'] = Section
 
         except ImportError:
             # Fallback: provide minimal stubs
@@ -690,22 +716,29 @@ class InProcessSandbox:
                     return answer
                 return hint_filter
 
-            def Section(*args, **kwargs):
-                """Stub Section - returns object with Begin/End methods."""
-                class _SectionStub:
-                    class _BeginStub:
-                        def __call__(self, *a, **kw):
-                            return self
-                        def __enter__(self):
-                            return self
-                        def __exit__(self, *args):
-                            pass
-                    class _EndStub:
-                        def __call__(self, *a, **kw):
-                            return self
-                    Begin = _BeginStub()
-                    End = _EndStub()
-                return _SectionStub()
+            class Scaffold:
+                """Stub Scaffold class for scaffolding problems."""
+                @staticmethod
+                def Begin(*args, **kwargs):
+                    """Stub Begin - start scaffolding."""
+                    return None
+
+                @staticmethod
+                def End(*args, **kwargs):
+                    """Stub End - end scaffolding."""
+                    return None
+
+            class Section:
+                """Stub Section class for scaffolding sections."""
+                @staticmethod
+                def Begin(*args, **kwargs):
+                    """Stub Begin - start section."""
+                    return None
+
+                @staticmethod
+                def End(*args, **kwargs):
+                    """Stub End - end section."""
+                    return None
 
             def random_subset(n=None, *items, **kwargs):
                 """Stub random_subset - returns first N items from a list."""

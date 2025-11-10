@@ -2146,8 +2146,84 @@ class PGPreprocessor:
         # Convert Perl range operator .. to Python range()
         # This is tricky because .. can appear in various contexts: (a..b), [ a..b ], a..b
         # The Lark parser handles most cases, but fallback is needed for complex expressions
-        # TODO: Improve handling for cases where Lark doesn't parse the full expression
-        # For now, rely on Lark grammar which handles most range expressions
+        # Strategy: Convert all .. operators to range, then simplify any redundant arithmetic
+
+        # First: Convert all range operators. These patterns handle the most common cases.
+        # Pattern: token .. token where tokens are: numbers, variables, len() expressions
+
+        # Handle: 0 .. len(array) - 1
+        rewritten = re.sub(
+            r'(\d+)\s*\.\.\s*(len\([^)]*\)\s*-\s*1)',
+            r'range(\1, \2 + 1)',
+            rewritten
+        )
+
+        # Handle: len(array) - 1 .. number
+        rewritten = re.sub(
+            r'(len\([^)]*\)\s*-\s*1)\s*\.\.\s*(\d+)',
+            r'range(\1, \2 + 1)',
+            rewritten
+        )
+
+        # Handle: number .. number
+        rewritten = re.sub(
+            r'(\d+)\s*\.\.\s*(\d+)',
+            r'range(\1, \2 + 1)',
+            rewritten
+        )
+
+        # Handle: $#array .. number or number .. $#array
+        rewritten = re.sub(
+            r'(\$?#[a-zA-Z_]\w*)\s*\.\.\s*(\d+)',
+            r'range(\1, \2 + 1)',
+            rewritten
+        )
+        rewritten = re.sub(
+            r'(\d+)\s*\.\.\s*(\$?#[a-zA-Z_]\w*)',
+            r'range(\1, \2 + 1)',
+            rewritten
+        )
+
+        # Handle: $#array .. $#array2 or similar
+        rewritten = re.sub(
+            r'(\$?#[a-zA-Z_]\w*)\s*\.\.\s*(\$?#[a-zA-Z_]\w*)',
+            r'range(\1, \2 + 1)',
+            rewritten
+        )
+
+        # Second: Simplify redundant arithmetic in range() calls
+        # When we have range(X, Y - 1 + 1), simplify to range(X, Y)
+        rewritten = re.sub(
+            r'range\(([^,]+),\s*(len\([^)]*\))\s*-\s*1\s*\+\s*1\)',
+            r'range(\1, \2)',
+            rewritten
+        )
+
+        # Handle: range(X, expr - N + N) -> range(X, expr) for any constant N
+        # This catches cases like: range(0, len(array) - 1 + 1)
+        def simplify_range_arithmetic(match):
+            """Simplify range() calls with canceling arithmetic."""
+            prefix = match.group(1)
+            end_expr = match.group(2)
+
+            # Check if end_expr is like "... - N + N" where N is the same number
+            # Extract the subtracted and added numbers
+            subtract_match = re.search(r'-\s*(\d+)\s*\+\s*(\d+)$', end_expr)
+            if subtract_match:
+                sub_num = subtract_match.group(1)
+                add_num = subtract_match.group(2)
+                if sub_num == add_num:
+                    # Remove the " - N + N" part
+                    simplified = re.sub(r'\s*-\s*' + re.escape(sub_num) + r'\s*\+\s*' + re.escape(add_num) + r'$', '', end_expr)
+                    return f"range({prefix}, {simplified})"
+
+            return match.group(0)
+
+        rewritten = re.sub(
+            r'range\(([^,]+),\s*([^)]*-\s*\d+\s*\+\s*\d+)\)',
+            simplify_range_arithmetic,
+            rewritten
+        )
 
         # Convert Perl string repetition operator 'x' to Python '*'
         # Pattern: (string/variable) x (number)
