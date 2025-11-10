@@ -278,7 +278,10 @@ class InProcessSandbox:
             self.namespace['Fraction'] = Fraction
 
             # Create imaginary unit i = Complex(0, 1)
+            # Also define j and k as aliases for i (engineering notation and vector unit vectors)
             self.namespace['i'] = _Complex(0, 1)
+            self.namespace['j'] = _Complex(0, 1)
+            self.namespace['k'] = _Complex(0, 1)  # Also used as unit vector in some contexts
 
             # Add stub functions that are commonly used but not in pg_math
             def random_subset(n=None, *items, **kwargs):
@@ -785,6 +788,8 @@ class InProcessSandbox:
             self.namespace['pop_up_list_print_q'] = pop_up_list_print_q
             self.namespace['ENV'] = {}  # Environment dictionary
             self.namespace['i'] = complex(0, 1)
+            self.namespace['j'] = complex(0, 1)  # Alias for i (engineering notation)
+            self.namespace['k'] = complex(0, 1)  # Also used as unit vector in some contexts
 
     def load_macros(self, *macro_names: str) -> None:
         """

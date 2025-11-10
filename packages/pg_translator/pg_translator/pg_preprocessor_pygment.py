@@ -2275,10 +2275,12 @@ class PGPreprocessor:
         )
 
         # Convert Perl string repetition operator 'x' to Python '*'
-        # Pattern: (string/variable) x (number)
+        # Pattern: (string/variable) x (number) or (variable) x (variable)
         # Be careful not to convert 'x' when it's a variable name or part of identifiers
         rewritten = re.sub(r'(["\'\)])\s+x\s+(\d+)', r'\1 * \2', rewritten)
         rewritten = re.sub(r'(\b[a-zA-Z_]\w*)\s+x\s+(\d+)', r'\1 * \2', rewritten)
+        # Also handle variable x variable (e.g., v3 x v4 for cross product)
+        rewritten = re.sub(r'(\b[a-zA-Z_]\w*)\s+x\s+([a-zA-Z_]\w*\b)', r'\1 * \2', rewritten)
 
         # Condense spaces around equals from fat comma conversion
         rewritten = re.sub(r'\s+=\s+', ' = ', rewritten)
