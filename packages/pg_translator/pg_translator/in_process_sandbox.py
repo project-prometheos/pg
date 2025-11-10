@@ -280,6 +280,36 @@ class InProcessSandbox:
             # Create imaginary unit i = Complex(0, 1)
             self.namespace['i'] = _Complex(0, 1)
 
+            # Add stub functions that are commonly used but not in pg_math
+            def random_subset(n=None, *items, **kwargs):
+                """Stub random_subset - returns first N items from a list."""
+                if items:
+                    # If items is a single list/tuple, use it directly
+                    item_list = list(items[0]) if len(items) == 1 and hasattr(items[0], '__iter__') and not isinstance(items[0], str) else list(items)
+                    num = int(n) if n is not None else len(item_list)
+                    return item_list[:num]
+                return []
+
+            def new_match_list(*args, **kwargs):
+                """Stub new_match_list - returns stub match list object."""
+                class _MatchListStub:
+                    def __getattr__(self, name):
+                        """Allow any method call - just return self for chaining."""
+                        def method(*a, **kw):
+                            return self
+                        return method
+                    def __iter__(self):
+                        return iter([])
+                return _MatchListStub()
+
+            def pop_up_list_print_q(*args, **kwargs):
+                """Stub pop_up_list_print_q - dummy function for printing questions."""
+                return ""
+
+            self.namespace['random_subset'] = random_subset
+            self.namespace['new_match_list'] = new_match_list
+            self.namespace['pop_up_list_print_q'] = pop_up_list_print_q
+
         except ImportError:
             # Fallback: provide minimal stubs
             # Create a minimal context object with variables attribute
@@ -677,12 +707,13 @@ class InProcessSandbox:
                     End = _EndStub()
                 return _SectionStub()
 
-            def random_subset(*args, **kwargs):
-                """Stub random_subset - returns first N items."""
-                if args:
-                    items = list(args[0]) if hasattr(args[0], '__iter__') else list(args)
-                    n = args[1] if len(args) > 1 else len(items)
-                    return items[:n]
+            def random_subset(n=None, *items, **kwargs):
+                """Stub random_subset - returns first N items from a list."""
+                if items:
+                    # If items is a single list/tuple, use it directly
+                    item_list = list(items[0]) if len(items) == 1 and hasattr(items[0], '__iter__') and not isinstance(items[0], str) else list(items)
+                    num = int(n) if n is not None else len(item_list)
+                    return item_list[:num]
                 return []
 
             def new_match_list(*args, **kwargs):
