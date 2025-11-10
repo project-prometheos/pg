@@ -677,6 +677,34 @@ class PGPreprocessor:
             flags=re.MULTILINE
         )
 
+        # Convert postfix for/foreach loops to regular for loops
+        # Pattern: statement for iterable  ->  for var in iterable: statement
+        # Most common: var += expr for iterable
+        def convert_postfix_for(match):
+            """Convert postfix for loop to regular for loop."""
+            indent = match.group(1)
+            statement = match.group(2).strip()
+            # Extract loop variable from statement (usually $_)
+            # For += patterns: capture the variable and iterable
+            add_match = re.match(r'(\w+)\s*\+=\s*(.+?)\s+for\s+(.+)', statement)
+            if add_match:
+                var = add_match.group(1)
+                expr = add_match.group(2)
+                iterable = add_match.group(3)
+                # Convert to:
+                # for _ in iterable:
+                #     var += _
+                # Use _ as the implicit loop variable in Perl
+                return f"{indent}for _ in {iterable}:\n{indent}    {var} += _"
+            return match.group(0)
+
+        code = re.sub(
+            r'^(\s*)(\w+\s*\+=\s*.+?\s+for\s+.+?)$',
+            convert_postfix_for,
+            code,
+            flags=re.MULTILINE
+        )
+
         # Fix _.[...] pattern (shouldn't have a dot before bracket in Python)
         # This occurs when $_ -> [...] is converted to _ . [...]
         # In Python, we just want _[...]
