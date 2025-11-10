@@ -71,6 +71,12 @@ class MacroRegistry:
             "PGgraphmacros.pl": "pg_macros.graph.pg_graph",
             "PGtikz.pl": "pg_macros.graph.tikz_image",
             "PGlateximage.pl": "pg_macros.graph.latex_image",
+            # Phase 2: Essential Parsers
+            "parserNumberWithUnits.pl": "pg_macros.parsers.parser_number_with_units",
+            "parserImplicitPlane.pl": "pg_macros.parsers.parser_implicit_plane",
+            "parserParametricLine.pl": "pg_macros.parsers.parser_parametric_line",
+            "parserImplicitEquation.pl": "pg_macros.parsers.parser_implicit_equation",
+            "parserSolutionFor.pl": "pg_macros.parsers.parser_solution_for",
         }
 
         python_module = module_map.get(filename)

@@ -70,7 +70,9 @@
       "Bash(test_results.txt)",
       "Bash(test:*)",
       "Bash(tree:*)",
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"d:\\pg\\packages\\pg_translator\\tests\\test_tutorial_sample_problems.py\" -v --tb=line)"
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"d:\\pg\\packages\\pg_translator\\tests\\test_tutorial_sample_problems.py\" -v --tb=line)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"d:\\pg\\packages\\pg_translator\\tests\\test_tutorial_sample_problems.py\" --tb=line -q)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"d:\\pg\\packages\\pg_translator\\tests\\test_tutorial_sample_problems.py::test_tutorial_problem_renders[SolutionForEquation]\" -v)"
     ],
     "deny": [],
     "ask": []

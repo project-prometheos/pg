@@ -9,6 +9,20 @@ Based on macros/graph/PGtikz.pl from the WeBWorK distribution.
 from typing import Any, Dict, List, Optional, Union
 
 
+# Stub implementation
+def createTikZImage(*args, **kwargs):
+    """Stub for createTikZImage - creates TikZ image object."""
+    return type('TikZImage', (), {
+        'tikzLibraries': lambda *a, **k: None,
+        'texPackages': lambda *a, **k: None,
+        'BEGIN_TIKZ': lambda *a, **k: '',
+        'BEGIN_LATEX_IMAGE': lambda *a, **k: '',
+        'END_TIKZ': property(lambda self: ''),
+        'END_LATEX_IMAGE': property(lambda self: ''),
+        'tex': lambda *a, **k: '',
+    })()
+
+
 class TikZImage:
     """
     TikZ image object for LaTeX-based graphics.

@@ -33,6 +33,13 @@ try:
     from pg_macros.graph.tikz_image import createTikZImage, TikZImage
     from pg_macros.graph.latex_image import createLaTeXImage, LaTeXImage
 
+    # Phase 2: Essential Parsers
+    from pg_macros.parsers.parser_number_with_units import NumberWithUnits
+    from pg_macros.parsers.parser_implicit_plane import ImplicitPlane
+    from pg_macros.parsers.parser_parametric_line import ParametricLine
+    from pg_macros.parsers.parser_implicit_equation import ImplicitEquation
+    from pg_macros.parsers.parser_solution_for import SolutionFor
+
     _MACROS_AVAILABLE = True
 except ImportError:
     _MACROS_AVAILABLE = False
@@ -1101,42 +1108,7 @@ class InProcessSandbox:
                 """Stub for Round - rounding function."""
                 return round(float(value), int(decimals))
 
-            def NumberWithUnits(value, units=''):
-                """Stub for NumberWithUnits - number with units."""
-                return type('NumberWithUnits', (), {
-                    'value': value,
-                    'units': units,
-                    '__str__': lambda self: f'{value} {units}',
-                })()
-
-            def ImplicitEquation(*args, **kwargs):
-                """Stub for ImplicitEquation - implicit equation parser."""
-                Formula = self.namespace.get('Formula')
-                if Formula:
-                    return Formula(str(args[0]) if args else '0')
-                return str(args[0]) if args else '0'
-
-            def SolutionFor(*args, **kwargs):
-                """Stub for SolutionFor - solution checker.
-
-                Returns a dict-like object with 'f' key containing the formula.
-                """
-                Formula = self.namespace.get('Formula')
-                formula_obj = Formula(str(args[0]) if args else '0') if Formula else str(args[0]) if args else '0'
-                # Return a dict-like object with the formula
-                return {'f': formula_obj, 'solution': args[1] if len(args) > 1 else None}
-
-            def ParametricLine(*args, **kwargs):
-                """Stub for ParametricLine - parametric line parser."""
-                return type('ParametricLine', (), {
-                    '__str__': lambda self: 'ParametricLine',
-                })()
-
-            def ImplicitPlane(*args, **kwargs):
-                """Stub for ImplicitPlane - implicit plane parser."""
-                return type('ImplicitPlane', (), {
-                    '__str__': lambda self: 'ImplicitPlane',
-                })()
+            # Phase 2 stub functions imported from pg_macros modules
 
             def randomPerson(n=1, **kwargs):
                 """Stub for randomPerson - generates random person names with pronouns."""
@@ -1165,42 +1137,6 @@ class InProcessSandbox:
                 """Stub for VectorField3D - 3D vector field graphing."""
                 return type('VectorField3D', (), {
                     'plot': lambda *a, **k: None,
-                })()
-
-            def init_graph(*args, **kwargs):
-                """Stub for PGgraphmacros.pl init_graph - creates graph object."""
-                return type('WWPlot', (), {
-                    '__str__': lambda self: 'WWPlot',
-                    'draw': lambda *a, **k: None,
-                    'stamps': lambda *a, **k: None,
-                    'moveTo': lambda *a, **k: None,
-                    'lineTo': lambda *a, **k: None,
-                    'arrowTo': lambda *a, **k: None,
-                })()
-
-            def add_functions(*args, **kwargs):
-                """Stub for PGgraphmacros.pl add_functions - adds functions to graph."""
-                return None
-
-            def createLaTeXImage(*args, **kwargs):
-                """Stub for createLaTeXImage - creates LaTeX image object."""
-                return type('LaTeXImage', (), {
-                    'texPackages': lambda *a, **k: None,
-                    'BEGIN_LATEX_IMAGE': lambda *a, **k: '',
-                    'END_LATEX_IMAGE': property(lambda self: ''),
-                    'tex': lambda *a, **k: '',
-                })()
-
-            def createTikZImage(*args, **kwargs):
-                """Stub for createTikZImage - creates TikZ image object."""
-                return type('TikZImage', (), {
-                    'tikzLibraries': lambda *a, **k: None,
-                    'texPackages': lambda *a, **k: None,
-                    'BEGIN_TIKZ': lambda *a, **k: '',
-                    'BEGIN_LATEX_IMAGE': lambda *a, **k: '',
-                    'END_TIKZ': property(lambda self: ''),
-                    'END_LATEX_IMAGE': property(lambda self: ''),
-                    'tex': lambda *a, **k: '',
                 })()
 
             def Line(*points, **kwargs):
@@ -1274,10 +1210,11 @@ class InProcessSandbox:
                 'Graph3D': Graph3D,
                 'Plot': Plot,
                 'VectorField3D': VectorField3D,
-                'init_graph': init_graph,
-                'add_functions': add_functions,
-                'createLaTeXImage': createLaTeXImage,
-                'createTikZImage': createTikZImage,
+                # Use imported graph macros if available, otherwise use local stubs
+                'init_graph': globals()['init_graph'] if _MACROS_AVAILABLE else lambda *a, **k: type('WWPlot', (), {})(),
+                'add_functions': globals()['add_functions'] if _MACROS_AVAILABLE else lambda *a, **k: None,
+                'createLaTeXImage': globals()['createLaTeXImage'] if _MACROS_AVAILABLE else lambda *a, **k: type('LaTeXImage', (), {})(),
+                'createTikZImage': globals()['createTikZImage'] if _MACROS_AVAILABLE else lambda *a, **k: type('TikZImage', (), {})(),
                 'Line': Line,
                 'COMPOSITION_ANS': COMPOSITION_ANS,
                 'UNORDERED_ANS': UNORDERED_ANS,
@@ -1298,6 +1235,7 @@ class InProcessSandbox:
                 'CheckboxList': CheckboxList,
                 'tag': tag,
                 'Round': Round,
+                # Phase 2: Use imported parser functions directly
                 'NumberWithUnits': NumberWithUnits,
                 'ImplicitEquation': ImplicitEquation,
                 'SolutionFor': SolutionFor,
@@ -1655,51 +1593,6 @@ class InProcessSandbox:
                 'plot': lambda *a, **k: None,
             })()
 
-        def init_graph(*args, **kwargs):
-            """Stub for PGgraphmacros.pl init_graph - creates graph object."""
-            return type('WWPlot', (), {
-                '__str__': lambda self: 'WWPlot',
-                'draw': lambda *a, **k: None,
-                'stamps': lambda *a, **k: None,
-                'moveTo': lambda *a, **k: None,
-                'lineTo': lambda *a, **k: None,
-                'arrowTo': lambda *a, **k: None,
-            })()
-
-        def add_functions(*args, **kwargs):
-            """Stub for PGgraphmacros.pl add_functions - adds functions to graph."""
-            return None
-
-        def createLaTeXImage(*args, **kwargs):
-            """Stub for createLaTeXImage - creates LaTeX image object."""
-            return type('LaTeXImage', (), {
-                'texPackages': lambda *a, **k: None,
-                'BEGIN_LATEX_IMAGE': lambda *a, **k: '',
-                'END_LATEX_IMAGE': property(lambda self: ''),
-                'tex': lambda *a, **k: '',
-            })()
-
-        def createTikZImage(*args, **kwargs):
-            """Stub for createTikZImage - creates TikZ image object."""
-            return type('TikZImage', (), {
-                'tikzLibraries': lambda *a, **k: None,
-                'texPackages': lambda *a, **k: None,
-                'BEGIN_TIKZ': lambda *a, **k: '',
-                'BEGIN_LATEX_IMAGE': lambda *a, **k: '',
-                'END_TIKZ': property(lambda self: ''),
-                'END_LATEX_IMAGE': property(lambda self: ''),
-                'tex': lambda *a, **k: '',
-            })()
-
-        def createLaTeXImage(*args, **kwargs):
-            """Stub for createLaTeXImage - creates LaTeX image object."""
-            return type('LaTeXImage', (), {
-                'texPackages': lambda *a, **k: None,
-                'BEGIN_LATEX_IMAGE': lambda *a, **k: '',
-                'END_LATEX_IMAGE': property(lambda self: ''),
-                'tex': lambda *a, **k: '',
-            })()
-
         def Line(*points, **kwargs):
             """Stub for Line - geometric line through points."""
             return type('Line', (), {
@@ -1747,14 +1640,11 @@ class InProcessSandbox:
             'norm': norm,
             'unit': unit,
             'Matrix': Matrix,
-            # Graphics
+            # Graphics (Note: init_graph, add_functions, createLaTeXImage, createTikZImage
+            # are already handled with fallbacks in _load_pg_core() - no duplicates needed here)
             'Graph3D': Graph3D,
             'Plot': Plot,
             'VectorField3D': VectorField3D,
-            'init_graph': init_graph,
-            'add_functions': add_functions,
-            'createLaTeXImage': createLaTeXImage,
-            'createTikZImage': createTikZImage,
             'Line': Line,
             # Special answer evaluation
             'COMPOSITION_ANS': COMPOSITION_ANS,

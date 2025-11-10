@@ -9,6 +9,17 @@ Based on macros/graph/PGlateximage.pl from the WeBWorK distribution.
 from typing import Any, Dict, List, Optional, Union
 
 
+# Stub implementation
+def createLaTeXImage(*args, **kwargs):
+    """Stub for createLaTeXImage - creates LaTeX image object."""
+    return type('LaTeXImage', (), {
+        'texPackages': lambda *a, **k: None,
+        'BEGIN_LATEX_IMAGE': lambda *a, **k: '',
+        'END_LATEX_IMAGE': property(lambda self: ''),
+        'tex': lambda *a, **k: '',
+    })()
+
+
 class LaTeXImage:
     """
     LaTeX image object for rendering LaTeX-based graphics.
