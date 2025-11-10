@@ -1509,18 +1509,50 @@ class PGPreprocessor:
             if head == "call":
                 _, name, args = expr
                 arg_strings = []
+                # Track if we have any string-key named params (only string literals)
+                has_string_key_params = False
+                string_key_params = []
+
                 for a in args:
                     if isinstance(a, tuple) and len(a) >= 2 and a[0] == "named_param":
                         # named_param: key => value
                         _, key_expr, val_expr = a
-                        key_str = self._expr_to_py(key_expr)
-                        val_str = self._expr_to_py(val_expr)
-                        # Convert key to string if it's a bareword variable
-                        if isinstance(key_expr, tuple) and key_expr[0] == "var":
-                            key_str = key_expr[1]  # Just the variable name without sigil
-                        arg_strings.append(f"{key_str} = {val_str}")
+                        # Check if key is SPECIFICALLY a string literal
+                        # String literals are either ("string", ...) tuples or bare strings starting with quotes
+                        is_string_literal = False
+                        if isinstance(key_expr, tuple) and key_expr[0] == "string":
+                            is_string_literal = True
+                        elif isinstance(key_expr, str) and (key_expr.startswith('"') or key_expr.startswith("'")):
+                            is_string_literal = True
+
+                        if is_string_literal:
+                            # String literal key like 'u(t)' - will create a dict
+                            has_string_key_params = True
+                            key_str = self._expr_to_py(key_expr)  # Keep the quotes
+                            val_str = self._expr_to_py(val_expr)
+                            string_key_params.append((key_str, val_str))
+                        else:
+                            # Bareword or variable key - use as keyword argument
+                            # For bareword: key_expr is just a token
+                            # For variable: key_expr is ("var", name)
+                            if isinstance(key_expr, tuple) and key_expr[0] == "var":
+                                # Variable like $var
+                                key_str = key_expr[1]  # Just the variable name without sigil
+                            else:
+                                # Bareword - convert to string
+                                key_str = self._expr_to_py(key_expr)
+                            val_str = self._expr_to_py(val_expr)
+                            arg_strings.append(f"{key_str} = {val_str}")
                     else:
                         arg_strings.append(self._expr_to_py(a))
+
+                # If we have string-key params, create a dict argument
+                if has_string_key_params:
+                    dict_items = [f"{k}: {v}" for k, v in string_key_params]
+                    dict_str = "{" + ", ".join(dict_items) + "}"
+                    # Insert dict as first positional argument
+                    arg_strings.insert(0, dict_str)
+
                 return f"{name}({', '.join(arg_strings)})"
 
             # Map and grep

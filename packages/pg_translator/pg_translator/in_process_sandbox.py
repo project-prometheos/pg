@@ -824,6 +824,7 @@ class InProcessSandbox:
                 return type('Plot', (), {
                     'plot': lambda *a, **k: None,
                     'add_function': lambda *a, **k: None,
+                    'add_dataset': lambda *a, **k: None,
                     'add_vectorfield': lambda *a, **k: None,
                 })()
 
@@ -1256,6 +1257,7 @@ class InProcessSandbox:
             return type('Plot', (), {
                 'plot': lambda *a, **k: None,
                 'add_function': lambda *a, **k: None,
+                'add_dataset': lambda *a, **k: None,
                 'add_vectorfield': lambda *a, **k: None,
             })()
 
