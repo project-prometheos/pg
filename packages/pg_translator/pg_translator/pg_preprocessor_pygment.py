@@ -2113,6 +2113,12 @@ class PGPreprocessor:
         # In Python: reduce is a @property, so calling it with () fails
         rewritten = re.sub(r'\.reduce\(\)', '.reduce', rewritten)
 
+        # Convert Perl string repetition operator 'x' to Python '*'
+        # Pattern: (string/variable) x (number)
+        # Be careful not to convert 'x' when it's a variable name or part of identifiers
+        rewritten = re.sub(r'(["\'\)])\s+x\s+(\d+)', r'\1 * \2', rewritten)
+        rewritten = re.sub(r'(\b[a-zA-Z_]\w*)\s+x\s+(\d+)', r'\1 * \2', rewritten)
+
         # Condense spaces around equals from fat comma conversion
         rewritten = re.sub(r'\s+=\s+', ' = ', rewritten)
 
