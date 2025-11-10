@@ -411,6 +411,18 @@ class Complex(MathValue):
         """Convert to Python complex."""
         return complex(self.real, self.imag)
 
+    @property
+    def value(self) -> tuple[float, float]:
+        """
+        Get the value as a tuple (real, imag).
+
+        Perl compatibility property - returns the components for unpacking.
+
+        Returns:
+            Tuple of (real, imag) values
+        """
+        return (self.real, self.imag)
+
     # Arithmetic operators
 
     def __add__(self, other: Any) -> MathValue:
@@ -536,6 +548,34 @@ class Complex(MathValue):
     def __abs__(self) -> Real:
         """Absolute value (magnitude)."""
         return Real(math.sqrt(self.real**2 + self.imag**2), self.context)
+
+    def norm(self) -> Real:
+        """
+        Compute the norm (magnitude) of the complex number.
+
+        Perl compatibility method - returns the same as abs().
+
+        Returns:
+            Real: The magnitude of the complex number
+        """
+        return self.__abs__()
+
+    def unit(self) -> Complex:
+        """
+        Compute the unit complex number (normalized to magnitude 1).
+
+        Perl compatibility method - returns the complex number divided by its magnitude.
+
+        Returns:
+            Complex: The unit complex number in the same direction
+
+        Raises:
+            ZeroDivisionError: If the magnitude is zero
+        """
+        magnitude = self.__abs__()
+        if magnitude.value == 0:
+            raise ZeroDivisionError("Cannot compute unit of zero complex number")
+        return Complex(self.real / magnitude.value, self.imag / magnitude.value, self.context)
 
 
 class Infinity(MathValue):

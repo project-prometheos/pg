@@ -1144,6 +1144,30 @@ class InProcessSandbox:
                     'plot': lambda *a, **k: None,
                 })()
 
+            def init_graph(*args, **kwargs):
+                """Stub for PGgraphmacros.pl init_graph - creates graph object."""
+                return type('WWPlot', (), {
+                    '__str__': lambda self: 'WWPlot',
+                    'draw': lambda *a, **k: None,
+                    'stamps': lambda *a, **k: None,
+                    'moveTo': lambda *a, **k: None,
+                    'lineTo': lambda *a, **k: None,
+                    'arrowTo': lambda *a, **k: None,
+                })()
+
+            def add_functions(*args, **kwargs):
+                """Stub for PGgraphmacros.pl add_functions - adds functions to graph."""
+                return None
+
+            def createLaTeXImage(*args, **kwargs):
+                """Stub for createLaTeXImage - creates LaTeX image object."""
+                return type('LaTeXImage', (), {
+                    'texPackages': lambda *a, **k: None,
+                    'BEGIN_LATEX_IMAGE': lambda *a, **k: '',
+                    'END_LATEX_IMAGE': property(lambda self: ''),
+                    'tex': lambda *a, **k: '',
+                })()
+
             def createTikZImage(*args, **kwargs):
                 """Stub for createTikZImage - creates TikZ image object."""
                 return type('TikZImage', (), {
@@ -1227,6 +1251,9 @@ class InProcessSandbox:
                 'Graph3D': Graph3D,
                 'Plot': Plot,
                 'VectorField3D': VectorField3D,
+                'init_graph': init_graph,
+                'add_functions': add_functions,
+                'createLaTeXImage': createLaTeXImage,
                 'createTikZImage': createTikZImage,
                 'Line': Line,
                 'COMPOSITION_ANS': COMPOSITION_ANS,
@@ -1604,6 +1631,30 @@ class InProcessSandbox:
                 'plot': lambda *a, **k: None,
             })()
 
+        def init_graph(*args, **kwargs):
+            """Stub for PGgraphmacros.pl init_graph - creates graph object."""
+            return type('WWPlot', (), {
+                '__str__': lambda self: 'WWPlot',
+                'draw': lambda *a, **k: None,
+                'stamps': lambda *a, **k: None,
+                'moveTo': lambda *a, **k: None,
+                'lineTo': lambda *a, **k: None,
+                'arrowTo': lambda *a, **k: None,
+            })()
+
+        def add_functions(*args, **kwargs):
+            """Stub for PGgraphmacros.pl add_functions - adds functions to graph."""
+            return None
+
+        def createLaTeXImage(*args, **kwargs):
+            """Stub for createLaTeXImage - creates LaTeX image object."""
+            return type('LaTeXImage', (), {
+                'texPackages': lambda *a, **k: None,
+                'BEGIN_LATEX_IMAGE': lambda *a, **k: '',
+                'END_LATEX_IMAGE': property(lambda self: ''),
+                'tex': lambda *a, **k: '',
+            })()
+
         def createTikZImage(*args, **kwargs):
             """Stub for createTikZImage - creates TikZ image object."""
             return type('TikZImage', (), {
@@ -1676,6 +1727,9 @@ class InProcessSandbox:
             'Graph3D': Graph3D,
             'Plot': Plot,
             'VectorField3D': VectorField3D,
+            'init_graph': init_graph,
+            'add_functions': add_functions,
+            'createLaTeXImage': createLaTeXImage,
             'createTikZImage': createTikZImage,
             'Line': Line,
             # Special answer evaluation
