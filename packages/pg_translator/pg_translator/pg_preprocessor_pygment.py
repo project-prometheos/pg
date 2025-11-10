@@ -2143,6 +2143,12 @@ class PGPreprocessor:
         # In Python: reduce is a @property, so calling it with () fails
         rewritten = re.sub(r'\.reduce\(\)', '.reduce', rewritten)
 
+        # Convert Perl range operator .. to Python range()
+        # This is tricky because .. can appear in various contexts: (a..b), [ a..b ], a..b
+        # The Lark parser handles most cases, but fallback is needed for complex expressions
+        # TODO: Improve handling for cases where Lark doesn't parse the full expression
+        # For now, rely on Lark grammar which handles most range expressions
+
         # Convert Perl string repetition operator 'x' to Python '*'
         # Pattern: (string/variable) x (number)
         # Be careful not to convert 'x' when it's a variable name or part of identifiers
