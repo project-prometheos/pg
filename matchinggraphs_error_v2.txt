@@ -1,0 +1,35 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.7, pytest-8.4.2, pluggy-1.6.0 -- C:\Users\mdahl\.conda\envs\pytorch-5090\python.exe
+cachedir: .pytest_cache
+hypothesis profile 'default'
+rootdir: d:\pg\packages\pg_translator
+configfile: pyproject.toml
+plugins: anyio-4.10.0, hypothesis-6.140.2, asyncio-1.2.0, cov-7.0.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 1 item
+
+packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[MatchingGraphs] FAILED [100%]
+
+================================== FAILURES ===================================
+________________ test_tutorial_problem_renders[MatchingGraphs] ________________
+packages\pg_translator\tests\test_tutorial_sample_problems.py:83: in test_tutorial_problem_renders
+    pytest.fail(
+E   Failed: Problem MatchingGraphs.pg failed with errors:
+E   SyntaxError: unexpected character after line continuation character (<problem>, line 38)
+E   Traceback (most recent call last):
+E     File "d:\pg\packages\pg_translator\pg_translator\in_process_sandbox.py", line 1958, in execute
+E       compiled = compile(code, '<problem>', 'exec')
+E                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E     File "<problem>", line 38
+E       \tikzset{>={Stealth[scale = 1.5]}}
+E        ^
+E   SyntaxError: unexpected character after line continuation character
+============================== warnings summary ===============================
+packages\pg_translator\tests\test_tutorial_sample_problems.py:138
+  d:\pg\packages\pg_translator\tests\test_tutorial_sample_problems.py:138: PytestUnknownMarkWarning: Unknown pytest.mark.slow - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.slow
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED packages\pg_translator\tests\test_tutorial_sample_problems.py::test_tutorial_problem_renders[MatchingGraphs]
+======================== 1 failed, 1 warning in 1.06s =========================

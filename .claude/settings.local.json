@@ -62,7 +62,11 @@
       "Bash(nul)",
       "Bash(find.exe:*)",
       "Bash(powershell -Command:*)",
-      "Bash(where:*)"
+      "Bash(where:*)",
+      "Bash(findstr:*)",
+      "Bash(matchinggraphs_error.txt)",
+      "Bash(images_error_v2.txt)",
+      "Bash(matchinggraphs_error_v2.txt)"
     ],
     "deny": [],
     "ask": []
