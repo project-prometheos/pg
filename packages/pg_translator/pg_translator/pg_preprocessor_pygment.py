@@ -2681,41 +2681,104 @@ class PGPreprocessor:
         return ''.join(result)
 
     def _convert_heredocs_global(self, pg_source: str) -> str:
-        """Convert Perl heredocs (<<END_MARKER) to Python triple-quoted strings at the source level.
-        
+        """Convert Perl heredocs (<<END_MARKER) and qq/.../  to Python triple-quoted strings at the source level.
+
         Processes the entire source before line splitting to handle heredocs properly.
-        
+
         Converts:
             HEADER_TEXT(MODES(TeX => '', HTML => <<END_STYLE));
             <style>...</style>
             END_STYLE
-        
+
         To a form like:
             HEADER_TEXT(MODES(TeX => '', HTML => '''<style>
-            
+
             </style>'''))
-        
+
+        Also converts:
+            $var = qq/content here/;
+
+        To:
+            $var = '''content here''';
+
         Note: The result will be re-split into lines by the caller, so embedded newlines
         in the triple-quoted strings are preserved.
         """
         import re as re_module
-        
+
         lines = pg_source.split('\n')
         result_lines: List[str] = []
         i = 0
-        
+
         while i < len(lines):
             line = lines[i]
-            
-            # Check if this line contains a heredoc start (<<MARKER)
-            heredoc_match = re_module.search(r'<<([A-Z_][A-Z0-9_]*)', line)
-            if heredoc_match:
+
+            # Check if this line contains qq/.../ or qq{...} or similar (Perl quoted strings)
+            # qq/ = qq with / delimiters
+            # qq{ = qq with { } delimiters
+            # etc.
+            qq_match = re_module.search(r'qq([/\{\[\(\|])', line)
+            if qq_match:
+                # Found a qq construct
+                delimiter = qq_match.group(1)
+                # Determine the closing delimiter
+                closing_delim = {'[': ']', '{': '}', '(': ')', '/': '/', '|': '|'}.get(delimiter, delimiter)
+
+                # Split the line at the qq start
+                before = line[:qq_match.start()]
+                # Skip the 'qq' and opening delimiter
+                after_qq_start = line[qq_match.end():]
+
+                # Collect content until we find the closing delimiter
+                content_lines: List[str] = []
+                remaining = after_qq_start
+
+                # Check if closing delimiter is on the same line
+                close_idx = remaining.find(closing_delim)
+                if close_idx != -1:
+                    # Found closing delimiter on same line
+                    content = remaining[:close_idx]
+                    after_content = remaining[close_idx + 1:]
+
+                    # Escape content for Python triple-quoted string
+                    content = content.replace('\\', '\\\\')
+                    content = content.replace("'''", "\\'''")
+
+                    new_line = f"{before}'''{content}'''{after_content}"
+                    result_lines.append(new_line)
+                else:
+                    # Closing delimiter is on a later line
+                    content_lines.append(remaining)
+                    i += 1
+                    while i < len(lines):
+                        current = lines[i]
+                        close_idx = current.find(closing_delim)
+                        if close_idx != -1:
+                            # Found the closing delimiter
+                            content_lines.append(current[:close_idx])
+                            after_content = current[close_idx + 1:]
+                            break
+                        else:
+                            content_lines.append(current)
+                        i += 1
+
+                    # Build the replacement: join content with actual newlines
+                    content = '\n'.join(content_lines)
+                    # Escape content for Python triple-quoted string
+                    content = content.replace('\\', '\\\\')
+                    content = content.replace("'''", "\\'''")
+
+                    new_line = f"{before}'''{content}'''{after_content}"
+                    result_lines.append(new_line)
+            # Check for traditional heredoc (<<MARKER)
+            elif re_module.search(r'<<([A-Z_][A-Z0-9_]*)', line):
+                heredoc_match = re_module.search(r'<<([A-Z_][A-Z0-9_]*)', line)
                 marker = heredoc_match.group(1)
-                
+
                 # Split the line at the heredoc marker
                 before = line[:heredoc_match.start()]
                 after_marker = line[heredoc_match.end():]  # Everything after <<MARKER on same line
-                
+
                 # Collect the content until we find the marker on its own line
                 content_lines: List[str] = []
                 i += 1
@@ -2726,23 +2789,23 @@ class PGPreprocessor:
                         break
                     content_lines.append(current)
                     i += 1
-                
+
                 # Build the replacement: join content with actual newlines
                 content = '\n'.join(content_lines)
                 # Escape backslashes in the content (for regex characters, etc.)
                 content = content.replace('\\', '\\\\')
                 # Escape triple quotes
                 content = content.replace("'''", "\\'''")
-                
+
                 # Build the new line with triple-quoted string
                 # Include the content with embedded newlines
                 new_line = f"{before}'''{content}'''{after_marker}"
                 result_lines.append(new_line)
             else:
                 result_lines.append(line)
-            
+
             i += 1
-        
+
         return '\n'.join(result_lines)
 
     def _transform_load_macros(self, macro_list_str: str) -> Tuple[List[str], str]:
