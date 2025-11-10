@@ -192,7 +192,12 @@ class PGPreprocessor:
 
             # Join Perl-style implicit continuations to make downstream parsing easier
             is_comment = original_line.lstrip(' \t').startswith('#')
-            if not is_comment:
+            # Check if this is a special block marker (BEGIN_PGML, BEGIN_TEXT, etc.)
+            is_special_block = any(
+                re.match(pattern, original_line.strip())
+                for pattern, _ in self.BLOCK_PATTERNS.values()
+            )
+            if not is_comment and not is_special_block:
                 if not re.match(r'^\s*\}\s*else\s*\{\s*$', original_line):
                     while i + 1 < len(lines):
                         stripped = original_line.rstrip()
@@ -234,6 +239,12 @@ class PGPreprocessor:
                             next_stripped = next_line.lstrip(' \t')
                             if (stripped and stripped.endswith('}') and
                                 next_stripped and next_stripped.startswith('until')):
+                                should_join = True
+                            # Special case: if current line contains 'map {' or 'grep {' with balanced braces,
+                            # the next line is the iterable, so join them
+                            elif (stripped and re.search(r'(map|grep)\s*\{', stripped) and
+                                  stripped.endswith('}') and
+                                  next_stripped):
                                 should_join = True
                             # If current line has logical operators, keep joining
                             elif (stripped and (stripped.endswith('&&') or stripped.endswith('||') or

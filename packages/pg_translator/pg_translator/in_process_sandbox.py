@@ -314,6 +314,58 @@ class InProcessSandbox:
                 # Return stub values for slope and intercept
                 return (1, 0)  # Default slope=1, intercept=0
 
+            def splice(array, offset, length=1, replacement=None):
+                """Splice function - removes and returns elements from array.
+
+                In Perl: splice(@array, offset, length, replacement)
+                Removes length elements starting at offset and optionally replaces them.
+                Returns the removed element(s).
+                """
+                if not isinstance(array, list):
+                    return None
+
+                # Handle default length
+                if length is None or length == 1:
+                    length = 1
+
+                # Get the elements to remove
+                if offset < 0:
+                    offset = len(array) + offset
+
+                if offset < 0 or offset >= len(array):
+                    return None
+
+                # Remove and return the element
+                removed = array.pop(offset)
+
+                # Handle replacement if provided
+                if replacement is not None:
+                    if isinstance(replacement, (list, tuple)):
+                        for i, item in enumerate(replacement):
+                            array.insert(offset + i, item)
+                    else:
+                        array.insert(offset, replacement)
+
+                return removed
+
+            def push(array, *items):
+                """Push function - appends items to the end of an array.
+
+                In Perl: push(@array, items...)
+                Appends one or more items to the end of array.
+                Returns the new length of the array.
+                """
+                if not isinstance(array, list):
+                    return None
+
+                for item in items:
+                    if isinstance(item, (list, tuple)):
+                        array.extend(item)
+                    else:
+                        array.append(item)
+
+                return len(array)
+
             class Scaffold:
                 """Stub Scaffold class for scaffolding problems."""
                 @staticmethod
@@ -342,6 +394,8 @@ class InProcessSandbox:
             self.namespace['new_match_list'] = new_match_list
             self.namespace['pop_up_list_print_q'] = pop_up_list_print_q
             self.namespace['linear_regression'] = linear_regression
+            self.namespace['splice'] = splice
+            self.namespace['push'] = push
             self.namespace['Scaffold'] = Scaffold
             self.namespace['Section'] = Section
 
@@ -798,6 +852,8 @@ class InProcessSandbox:
             self.namespace['new_match_list'] = new_match_list
             self.namespace['pop_up_list_print_q'] = pop_up_list_print_q
             self.namespace['linear_regression'] = linear_regression
+            self.namespace['splice'] = splice
+            self.namespace['push'] = push
             self.namespace['ENV'] = {}  # Environment dictionary
             self.namespace['i'] = complex(0, 1)
             self.namespace['j'] = complex(0, 1)  # Alias for i (engineering notation)
