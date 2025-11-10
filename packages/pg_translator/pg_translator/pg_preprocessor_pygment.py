@@ -891,6 +891,9 @@ class PGPreprocessor:
 
                     # Convert Perl range operator .. to Python range()
                     # Handle both "a .. b" and "a..b" formats
+                    # First handle parenthesized ranges like (0 .. 3)
+                    list_expr = re_module.sub(r'\((\d+)\s*\.\.\s*(\d+)\)', r'range(\1, \2 + 1)', list_expr)
+                    # Then handle non-parenthesized ranges
                     list_expr = re_module.sub(r'(\S+)\s*\.\.\s*(\S+)', r'range(\1, \2 + 1)', list_expr)
 
                     # Build the list comprehension

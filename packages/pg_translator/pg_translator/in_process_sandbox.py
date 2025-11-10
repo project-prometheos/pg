@@ -309,6 +309,11 @@ class InProcessSandbox:
                 """Stub pop_up_list_print_q - dummy function for printing questions."""
                 return ""
 
+            def linear_regression(*args, **kwargs):
+                """Stub linear_regression - returns (slope, intercept) tuple."""
+                # Return stub values for slope and intercept
+                return (1, 0)  # Default slope=1, intercept=0
+
             class Scaffold:
                 """Stub Scaffold class for scaffolding problems."""
                 @staticmethod
@@ -336,6 +341,7 @@ class InProcessSandbox:
             self.namespace['random_subset'] = random_subset
             self.namespace['new_match_list'] = new_match_list
             self.namespace['pop_up_list_print_q'] = pop_up_list_print_q
+            self.namespace['linear_regression'] = linear_regression
             self.namespace['Scaffold'] = Scaffold
             self.namespace['Section'] = Section
 
@@ -768,6 +774,11 @@ class InProcessSandbox:
                 """Stub pop_up_list_print_q - dummy function for printing questions."""
                 return ""
 
+            def linear_regression(*args, **kwargs):
+                """Stub linear_regression - returns (slope, intercept) tuple."""
+                # Return stub values for slope and intercept
+                return (1, 0)  # Default slope=1, intercept=0
+
             self.namespace['Context'] = Context
             self.namespace['Formula'] = Formula
             self.namespace['Real'] = Real
@@ -786,6 +797,7 @@ class InProcessSandbox:
             self.namespace['random_subset'] = random_subset
             self.namespace['new_match_list'] = new_match_list
             self.namespace['pop_up_list_print_q'] = pop_up_list_print_q
+            self.namespace['linear_regression'] = linear_regression
             self.namespace['ENV'] = {}  # Environment dictionary
             self.namespace['i'] = complex(0, 1)
             self.namespace['j'] = complex(0, 1)  # Alias for i (engineering notation)
