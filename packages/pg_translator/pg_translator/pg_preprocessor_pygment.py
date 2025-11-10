@@ -663,6 +663,10 @@ class PGPreprocessor:
         # In Perl: @var = () creates an empty list
         # In Python: () is a tuple, [] is a list, so we need to convert
         code = re.sub(r'^\s*([a-z_]\w*)\s*=\s*\(\)\s*$', r'\1 = []', code, flags=re.MULTILINE)
+        # Fix _.[...] pattern (shouldn't have a dot before bracket in Python)
+        # This occurs when $_ -> [...] is converted to _ . [...]
+        # In Python, we just want _[...]
+        code = re.sub(r'\b_\.(\[)', r'_\1', code)
         return PreprocessResult(code=code, text_blocks=text_blocks, line_map=line_map)
 
     def _initialize_arrays(self, code: str) -> str:
