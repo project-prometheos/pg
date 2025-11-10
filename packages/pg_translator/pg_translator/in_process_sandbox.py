@@ -40,6 +40,15 @@ try:
     from pg_macros.parsers.parser_implicit_equation import ImplicitEquation
     from pg_macros.parsers.parser_solution_for import SolutionFor
 
+    # Phase 3: Problem Structure & UI
+    from pg_macros.ui.scaffold import Scaffold, Section
+
+    # Phase 4: Math Utilities
+    from pg_macros.math.vector_utils import norm, unit, Line
+    from pg_macros.math.auxiliary_functions import (
+        Round, nicestring, randomPerson, non_zero_point3D, non_zero_vector3D
+    )
+
     _MACROS_AVAILABLE = True
 except ImportError:
     _MACROS_AVAILABLE = False
@@ -393,38 +402,12 @@ class InProcessSandbox:
 
                 return len(array)
 
-            class Scaffold:
-                """Stub Scaffold class for scaffolding problems."""
-                @staticmethod
-                def Begin(*args, **kwargs):
-                    """Stub Begin - start scaffolding."""
-                    return None
-
-                @staticmethod
-                def End(*args, **kwargs):
-                    """Stub End - end scaffolding."""
-                    return None
-
-            class Section:
-                """Stub Section class for scaffolding sections."""
-                @staticmethod
-                def Begin(*args, **kwargs):
-                    """Stub Begin - start section."""
-                    return None
-
-                @staticmethod
-                def End(*args, **kwargs):
-                    """Stub End - end section."""
-                    return None
-
             self.namespace['random_subset'] = random_subset
             self.namespace['new_match_list'] = new_match_list
             self.namespace['pop_up_list_print_q'] = pop_up_list_print_q
             self.namespace['linear_regression'] = linear_regression
             self.namespace['splice'] = splice
             self.namespace['push'] = push
-            self.namespace['Scaffold'] = Scaffold
-            self.namespace['Section'] = Section
 
         except ImportError:
             # Fallback: provide minimal stubs
@@ -831,30 +814,6 @@ class InProcessSandbox:
                     return answer
                 return hint_filter
 
-            class Scaffold:
-                """Stub Scaffold class for scaffolding problems."""
-                @staticmethod
-                def Begin(*args, **kwargs):
-                    """Stub Begin - start scaffolding."""
-                    return None
-
-                @staticmethod
-                def End(*args, **kwargs):
-                    """Stub End - end scaffolding."""
-                    return None
-
-            class Section:
-                """Stub Section class for scaffolding sections."""
-                @staticmethod
-                def Begin(*args, **kwargs):
-                    """Stub Begin - start section."""
-                    return None
-
-                @staticmethod
-                def End(*args, **kwargs):
-                    """Stub End - end section."""
-                    return None
-
             def random_subset(n=None, *items, **kwargs):
                 """Stub random_subset - returns first N items from a list."""
                 if items:
@@ -897,8 +856,6 @@ class InProcessSandbox:
             self.namespace['Point'] = Point
             self.namespace['Vector'] = Vector
             self.namespace['FormulaUpToConstant'] = FormulaUpToConstant
-            self.namespace['Scaffold'] = Scaffold
-            self.namespace['Section'] = Section
             self.namespace['install_problem_grader'] = install_problem_grader
             self.namespace['custom_problem_grader_fluid'] = custom_problem_grader_fluid
             self.namespace['AnswerHints'] = AnswerHints
@@ -961,41 +918,6 @@ class InProcessSandbox:
                 # Return rendered HTML (which TEXT() will append)
                 return rendered_html
 
-            # Define additional stubs not in pg_core
-            def non_zero_point3D(*args):
-                """Stub for non_zero_point3D - generates non-zero 3D point."""
-                Point = self.namespace.get('Point')
-                if Point:
-                    return Point([pg_core.non_zero_random(-5, 5), pg_core.non_zero_random(-5, 5), pg_core.non_zero_random(-5, 5)])
-                return [pg_core.non_zero_random(-5, 5), pg_core.non_zero_random(-5, 5), pg_core.non_zero_random(-5, 5)]
-
-            def non_zero_vector3D(*args):
-                """Stub for non_zero_vector3D - generates non-zero 3D vector."""
-                Vector = self.namespace.get('Vector')
-                if Vector:
-                    return Vector([pg_core.non_zero_random(-5, 5), pg_core.non_zero_random(-5, 5), pg_core.non_zero_random(-5, 5)])
-                return [pg_core.non_zero_random(-5, 5), pg_core.non_zero_random(-5, 5), pg_core.non_zero_random(-5, 5)]
-
-            def norm(vector):
-                """Compute the norm (magnitude/length) of a vector."""
-                if hasattr(vector, 'norm'):
-                    return vector.norm()
-                # Fallback for list/tuple
-                import math
-                return math.sqrt(sum(x**2 for x in vector))
-
-            def unit(vector):
-                """Compute the unit vector in the direction of the given vector."""
-                if hasattr(vector, 'unit'):
-                    return vector.unit()
-                # Fallback for list/tuple
-                import math
-                magnitude = math.sqrt(sum(x**2 for x in vector))
-                if magnitude == 0:
-                    raise ValueError(
-                        "Cannot compute unit vector of zero vector")
-                return [x / magnitude for x in vector]
-
             def Matrix(*args, **kwargs):
                 """Matrix wrapper for compatibility."""
                 # Use a special key to avoid recursion with the wrapper itself
@@ -1028,55 +950,6 @@ class InProcessSandbox:
             def UNORDERED_ANS(*args, **kwargs):
                 """Stub for UNORDERED_ANS - unordered answer checker."""
                 return pg_core.ANS(*args, **kwargs)
-
-            def nicestring(coeffs, vars=None):
-                """
-                Format a polynomial as a nice string (e.g., "3x + 2y - 5").
-
-                Args:
-                    coeffs: List of coefficients
-                    vars: List of variable names (default: ['x'])
-
-                Returns:
-                    String representation of the polynomial
-                """
-                if vars is None:
-                    vars = ['x']
-
-                if not coeffs:
-                    return '0'
-
-                terms = []
-                for i, coeff in enumerate(coeffs):
-                    if coeff == 0:
-                        continue
-
-                    var = vars[i] if i < len(vars) else ''
-
-                    if i == 0 and not var:
-                        # Constant term only
-                        terms.append(str(coeff))
-                    elif coeff == 1 and var:
-                        terms.append(var)
-                    elif coeff == -1 and var:
-                        terms.append(f"-{var}")
-                    elif var:
-                        terms.append(f"{coeff}{var}")
-                    else:
-                        terms.append(str(coeff))
-
-                if not terms:
-                    return '0'
-
-                # Join with appropriate signs
-                result = terms[0]
-                for term in terms[1:]:
-                    if term.startswith('-'):
-                        result += f" - {term[1:]}"
-                    else:
-                        result += f" + {term}"
-
-                return result
 
             # Use imported GraphTool if available, otherwise fallback to inline stub
             if not _MACROS_AVAILABLE:
@@ -1129,37 +1002,7 @@ class InProcessSandbox:
                 else:
                     return f'<{tagname} {attr_str}/>'
 
-            def Round(value, decimals=0):
-                """Stub for Round - rounding function."""
-                return round(float(value), int(decimals))
-
-            # Phase 2 stub functions imported from pg_macros modules
-
-            def randomPerson(n=1, **kwargs):
-                """Stub for randomPerson - generates random person names with pronouns."""
-                import random
-
-                # Simple Person stub with name() method
-                class Person:
-                    def __init__(self, first, last):
-                        self._first = first
-                        self._last = last
-
-                    def name(self):
-                        return f"{self._first} {self._last}"
-
-                    def __str__(self):
-                        return self.name()
-
-                first_names = ['Alice', 'Bob',
-                               'Carol', 'David', 'Eve', 'Frank']
-                last_names = ['Smith', 'Jones', 'Brown',
-                              'Davis', 'Miller', 'Wilson']
-
-                if n == 1:
-                    return Person(random.choice(first_names), random.choice(last_names))
-                else:
-                    return [Person(random.choice(first_names), random.choice(last_names)) for _ in range(n)]
+            # Phase 4 stub functions imported from pg_macros modules
 
             # Additional graphics stubs
             def VectorField3D(*args, **kwargs):
@@ -1168,12 +1011,7 @@ class InProcessSandbox:
                     'plot': lambda *a, **k: None,
                 })()
 
-            def Line(*points, **kwargs):
-                """Stub for Line - geometric line through points."""
-                return type('Line', (), {
-                    '__str__': lambda self: 'Line',
-                    'evaluate': lambda self, t: points[0] if points else (0, 0, 0),
-                })()
+            # Line stub removed - use pg_macros.math.vector_utils.Line
 
             # Problem grading functions
             def install_problem_grader(grader):
@@ -1231,11 +1069,16 @@ class InProcessSandbox:
                 'get_environment': pg_core.get_environment,
                 # Common constants
                 'SPACE': ' ',
-                # Additional stubs
+                # Phase 4: Use imported math utilities directly
                 'non_zero_point3D': non_zero_point3D,
                 'non_zero_vector3D': non_zero_vector3D,
                 'norm': norm,
                 'unit': unit,
+                'Line': Line,
+                'Round': Round,
+                'nicestring': nicestring,
+                'randomPerson': randomPerson,
+                # Other stubs
                 'Matrix': Matrix,
                 'Graph3D': Graph3D,
                 'Plot': Plot,
@@ -1245,10 +1088,8 @@ class InProcessSandbox:
                 'add_functions': add_functions,
                 'createLaTeXImage': createLaTeXImage,
                 'createTikZImage': createTikZImage,
-                'Line': Line,
                 'COMPOSITION_ANS': COMPOSITION_ANS,
                 'UNORDERED_ANS': UNORDERED_ANS,
-                'nicestring': nicestring,
                 # Use imported modules if available, otherwise use local stubs
                 'GraphTool': globals()['GraphTool'] if _MACROS_AVAILABLE else GraphTool,
                 # GraphTool object type constants (used in f-strings)
@@ -1264,14 +1105,15 @@ class InProcessSandbox:
                 'DraggableSubsets': DraggableSubsets,
                 'CheckboxList': CheckboxList,
                 'tag': tag,
-                'Round': Round,
                 # Phase 2: Use imported parser functions directly
                 'NumberWithUnits': NumberWithUnits,
                 'ImplicitEquation': ImplicitEquation,
                 'SolutionFor': SolutionFor,
                 'ParametricLine': ParametricLine,
                 'ImplicitPlane': ImplicitPlane,
-                'randomPerson': randomPerson,
+                # Phase 3: Problem Structure & UI
+                'Scaffold': Scaffold,
+                'Section': Section,
                 'undef': undef,
                 # Problem grading
                 'install_problem_grader': install_problem_grader,
@@ -1471,37 +1313,6 @@ class InProcessSandbox:
             """Stub for UNORDERED_ANS - unordered answer checker."""
             return ANS(*args, **kwargs)
 
-        def nicestring(coeffs, vars=None):
-            """Format a polynomial as a nice string."""
-            if vars is None:
-                vars = ['x']
-            if not coeffs:
-                return '0'
-            terms = []
-            for i, coeff in enumerate(coeffs):
-                if coeff == 0:
-                    continue
-                var = vars[i] if i < len(vars) else ''
-                if i == 0 and not var:
-                    terms.append(str(coeff))
-                elif coeff == 1 and var:
-                    terms.append(var)
-                elif coeff == -1 and var:
-                    terms.append(f"-{var}")
-                elif var:
-                    terms.append(f"{coeff}{var}")
-                else:
-                    terms.append(str(coeff))
-            if not terms:
-                return '0'
-            result = terms[0]
-            for term in terms[1:]:
-                if term.startswith('-'):
-                    result += f" - {term[1:]}"
-                else:
-                    result += f" + {term}"
-            return result
-
         def GraphTool(*args, **kwargs):
             """Stub for GraphTool - interactive graphing tool."""
             class GraphToolStub:
@@ -1544,89 +1355,13 @@ class InProcessSandbox:
             else:
                 return f'<{tagname} {attr_str}/>'
 
-        # Numeric utilities
-        def Round(value, decimals=0):
-            """Stub for Round - rounding function."""
-            return round(float(value), int(decimals))
-
-        # Units
-        def NumberWithUnits(value, units=''):
-            """Stub for NumberWithUnits - number with units."""
-            return type('NumberWithUnits', (), {
-                'value': value,
-                'units': units,
-                '__str__': lambda self: f'{value} {units}',
-            })()
-
-        # Parser utilities
-        def ImplicitEquation(*args, **kwargs):
-            """Stub for ImplicitEquation - implicit equation parser."""
-            Formula = self.namespace.get('Formula')
-            if Formula:
-                return Formula(str(args[0]) if args else '0')
-            return str(args[0]) if args else '0'
-
-        def SolutionFor(*args, **kwargs):
-            """Stub for SolutionFor - solution checker.
-
-            Returns a dict-like object with 'f' key containing the formula.
-            """
-            Formula = self.namespace.get('Formula')
-            formula_obj = Formula(str(args[0]) if args else '0') if Formula else str(
-                args[0]) if args else '0'
-            # Return a dict-like object with the formula
-            return {'f': formula_obj, 'solution': args[1] if len(args) > 1 else None}
-
-        def ParametricLine(*args, **kwargs):
-            """Stub for ParametricLine - parametric line parser."""
-            return type('ParametricLine', (), {
-                '__str__': lambda self: 'ParametricLine',
-            })()
-
-        def ImplicitPlane(*args, **kwargs):
-            """Stub for ImplicitPlane - implicit plane parser."""
-            return type('ImplicitPlane', (), {
-                '__str__': lambda self: 'ImplicitPlane',
-            })()
-
-        # Random utilities
-        def randomPerson(n=1, **kwargs):
-            """Stub for randomPerson - generates random person names with pronouns."""
-            import random
-
-            # Simple Person stub with name() method
-            class Person:
-                def __init__(self, first, last):
-                    self._first = first
-                    self._last = last
-
-                def name(self):
-                    return f"{self._first} {self._last}"
-
-                def __str__(self):
-                    return self.name()
-
-            first_names = ['Alice', 'Bob', 'Carol', 'David', 'Eve', 'Frank']
-            last_names = ['Smith', 'Jones', 'Brown',
-                          'Davis', 'Miller', 'Wilson']
-
-            if n == 1:
-                return Person(random.choice(first_names), random.choice(last_names))
-            else:
-                return [Person(random.choice(first_names), random.choice(last_names)) for _ in range(n)]
+        # Phase 4 utilities removed - use pg_macros.math modules
 
         # Additional graphics stubs
         def VectorField3D(*args, **kwargs):
             """Stub for VectorField3D - 3D vector field graphing."""
             return type('VectorField3D', (), {
                 'plot': lambda *a, **k: None,
-            })()
-
-        def Line(*points, **kwargs):
-            """Stub for Line - geometric line through points."""
-            return type('Line', (), {
-                '__str__': lambda self: 'Line',
-                'evaluate': lambda self, t: points[0] if points else (0, 0, 0),
             })()
 
         # Perl compatibility values

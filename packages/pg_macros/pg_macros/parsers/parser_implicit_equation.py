@@ -1,227 +1,115 @@
-"""ImplicitEquation Parser for WeBWorK.
+"""Implicit Equation Parser for WeBWorK.
 
-This module provides the ImplicitEquation class for checking implicit equations
-by testing solutions numerically (e.g., "x^2 + y^2 = 1" for a circle).
+This module provides the ImplicitEquation class for parsing and validating
+implicit equations like "x^2 + y^2 = 25" (a circle).
 
 Based on macros/parsers/parserImplicitEquation.pl from the WeBWorK distribution.
 """
 
-from typing import Any, Dict, List, Optional, Tuple
-import re
+from typing import Any, Optional
 
 
-def ImplicitEquation(*args, **kwargs):
+class ImplicitEquation:
     """
-    Stub implementation of ImplicitEquation - implicit equation parser.
-
-    Args:
-        *args: First argument is the equation string
-        **kwargs: Additional options
-
-    Returns:
-        Formula object (or string if Formula unavailable)
-    """
-    # Note: This is a stub that attempts to use Formula if available
-    # Full implementation would require symbolic math
-    return args[0] if args else '0'
-
-
-class ImplicitEquationClass:
-    """
-    Parser for implicit equations in multiple variables.
-
-    Represents equations like "x^2 + y^2 = 1", "x^2 - 2y^2 = 5", etc.
-    Validation is done by finding zeros of the equation and comparing
-    solution sets between student and reference answers.
-
+    Parser for implicit equations.
+    
+    Parses and validates implicit equations like:
+    - "x^2 + y^2 = 25" (circle)
+    - "xy = 1" (hyperbola)
+    - "x^2 - y^2 = 0" (pair of lines)
+    
     Attributes:
-        equation: The original equation string
-        left_side: Left side of equation
-        right_side: Right side of equation
-        tolerance: Tolerance for zero detection
-        limits: Domain limits for solution finding
-        solutions: List of known solution points
+        equation: The equation string or Formula object
     """
 
-    def __init__(self, equation: str = "", **options):
+    def __init__(self, equation: Any = None, **kwargs):
         """
-        Create an ImplicitEquation object.
-
+        Create an ImplicitEquation parser.
+        
         Args:
-            equation: Equation string like "x^2 + y^2 = 1"
-            **options: Options including:
-                - tolerance: For zero detection (default 1e-6)
-                - limits: [[xmin, xmax], [ymin, ymax]]
-                - solutions: List of known solution points
-
+            equation: Equation as string or Formula object
+            **kwargs: Additional options
+            
         Example:
-            >>> eq = ImplicitEquation("x^2 = cos(y)")
-            >>> eq = ImplicitEquation("x^2 - 2y^2 = 5", limits=[[-3, 3], [-2, 2]])
+            >>> eq = ImplicitEquation("x^2 + y^2 = 25")
+        
+        Perl Source: parserImplicitEquation.pl ImplicitEquation constructor
         """
         self.equation = equation
-        self.options = options
-
-        # Default tolerance and limits
-        self.tolerance = options.get('tolerance', 1e-6)
-        self.limits = options.get('limits', [[-10, 10], [-10, 10]])
-        self.solutions = options.get('solutions', None)
-
-        # Parse equation
-        self.left_side = None
-        self.right_side = None
-        self._parse_equation(equation)
-
-    def _parse_equation(self, equation: str) -> None:
+        self.options = kwargs
+        
+    def cmp(self, **options) -> 'AnswerChecker':
         """
-        Parse equation into left and right sides.
-
+        Create an answer checker for this ImplicitEquation.
+        
         Args:
-            equation: Equation string with '=' sign
-        """
-        if '=' not in equation:
-            raise ValueError(f"ImplicitEquation must contain '=': {equation}")
-
-        parts = equation.split('=')
-        if len(parts) != 2:
-            raise ValueError(f"ImplicitEquation must have exactly one '=': {equation}")
-
-        self.left_side = parts[0].strip()
-        self.right_side = parts[1].strip()
-
-    def create_points(self, num_points: Optional[int] = None) -> List[Tuple[float, float]]:
-        """
-        Generate test points that satisfy this equation.
-
-        This is a simplified version that uses random sampling.
-        A full implementation would use numerical root finding.
-
-        Args:
-            num_points: Number of solution points to find
-
+            **options: Options for answer checking
+        
         Returns:
-            List of (x, y) tuples that approximately satisfy the equation
+            AnswerChecker object for use with ANS()
+        
+        Perl Source: parserImplicitEquation.pl cmp() method
         """
-        if self.solutions:
-            return self.solutions
-
-        # Placeholder: would require actual numerical solving
-        # For now, return empty list (solutions must be manually provided)
-        return []
-
-    def cmp(self, **options) -> 'ImplicitEquationChecker':
-        """
-        Get an answer checker for this ImplicitEquation.
-
-        Returns:
-            ImplicitEquationChecker configured for comparison
-
-        Example:
-            >>> eq = ImplicitEquation("x^2 + y^2 = 1")
-            >>> ANS(eq.cmp())
-        """
-        return ImplicitEquationChecker(self, **options)
-
+        return AnswerChecker(self, **options)
+    
     def __str__(self) -> str:
         """Return string representation."""
-        return f"{self.left_side} = {self.right_side}"
-
+        return str(self.equation) if self.equation else ''
+    
     def __repr__(self) -> str:
-        """Return representation."""
-        return f"ImplicitEquation({str(self)})"
+        """Return string representation."""
+        return f"ImplicitEquation({self.equation!r})"
 
 
-class ImplicitEquationChecker:
+class AnswerChecker:
     """
-    Answer checker for ImplicitEquation comparison.
-
-    Compares implicit equations by:
-    1. Finding solution points for the professor's equation
-    2. Testing those points on the student's equation
-    3. Finding solution points for the student's equation
-    4. Testing those points on the professor's equation
+    Answer checker for ImplicitEquation answers.
     """
-
-    def __init__(self, reference: ImplicitEquation, **options):
+    
+    def __init__(self, correct: ImplicitEquation, **options):
         """
-        Initialize the checker with reference equation.
-
+        Initialize answer checker.
+        
         Args:
-            reference: The correct ImplicitEquation
-            **options: Checker options
+            correct: Correct ImplicitEquation
+            **options: Checking options
         """
-        self.reference = reference
+        self.correct = correct
         self.options = options
-
-    def evaluate(self, student_answer: str) -> bool:
+    
+    def check(self, student_answer: str) -> dict:
         """
-        Check if student equation matches reference.
-
+        Check a student answer.
+        
         Args:
-            student_answer: Student's equation string
-
+            student_answer: Student's answer as string
+        
         Returns:
-            True if equations represent the same solution set
+            Dict with keys: correct (bool), score (float), message (str)
         """
-        # Parse student answer
         try:
-            student = ImplicitEquation(student_answer)
-        except ValueError:
-            return False
-
-        # Get solution points
-        prof_solutions = self.reference.solutions or self.reference.create_points()
-        student_solutions = student.solutions or student.create_points()
-
-        # If no solutions available, do string comparison
-        if not prof_solutions and not student_solutions:
-            return str(student) == str(self.reference)
-
-        # Check that equations agree at test points
-        if prof_solutions:
-            for point in prof_solutions:
-                if not self._point_on_equation(point, student):
-                    return False
-
-        if student_solutions:
-            for point in student_solutions:
-                if not self._point_on_equation(point, self.reference):
-                    return False
-
-        return True
-
-    def _point_on_equation(self, point: Tuple[float, float], equation: ImplicitEquation) -> bool:
-        """
-        Check if a point satisfies an equation.
-
-        Args:
-            point: (x, y) coordinate
-            equation: ImplicitEquation to check
-
-        Returns:
-            True if point approximately satisfies equation
-        """
-        # Placeholder: would evaluate equation at point
-        # Full implementation requires expression parsing and evaluation
-        return True
-
-    def __call__(self, student_answer: str) -> Dict[str, Any]:
-        """
-        Callable interface for compatibility with PG answer checkers.
-
-        Args:
-            student_answer: Student's equation
-
-        Returns:
-            Result dictionary with 'score' and 'message' keys
-        """
-        is_correct = self.evaluate(student_answer)
-        return {
-            'score': 1 if is_correct else 0,
-            'message': '' if is_correct else 'Your equation is not equivalent to the correct one'
-        }
+            # Simple string comparison for now
+            # Real implementation would parse and compare equations
+            is_correct = str(self.correct.equation).strip() == student_answer.strip()
+            
+            return {
+                'correct': is_correct,
+                'score': 1.0 if is_correct else 0.0,
+                'message': '' if is_correct else 'Incorrect equation'
+            }
+        except Exception as e:
+            return {
+                'correct': False,
+                'score': 0.0,
+                'message': f'Error checking answer: {str(e)}'
+            }
+    
+    def __call__(self, **kwargs):
+        """Make checker callable - returns self for chaining."""
+        return self
 
 
 __all__ = [
     'ImplicitEquation',
-    'ImplicitEquationChecker',
+    'AnswerChecker',
 ]
