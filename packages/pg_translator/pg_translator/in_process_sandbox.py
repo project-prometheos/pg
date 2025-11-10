@@ -70,6 +70,15 @@ try:
     from pg_macros.parsers.parser_function import parserFunction
     from pg_macros.core.pg_graders import install_problem_grader, custom_problem_grader_fluid
 
+    # Phase 9: Core Utilities
+    from pg_macros.core.pgml_utils import tag, helpLink
+    from pg_macros.math.statistics_utils import linear_regression
+
+    # Phase 10: Fallback Cleanup
+    from pg_macros.core.fallback_utilities import (
+        random_subset, new_match_list, pop_up_list_print_q, splice, undef
+    )
+
     _MACROS_AVAILABLE = True
 except ImportError:
     _MACROS_AVAILABLE = False
@@ -365,11 +374,6 @@ class InProcessSandbox:
             def pop_up_list_print_q(*args, **kwargs):
                 """Stub pop_up_list_print_q - dummy function for printing questions."""
                 return ""
-
-            def linear_regression(*args, **kwargs):
-                """Stub linear_regression - returns (slope, intercept) tuple."""
-                # Return stub values for slope and intercept
-                return (1, 0)  # Default slope=1, intercept=0
 
             def splice(array, offset, length=1, replacement=None):
                 """Splice function - removes and returns elements from array.
@@ -856,11 +860,6 @@ class InProcessSandbox:
                 """Stub pop_up_list_print_q - dummy function for printing questions."""
                 return ""
 
-            def linear_regression(*args, **kwargs):
-                """Stub linear_regression - returns (slope, intercept) tuple."""
-                # Return stub values for slope and intercept
-                return (1, 0)  # Default slope=1, intercept=0
-
             self.namespace['Context'] = Context
             self.namespace['Formula'] = Formula
             self.namespace['Real'] = Real
@@ -951,13 +950,7 @@ class InProcessSandbox:
 
             # Phase 7 functions imported from pg_macros modules
 
-            def tag(tagname, content='', **attrs):
-                """Stub for tag - HTML tag generator."""
-                attr_str = ' '.join(f'{k}="{v}"' for k, v in attrs.items())
-                if content:
-                    return f'<{tagname} {attr_str}>{content}</{tagname}>'
-                else:
-                    return f'<{tagname} {attr_str}/>'
+            # Phase 9 functions imported from pg_macros modules
 
             # Phase 4 stub functions imported from pg_macros modules
 
@@ -1168,8 +1161,8 @@ class InProcessSandbox:
         def get_environment(): return _env
         def set_environment(env): pass
 
-
         # Geometric stubs
+
         def non_zero_point3D(*args):
             """Stub for non_zero_point3D - generates non-zero 3D point."""
             # Returns a random 3D point with no zero coordinates
@@ -1228,20 +1221,11 @@ class InProcessSandbox:
 
         # Graphics stubs
 
-
         # Special answer evaluation functions
 
         # Phase 7 utilities removed - use pg_macros modules
 
-        # String/HTML utilities
-
-        def tag(tagname, content='', **attrs):
-            """Stub for tag - HTML tag generator."""
-            attr_str = ' '.join(f'{k}="{v}"' for k, v in attrs.items())
-            if content:
-                return f'<{tagname} {attr_str}>{content}</{tagname}>'
-            else:
-                return f'<{tagname} {attr_str}/>'
+        # Phase 9 utilities removed - use pg_macros modules
 
         # Phase 4 utilities removed - use pg_macros.math modules
 
