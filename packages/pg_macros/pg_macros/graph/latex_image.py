@@ -9,17 +9,6 @@ Based on macros/graph/PGlateximage.pl from the WeBWorK distribution.
 from typing import Any, Dict, List, Optional, Union
 
 
-# Stub implementation
-def createLaTeXImage(*args, **kwargs):
-    """Stub for createLaTeXImage - creates LaTeX image object."""
-    return type('LaTeXImage', (), {
-        'texPackages': lambda *a, **k: None,
-        'BEGIN_LATEX_IMAGE': lambda *a, **k: '',
-        'END_LATEX_IMAGE': property(lambda self: ''),
-        'tex': lambda *a, **k: '',
-    })()
-
-
 class LaTeXImage:
     """
     LaTeX image object for rendering LaTeX-based graphics.
@@ -41,7 +30,7 @@ class LaTeXImage:
     def __init__(self):
         """Initialize a LaTeX image object."""
         self.tex_code = ""
-        self.environment = None
+        self._environment = None
         self.environment_options = ""
         self.tex_packages = []
         self.tikz_libraries = []
@@ -108,11 +97,11 @@ class LaTeXImage:
         """
         if isinstance(env, list):
             if len(env) > 0:
-                self.environment = env[0]
+                self._environment = env[0]
             if len(env) > 1:
                 self.environment_options = env[1]
         else:
-            self.environment = env
+            self._environment = env
         return self
 
     def texPackages(self, packages: List[Union[str, List[str]]]) -> 'LaTeXImage':
@@ -236,7 +225,7 @@ class LaTeXImage:
 
     def __repr__(self) -> str:
         """Return string representation."""
-        env_str = f", env={self.environment}" if self.environment else ""
+        env_str = f", env={self._environment}" if self._environment else ""
         return f"LaTeXImage(ext={self.extension}{env_str}, code_len={len(self.tex_code)})"
 
 

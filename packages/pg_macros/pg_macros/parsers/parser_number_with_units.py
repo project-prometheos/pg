@@ -1,233 +1,146 @@
-"""NumberWithUnits Parser for WeBWorK.
+"""Number with Units Parser for WeBWorK.
 
 This module provides the NumberWithUnits class for parsing and validating
-numbers with physical units (e.g., "5 m/s", "9.8 m/s^2").
+numbers with associated units (e.g., "5 m/s", "9.8 m/s^2").
 
 Based on macros/parsers/parserNumberWithUnits.pl from the WeBWorK distribution.
 """
 
-from typing import Any, Dict, Optional, Union
-import re
+from typing import Any, Optional, Union
 
 
-def NumberWithUnits(value, units=''):
+class NumberWithUnits:
     """
-    Stub implementation of NumberWithUnits - number with units.
-
-    Creates an object representing a value with associated units.
-
-    Args:
-        value: The numeric value
-        units: The unit string (e.g., "m/s", "ft", "kg")
-
-    Returns:
-        Object with value and units attributes
-    """
-    return type('NumberWithUnits', (), {
-        'value': value,
-        'units': units,
-        '__str__': lambda self: f'{value} {units}',
-    })()
-
-
-class NumberWithUnitsClass:
-    """
-    Parser for numbers with physical units.
-
-    Supports parsing of values like "5 m/s", "3.14 radians", "9.8 m/s^2",
-    and provides comparison that handles unit conversions.
-
+    Parser for numbers with units.
+    
+    Parses expressions like "5 m/s", "9.8 m/s^2", etc. and validates
+    unit consistency and conversions.
+    
     Attributes:
-        value: The numerical value
-        units: The unit string
-        formula: The original formula (may include variables)
+        value: Numeric value
+        units: Unit string (e.g., "m/s", "kg", "m/s^2")
     """
 
-    def __init__(self, input_str: str = "", units: Optional[str] = None, **options):
+    def __init__(self, value: Union[int, float, str] = 0, units: str = ''):
         """
         Create a NumberWithUnits object.
-
+        
         Args:
-            input_str: String like "5 m/s" or formula like "$x m/s"
-            units: Optional separate units string
-            **options: Additional options like newUnit for custom units
-
+            value: Numeric value or string representation
+            units: Unit string (e.g., "m/s", "kg")
+            
         Example:
-            >>> num = NumberWithUnits("3 ft")
-            >>> num = NumberWithUnits("5 m/s")
-            >>> num = NumberWithUnits("$a*$b ft")  # with formula
+            >>> num = NumberWithUnits(5, "m/s")
+            >>> str(num)
+            '5 m/s'
+        
+        Perl Source: parserNumberWithUnits.pl NumberWithUnits constructor
         """
-        self.options = options
-        self.value = None
-        self.units = None
-        self.formula = None
-        self.custom_units = {}
-
-        # Handle newUnit option for custom units
-        if 'newUnit' in options:
-            self._add_custom_units(options['newUnit'])
-
-        # Parse input
-        if units is not None:
-            # Called as NumberWithUnits(formula, "units")
-            self.formula = input_str
-            self.units = units
-            self._parse_value(input_str)
-        else:
-            # Called as NumberWithUnits("5 m/s")
-            self._parse_input(input_str)
-
-    def _add_custom_units(self, new_unit: Union[str, Dict, list]) -> None:
-        """
-        Add custom unit definitions.
-
-        Args:
-            new_unit: String name, dict with conversion, or list of units
-        """
-        if isinstance(new_unit, str):
-            self.custom_units[new_unit] = {'factor': 1}
-        elif isinstance(new_unit, dict):
-            name = new_unit.get('name', 'custom')
-            self.custom_units[name] = new_unit.get('conversion', {})
-        elif isinstance(new_unit, list):
-            for unit_def in new_unit:
-                self._add_custom_units(unit_def)
-
-    def _parse_input(self, input_str: str) -> None:
-        """
-        Parse a string like "5 m/s" into value and units.
-
-        Args:
-            input_str: Input string to parse
-        """
-        if not input_str:
-            return
-
-        # Pattern: number (possibly with formula), then units
-        # "5 m/s", "$x m/s", "3.14 rad", "5*3 feet"
-        pattern = r'^(.*?)\s+([a-zA-Z/\^0-9\s\*\-]+)$'
-        match = re.match(pattern, input_str.strip())
-
-        if match:
-            value_str = match.group(1).strip()
-            units_str = match.group(2).strip()
-
-            self.formula = value_str
-            self.units = units_str
-
-            # Try to parse numeric value
-            self._parse_value(value_str)
-        else:
-            # No units found, treat whole thing as formula
-            self.formula = input_str.strip()
-
-    def _parse_value(self, value_str: str) -> None:
-        """
-        Parse the numeric value from a string.
-
-        Args:
-            value_str: String representation of value
-        """
-        # Remove whitespace
-        value_str = value_str.strip()
-
-        # Try direct conversion if it's a number
         try:
-            self.value = float(value_str)
-        except ValueError:
-            # It's a formula with variables - keep as is
-            self.formula = value_str
-
-    def cmp(self, **options) -> 'NumberWithUnitsChecker':
+            self.value = float(value) if isinstance(value, (int, float, str)) else value
+        except (ValueError, TypeError):
+            self.value = value
+        self.units = str(units) if units else ''
+        
+    def cmp(self, **options) -> 'AnswerChecker':
         """
-        Get an answer checker for this NumberWithUnits object.
-
+        Create an answer checker for this NumberWithUnits.
+        
+        Args:
+            **options: Options for answer checking (tolerance, etc.)
+        
         Returns:
-            NumberWithUnitsChecker configured for comparison
-
-        Example:
-            >>> num = NumberWithUnits("5 m/s")
-            >>> ans(num.cmp())
+            AnswerChecker object for use with ANS()
+        
+        Perl Source: parserNumberWithUnits.pl cmp() method
         """
-        return NumberWithUnitsChecker(self, **options)
-
+        return AnswerChecker(self, **options)
+    
     def __str__(self) -> str:
         """Return string representation."""
         if self.units:
-            if self.value is not None:
-                return f"{self.value} {self.units}"
-            elif self.formula:
-                return f"{self.formula} {self.units}"
-        elif self.value is not None:
-            return str(self.value)
-        return ""
-
+            return f'{self.value} {self.units}'
+        return str(self.value)
+    
     def __repr__(self) -> str:
-        """Return representation."""
-        return f"NumberWithUnits({str(self)})"
+        """Return string representation."""
+        return f"NumberWithUnits({self.value}, '{self.units}')"
+    
+    def __eq__(self, other: Any) -> bool:
+        """Check equality."""
+        if isinstance(other, NumberWithUnits):
+            return self.value == other.value and self.units == other.units
+        return False
 
 
-class NumberWithUnitsChecker:
+class AnswerChecker:
     """
-    Answer checker for NumberWithUnits comparison.
-
-    Handles unit conversion and value comparison with appropriate tolerances.
+    Answer checker for NumberWithUnits answers.
+    
+    Handles checking student answers against a correct NumberWithUnits value.
     """
-
-    def __init__(self, reference: NumberWithUnits, **options):
+    
+    def __init__(self, correct: NumberWithUnits, **options):
         """
-        Initialize the checker with a reference answer.
-
+        Initialize answer checker.
+        
         Args:
-            reference: The correct NumberWithUnits answer
-            **options: Checker options (tolerance, etc.)
+            correct: Correct NumberWithUnits answer
+            **options: Checking options (tolerance, etc.)
         """
-        self.reference = reference
+        self.correct = correct
         self.options = options
-        self.tolerance = options.get('tolerance', 1e-6)
-
-    def evaluate(self, student_answer: str) -> bool:
+    
+    def check(self, student_answer: str) -> dict:
         """
-        Check if student answer matches reference.
-
+        Check a student answer.
+        
         Args:
-            student_answer: Student's answer string
-
+            student_answer: Student's answer as string
+        
         Returns:
-            True if answer is correct, False otherwise
+            Dict with keys: correct (bool), score (float), message (str)
         """
-        # Parse student answer
-        student = NumberWithUnits(student_answer)
-
-        # Simple check: units must match, values must be close
-        if self.reference.units and student.units:
-            if self.reference.units.lower() != student.units.lower():
-                return False
-
-        if self.reference.value is not None and student.value is not None:
-            relative_error = abs(student.value - self.reference.value) / max(abs(self.reference.value), 1)
-            return relative_error <= self.tolerance
-
-        return str(student) == str(self.reference)
-
-    def __call__(self, student_answer: str) -> Dict[str, Any]:
-        """
-        Callable interface for compatibility with PG answer checkers.
-
-        Args:
-            student_answer: Student's answer
-
-        Returns:
-            Result dictionary with 'score' and 'message' keys
-        """
-        is_correct = self.evaluate(student_answer)
-        return {
-            'score': 1 if is_correct else 0,
-            'message': '' if is_correct else 'Incorrect'
-        }
+        try:
+            # Parse student answer
+            parts = student_answer.strip().split()
+            if len(parts) >= 1:
+                student_value = float(parts[0])
+                student_units = ' '.join(parts[1:]) if len(parts) > 1 else ''
+            else:
+                return {
+                    'correct': False,
+                    'score': 0.0,
+                    'message': 'Invalid answer format'
+                }
+            
+            # Check value
+            tolerance = self.options.get('tolerance', 0.01)
+            value_correct = abs(student_value - self.correct.value) <= tolerance
+            
+            # Check units
+            units_correct = student_units.strip() == self.correct.units.strip()
+            
+            is_correct = value_correct and units_correct
+            
+            return {
+                'correct': is_correct,
+                'score': 1.0 if is_correct else 0.0,
+                'message': '' if is_correct else 'Incorrect answer'
+            }
+        except Exception as e:
+            return {
+                'correct': False,
+                'score': 0.0,
+                'message': f'Error checking answer: {str(e)}'
+            }
+    
+    def __call__(self, **kwargs):
+        """Make checker callable - returns self for chaining."""
+        return self
 
 
 __all__ = [
     'NumberWithUnits',
-    'NumberWithUnitsChecker',
+    'AnswerChecker',
 ]

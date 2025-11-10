@@ -234,10 +234,10 @@ class InProcessSandbox:
             def Context(name=None):
                 """
                 Context function - delegates to pg_math.context.get_context.
-                
+
                 When called without arguments, returns the current context.
                 When called with a name, switches to that context and returns it.
-                
+
                 Examples:
                     ctx = Context()           # Get current context
                     ctx = Context('Numeric')  # Switch to Numeric context
@@ -265,7 +265,8 @@ class InProcessSandbox:
                     # String form: Complex("2-4i") - parse it
                     # For now, just pass to _Complex and let it handle or fail gracefully
                     import re
-                    match = re.match(r'([+-]?\d+(?:\.\d+)?)\s*([+-])\s*(\d+(?:\.\d+)?)i', real.replace(' ', ''))
+                    match = re.match(
+                        r'([+-]?\d+(?:\.\d+)?)\s*([+-])\s*(\d+(?:\.\d+)?)i', real.replace(' ', ''))
                     if match:
                         r = float(match.group(1))
                         sign = match.group(2)
@@ -304,14 +305,16 @@ class InProcessSandbox:
             # Also define j and k as aliases for i (engineering notation and vector unit vectors)
             self.namespace['i'] = _Complex(0, 1)
             self.namespace['j'] = _Complex(0, 1)
-            self.namespace['k'] = _Complex(0, 1)  # Also used as unit vector in some contexts
+            # Also used as unit vector in some contexts
+            self.namespace['k'] = _Complex(0, 1)
 
             # Add stub functions that are commonly used but not in pg_math
             def random_subset(n=None, *items, **kwargs):
                 """Stub random_subset - returns first N items from a list."""
                 if items:
                     # If items is a single list/tuple, use it directly
-                    item_list = list(items[0]) if len(items) == 1 and hasattr(items[0], '__iter__') and not isinstance(items[0], str) else list(items)
+                    item_list = list(items[0]) if len(items) == 1 and hasattr(
+                        items[0], '__iter__') and not isinstance(items[0], str) else list(items)
                     num = int(n) if n is not None else len(item_list)
                     return item_list[:num]
                 return []
@@ -324,6 +327,7 @@ class InProcessSandbox:
                         def method(*a, **kw):
                             return self
                         return method
+
                     def __iter__(self):
                         return iter([])
                 return _MatchListStub()
@@ -427,6 +431,7 @@ class InProcessSandbox:
             # Create a minimal context object with variables attribute
             class _StubFlags:
                 """Stub flags manager."""
+
                 def __init__(self):
                     self._flags = {}
 
@@ -441,48 +446,60 @@ class InProcessSandbox:
 
             class _StubVariables:
                 """Stub variables manager."""
+
                 def are(self, *args, **kwargs):
                     """Stub are() method - does nothing but doesn't error."""
                     pass
+
                 def add(self, *args, **kwargs):
                     """Stub add() method - does nothing but doesn't error."""
                     pass
+
                 def set(self, *args, **kwargs):
                     """Stub set() method - does nothing but doesn't error."""
                     pass
+
                 def remove(self, *args, **kwargs):
                     """Stub remove() method - does nothing but doesn't error."""
                     pass
+
                 def list(self):
                     """Stub list() method - returns common variables."""
                     return ['x', 'y', 'z', 't']
 
             class _StubFunctions:
                 """Stub functions manager."""
+
                 def disable(self, *args, **kwargs):
                     """Stub disable() method - does nothing but doesn't error."""
                     pass
+
                 def enable(self, *args, **kwargs):
                     """Stub enable() method - does nothing but doesn't error."""
                     pass
+
                 def add(self, *args, **kwargs):
                     """Stub add() method - does nothing but doesn't error."""
                     pass
+
                 def undefine(self, *args, **kwargs):
                     """Stub undefine() method - does nothing but doesn't error."""
                     pass
 
             class _StubConstants:
                 """Stub constants manager."""
+
                 def are(self, *args, **kwargs):
                     """Stub are() method - does nothing but doesn't error."""
                     pass
+
                 def add(self, *args, **kwargs):
                     """Stub add() method - does nothing but doesn't error."""
                     pass
 
             class _StubContext:
                 """Minimal stub context with variables support."""
+
                 def __init__(self, name='Numeric'):
                     self.name = name
                     self.variables = _StubVariables()
@@ -512,11 +529,12 @@ class InProcessSandbox:
                 def __setitem__(self, key, value):
                     """Make context subscriptable - does nothing."""
                     pass
-            
+
             _stub_context = _StubContext()
-            
+
             class _AnswerCheckerStub:
                 """Stub answer checker for .cmp() method."""
+
                 def __init__(self, value):
                     self.value = value
 
@@ -534,6 +552,7 @@ class InProcessSandbox:
 
             class _FormulaStub:
                 """Stub Formula class with method chaining support."""
+
                 def __init__(self, expr):
                     self.expr = str(expr)
                     # Make cmp both callable and have withPostFilter attribute
@@ -567,6 +586,7 @@ class InProcessSandbox:
 
             class _MathObjectStub:
                 """Generic stub for MathObjects (Real, int, float, str with .cmp())."""
+
                 def __init__(self, value):
                     self.value = value
 
@@ -593,7 +613,8 @@ class InProcessSandbox:
                 # Operator overloading for arithmetic
                 def __add__(self, other):
                     """Add two MathObjects or MathObject + number."""
-                    other_val = other.value if isinstance(other, _MathObjectStub) else other
+                    other_val = other.value if isinstance(
+                        other, _MathObjectStub) else other
                     try:
                         return _MathObjectStub(self.value + other_val)
                     except:
@@ -608,7 +629,8 @@ class InProcessSandbox:
 
                 def __sub__(self, other):
                     """Subtract two MathObjects or MathObject - number."""
-                    other_val = other.value if isinstance(other, _MathObjectStub) else other
+                    other_val = other.value if isinstance(
+                        other, _MathObjectStub) else other
                     try:
                         return _MathObjectStub(self.value - other_val)
                     except:
@@ -623,7 +645,8 @@ class InProcessSandbox:
 
                 def __mul__(self, other):
                     """Multiply two MathObjects or MathObject * number."""
-                    other_val = other.value if isinstance(other, _MathObjectStub) else other
+                    other_val = other.value if isinstance(
+                        other, _MathObjectStub) else other
                     try:
                         return _MathObjectStub(self.value * other_val)
                     except:
@@ -635,7 +658,8 @@ class InProcessSandbox:
 
                 def __truediv__(self, other):
                     """Divide two MathObjects or MathObject / number."""
-                    other_val = other.value if isinstance(other, _MathObjectStub) else other
+                    other_val = other.value if isinstance(
+                        other, _MathObjectStub) else other
                     try:
                         return _MathObjectStub(self.value / other_val)
                     except:
@@ -650,7 +674,8 @@ class InProcessSandbox:
 
                 def __pow__(self, other):
                     """Power of MathObject."""
-                    other_val = other.value if isinstance(other, _MathObjectStub) else other
+                    other_val = other.value if isinstance(
+                        other, _MathObjectStub) else other
                     try:
                         return _MathObjectStub(self.value ** other_val)
                     except:
@@ -704,7 +729,8 @@ class InProcessSandbox:
                         return _MathObjectStub(math.e)
                     # Try to evaluate as expression
                     try:
-                        result = eval(value.replace('pi', str(math.pi)).replace('e', str(math.e)))
+                        result = eval(value.replace(
+                            'pi', str(math.pi)).replace('e', str(math.e)))
                         return _MathObjectStub(float(result))
                     except:
                         return _MathObjectStub(value)
@@ -763,10 +789,13 @@ class InProcessSandbox:
                 """Stub Scaffold class with Begin attribute."""
                 class _BeginStub:
                     """Stub for Scaffold.Begin context manager."""
+
                     def __call__(self, *args, **kwargs):
                         return self
+
                     def __enter__(self):
                         return self
+
                     def __exit__(self, *args):
                         pass
                 Begin = _BeginStub()
@@ -830,7 +859,8 @@ class InProcessSandbox:
                 """Stub random_subset - returns first N items from a list."""
                 if items:
                     # If items is a single list/tuple, use it directly
-                    item_list = list(items[0]) if len(items) == 1 and hasattr(items[0], '__iter__') and not isinstance(items[0], str) else list(items)
+                    item_list = list(items[0]) if len(items) == 1 and hasattr(
+                        items[0], '__iter__') and not isinstance(items[0], str) else list(items)
                     num = int(n) if n is not None else len(item_list)
                     return item_list[:num]
                 return []
@@ -843,6 +873,7 @@ class InProcessSandbox:
                         def method(*a, **kw):
                             return self
                         return method
+
                     def __iter__(self):
                         return iter([])
                 return _MatchListStub()
@@ -879,8 +910,10 @@ class InProcessSandbox:
             self.namespace['push'] = push
             self.namespace['ENV'] = {}  # Environment dictionary
             self.namespace['i'] = complex(0, 1)
-            self.namespace['j'] = complex(0, 1)  # Alias for i (engineering notation)
-            self.namespace['k'] = complex(0, 1)  # Also used as unit vector in some contexts
+            # Alias for i (engineering notation)
+            self.namespace['j'] = complex(0, 1)
+            # Also used as unit vector in some contexts
+            self.namespace['k'] = complex(0, 1)
 
     def load_macros(self, *macro_names: str) -> None:
         """
@@ -959,7 +992,8 @@ class InProcessSandbox:
                 import math
                 magnitude = math.sqrt(sum(x**2 for x in vector))
                 if magnitude == 0:
-                    raise ValueError("Cannot compute unit vector of zero vector")
+                    raise ValueError(
+                        "Cannot compute unit vector of zero vector")
                 return [x / magnitude for x in vector]
 
             def Matrix(*args, **kwargs):
@@ -985,15 +1019,6 @@ class InProcessSandbox:
                     'addSurface': lambda *a, **k: None,
                     'addCurve': lambda *a, **k: None,
                     'addPoint': lambda *a, **k: None,
-                })()
-
-            def Plot(*args, **kwargs):
-                """Stub for Plot - 2D plotting function."""
-                return type('Plot', (), {
-                    'plot': lambda *a, **k: None,
-                    'add_function': lambda *a, **k: None,
-                    'add_dataset': lambda *a, **k: None,
-                    'add_vectorfield': lambda *a, **k: None,
                 })()
 
             def COMPOSITION_ANS(*args, **kwargs):
@@ -1119,13 +1144,17 @@ class InProcessSandbox:
                     def __init__(self, first, last):
                         self._first = first
                         self._last = last
+
                     def name(self):
                         return f"{self._first} {self._last}"
+
                     def __str__(self):
                         return self.name()
 
-                first_names = ['Alice', 'Bob', 'Carol', 'David', 'Eve', 'Frank']
-                last_names = ['Smith', 'Jones', 'Brown', 'Davis', 'Miller', 'Wilson']
+                first_names = ['Alice', 'Bob',
+                               'Carol', 'David', 'Eve', 'Frank']
+                last_names = ['Smith', 'Jones', 'Brown',
+                              'Davis', 'Miller', 'Wilson']
 
                 if n == 1:
                     return Person(random.choice(first_names), random.choice(last_names))
@@ -1168,6 +1197,7 @@ class InProcessSandbox:
                         def method(*a, **kw):
                             return self
                         return method
+
                     def __iter__(self):
                         return iter([])
                 return _MatchListStub()
@@ -1210,11 +1240,11 @@ class InProcessSandbox:
                 'Graph3D': Graph3D,
                 'Plot': Plot,
                 'VectorField3D': VectorField3D,
-                # Use imported graph macros if available, otherwise use local stubs
-                'init_graph': globals()['init_graph'] if _MACROS_AVAILABLE else lambda *a, **k: type('WWPlot', (), {})(),
-                'add_functions': globals()['add_functions'] if _MACROS_AVAILABLE else lambda *a, **k: None,
-                'createLaTeXImage': globals()['createLaTeXImage'] if _MACROS_AVAILABLE else lambda *a, **k: type('LaTeXImage', (), {})(),
-                'createTikZImage': globals()['createTikZImage'] if _MACROS_AVAILABLE else lambda *a, **k: type('TikZImage', (), {})(),
+                # Use imported graph macros directly
+                'init_graph': init_graph,
+                'add_functions': add_functions,
+                'createLaTeXImage': createLaTeXImage,
+                'createTikZImage': createTikZImage,
                 'Line': Line,
                 'COMPOSITION_ANS': COMPOSITION_ANS,
                 'UNORDERED_ANS': UNORDERED_ANS,
@@ -1332,6 +1362,7 @@ class InProcessSandbox:
             if not arrays:
                 return ()
             # Convert all arrays to lists, expanding list-wrapped ranges
+
             def expand_array(arr):
                 expanded = list(arr)
                 if len(expanded) == 1 and isinstance(expanded[0], range):
@@ -1341,7 +1372,8 @@ class InProcessSandbox:
             if len(list_arrays) == 1:
                 return (list_random(*list_arrays[0]),)
             all_tuples = list(product(*list_arrays))
-            coprime = [t for t in all_tuples if math.gcd(*[abs(x) for x in t]) == 1]
+            coprime = [t for t in all_tuples if math.gcd(
+                *[abs(x) for x in t]) == 1]
             return random.choice(coprime) if coprime else tuple([0] * len(list_arrays))
 
         def loadMacros(*args): pass
@@ -1421,15 +1453,6 @@ class InProcessSandbox:
                 'addPoint': lambda *a, **k: None,
             })()
 
-        def Plot(*args, **kwargs):
-            """Stub for Plot - 2D plotting function."""
-            return type('Plot', (), {
-                'plot': lambda *a, **k: None,
-                'add_function': lambda *a, **k: None,
-                'add_dataset': lambda *a, **k: None,
-                'add_vectorfield': lambda *a, **k: None,
-            })()
-
         # Grader functions
         def install_problem_grader(grader):
             """Stub install_problem_grader - does nothing."""
@@ -1485,9 +1508,11 @@ class InProcessSandbox:
                 def __init__(self, *args, **kwargs):
                     self.args = args
                     self.kwargs = kwargs
+
                 def with_params(self, **params):
                     self.kwargs.update(params)
                     return self
+
                 def __str__(self):
                     return "[GraphTool]"
             return GraphToolStub(*args, **kwargs)
@@ -1547,7 +1572,8 @@ class InProcessSandbox:
             Returns a dict-like object with 'f' key containing the formula.
             """
             Formula = self.namespace.get('Formula')
-            formula_obj = Formula(str(args[0]) if args else '0') if Formula else str(args[0]) if args else '0'
+            formula_obj = Formula(str(args[0]) if args else '0') if Formula else str(
+                args[0]) if args else '0'
             # Return a dict-like object with the formula
             return {'f': formula_obj, 'solution': args[1] if len(args) > 1 else None}
 
@@ -1573,13 +1599,16 @@ class InProcessSandbox:
                 def __init__(self, first, last):
                     self._first = first
                     self._last = last
+
                 def name(self):
                     return f"{self._first} {self._last}"
+
                 def __str__(self):
                     return self.name()
 
             first_names = ['Alice', 'Bob', 'Carol', 'David', 'Eve', 'Frank']
-            last_names = ['Smith', 'Jones', 'Brown', 'Davis', 'Miller', 'Wilson']
+            last_names = ['Smith', 'Jones', 'Brown',
+                          'Davis', 'Miller', 'Wilson']
 
             if n == 1:
                 return Person(random.choice(first_names), random.choice(last_names))
@@ -1640,10 +1669,9 @@ class InProcessSandbox:
             'norm': norm,
             'unit': unit,
             'Matrix': Matrix,
-            # Graphics (Note: init_graph, add_functions, createLaTeXImage, createTikZImage
-            # are already handled with fallbacks in _load_pg_core() - no duplicates needed here)
+            # Graphics (Note: init_graph, add_functions, createLaTeXImage, createTikZImage, Plot
+            # are already handled in _load_pg_core() - no duplicates needed here)
             'Graph3D': Graph3D,
-            'Plot': Plot,
             'VectorField3D': VectorField3D,
             'Line': Line,
             # Special answer evaluation
@@ -2216,7 +2244,8 @@ class InProcessSandbox:
 
             self.namespace['PopUp'] = PopUpStub
             self.namespace['DropDown'] = PopUpStub
-            self.namespace['DropDownTF'] = lambda correct, **opts: PopUpStub(['True', 'False'], correct)
+            self.namespace['DropDownTF'] = lambda correct, **opts: PopUpStub(
+                ['True', 'False'], correct)
             self.namespace['RadioButtons'] = PopUpStub
             self.namespace['RadioMultiAnswer'] = RadioMultiAnswerStub
             self.namespace['LinearRelation'] = LinearRelationStub
@@ -2247,7 +2276,8 @@ class InProcessSandbox:
                 if len(values) < 2:
                     return 0.0
                 mean = sum(values) / len(values)
-                variance = sum((x - mean) ** 2 for x in values) / (len(values) - 1)
+                variance = sum((x - mean) ** 2 for x in values) / \
+                    (len(values) - 1)
                 return math.sqrt(variance)
 
             def stats_SX_SXX_stub(*values):
