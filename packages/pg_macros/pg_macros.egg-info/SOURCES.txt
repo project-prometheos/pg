@@ -19,6 +19,10 @@ pg_macros/core/pg_basic_macros.py
 pg_macros/core/pg_core.py
 pg_macros/core/pg_standard.py
 pg_macros/core/pgml.py
+pg_macros/graph/__init__.py
+pg_macros/graph/parser_graphtool.py
+pg_macros/math/__init__.py
+pg_macros/math/draggable_proof.py
 pg_macros/parsers/__init__.py
 pg_macros/parsers/parser_difference_quotient.py
 pg_macros/parsers/parser_linear_relation.py
@@ -28,8 +32,8 @@ pg_macros/parsers/parser_radio_multianswer.py
 pg_macros/parsers/parser_special_trig.py
 pg_macros/ui/__init__.py
 pg_macros/ui/choice_macros.py
-tests/test_answer_macros.py
-tests/test_choice_macros.py
+pg_macros/ui/graph_macros.py
+pg_macros/ui/nice_tables.py
 tests/test_choice_macros_new.py
 tests/test_pg_standard.py
 tests/test_registry.py
