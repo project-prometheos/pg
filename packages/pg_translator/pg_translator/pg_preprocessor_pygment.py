@@ -652,7 +652,90 @@ class PGPreprocessor:
             i += 1
 
         code = "\n".join(output_lines)
+        # Post-process to initialize arrays/dicts that are assigned to without declaration
+        code = self._initialize_arrays(code)
         return PreprocessResult(code=code, text_blocks=text_blocks, line_map=line_map)
+
+    def _initialize_arrays(self, code: str) -> str:
+        """Initialize arrays/dicts that are assigned to without declaration.
+
+        Detects patterns like:
+            x[k] = value
+            y[k] = value
+
+        And adds initialization before the first usage (with less indentation):
+            x = {}
+            y = {}
+            for k in range(...):
+                x[k] = value
+        """
+        import re
+        lines = code.split('\n')
+
+        # Track which variables need initialization and where first used
+        array_vars = {}  # var_name -> (first_line_num, indentation)
+
+        # Find all array/dict assignments
+        for line_num, line in enumerate(lines):
+            # Look for patterns like: varname[...] =
+            match = re.search(r'^(\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*\[', line)
+            if match:
+                indent = match.group(1)
+                var_name = match.group(2)
+                if var_name not in array_vars:
+                    array_vars[var_name] = (line_num, indent)
+
+        # For each array variable, check if it's already defined and add initialization if not
+        insertions = []
+        for var_name, (first_use_line, usage_indent) in sorted(array_vars.items(), reverse=True):
+            # Check if variable is already defined before its first use
+            already_defined = False
+            for i in range(first_use_line):
+                # Check for assignments like: var = ... or var[...] = ...
+                if re.search(rf'^[^#]*\b{re.escape(var_name)}\s*=', lines[i]):
+                    already_defined = True
+                    break
+
+            if not already_defined:
+                # Find the correct insertion point and indentation
+                # We want to insert before the current block starts (before the for/while/if)
+                init_indent = ''
+                insert_line = first_use_line
+
+                # Go backwards to find the start of the current block
+                # The block start is the line with less indentation before the current usage
+                found_block_start = False
+                for i in range(first_use_line - 1, -1, -1):
+                    line = lines[i]
+                    # Skip empty lines
+                    if not line.strip():
+                        continue
+                    # Check indentation
+                    indent_match = re.match(r'^(\s*)', line)
+                    curr_indent = indent_match.group(1) if indent_match else ''
+
+                    # If this line has less indentation than the usage
+                    if len(curr_indent) < len(usage_indent):
+                        # This is the block statement (for, if, while, etc.)
+                        # Insert BEFORE this line, not after
+                        init_indent = curr_indent
+                        insert_line = i
+                        found_block_start = True
+                        break
+
+                # If we couldn't find a block statement before (at top level),
+                # insert before the first usage
+                if not found_block_start:
+                    insert_line = first_use_line
+                    init_indent = ''
+
+                insertions.append((insert_line, init_indent, var_name))
+
+        # Insert initializations in reverse order (to maintain line numbers)
+        for line_num, indent, var_name in sorted(insertions, reverse=True):
+            lines.insert(line_num, f'{indent}{var_name} = {{}}')
+
+        return '\n'.join(lines)
 
     # ------------------------------------------------------------------
     # Map/Grep block conversion
