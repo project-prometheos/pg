@@ -597,7 +597,8 @@ class PGPreprocessor:
                     # Not a proper do-until, fall through: rewind index to process lines normally
                     i = i - len(block_lines) + 1
 
-            # Detect Perl for/foreach loops
+            # Detect Perl for/foreach loops (do this BEFORE block detection)
+            # so that blocks inside the loop are handled as part of the loop compilation
             for_result = self._try_rewrite_for_loop(lines, line_start_index)
             if for_result is not None:
                 rewritten_loop, consumed_lines = for_result
@@ -658,6 +659,10 @@ class PGPreprocessor:
         code = "\n".join(output_lines)
         # Post-process to initialize arrays/dicts that are assigned to without declaration
         code = self._initialize_arrays(code)
+        # Convert empty tuple assignments to empty lists for array variables
+        # In Perl: @var = () creates an empty list
+        # In Python: () is a tuple, [] is a list, so we need to convert
+        code = re.sub(r'^\s*([a-z_]\w*)\s*=\s*\(\)\s*$', r'\1 = []', code, flags=re.MULTILINE)
         return PreprocessResult(code=code, text_blocks=text_blocks, line_map=line_map)
 
     def _initialize_arrays(self, code: str) -> str:
@@ -2363,7 +2368,34 @@ class PGPreprocessor:
 
         compiled_body_lines: List[str] = []
         body_indent = indent + '    '
-        for body_line in body_lines:
+
+        # Process body lines, handling PGML blocks specially
+        idx = 0
+        while idx < len(body_lines):
+            body_line = body_lines[idx]
+
+            # Check if this line starts a PGML block
+            if re.search(r'BEGIN_PGML\s*$', body_line):
+                # Collect PGML block content
+                pgml_content_lines: List[str] = []
+                idx += 1
+                while idx < len(body_lines) and not re.match(r'END_PGML', body_lines[idx]):
+                    pgml_content_lines.append(body_lines[idx])
+                    idx += 1
+
+                # Transform the PGML evaluators within the block
+                pgml_content = "\n".join(pgml_content_lines)
+                transformed_pgml = self._transform_pgml_evaluators(pgml_content)
+                escaped_content = self._escape_triple_quotes(transformed_pgml)
+
+                # Create PGML block variable
+                block_var = f"pgml_block_loop_{idx}"
+                compiled_body_lines.append(f"{body_indent}{block_var} = '''\n{escaped_content}\n'''")
+                compiled_body_lines.append(f"{body_indent}TEXT(PGML({block_var}))")
+                idx += 1
+                continue
+
+            # Regular line - compile it
             compiled = self._compile_line(body_line)
             for compiled_line in compiled:
                 stripped_total = compiled_line.strip()
@@ -2372,6 +2404,8 @@ class PGPreprocessor:
                 inner_indent, inner_body = self._split_indent(compiled_line)
                 inner_body = re.sub(r'^my\s+', '', inner_body)
                 compiled_body_lines.append(f"{body_indent}{inner_indent}{inner_body}")
+
+            idx += 1
 
         if not compiled_body_lines:
             compiled_body_lines.append(f"{body_indent}pass")
