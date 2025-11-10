@@ -663,6 +663,20 @@ class PGPreprocessor:
         # In Perl: @var = () creates an empty list
         # In Python: () is a tuple, [] is a list, so we need to convert
         code = re.sub(r'^\s*([a-z_]\w*)\s*=\s*\(\)\s*$', r'\1 = []', code, flags=re.MULTILINE)
+
+        # Convert parenthesized list assignments to list literals
+        # Pattern: var = (item1, item2, ...) or var = (single_item,)
+        # This handles Perl array assignments like @seq = (1, 1)
+        # After sigil removal: seq = (1, 1) should become seq = [1, 1]
+        # We need to be careful not to convert function calls like foo = func(a, b)
+        # Match: assignment where RHS is a parenthesized list with commas
+        code = re.sub(
+            r'^(\s*[a-z_]\w*)\s*=\s*\(([^)]+,[^)]*)\)\s*$',
+            r'\1 = [\2]',
+            code,
+            flags=re.MULTILINE
+        )
+
         # Fix _.[...] pattern (shouldn't have a dot before bracket in Python)
         # This occurs when $_ -> [...] is converted to _ . [...]
         # In Python, we just want _[...]
@@ -2393,16 +2407,23 @@ class PGPreprocessor:
     ) -> tuple[List[str], int] | None:
         """Rewrite simple Perl for/foreach loops into Python for loops."""
         line = lines[start_index]
+        # Match two patterns:
+        # 1. for VAR (expr) { ... }       -> VAR is captured
+        # 2. for (expr) { ... }           -> VAR is implicit $_
         for_match = re.match(
-            r"(\s*)(?:for|foreach)\s+(?:my\s+)?([$@%]?[A-Za-z_][\w]*)\s*\(([^)]*)\)\s*\{",
+            r"(\s*)(?:for|foreach)\s+(?:my\s+)?((?:[$@%]?[A-Za-z_][\w]*)?)\s*\(([^)]*)\)\s*\{",
             line,
         )
         if not for_match:
             return None
 
         indent = for_match.group(1)
-        iterator_token = for_match.group(2)
+        iterator_token = for_match.group(2).strip() if for_match.group(2) else None
         iterable_expr = for_match.group(3).strip()
+
+        # If no iterator token, default to $_
+        if not iterator_token:
+            iterator_token = '$_'
 
         block_lines: List[str] = [line]
         brace_depth = line.count('{') - line.count('}')
