@@ -67,6 +67,10 @@ class MacroRegistry:
             "contextFraction.pl": "pg_macros.contexts",
             "parserGraphTool.pl": "pg_macros.graph.parser_graphtool",
             "draggableProof.pl": "pg_macros.math.draggable_proof",
+            # Phase 1: Critical Graphing Infrastructure
+            "PGgraphmacros.pl": "pg_macros.graph.pg_graph",
+            "PGtikz.pl": "pg_macros.graph.tikz_image",
+            "PGlateximage.pl": "pg_macros.graph.latex_image",
         }
 
         python_module = module_map.get(filename)

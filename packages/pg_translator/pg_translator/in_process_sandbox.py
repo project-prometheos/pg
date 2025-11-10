@@ -23,9 +23,16 @@ from pg_parser import Context
 
 # Import macro modules
 try:
+    # Phase 0: Already migrated modules
     from pg_macros.graph.parser_graphtool import GraphTool
     from pg_macros.math.draggable_proof import DraggableProof
     from pg_macros.ui.nice_tables import LayoutTable
+
+    # Phase 1: Critical Graphing Infrastructure
+    from pg_macros.graph.pg_graph import init_graph, add_functions, Plot, WWPlot, Label, Fun
+    from pg_macros.graph.tikz_image import createTikZImage, TikZImage
+    from pg_macros.graph.latex_image import createLaTeXImage, LaTeXImage
+
     _MACROS_AVAILABLE = True
 except ImportError:
     _MACROS_AVAILABLE = False

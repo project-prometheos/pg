@@ -68,7 +68,9 @@
       "Bash(images_error_v2.txt)",
       "Bash(matchinggraphs_error_v2.txt)",
       "Bash(test_results.txt)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(tree:*)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"d:\\pg\\packages\\pg_translator\\tests\\test_tutorial_sample_problems.py\" -v --tb=line)"
     ],
     "deny": [],
     "ask": []
