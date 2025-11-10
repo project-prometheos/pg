@@ -677,6 +677,13 @@ class PGPreprocessor:
             flags=re.MULTILINE
         )
 
+        # TODO: Convert implicit multiplication in quoted strings
+        # Pattern: in strings like 'sin(x)' or '2pi', add explicit * for implicit multiplication
+        # This is complex because we need to avoid converting things like 'html' or variable names
+        # Examples that need conversion: '2pi' -> '2*pi', '5sin(x)' -> '5*sin(x)'
+        # But should NOT convert: 'abc', 'sin', 'pi' alone
+        # Requires careful heuristics or deeper parsing
+
         # Convert postfix for/foreach loops to regular for loops
         # Pattern: statement for iterable  ->  for var in iterable: statement
         # Most common: var += expr for iterable
