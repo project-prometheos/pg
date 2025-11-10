@@ -688,11 +688,18 @@ class InProcessSandbox:
             def new_match_list(*args, **kwargs):
                 """Stub new_match_list - returns stub match list object."""
                 class _MatchListStub:
-                    def qa(self, *a, **kw):
-                        return self
+                    def __getattr__(self, name):
+                        """Allow any method call - just return self for chaining."""
+                        def method(*a, **kw):
+                            return self
+                        return method
                     def __iter__(self):
                         return iter([])
                 return _MatchListStub()
+
+            def pop_up_list_print_q(*args, **kwargs):
+                """Stub pop_up_list_print_q - dummy function for printing questions."""
+                return ""
 
             self.namespace['Context'] = Context
             self.namespace['Formula'] = Formula
@@ -711,6 +718,7 @@ class InProcessSandbox:
             self.namespace['AnswerHints'] = AnswerHints
             self.namespace['random_subset'] = random_subset
             self.namespace['new_match_list'] = new_match_list
+            self.namespace['pop_up_list_print_q'] = pop_up_list_print_q
             self.namespace['ENV'] = {}  # Environment dictionary
             self.namespace['i'] = complex(0, 1)
 
@@ -1016,10 +1024,35 @@ class InProcessSandbox:
                     'evaluate': lambda self, t: points[0] if points else (0, 0, 0),
                 })()
 
+            # Problem grading functions
+            def install_problem_grader(grader):
+                """Stub install_problem_grader - does nothing."""
+                return None
+
+            def custom_problem_grader_fluid(*args, **kwargs):
+                """Stub custom_problem_grader_fluid - returns stub grader function."""
+                return lambda *a, **k: (1, "")
+
             # Perl compatibility values
             def undef():
                 """Stub for Perl's undef - returns None."""
                 return None
+
+            def new_match_list(*args, **kwargs):
+                """Stub new_match_list - returns stub match list object."""
+                class _MatchListStub:
+                    def __getattr__(self, name):
+                        """Allow any method call - just return self for chaining."""
+                        def method(*a, **kw):
+                            return self
+                        return method
+                    def __iter__(self):
+                        return iter([])
+                return _MatchListStub()
+
+            def pop_up_list_print_q(*args, **kwargs):
+                """Stub pop_up_list_print_q - dummy function for printing questions."""
+                return ""
 
             # Add pg_core functions to namespace
             # Register core functions
@@ -1082,6 +1115,14 @@ class InProcessSandbox:
                 'ImplicitPlane': ImplicitPlane,
                 'randomPerson': randomPerson,
                 'undef': undef,
+                # Problem grading
+                'install_problem_grader': install_problem_grader,
+                'custom_problem_grader_fluid': custom_problem_grader_fluid,
+                # Environment dictionary
+                'ENV': {},
+                # Matching/list utilities
+                'new_match_list': new_match_list,
+                'pop_up_list_print_q': pop_up_list_print_q,
             })
 
             # Store reference for initialization
@@ -1261,6 +1302,15 @@ class InProcessSandbox:
                 'add_vectorfield': lambda *a, **k: None,
             })()
 
+        # Grader functions
+        def install_problem_grader(grader):
+            """Stub install_problem_grader - does nothing."""
+            return None
+
+        def custom_problem_grader_fluid(*args, **kwargs):
+            """Stub custom_problem_grader_fluid - returns stub grader function."""
+            return lambda *a, **k: (1, "")
+
         # Special answer evaluation functions
         def COMPOSITION_ANS(*args, **kwargs):
             """Stub for COMPOSITION_ANS - function composition answer checker."""
@@ -1437,6 +1487,14 @@ class InProcessSandbox:
             """Stub for Perl's undef - returns None."""
             return None
 
+        def install_problem_grader(grader):
+            """Stub install_problem_grader - does nothing."""
+            return None
+
+        def custom_problem_grader_fluid(*args, **kwargs):
+            """Stub custom_problem_grader_fluid - returns stub grader function."""
+            return lambda *a, **k: (1, "")
+
         self.namespace.update({
             'DOCUMENT': DOCUMENT,
             'ENDDOCUMENT': ENDDOCUMENT,
@@ -1504,6 +1562,9 @@ class InProcessSandbox:
             'interval': 'interval',
             # Perl compatibility
             'undef': undef,
+            # Problem grading
+            'install_problem_grader': install_problem_grader,
+            'custom_problem_grader_fluid': custom_problem_grader_fluid,
             # Add a dummy macro loader to suppress warnings
             # Macros are pre-loaded, so this just prevents the warning
             '_macro_loader': type('DummyLoader', (), {'load_macro': lambda self, x: None})(),
