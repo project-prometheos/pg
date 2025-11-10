@@ -209,6 +209,30 @@ class MathValue(ABC):
     # Note: <, >, <=, >= need to be implemented by subclasses where applicable
     # (e.g., Real supports ordering, but Complex does not)
 
+    # Configuration methods (Perl-style chainable methods)
+
+    def with_params(self, **kwargs) -> MathValue:
+        """
+        Configure properties of this MathValue.
+
+        This is the Python equivalent of Perl MathObjects' .with() method.
+        It allows configuration of answer checking properties like tolerance, period, etc.
+
+        Args:
+            **kwargs: Configuration options (period, tolerance, etc.)
+
+        Returns:
+            self (for method chaining)
+
+        Example:
+            Real('pi / 2').with_params(period=pi)  # Accepts pi/2 + n*pi for any integer n
+        """
+        # Store configuration in a private attribute for answer checking to use
+        if not hasattr(self, '_with_config'):
+            self._with_config = {}
+        self._with_config.update(kwargs)
+        return self
+
     # Helper methods for type promotion
 
     @classmethod

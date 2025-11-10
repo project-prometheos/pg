@@ -158,7 +158,11 @@ class PGPreprocessor:
         """
         # Convert Perl heredocs (<<END_MARKER) to Python syntax BEFORE splitting into lines
         pg_source = self._convert_heredocs_global(pg_source)
-        
+
+        # Note: Don't convert ->with( early! The Lark grammar treats . as a binary operator,
+        # so if we convert ->with( to .with_params(, Lark will parse it as string concatenation.
+        # Instead, we'll handle ->with( in the IR emission phase via post-processing.
+
         lines = pg_source.split("\n")
         output_lines: List[str] = []
         text_blocks: List[Tuple[str, str]] = []
@@ -1568,6 +1572,9 @@ class PGPreprocessor:
                         # In Python: reduce is a @property, so .reduce() fails
                         if method_name == "reduce" and len(args) == 0:
                             return f"{base_py}.reduce"
+                        # Special case: .with(...) needs to become .with_params(...) to avoid 'with' keyword
+                        if method_name == "with":
+                            method_name = "with_params"
                         arg_strs = []
                         for a in args:
                             if isinstance(a, tuple) and len(a) >= 2 and a[0] == "named_param":
@@ -1994,13 +2001,13 @@ class PGPreprocessor:
                     # Look at previous and next tokens to determine context
                     is_concat = False
                     if i > 0 and i + 1 < len(tokens):
-                        # Skip whitespace before
+                        # Skip whitespace and empty tokens before
                         j = i - 1
-                        while j >= 0 and tokens[j][1] in Token.Text.Whitespace:
+                        while j >= 0 and (tokens[j][1] in Token.Text.Whitespace or tokens[j][2] == ''):
                             j -= 1
-                        # Skip whitespace after
+                        # Skip whitespace and empty tokens after
                         k = i + 1
-                        while k < len(tokens) and tokens[k][1] in Token.Text.Whitespace:
+                        while k < len(tokens) and (tokens[k][1] in Token.Text.Whitespace or tokens[k][2] == ''):
                             k += 1
 
                         if j >= 0 and k < len(tokens):
@@ -2009,30 +2016,34 @@ class PGPreprocessor:
                             next_text = tokens[k][2]
                             next_ttype = tokens[k][1]
 
-                            # It's concatenation if there's whitespace around the dot
-                            # In Perl: "str" . "ing" has spaces
-                            # In Perl: obj.method() has no spaces
-                            # Check if preceded by string, closing paren, or ends with expression
-                            is_expr_before = (
-                                prev_ttype in Token.Literal.String or
-                                prev_text == ')' or
-                                prev_text == ']' or
-                                prev_ttype in Token.Literal.Number
-                            )
-                            # Check if followed by string, function call, or expression
-                            is_expr_after = (
-                                next_ttype in Token.Literal.String or
-                                next_ttype in Token.Literal.Number or
-                                next_ttype in Token.Name  # Function call like ans_rule()
-                            )
-                            # It's concatenation if both sides look like expressions
-                            # and we have whitespace (i != j+1 or k != i+1)
-                            if is_expr_before and is_expr_after:
-                                # Check for whitespace
-                                has_space_before = (j < i - 1)
-                                has_space_after = (k > i + 1)
-                                if has_space_before or has_space_after:
-                                    is_concat = True
+                            # Special case: .with_params( is a method call, never concatenation
+                            if next_text == 'with_params':
+                                is_concat = False
+                            else:
+                                # It's concatenation if there's whitespace around the dot
+                                # In Perl: "str" . "ing" has spaces
+                                # In Perl: obj.method() has no spaces
+                                # Check if preceded by string, closing paren, or ends with expression
+                                is_expr_before = (
+                                    prev_ttype in Token.Literal.String or
+                                    prev_text == ')' or
+                                    prev_text == ']' or
+                                    prev_ttype in Token.Literal.Number
+                                )
+                                # Check if followed by string, function call, or expression
+                                is_expr_after = (
+                                    next_ttype in Token.Literal.String or
+                                    next_ttype in Token.Literal.Number or
+                                    next_ttype in Token.Name  # Function call like ans_rule()
+                                )
+                                # It's concatenation if both sides look like expressions
+                                # and we have whitespace (i != j+1 or k != i+1)
+                                if is_expr_before and is_expr_after:
+                                    # Check for whitespace
+                                    has_space_before = (j < i - 1)
+                                    has_space_after = (k > i + 1)
+                                    if has_space_before or has_space_after:
+                                        is_concat = True
 
                     if is_concat:
                         result.append(' + ')
@@ -2105,7 +2116,9 @@ class PGPreprocessor:
         # Post-processing: Apply additional transformations
         import re
 
-        # Convert .with( to .with_params( because 'with' is a Python reserved keyword
+        # Convert .with( to .with_params( to avoid Python 'with' keyword
+        # At this point, -> has already been converted to . by IR emission
+        # This must happen AFTER binary expr emission because . is treated as binary operator
         rewritten = re.sub(r'\.with\(', '.with_params(', rewritten)
 
         # Convert .reduce() to .reduce (property, not method in Python MathObjects)
