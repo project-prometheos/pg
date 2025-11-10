@@ -49,6 +49,27 @@ try:
         Round, nicestring, randomPerson, non_zero_point3D, non_zero_vector3D
     )
 
+    # Phase 5: Answer Systems
+    from pg_macros.answers.answer_composition import COMPOSITION_ANS
+    from pg_macros.answers.unordered_answer import UNORDERED_ANS
+    from pg_macros.answers.answer_hints import AnswerHints
+    from pg_macros.parsers.parser_checkbox_list import CheckboxList
+
+    # Phase 6: Advanced 3D Graphics
+    from pg_macros.graph.vector_field_3d import VectorField3D
+    from pg_macros.graph.live_graphics_3d import Graph3D_function as Graph3D
+
+    # Phase 7: Interactive Features
+    from pg_macros.math.draggable_proof import DraggableProof
+    from pg_macros.math.draggable_subsets import DraggableSubsets
+    from pg_macros.graph.parser_graphtool import GraphTool
+
+    # Phase 8: Context & Grading
+    from pg_macros.contexts.limited_powers import LimitedPowers
+    from pg_macros.parsers.parser_assignment import parser_Assignment
+    from pg_macros.parsers.parser_function import parserFunction
+    from pg_macros.core.pg_graders import install_problem_grader, custom_problem_grader_fluid
+
     _MACROS_AVAILABLE = True
 except ImportError:
     _MACROS_AVAILABLE = False
@@ -808,12 +829,6 @@ class InProcessSandbox:
                     return {'score': 0.5, 'answers': {}}
                 return grader_func
 
-            def AnswerHints(*hints):
-                """Stub AnswerHints - returns identity function."""
-                def hint_filter(answer):
-                    return answer
-                return hint_filter
-
             def random_subset(n=None, *items, **kwargs):
                 """Stub random_subset - returns first N items from a list."""
                 if items:
@@ -934,65 +949,7 @@ class InProcessSandbox:
                     return _Matrix(args[0], **kwargs)
                 return _Matrix(list(args), **kwargs)
 
-            def Graph3D(*args, **kwargs):
-                """Stub for Graph3D - 3D graphing object."""
-                return type('Graph3D', (), {
-                    'plotSurface': lambda *a, **k: None,
-                    'addSurface': lambda *a, **k: None,
-                    'addCurve': lambda *a, **k: None,
-                    'addPoint': lambda *a, **k: None,
-                })()
-
-            def COMPOSITION_ANS(*args, **kwargs):
-                """Stub for COMPOSITION_ANS - function composition answer checker."""
-                return pg_core.ANS(*args, **kwargs)
-
-            def UNORDERED_ANS(*args, **kwargs):
-                """Stub for UNORDERED_ANS - unordered answer checker."""
-                return pg_core.ANS(*args, **kwargs)
-
-            # Use imported GraphTool if available, otherwise fallback to inline stub
-            if not _MACROS_AVAILABLE:
-                # Fallback inline stub (deprecated - use pg_macros module instead)
-                def GraphTool(*args, **kwargs):
-                    """
-                    Stub for GraphTool - interactive graphing tool for WeBWorK.
-
-                    Returns a stub object that can be used in answer blanks.
-                    """
-                    class GraphToolStub:
-                        def __init__(self, *args, **kwargs):
-                            self.args = args
-                            self.kwargs = kwargs
-
-                        def with_params(self, **params):
-                            """Set parameters for the GraphTool."""
-                            self.kwargs.update(params)
-                            return self
-
-                        def __str__(self):
-                            return "[GraphTool]"
-
-                    return GraphToolStub(*args, **kwargs)
-            # Note: When _MACROS_AVAILABLE is True, GraphTool is imported at module level
-
-            # Use imported DraggableProof if available, otherwise fallback to inline stub
-            if not _MACROS_AVAILABLE:
-                # Fallback inline stub (deprecated - use pg_macros module instead)
-                def DraggableProof(*args, **kwargs):
-                    """Stub for DraggableProof - drag-and-drop proof interface."""
-                    return type('DraggableProof', (), {
-                        'Print': lambda *a, **k: '',
-                        'CorrectProof': lambda *a, **k: [],
-                    })()
-
-            def DraggableSubsets(*args, **kwargs):
-                """Stub for DraggableSubsets - drag-and-drop subset interface."""
-                return type('DraggableSubsets', (), {'Print': lambda *a, **k: ''})()
-
-            def CheckboxList(*args, **kwargs):
-                """Stub for CheckboxList - checkbox list interface."""
-                return '<input type="checkbox" />'
+            # Phase 7 functions imported from pg_macros modules
 
             def tag(tagname, content='', **attrs):
                 """Stub for tag - HTML tag generator."""
@@ -1004,23 +961,11 @@ class InProcessSandbox:
 
             # Phase 4 stub functions imported from pg_macros modules
 
-            # Additional graphics stubs
-            def VectorField3D(*args, **kwargs):
-                """Stub for VectorField3D - 3D vector field graphing."""
-                return type('VectorField3D', (), {
-                    'plot': lambda *a, **k: None,
-                })()
+            # Phase 6 stub functions imported from pg_macros modules
 
             # Line stub removed - use pg_macros.math.vector_utils.Line
 
-            # Problem grading functions
-            def install_problem_grader(grader):
-                """Stub install_problem_grader - does nothing."""
-                return None
-
-            def custom_problem_grader_fluid(*args, **kwargs):
-                """Stub custom_problem_grader_fluid - returns stub grader function."""
-                return lambda *a, **k: (1, "")
+            # Phase 8 stub functions imported from pg_macros modules
 
             # Perl compatibility values
             def undef():
@@ -1090,6 +1035,7 @@ class InProcessSandbox:
                 'createTikZImage': createTikZImage,
                 'COMPOSITION_ANS': COMPOSITION_ANS,
                 'UNORDERED_ANS': UNORDERED_ANS,
+                'AnswerHints': AnswerHints,
                 # Use imported modules if available, otherwise use local stubs
                 'GraphTool': globals()['GraphTool'] if _MACROS_AVAILABLE else GraphTool,
                 # GraphTool object type constants (used in f-strings)
@@ -1222,10 +1168,6 @@ class InProcessSandbox:
         def get_environment(): return _env
         def set_environment(env): pass
 
-        def parserFunction(name=None, formula=None):
-            """Stub for parserFunction - defines named function in context."""
-            # Just a placeholder - real implementation would add to Context
-            pass
 
         # Geometric stubs
         def non_zero_point3D(*args):
@@ -1285,68 +1227,14 @@ class InProcessSandbox:
             return _Matrix(list(args), **kwargs)
 
         # Graphics stubs
-        def Graph3D(*args, **kwargs):
-            """Stub for Graph3D - 3D graphing object."""
-            # Minimal stub - just return a placeholder object
-            return type('Graph3D', (), {
-                'plotSurface': lambda *a, **k: None,
-                'addSurface': lambda *a, **k: None,
-                'addCurve': lambda *a, **k: None,
-                'addPoint': lambda *a, **k: None,
-            })()
 
-        # Grader functions
-        def install_problem_grader(grader):
-            """Stub install_problem_grader - does nothing."""
-            return None
-
-        def custom_problem_grader_fluid(*args, **kwargs):
-            """Stub custom_problem_grader_fluid - returns stub grader function."""
-            return lambda *a, **k: (1, "")
 
         # Special answer evaluation functions
-        def COMPOSITION_ANS(*args, **kwargs):
-            """Stub for COMPOSITION_ANS - function composition answer checker."""
-            return ANS(*args, **kwargs)
 
-        def UNORDERED_ANS(*args, **kwargs):
-            """Stub for UNORDERED_ANS - unordered answer checker."""
-            return ANS(*args, **kwargs)
-
-        def GraphTool(*args, **kwargs):
-            """Stub for GraphTool - interactive graphing tool."""
-            class GraphToolStub:
-                def __init__(self, *args, **kwargs):
-                    self.args = args
-                    self.kwargs = kwargs
-
-                def with_params(self, **params):
-                    self.kwargs.update(params)
-                    return self
-
-                def __str__(self):
-                    return "[GraphTool]"
-            return GraphToolStub(*args, **kwargs)
-
-        # Interactive elements
-        def DraggableProof(*args, **kwargs):
-            """Stub for DraggableProof - drag-and-drop proof interface."""
-            return type('DraggableProof', (), {
-                'Print': lambda *a, **k: '',
-                'CorrectProof': lambda *a, **k: [],
-            })()
-
-        def DraggableSubsets(*args, **kwargs):
-            """Stub for DraggableSubsets - drag-and-drop subset interface."""
-            return type('DraggableSubsets', (), {
-                'Print': lambda *a, **k: '',
-            })()
-
-        def CheckboxList(*args, **kwargs):
-            """Stub for CheckboxList - checkbox list interface."""
-            return '<input type="checkbox" />'
+        # Phase 7 utilities removed - use pg_macros modules
 
         # String/HTML utilities
+
         def tag(tagname, content='', **attrs):
             """Stub for tag - HTML tag generator."""
             attr_str = ' '.join(f'{k}="{v}"' for k, v in attrs.items())
@@ -1357,25 +1245,12 @@ class InProcessSandbox:
 
         # Phase 4 utilities removed - use pg_macros.math modules
 
-        # Additional graphics stubs
-        def VectorField3D(*args, **kwargs):
-            """Stub for VectorField3D - 3D vector field graphing."""
-            return type('VectorField3D', (), {
-                'plot': lambda *a, **k: None,
-            })()
+        # Phase 6 utilities removed - use pg_macros.graph modules
 
         # Perl compatibility values
         def undef():
             """Stub for Perl's undef - returns None."""
             return None
-
-        def install_problem_grader(grader):
-            """Stub install_problem_grader - does nothing."""
-            return None
-
-        def custom_problem_grader_fluid(*args, **kwargs):
-            """Stub custom_problem_grader_fluid - returns stub grader function."""
-            return lambda *a, **k: (1, "")
 
         self.namespace.update({
             'DOCUMENT': DOCUMENT,
@@ -1412,6 +1287,7 @@ class InProcessSandbox:
             # Special answer evaluation
             'COMPOSITION_ANS': COMPOSITION_ANS,
             'UNORDERED_ANS': UNORDERED_ANS,
+            'AnswerHints': AnswerHints,
             # Interactive elements
             'DraggableProof': DraggableProof,
             'DraggableSubsets': DraggableSubsets,
