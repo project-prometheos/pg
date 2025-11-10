@@ -6,16 +6,9 @@ sys.path.insert(0, str(project_root / "packages" / "pg_translator"))
 
 from pg_translator.pg_preprocessor_pygment import PGPreprocessor
 
-# Read just lines 35-42
+# Test ParametricPlot line 72 - two method chains with division
 source_lines = [
-    "Context()->variables->add(t => 'Real');",
-    "@tvals     = ('pi/12',   'pi/6',   '5pi/12',   'pi/3',   '2pi/3',   '7pi/12');",
-    "@tvals_tex = ('\\pi/12', '\\pi/6', '5\\pi/12', '\\pi/3', '2\\pi/3', '7\\pi/12');",
-    "$n         = random(1, $#tvals);",
-    "$x         = Compute('2sin(2t)');",
-    "$x0        = $x->eval(t => $tvals[$n]);",
-    "$y         = Compute('2sin(3t)');",
-    "$y0        = $y->eval(t => $tvals[$n]);",
+    "$m = $y->D('t')->eval(t => 'pi/3') / $x->D('t')->eval(t => 'pi/3');",
 ]
 
 source = "\n".join(source_lines)

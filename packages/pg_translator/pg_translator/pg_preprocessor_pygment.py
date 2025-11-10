@@ -225,6 +225,19 @@ class PGPreprocessor:
                                 should_join = True
 
                         if not should_join:
+                            # Special case: if line ends with } and next line starts with 'until', we should join
+                            # Also, keep joining if we have logical operators (&&, ||) or continue until we find semicolon
+                            next_stripped = next_line.lstrip(' \t')
+                            if (stripped and stripped.endswith('}') and
+                                next_stripped and next_stripped.startswith('until')):
+                                should_join = True
+                            # If current line has logical operators, keep joining
+                            elif (stripped and (stripped.endswith('&&') or stripped.endswith('||') or
+                                              next_stripped.startswith('&&') or next_stripped.startswith('||'))):
+                                if next_line.lstrip(' \t'):  # Not empty
+                                    should_join = True
+
+                        if not should_join:
                             check_line = self._strip_inline_comment(stripped)
                             # Account for $# operator which shouldn't affect paren counting
                             # Replace $#name with a placeholder
@@ -430,10 +443,24 @@ class PGPreprocessor:
                 continue
 
             # Detect do { ... } until loops (single or multi line)
-            do_until_single = re.match(r'^\s*do\s*\{([^}]*)\}\s*until\s*\(([^)]+)\)', original_line)
+            # This regex handles:
+            # - do { body } until (condition)
+            # - do { body } until (cond1) && (cond2) && (cond3);
+            # It captures everything from 'until' to the end of the line/statement
+            do_until_single = re.match(r'^\s*do\s*\{([^}]*)\}\s*until\s+(.+)$', original_line)
             if do_until_single:
                 body = do_until_single.group(1).strip()
-                condition = do_until_single.group(2).strip()
+                full_condition = do_until_single.group(2).strip()
+                # Remove trailing semicolon if present
+                if full_condition.endswith(';'):
+                    full_condition = full_condition[:-1].strip()
+                # Extract the actual condition (may be wrapped in parens or have logical operators)
+                # If it starts with ( and ends with ), extract the content
+                if full_condition.startswith('(') and full_condition.endswith(')'):
+                    condition = full_condition[1:-1].strip()
+                else:
+                    # Otherwise use the whole thing
+                    condition = full_condition
                 # Compile body and condition via grammar or fallback
                 body_lines = self._compile_line(body)
                 # Flatten to a single statement; indent body lines
@@ -456,14 +483,18 @@ class PGPreprocessor:
                 block_lines = [original_line]
                 brace_depth = original_line.count('{') - original_line.count('}')
                 i += 1
+
+                # Collect lines until braces are balanced
                 while i < len(lines) and brace_depth > 0:
                     ln = lines[i]
                     block_lines.append(ln)
                     brace_depth += ln.count('{') - ln.count('}')
                     i += 1
+
+                # After braces are balanced, check if there's an 'until' on the same line as '}'
                 last_line = block_lines[-1] if block_lines else ""
                 until_match = re.search(r'\}\s*until\s*\(([^)]+)\)', last_line)
-                
+
                 # If 'until' is not on the closing brace line, check the next line
                 if not until_match and i < len(lines):
                     next_line = lines[i]
@@ -795,7 +826,9 @@ class PGPreprocessor:
                   | var subscript "=" expr      -> subscript_assign
             expr_stmt: expr                      -> expr_stmt
 
-            args: expr ("," expr)*
+            // Args can be comma-separated expressions or named parameters with =>
+            args: arg_item ("," arg_item)*
+            arg_item: expr ("=>" expr)?
 
             // Hash/Array subscripting
             subscript: "[" expr "]"              -> array_subscript
@@ -834,10 +867,17 @@ class PGPreprocessor:
             ?range_expr: add_expr (".." add_expr)?           -> range_expr
 
             ?add_expr: mul_expr (add_op mul_expr)*           -> binary_expr
-            add_op: "+" | "-" | "."  // . is string concat in Perl
+            add_op: PLUS | MINUS | DOT
+            PLUS.2: "+"
+            MINUS.2: "-"
+            DOT.2: "."
 
             ?mul_expr: unary_expr (mul_op unary_expr)*       -> binary_expr
-            mul_op: "*" | "/" | "%" | "x"  // x is string repeat in Perl
+            mul_op: STAR | SLASH | PERCENT | X
+            STAR.2: "*"
+            SLASH.2: "/"
+            PERCENT.2: "%"
+            X.2: "x"
 
             ?unary_expr: postfix_expr
                        | "-" unary_expr                      -> unary_minus
@@ -1011,13 +1051,21 @@ class PGPreprocessor:
                 return expr
 
             # Operator extractors - these are needed because operators are defined as rules
-            def add_op(self, *args):
+            def add_op(self, token):
                 """Extract add operator token."""
-                return args[0] if args else "+"
+                # token is now a Token object from the terminal
+                if hasattr(token, 'value'):
+                    return token.value
+                else:
+                    return str(token)
 
-            def mul_op(self, *args):
+            def mul_op(self, token):
                 """Extract mul operator token."""
-                return args[0] if args else "*"
+                # token is now a Token object from the terminal
+                if hasattr(token, 'value'):
+                    return token.value
+                else:
+                    return str(token)
 
             def comp_op(self, token):
                 """Extract comparison operator token."""
@@ -1099,8 +1147,20 @@ class PGPreprocessor:
             def STRING(self, tok):
                 return str(tok)
 
-            def args(self, *exprs):
-                return list(exprs)
+            def args(self, *items):
+                return list(items)
+
+            def arg_item(self, *children):
+                """Handle argument item: expr or expr => expr"""
+                if len(children) == 1:
+                    # Just an expression
+                    return children[0]
+                elif len(children) == 2:
+                    # expr => expr (named parameter)
+                    key_expr, val_expr = children
+                    return ("named_param", key_expr, val_expr)
+                else:
+                    return children[0]
 
             def var(self, child):
                 """Unwrap the var rule to return its child."""
@@ -1355,6 +1415,24 @@ class PGPreprocessor:
                     "or": " or ", "and": " and "
                 }
                 py_op = op_map.get(op, op)
+
+                # Special handling for string concatenation (Perl's . operator)
+                # In Perl, . automatically converts values to strings
+                # In Python, we need to explicitly convert non-string operands
+                if op == ".":
+                    # Check if right operand needs wrapping in str()
+                    # String literals starting with " or ' are fine
+                    # f-strings starting with f" or f' are fine
+                    # str() calls are fine
+                    # Everything else should be wrapped in str()
+                    is_str_literal = (py_right.startswith('"') or py_right.startswith("'"))
+                    is_fstring = (py_right.startswith('f"') or py_right.startswith("f'") or
+                                 py_right.startswith('F"') or py_right.startswith("F'"))
+                    is_str_call = py_right.startswith("str(")
+
+                    if not (is_str_literal or is_fstring or is_str_call):
+                        py_right = f"str({py_right})"
+
                 return f"({py_left} {py_op} {py_right})"
 
             # Ternary operator
@@ -1407,7 +1485,19 @@ class PGPreprocessor:
                         # In Python: reduce is a @property, so .reduce() fails
                         if method_name == "reduce" and len(args) == 0:
                             return f"{base_py}.reduce"
-                        arg_strs = [self._expr_to_py(a) for a in args]
+                        arg_strs = []
+                        for a in args:
+                            if isinstance(a, tuple) and len(a) >= 2 and a[0] == "named_param":
+                                # named_param: key => value
+                                _, key_expr, val_expr = a
+                                key_str = self._expr_to_py(key_expr)
+                                val_str = self._expr_to_py(val_expr)
+                                # Convert key to bareword if it's a variable
+                                if isinstance(key_expr, tuple) and key_expr[0] == "var":
+                                    key_str = key_expr[1]  # Just the variable name without sigil
+                                arg_strs.append(f"{key_str} = {val_str}")
+                            else:
+                                arg_strs.append(self._expr_to_py(a))
                         return f"{base_py}.{method_name}({', '.join(arg_strs)})"
                     elif op[0] in ("array_subscript", "hash_subscript"):
                         subscript_py = self._emit_subscript(op)
@@ -1418,7 +1508,19 @@ class PGPreprocessor:
             # Function calls
             if head == "call":
                 _, name, args = expr
-                arg_strings = [self._expr_to_py(a) for a in args]
+                arg_strings = []
+                for a in args:
+                    if isinstance(a, tuple) and len(a) >= 2 and a[0] == "named_param":
+                        # named_param: key => value
+                        _, key_expr, val_expr = a
+                        key_str = self._expr_to_py(key_expr)
+                        val_str = self._expr_to_py(val_expr)
+                        # Convert key to string if it's a bareword variable
+                        if isinstance(key_expr, tuple) and key_expr[0] == "var":
+                            key_str = key_expr[1]  # Just the variable name without sigil
+                        arg_strings.append(f"{key_str} = {val_str}")
+                    else:
+                        arg_strings.append(self._expr_to_py(a))
                 return f"{name}({', '.join(arg_strings)})"
 
             # Map and grep
