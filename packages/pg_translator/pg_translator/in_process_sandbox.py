@@ -1149,8 +1149,10 @@ class InProcessSandbox:
                 return type('TikZImage', (), {
                     'tikzLibraries': lambda *a, **k: None,
                     'texPackages': lambda *a, **k: None,
-                    'BEGIN_TIKZ': property(lambda self: ''),
+                    'BEGIN_TIKZ': lambda *a, **k: '',
+                    'BEGIN_LATEX_IMAGE': lambda *a, **k: '',
                     'END_TIKZ': property(lambda self: ''),
+                    'END_LATEX_IMAGE': property(lambda self: ''),
                     'tex': lambda *a, **k: '',
                 })()
 
@@ -1607,8 +1609,19 @@ class InProcessSandbox:
             return type('TikZImage', (), {
                 'tikzLibraries': lambda *a, **k: None,
                 'texPackages': lambda *a, **k: None,
-                'BEGIN_TIKZ': property(lambda self: ''),
+                'BEGIN_TIKZ': lambda *a, **k: '',
+                'BEGIN_LATEX_IMAGE': lambda *a, **k: '',
                 'END_TIKZ': property(lambda self: ''),
+                'END_LATEX_IMAGE': property(lambda self: ''),
+                'tex': lambda *a, **k: '',
+            })()
+
+        def createLaTeXImage(*args, **kwargs):
+            """Stub for createLaTeXImage - creates LaTeX image object."""
+            return type('LaTeXImage', (), {
+                'texPackages': lambda *a, **k: None,
+                'BEGIN_LATEX_IMAGE': lambda *a, **k: '',
+                'END_LATEX_IMAGE': property(lambda self: ''),
                 'tex': lambda *a, **k: '',
             })()
 

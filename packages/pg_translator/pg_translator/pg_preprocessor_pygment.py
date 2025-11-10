@@ -620,7 +620,7 @@ class PGPreprocessor:
             # Block detection: check for BEGIN_* markers
             block_found = False
             for block_type, (begin_pattern, end_pattern) in self.BLOCK_PATTERNS.items():
-                if re.search(begin_pattern, original_line):
+                if re.search(begin_pattern, original_line) and not re.search(r'\$\w+\s*->\s*(BEGIN_TIKZ|BEGIN_LATEX_IMAGE)', original_line):
                     block_content_lines: List[str] = []
                     i += 1
                     while i < len(lines) and not re.match(end_pattern, lines[i]):
@@ -659,6 +659,44 @@ class PGPreprocessor:
                     break
             if block_found:
                 # Skip over the END marker by incrementing i once more
+                i += 1
+                continue
+
+            # Handle method-call-style blocks: $obj->BEGIN_TIKZ or $obj->BEGIN_LATEX_IMAGE
+            # These should capture content until END_TIKZ/END_LATEX_IMAGE and pass as raw string
+            # Note: Use search to find these patterns even if there's trailing whitespace/comments
+            tikz_method_match = re.search(r'(\$\w+)\s*->\s*BEGIN_TIKZ', original_line)
+            latex_method_match = re.search(r'(\$\w+)\s*->\s*BEGIN_LATEX_IMAGE', original_line)
+
+            if (tikz_method_match or latex_method_match) and original_line.strip().endswith(('BEGIN_TIKZ', 'BEGIN_LATEX_IMAGE')):
+                obj_var = (tikz_method_match or latex_method_match).group(1)
+                end_marker = "END_TIKZ" if tikz_method_match else "END_LATEX_IMAGE"
+                method_name = "BEGIN_TIKZ" if tikz_method_match else "BEGIN_LATEX_IMAGE"
+
+                # Collect content lines until we hit the end marker
+                content_lines: List[str] = []
+                i += 1
+                while i < len(lines):
+                    if re.match(rf'^\s*{end_marker}\s*$', lines[i]):
+                        break
+                    content_lines.append(lines[i])
+                    i += 1
+
+                # Join content and escape for raw string
+                content = '\n'.join(content_lines)
+                # Use raw string to avoid backslash issues
+                escaped_content = content.replace("'''", r"\'\'\'")
+
+                # Convert $obj_var to Python name (remove $)
+                py_var = obj_var[1:] if obj_var.startswith('$') else obj_var
+
+                # Emit the method call with content as argument
+                # Split into multiple lines to avoid embedding newlines in f-string
+                output_lines.append(f"{py_var}.{method_name}(r'''")
+                output_lines.append(escaped_content)
+                output_lines.append("''')")
+
+                # Skip the END marker
                 i += 1
                 continue
 
@@ -2551,6 +2589,39 @@ class PGPreprocessor:
                 compiled_body_lines.append(f"{body_indent}{block_var} = '''\n{escaped_content}\n'''")
                 compiled_body_lines.append(f"{body_indent}TEXT(PGML({block_var}))")
                 idx += 1
+                continue
+
+            # Check if this line is a method-call style BEGIN_TIKZ or BEGIN_LATEX_IMAGE
+            tikz_match = re.search(r'(\$\w+)\s*->\s*BEGIN_TIKZ', body_line)
+            latex_match = re.search(r'(\$\w+)\s*->\s*BEGIN_LATEX_IMAGE', body_line)
+
+            if (tikz_match or latex_match) and body_line.strip().endswith(('BEGIN_TIKZ', 'BEGIN_LATEX_IMAGE')):
+                obj_var = (tikz_match or latex_match).group(1)
+                end_marker = "END_TIKZ" if tikz_match else "END_LATEX_IMAGE"
+                method_name = "BEGIN_TIKZ" if tikz_match else "BEGIN_LATEX_IMAGE"
+
+                # Collect content until END marker
+                content_lines: List[str] = []
+                idx += 1
+                while idx < len(body_lines) and not re.match(rf'^\s*{end_marker}\s*$', body_lines[idx]):
+                    content_lines.append(body_lines[idx])
+                    idx += 1
+
+                # Join content and escape for raw string
+                content = '\n'.join(content_lines)
+                escaped_content = content.replace("'''", r"\'\'\'")
+
+                # Convert $obj_var to Python name
+                py_var = obj_var[1:] if obj_var.startswith('$') else obj_var
+
+                # Emit the method call with content as raw string argument
+                # Split into multiple lines to avoid embedding newlines in f-string
+                compiled_body_lines.append(f"{body_indent}{py_var}.{method_name}(r'''")
+                # Add content lines with proper indentation
+                for content_line in content_lines:
+                    compiled_body_lines.append(content_line)
+                compiled_body_lines.append(f"{body_indent}''')")
+                idx += 1  # Skip the END marker
                 continue
 
             # Regular line - compile it
