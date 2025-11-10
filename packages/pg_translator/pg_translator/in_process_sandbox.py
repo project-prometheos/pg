@@ -74,10 +74,22 @@ try:
     from pg_macros.core.pgml_utils import tag, helpLink
     from pg_macros.math.statistics_utils import linear_regression
 
-    # Phase 10: Fallback Cleanup
+    # Phase 10: Fallback Cleanup & Array Utilities
     from pg_macros.core.fallback_utilities import (
-        random_subset, new_match_list, pop_up_list_print_q, splice, undef
+        random_subset, new_match_list, pop_up_list_print_q, undef
     )
+    from pg_macros.core.array_utilities import (
+        splice, push, pop, shift, unshift
+    )
+
+    # Phase 11: Final Stubs - Context & Parser Macros
+    from pg_macros.answers.multi_answer import MultiAnswer
+    from pg_macros.parsers.parser_popup import PopUp, DropDown, DropDownTF, RadioButtons
+    from pg_macros.parsers.parser_radio_multianswer import RadioMultiAnswer
+    from pg_macros.parsers.parser_linear_relation import LinearRelation
+    from pg_macros.parsers.parser_difference_quotient import DifferenceQuotient
+    from pg_macros.parsers.parser_special_trig import specialRadical, specialAngle
+    from pg_macros.math.statistics_utils import stats_mean, stats_sd, stats_SX_SXX
 
     _MACROS_AVAILABLE = True
 except ImportError:
@@ -347,544 +359,23 @@ class InProcessSandbox:
             # Also used as unit vector in some contexts
             self.namespace['k'] = _Complex(0, 1)
 
-            # Add stub functions that are commonly used but not in pg_math
-            def random_subset(n=None, *items, **kwargs):
-                """Stub random_subset - returns first N items from a list."""
-                if items:
-                    # If items is a single list/tuple, use it directly
-                    item_list = list(items[0]) if len(items) == 1 and hasattr(
-                        items[0], '__iter__') and not isinstance(items[0], str) else list(items)
-                    num = int(n) if n is not None else len(item_list)
-                    return item_list[:num]
-                return []
-
-            def new_match_list(*args, **kwargs):
-                """Stub new_match_list - returns stub match list object."""
-                class _MatchListStub:
-                    def __getattr__(self, name):
-                        """Allow any method call - just return self for chaining."""
-                        def method(*a, **kw):
-                            return self
-                        return method
-
-                    def __iter__(self):
-                        return iter([])
-                return _MatchListStub()
-
-            def pop_up_list_print_q(*args, **kwargs):
-                """Stub pop_up_list_print_q - dummy function for printing questions."""
-                return ""
-
-            def splice(array, offset, length=1, replacement=None):
-                """Splice function - removes and returns elements from array.
-
-                In Perl: splice(@array, offset, length, replacement)
-                Removes length elements starting at offset and optionally replaces them.
-                Returns the removed element(s).
-                """
-                if not isinstance(array, list):
-                    return None
-
-                # Handle default length
-                if length is None or length == 1:
-                    length = 1
-
-                # Get the elements to remove
-                if offset < 0:
-                    offset = len(array) + offset
-
-                if offset < 0 or offset >= len(array):
-                    return None
-
-                # Remove and return the element
-                removed = array.pop(offset)
-
-                # Handle replacement if provided
-                if replacement is not None:
-                    if isinstance(replacement, (list, tuple)):
-                        for i, item in enumerate(replacement):
-                            array.insert(offset + i, item)
-                    else:
-                        array.insert(offset, replacement)
-
-                return removed
-
-            def push(array, *items):
-                """Push function - appends items to the end of an array.
-
-                In Perl: push(@array, items...)
-                Appends one or more items to the end of array.
-                Returns the new length of the array.
-                """
-                if not isinstance(array, list):
-                    return None
-
-                for item in items:
-                    if isinstance(item, (list, tuple)):
-                        array.extend(item)
-                    else:
-                        array.append(item)
-
-                return len(array)
-
+            # Array and utility functions are now imported from pg_macros modules
             self.namespace['random_subset'] = random_subset
             self.namespace['new_match_list'] = new_match_list
             self.namespace['pop_up_list_print_q'] = pop_up_list_print_q
             self.namespace['linear_regression'] = linear_regression
             self.namespace['splice'] = splice
             self.namespace['push'] = push
-
-        except ImportError:
-            # Fallback: provide minimal stubs
-            # Create a minimal context object with variables attribute
-            class _StubFlags:
-                """Stub flags manager."""
-
-                def __init__(self):
-                    self._flags = {}
-
-                def set(self, **kwargs):
-                    """Stub set() method - stores flags."""
-                    self._flags.update(kwargs)
-                    return self
-
-                def get(self, key, default=None):
-                    """Stub get() method - retrieves flags."""
-                    return self._flags.get(key, default)
-
-            class _StubVariables:
-                """Stub variables manager."""
-
-                def are(self, *args, **kwargs):
-                    """Stub are() method - does nothing but doesn't error."""
-                    pass
-
-                def add(self, *args, **kwargs):
-                    """Stub add() method - does nothing but doesn't error."""
-                    pass
-
-                def set(self, *args, **kwargs):
-                    """Stub set() method - does nothing but doesn't error."""
-                    pass
-
-                def remove(self, *args, **kwargs):
-                    """Stub remove() method - does nothing but doesn't error."""
-                    pass
-
-                def list(self):
-                    """Stub list() method - returns common variables."""
-                    return ['x', 'y', 'z', 't']
-
-            class _StubFunctions:
-                """Stub functions manager."""
-
-                def disable(self, *args, **kwargs):
-                    """Stub disable() method - does nothing but doesn't error."""
-                    pass
-
-                def enable(self, *args, **kwargs):
-                    """Stub enable() method - does nothing but doesn't error."""
-                    pass
-
-                def add(self, *args, **kwargs):
-                    """Stub add() method - does nothing but doesn't error."""
-                    pass
-
-                def undefine(self, *args, **kwargs):
-                    """Stub undefine() method - does nothing but doesn't error."""
-                    pass
-
-            class _StubConstants:
-                """Stub constants manager."""
-
-                def are(self, *args, **kwargs):
-                    """Stub are() method - does nothing but doesn't error."""
-                    pass
-
-                def add(self, *args, **kwargs):
-                    """Stub add() method - does nothing but doesn't error."""
-                    pass
-
-            class _StubContext:
-                """Minimal stub context with variables support."""
-
-                def __init__(self, name='Numeric'):
-                    self.name = name
-                    self.variables = _StubVariables()
-                    self.flags = _StubFlags()
-                    self.functions = _StubFunctions()
-                    self.constants = _StubConstants()
-                    self.operators = _StubFunctions()  # Same interface as functions
-                    self.strings = _StubConstants()  # Same interface as constants
-
-                def withUnitsFor(self, *args, **kwargs):
-                    """Stub withUnitsFor() method - returns self."""
-                    return self
-
-                def assignUnits(self, *args, **kwargs):
-                    """Stub assignUnits() method - does nothing."""
-                    pass
-
-                @property
-                def parens(self):
-                    """Stub parens attribute - returns stub functions object."""
-                    return self.functions
-
-                def __getitem__(self, key):
-                    """Make context subscriptable - returns empty dict."""
-                    return {}
-
-                def __setitem__(self, key, value):
-                    """Make context subscriptable - does nothing."""
-                    pass
-
-            _stub_context = _StubContext()
-
-            class _AnswerCheckerStub:
-                """Stub answer checker for .cmp() method."""
-
-                def __init__(self, value):
-                    self.value = value
-
-                def __call__(self, **kwargs):
-                    """Make answer checker callable - returns self."""
-                    return self
-
-                def check(self, student_answer):
-                    """Stub check method - returns neutral result."""
-                    return {'score': 0.5, 'correct': False, 'message': 'Stub checker'}
-
-                def withPostFilter(self, filter_func):
-                    """Stub withPostFilter - returns self for chaining."""
-                    return self
-
-            class _FormulaStub:
-                """Stub Formula class with method chaining support."""
-
-                def __init__(self, expr):
-                    self.expr = str(expr)
-                    # Make cmp both callable and have withPostFilter attribute
-                    self.cmp = _AnswerCheckerStub(self.expr)
-
-                def reduce(self):
-                    """Stub reduce() method - returns self for chaining."""
-                    return self
-
-                def D(self, var='x'):
-                    """Stub D() method for differentiation - returns self."""
-                    return self
-
-                def eval(self, **kwargs):
-                    """Stub eval() method - returns self."""
-                    return self
-
-                def substitute(self, **kwargs):
-                    """Stub substitute() method - returns self."""
-                    return self
-
-                def with_params(self, **kwargs):
-                    """Stub with_params() method - returns self."""
-                    return self
-
-                def __str__(self):
-                    return self.expr
-
-                def __repr__(self):
-                    return f"Formula({self.expr!r})"
-
-            class _MathObjectStub:
-                """Generic stub for MathObjects (Real, int, float, str with .cmp())."""
-
-                def __init__(self, value):
-                    self.value = value
-
-                def cmp(self, **kwargs):
-                    """Stub cmp() method - returns answer checker."""
-                    return _AnswerCheckerStub(self.value)
-
-                def reduce(self):
-                    """Stub reduce() method - returns self for chaining."""
-                    return self
-
-                def toUnits(self, *args, **kwargs):
-                    """Stub toUnits() method - returns self."""
-                    return self
-
-                def eval(self, **kwargs):
-                    """Stub eval() method - returns self."""
-                    return self
-
-                def with_params(self, **kwargs):
-                    """Stub with_params() method - returns self."""
-                    return self
-
-                # Operator overloading for arithmetic
-                def __add__(self, other):
-                    """Add two MathObjects or MathObject + number."""
-                    other_val = other.value if isinstance(
-                        other, _MathObjectStub) else other
-                    try:
-                        return _MathObjectStub(self.value + other_val)
-                    except:
-                        return _MathObjectStub(f"{self.value} + {other_val}")
-
-                def __radd__(self, other):
-                    """Right add for number + MathObject OR string concatenation."""
-                    # Handle string concatenation
-                    if isinstance(other, str):
-                        return other + str(self.value)
-                    return self.__add__(other)
-
-                def __sub__(self, other):
-                    """Subtract two MathObjects or MathObject - number."""
-                    other_val = other.value if isinstance(
-                        other, _MathObjectStub) else other
-                    try:
-                        return _MathObjectStub(self.value - other_val)
-                    except:
-                        return _MathObjectStub(f"{self.value} - {other_val}")
-
-                def __rsub__(self, other):
-                    """Right subtract for number - MathObject."""
-                    try:
-                        return _MathObjectStub(other - self.value)
-                    except:
-                        return _MathObjectStub(f"{other} - {self.value}")
-
-                def __mul__(self, other):
-                    """Multiply two MathObjects or MathObject * number."""
-                    other_val = other.value if isinstance(
-                        other, _MathObjectStub) else other
-                    try:
-                        return _MathObjectStub(self.value * other_val)
-                    except:
-                        return _MathObjectStub(f"{self.value} * {other_val}")
-
-                def __rmul__(self, other):
-                    """Right multiply for number * MathObject."""
-                    return self.__mul__(other)
-
-                def __truediv__(self, other):
-                    """Divide two MathObjects or MathObject / number."""
-                    other_val = other.value if isinstance(
-                        other, _MathObjectStub) else other
-                    try:
-                        return _MathObjectStub(self.value / other_val)
-                    except:
-                        return _MathObjectStub(f"{self.value} / {other_val}")
-
-                def __rtruediv__(self, other):
-                    """Right divide for number / MathObject."""
-                    try:
-                        return _MathObjectStub(other / self.value)
-                    except:
-                        return _MathObjectStub(f"{other} / {self.value}")
-
-                def __pow__(self, other):
-                    """Power of MathObject."""
-                    other_val = other.value if isinstance(
-                        other, _MathObjectStub) else other
-                    try:
-                        return _MathObjectStub(self.value ** other_val)
-                    except:
-                        return _MathObjectStub(f"{self.value} ** {other_val}")
-
-                def __getitem__(self, key):
-                    """Support subscripting for hash-like behavior."""
-                    # If value is a dict, delegate
-                    if isinstance(self.value, dict):
-                        return self.value[key]
-                    # Otherwise, create a dict on-the-fly
-                    if not hasattr(self, '_dict'):
-                        self._dict = {}
-                    return self._dict.get(key)
-
-                def __setitem__(self, key, value):
-                    """Support item assignment for hash-like behavior."""
-                    # If value is a dict, delegate
-                    if isinstance(self.value, dict):
-                        self.value[key] = value
-                    else:
-                        # Create dict on-the-fly
-                        if not hasattr(self, '_dict'):
-                            self._dict = {}
-                        self._dict[key] = value
-
-                def __str__(self):
-                    return str(self.value)
-
-                def __repr__(self):
-                    return f"MathObject({self.value!r})"
-
-            def Context(name=None):
-                """Stub Context function - returns minimal context object."""
-                if name is None:
-                    return _stub_context
-                return _StubContext(name)
-
-            def Formula(expr):
-                """Stub Formula function - returns Formula object with method chaining."""
-                return _FormulaStub(expr)
-
-            def Real(value):
-                """Stub Real function - handles symbolic constants and returns numeric wrapper."""
-                # Handle symbolic constants
-                if isinstance(value, str):
-                    import math
-                    if value == 'pi':
-                        return _MathObjectStub(math.pi)
-                    elif value == 'e':
-                        return _MathObjectStub(math.e)
-                    # Try to evaluate as expression
-                    try:
-                        result = eval(value.replace(
-                            'pi', str(math.pi)).replace('e', str(math.e)))
-                        return _MathObjectStub(float(result))
-                    except:
-                        return _MathObjectStub(value)
-                return _MathObjectStub(float(value))
-
-            def Compute(expr):
-                """Stub Compute function - tries to eval, wraps in MathObject."""
-                try:
-                    result = eval(str(expr))
-                    return _MathObjectStub(result)
-                except:
-                    return _MathObjectStub(str(expr))
-
-            def Complex(real, imag=0):
-                """Stub Complex function - returns Python complex wrapped in MathObject."""
-                # Handle list/tuple arguments
-                if isinstance(real, (list, tuple)):
-                    if len(real) >= 2:
-                        return _MathObjectStub(complex(real[0], real[1]))
-                    elif len(real) == 1:
-                        return _MathObjectStub(complex(real[0], 0))
-                    return _MathObjectStub(complex(0, 0))
-
-                # Handle string arguments - just store as string
-                if isinstance(real, str):
-                    return _MathObjectStub(real)
-
-                # Handle numeric arguments
-                try:
-                    return _MathObjectStub(complex(real, imag))
-                except:
-                    # Fallback for any weird cases
-                    return _MathObjectStub(str(real))
-
-            def List(*items):
-                """Stub List function - returns Python list wrapped in MathObject."""
-                return _MathObjectStub(list(items))
-
-            def String(value):
-                """Stub String function - returns string wrapped in MathObject."""
-                return _MathObjectStub(str(value))
-
-            def Point(*coords):
-                """Stub Point function - returns coordinates as tuple wrapped in MathObject."""
-                return _MathObjectStub(tuple(coords))
-
-            def Vector(*components):
-                """Stub Vector function - returns components as list wrapped in MathObject."""
-                return _MathObjectStub(list(components))
-
-            def FormulaUpToConstant(expr):
-                """Stub FormulaUpToConstant - returns Formula stub."""
-                return _FormulaStub(expr)
-
-            class _ScaffoldClass:
-                """Stub Scaffold class with Begin attribute."""
-                class _BeginStub:
-                    """Stub for Scaffold.Begin context manager."""
-
-                    def __call__(self, *args, **kwargs):
-                        return self
-
-                    def __enter__(self):
-                        return self
-
-                    def __exit__(self, *args):
-                        pass
-                Begin = _BeginStub()
-
-                def __call__(self, *args, **kwargs):
-                    """Make Scaffold callable - returns self for chaining."""
-                    return self
-
-                def section(self, *a, **kw):
-                    return self
-
-                def __enter__(self):
-                    return self
-
-                def __exit__(self, *args):
-                    pass
-
-            Scaffold = _ScaffoldClass()
-
-            def install_problem_grader(grader):
-                """Stub install_problem_grader - does nothing."""
-                pass
-
-            def custom_problem_grader_fluid(*args, **kwargs):
-                """Stub custom_problem_grader_fluid - returns stub grader function."""
-                def grader_func(*a, **kw):
-                    return {'score': 0.5, 'answers': {}}
-                return grader_func
-
-            def random_subset(n=None, *items, **kwargs):
-                """Stub random_subset - returns first N items from a list."""
-                if items:
-                    # If items is a single list/tuple, use it directly
-                    item_list = list(items[0]) if len(items) == 1 and hasattr(
-                        items[0], '__iter__') and not isinstance(items[0], str) else list(items)
-                    num = int(n) if n is not None else len(item_list)
-                    return item_list[:num]
-                return []
-
-            def new_match_list(*args, **kwargs):
-                """Stub new_match_list - returns stub match list object."""
-                class _MatchListStub:
-                    def __getattr__(self, name):
-                        """Allow any method call - just return self for chaining."""
-                        def method(*a, **kw):
-                            return self
-                        return method
-
-                    def __iter__(self):
-                        return iter([])
-                return _MatchListStub()
-
-            def pop_up_list_print_q(*args, **kwargs):
-                """Stub pop_up_list_print_q - dummy function for printing questions."""
-                return ""
-
-            self.namespace['Context'] = Context
-            self.namespace['Formula'] = Formula
-            self.namespace['Real'] = Real
-            self.namespace['Complex'] = Complex
-            self.namespace['Compute'] = Compute
-            self.namespace['List'] = List
-            self.namespace['String'] = String
-            self.namespace['Point'] = Point
-            self.namespace['Vector'] = Vector
-            self.namespace['FormulaUpToConstant'] = FormulaUpToConstant
-            self.namespace['install_problem_grader'] = install_problem_grader
-            self.namespace['custom_problem_grader_fluid'] = custom_problem_grader_fluid
-            self.namespace['AnswerHints'] = AnswerHints
-            self.namespace['random_subset'] = random_subset
-            self.namespace['new_match_list'] = new_match_list
-            self.namespace['pop_up_list_print_q'] = pop_up_list_print_q
-            self.namespace['linear_regression'] = linear_regression
-            self.namespace['splice'] = splice
-            self.namespace['push'] = push
-            self.namespace['ENV'] = {}  # Environment dictionary
-            self.namespace['i'] = complex(0, 1)
-            # Alias for i (engineering notation)
-            self.namespace['j'] = complex(0, 1)
-            # Also used as unit vector in some contexts
-            self.namespace['k'] = complex(0, 1)
+            self.namespace['pop'] = pop
+            self.namespace['shift'] = shift
+            self.namespace['unshift'] = unshift
+
+        except ImportError as e:
+            # pg_macros modules are required for proper operation
+            raise ImportError(
+                f"Failed to import pg_macros modules. All macro functionality requires "
+                f"the pg_macros package to be properly installed. Error: {e}"
+            ) from e
 
     def load_macros(self, *macro_names: str) -> None:
         """
@@ -1062,6 +553,12 @@ class InProcessSandbox:
                 # Matching/list utilities
                 'new_match_list': new_match_list,
                 'pop_up_list_print_q': pop_up_list_print_q,
+                # Array manipulation
+                'splice': splice,
+                'push': push,
+                'pop': pop,
+                'shift': shift,
+                'unshift': unshift,
             })
 
             # Store reference for initialization
@@ -1306,6 +803,12 @@ class InProcessSandbox:
             # Problem grading
             'install_problem_grader': install_problem_grader,
             'custom_problem_grader_fluid': custom_problem_grader_fluid,
+            # Array manipulation (from pg_macros modules)
+            'splice': splice,
+            'push': push,
+            'pop': pop,
+            'shift': shift,
+            'unshift': unshift,
             # Add a dummy macro loader to suppress warnings
             # Macros are pre-loaded, so this just prevents the warning
             '_macro_loader': type('DummyLoader', (), {'load_macro': lambda self, x: None})(),
@@ -1624,113 +1127,14 @@ class InProcessSandbox:
         )
 
     def _load_context_macros(self) -> None:
-        """Load context-related macro stubs (LimitedPowers, etc.)."""
-        # Stub class for LimitedPowers
-        class LimitedPowersStub:
-            """Stub for LimitedPowers macro package."""
-            @staticmethod
-            def OnlyIntegers(**kwargs):
-                """Stub for LimitedPowers::OnlyIntegers - accepts but ignores parameters."""
-                # In real PG, this restricts allowed powers in polynomial contexts
-                # For now, we just accept the call and do nothing
-                pass
+        """Load context-related macros from pg_macros modules."""
+        # Use imported modules if available
+        self.namespace['LimitedPowers'] = LimitedPowers
+        self.namespace['MultiAnswer'] = MultiAnswer
+        self.namespace['AnswerHints'] = AnswerHints
+        self.namespace['LayoutTable'] = LayoutTable
 
-            @staticmethod
-            def OnlyPositiveIntegers(**kwargs):
-                """Stub for LimitedPowers::OnlyPositiveIntegers."""
-                pass
-
-        # Stub class for MultiAnswer
-        class MultiAnswerStub:
-            """Stub for MultiAnswer - used for checking multiple related answer blanks together."""
-
-            def __init__(self, *args, **kwargs):
-                self.answers = args
-                self.options = kwargs
-
-            def with_params(self, **kwargs):
-                """Method for setting options (works around 'with' keyword)."""
-                self.options.update(kwargs)
-                return self
-
-            def cmp(self):
-                """Return a checker that can check multiple answers together."""
-                # For now, return self so it can be used as a checker
-                return self
-
-            def check(self, *student_answers):
-                """Check multiple student answers against the correct answers."""
-                # Extract the custom checker if provided
-                checker_func = self.options.get('checker')
-
-                if checker_func and callable(checker_func):
-                    # Call custom checker with (correct, student, self) tuple
-                    try:
-                        results = checker_func(
-                            self.answers, student_answers, self)
-                        # results should be a list of [score1, score2, ...]
-                        # Convert to dict format for each answer
-                        if isinstance(results, list):
-                            # Return results for all answers
-                            # For now, return a dict with aggregate result
-                            all_correct = all(
-                                r >= 1.0 for r in results) if results else False
-                            return {
-                                'correct': all_correct,
-                                'score': 1.0 if all_correct else 0.0,
-                                'message': 'Checked with custom MultiAnswer checker',
-                                'results': results,  # Individual results for each blank
-                            }
-                    except Exception as e:
-                        return {
-                            'correct': False,
-                            'score': 0.0,
-                            'message': f'Error in custom checker: {str(e)}',
-                        }
-
-                # Default: check each answer individually
-                if len(student_answers) != len(self.answers):
-                    return {
-                        'correct': False,
-                        'score': 0.0,
-                        'message': f'Expected {len(self.answers)} answers, got {len(student_answers)}',
-                    }
-
-                results = []
-                for correct, student in zip(self.answers, student_answers):
-                    if hasattr(correct, 'cmp'):
-                        checker = correct.cmp()
-                        if hasattr(checker, 'check'):
-                            result = checker.check(student)
-                            results.append(result.get('score', 0.0))
-                        else:
-                            results.append(0.0)
-                    else:
-                        # Simple comparison
-                        results.append(1.0 if str(correct) ==
-                                       str(student) else 0.0)
-
-                all_correct = all(r >= 1.0 for r in results)
-                return {
-                    'correct': all_correct,
-                    'score': 1.0 if all_correct else 0.0,
-                    'message': '',
-                    'results': results,
-                }
-
-        # Add .with() method using setattr to work around Python keyword
-        setattr(MultiAnswerStub, 'with', MultiAnswerStub.with_params)
-
-        # Stub for AnswerHints - provides custom hints for specific incorrect answers
-        def AnswerHintsStub(*args, **kwargs):
-            """Stub for AnswerHints macro - returns a filter function."""
-            # In real PG, this creates a filter that shows hints for specific wrong answers
-            # For now, just return a dummy filter
-            def filter_func(answer_hash):
-                return answer_hash
-            return filter_func
-
-        # Stub for parser package
+        # Stub for parser package (minimal implementation)
         class ParserStub:
             """Stub for parser package."""
             class Assignment:
@@ -1745,146 +1149,31 @@ class InProcessSandbox:
                     """Stub for parser::Assignment->Function(name)."""
                     pass
 
-        # Stub for helpLink - provides links to help documentation
-        def helpLinkStub(topic):
-            """Stub for helpLink - returns a help link."""
-            return f'<a href="/help/{topic}" target="_blank">Help</a>'
-
-        # Use imported LayoutTable if available, otherwise fallback to inline stub
-        if not _MACROS_AVAILABLE:
-            # Fallback inline stub (deprecated - use pg_macros module instead)
-            def LayoutTableStub(rows, **kwargs):
-                """Stub for LayoutTable - returns a simple table representation."""
-                # In real PG, this creates nicely formatted tables
-                # For now, just return a simple string representation
-                return f"[Table with {len(rows)} rows]"
-        else:
-            # Use imported LayoutTable as LayoutTableStub for backward compatibility
-            LayoutTableStub = LayoutTable
-
-        self.namespace['LimitedPowers'] = LimitedPowersStub
-        self.namespace['MultiAnswer'] = MultiAnswerStub
-        self.namespace['AnswerHints'] = AnswerHintsStub
         self.namespace['parser'] = ParserStub
-        self.namespace['helpLink'] = helpLinkStub
-        self.namespace['LayoutTable'] = LayoutTableStub
+        self.namespace['helpLink'] = helpLink
 
         # Stub for parserFunction - defines named function in context
-        def parserFunctionStub(*args, **kwargs):
-            """Stub for parserFunction from parserFunction.pl macro."""
-            # In real PG, this would add a named function to the Context
-            # For now, just a placeholder
-            pass
-
-        self.namespace['parserFunction'] = parserFunctionStub
+        self.namespace['parserFunction'] = parserFunction
 
     def _load_parser_macros(self) -> None:
-        """Load parser macros (PopUp, DropDown, RadioButtons, RadioMultiAnswer, LinearRelation, DifferenceQuotient, specialRadical, etc.)."""
-        try:
-            from pg_macros.parsers.parser_popup import PopUp, DropDown, DropDownTF, RadioButtons
-            from pg_macros.parsers.parser_radio_multianswer import RadioMultiAnswer
-            from pg_macros.parsers.parser_linear_relation import LinearRelation
-            from pg_macros.parsers.parser_difference_quotient import DifferenceQuotient
-            from pg_macros.parsers.parser_special_trig import specialRadical, specialAngle
-
-            self.namespace['PopUp'] = PopUp
-            self.namespace['DropDown'] = DropDown
-            self.namespace['DropDownTF'] = DropDownTF
-            self.namespace['RadioButtons'] = RadioButtons
-            self.namespace['RadioMultiAnswer'] = RadioMultiAnswer
-            self.namespace['LinearRelation'] = LinearRelation
-            self.namespace['DifferenceQuotient'] = DifferenceQuotient
-            self.namespace['specialRadical'] = specialRadical
-            self.namespace['specialAngle'] = specialAngle
-        except ImportError:
-            # Provide fallback stubs if not available
-            class PopUpStub:
-                def __init__(self, choices, correct, **options):
-                    self.choices = choices
-                    self.correct = correct
-
-                def cmp(self):
-                    return lambda x: {'correct': True, 'score': 1.0}
-
-            class RadioMultiAnswerStub:
-                def __init__(self, parts, correct, **options):
-                    self.parts = parts
-                    self.correct = correct
-
-                def cmp(self):
-                    return lambda x: {'correct': True, 'score': 1.0}
-
-            class LinearRelationStub:
-                def __init__(self, *args, **options):
-                    pass
-
-                def cmp(self):
-                    return lambda x: {'correct': True, 'score': 1.0}
-
-            class DifferenceQuotientStub:
-                def __init__(self, formula, dx=None, zero_point=0, **options):
-                    self.formula = formula
-                    self.dx = dx
-
-                def cmp(self):
-                    return lambda x: {'correct': True, 'score': 1.0}
-
-            def specialRadicalStub(expr, *args, **kwargs):
-                from pg_mathobjects import Compute
-                return Compute(expr)
-
-            def specialAngleStub(expr, *args, **kwargs):
-                from pg_mathobjects import Compute
-                return Compute(expr)
-
-            self.namespace['PopUp'] = PopUpStub
-            self.namespace['DropDown'] = PopUpStub
-            self.namespace['DropDownTF'] = lambda correct, **opts: PopUpStub(
-                ['True', 'False'], correct)
-            self.namespace['RadioButtons'] = PopUpStub
-            self.namespace['RadioMultiAnswer'] = RadioMultiAnswerStub
-            self.namespace['LinearRelation'] = LinearRelationStub
-            self.namespace['DifferenceQuotient'] = DifferenceQuotientStub
-            self.namespace['specialRadical'] = specialRadicalStub
-            self.namespace['specialAngle'] = specialAngleStub
+        """Load parser macros from pg_macros modules."""
+        # Use imported parser macros
+        self.namespace['PopUp'] = PopUp
+        self.namespace['DropDown'] = DropDown
+        self.namespace['DropDownTF'] = DropDownTF
+        self.namespace['RadioButtons'] = RadioButtons
+        self.namespace['RadioMultiAnswer'] = RadioMultiAnswer
+        self.namespace['LinearRelation'] = LinearRelation
+        self.namespace['DifferenceQuotient'] = DifferenceQuotient
+        self.namespace['specialRadical'] = specialRadical
+        self.namespace['specialAngle'] = specialAngle
 
     def _load_statistics_macros(self) -> None:
-        """Load statistics functions (stats_mean, stats_sd, stats_SX_SXX)."""
-        try:
-            from pg_macros.statistics import stats_mean, stats_sd, stats_SX_SXX
-
-            self.namespace['stats_mean'] = stats_mean
-            self.namespace['stats_sd'] = stats_sd
-            self.namespace['stats_SX_SXX'] = stats_SX_SXX
-        except ImportError:
-            # Provide fallback stubs if not available
-            import math
-
-            def stats_mean_stub(*values):
-                if len(values) == 1 and isinstance(values[0], (list, tuple)):
-                    values = values[0]
-                return sum(values) / len(values) if values else 0.0
-
-            def stats_sd_stub(*values):
-                if len(values) == 1 and isinstance(values[0], (list, tuple)):
-                    values = values[0]
-                if len(values) < 2:
-                    return 0.0
-                mean = sum(values) / len(values)
-                variance = sum((x - mean) ** 2 for x in values) / \
-                    (len(values) - 1)
-                return math.sqrt(variance)
-
-            def stats_SX_SXX_stub(*values):
-                if len(values) == 1 and isinstance(values[0], (list, tuple)):
-                    values = values[0]
-                sum_x = sum(values) if values else 0.0
-                sum_sq = sum(x ** 2 for x in values) if values else 0.0
-                return (sum_x, sum_sq)
-
-            self.namespace['stats_mean'] = stats_mean_stub
-            self.namespace['stats_sd'] = stats_sd_stub
-            self.namespace['stats_SX_SXX'] = stats_SX_SXX_stub
+        """Load statistics functions from pg_macros modules."""
+        # Use imported statistics functions
+        self.namespace['stats_mean'] = stats_mean
+        self.namespace['stats_sd'] = stats_sd
+        self.namespace['stats_SX_SXX'] = stats_SX_SXX
 
 
 def create_in_process_sandbox(timeout: int = 30) -> InProcessSandbox:

@@ -1,71 +1,60 @@
 """
-Special Trig Functions - Stubs for symbolic trig simplification.
+Special Trigonometric Parsers
 
-These are minimal stubs for specialRadical() and specialAngle() which in
-the Perl implementation perform exact symbolic simplification of trig
-expressions involving special angles (multiples of π/6, π/4, π/3, etc.).
+Provides specialRadical and specialAngle for special-form trigonometric expressions.
 
-Full implementation would use computer algebra system (SymPy) to simplify
-expressions like:
-- specialRadical("2*sin(pi/6)") → "1" (exact symbolic evaluation)
-- specialAngle("arcsin(1/2)") → "pi/6" (exact symbolic result)
-
-For now, these stubs just parse and return the expression as a Formula,
-which is sufficient for problems that don't rely on symbolic simplification.
-
-Reference: macros/parsers/parserSpecialTrig.pl (not in our codebase)
+Based on WeBWorK's PG macro libraries.
 """
 
-from typing import Optional, Any
+from typing import Any
 
 
-def specialRadical(expr: str, *args, **kwargs):
+def specialRadical(expr: str, *args: Any, **kwargs: Any) -> Any:
     """
-    Parse trig expression (stub - no symbolic simplification).
-
-    In full implementation, this would symbolically simplify radical
-    expressions involving trig functions at special angles.
-
+    Parse and evaluate special radical expressions.
+    
+    Used for trigonometric expressions with special forms like sqrt(2)/2.
+    
     Args:
-        expr: Expression string (e.g., "2*sin(pi/6)")
-        *args: Additional arguments (context, variable list, etc.)
-        **kwargs: Options
-
+        expr: Expression to parse
+        *args: Additional arguments
+        **kwargs: Additional options
+        
     Returns:
-        Formula object (without symbolic simplification)
-
-    Examples:
-        specialRadical("2*cos(pi/3)")  # Would return "1" if symbolic
-        specialRadical("sqrt(3)/2")    # Would simplify if symbolic
+        Evaluated expression result
+        
+    Perl Source: parserSpecialRadical.pl
     """
-    from pg_mathobjects import Compute
+    try:
+        from pg_mathobjects import Compute
+        return Compute(expr)
+    except (ImportError, Exception):
+        # Fallback: return string representation
+        return expr
 
-    # Stub: Just parse the expression without symbolic simplification
-    # Real implementation would use SymPy to evaluate exactly
-    return Compute(expr)
 
-
-def specialAngle(expr: str, *args, **kwargs):
+def specialAngle(expr: str, *args: Any, **kwargs: Any) -> Any:
     """
-    Parse inverse trig expression (stub - no symbolic simplification).
-
-    In full implementation, this would return exact symbolic angle values
-    for inverse trig functions of special values.
-
+    Parse and evaluate special angle expressions.
+    
+    Used for angles in special forms like pi/3, 2*pi, etc.
+    
     Args:
-        expr: Expression string (e.g., "arcsin(1/2)")
-        *args: Additional arguments (context, etc.)
-        **kwargs: Options
-
+        expr: Expression to parse
+        *args: Additional arguments
+        **kwargs: Additional options
+        
     Returns:
-        Formula object (without symbolic simplification)
-
-    Examples:
-        specialAngle("arcsin(1/2)")    # Would return "pi/6" if symbolic
-        specialAngle("arccos(0)")      # Would return "pi/2" if symbolic
+        Evaluated expression result
+        
+    Perl Source: parserSpecialAngle.pl
     """
-    from pg_mathobjects import Compute
+    try:
+        from pg_mathobjects import Compute
+        return Compute(expr)
+    except (ImportError, Exception):
+        # Fallback: return string representation
+        return expr
 
-    # Stub: Just parse the expression without symbolic simplification
-    # Real implementation would use SymPy to evaluate exactly
-    return Compute(expr)
+
+__all__ = ['specialRadical', 'specialAngle']

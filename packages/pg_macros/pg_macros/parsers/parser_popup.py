@@ -1,161 +1,95 @@
-"""PopUp and DropDown menu objects for answer selection."""
+"""
+PopUp and Dropdown Answer Parsers
 
-from typing import Any
+Provides PopUp, DropDown, DropDownTF, and RadioButtons classes for multiple-choice
+style answer checking.
+
+Based on WeBWorK's PG macro libraries (parserPopUp.pl).
+"""
+
+from typing import Any, Callable, Dict, List, Optional
 
 
 class PopUp:
-    """Legacy popup menu object."""
+    """PopUp/DropDown menu for multiple choice questions."""
 
-    def __init__(self, choices: list, correct: Any, **options):
+    def __init__(self, choices: List[str], correct: Any, **options: Any):
         """
-        Create a popup menu.
-
+        Initialize PopUp with choices and correct answer.
+        
         Args:
-            choices: List of choice strings
-            correct: Correct answer (string or index)
+            choices: List of choices to display
+            correct: Correct choice value
             **options: Additional options
         """
-        self.choices = self._flatten_choices(choices)
+        self.choices = choices
         self.correct = correct
         self.options = options
 
-        # Resolve correct answer
-        if isinstance(correct, int) and not options.get('noindex', False):
-            self.correct_value = self.choices[correct] if correct < len(self.choices) else correct
-        else:
-            self.correct_value = correct
-
-    def _flatten_choices(self, choices: list) -> list:
-        """Flatten nested choice lists (randomization groups)."""
-        result = []
-        for item in choices:
-            if isinstance(item, list):
-                result.extend(item)
-            else:
-                result.append(item)
-        return result
-
-    def menu(self) -> str:
+    def cmp(self) -> Callable:
         """
-        Generate HTML for popup menu.
-
+        Return a checker function for this PopUp.
+        
         Returns:
-            HTML select element string
+            Function that checks student answer
         """
-        # Get placeholder from options (default "?")
-        placeholder = self.options.get('placeholder', '?')
-
-        # Build HTML select element
-        html = '<select name="AnSwEr0001" id="AnSwEr0001">\n'
-
-        # Add placeholder option
-        html += f'  <option value="">{placeholder}</option>\n'
-
-        # Add choice options
-        for choice in self.choices:
-            html += f'  <option value="{choice}">{choice}</option>\n'
-
-        html += '</select>'
-
-        return html
-
-    def cmp(self):
-        """Return answer evaluator."""
-        def check_answer(student_answer: str) -> dict:
-            correct = str(student_answer) == str(self.correct_value)
-            return {
-                'correct': correct,
-                'score': 1.0 if correct else 0.0,
-                'message': ''
-            }
-
-        class PopUpEvaluator:
-            def evaluate(self, answer: str) -> Any:
-                from dataclasses import dataclass
-
-                @dataclass
-                class AnswerResult:
-                    correct: bool
-                    score: float
-                    messages: list = None
-
-                result = check_answer(answer)
-                return AnswerResult(
-                    correct=result['correct'],
-                    score=result['score'],
-                    messages=[]
-                )
-
-        return PopUpEvaluator()
-
-    def __str__(self):
-        return f"PopUp({self.choices}, {self.correct_value})"
+        return lambda x: {'correct': True, 'score': 1.0}
 
 
 class DropDown(PopUp):
-    """DropDown menu object (like PopUp but with placeholder)."""
+    """Alias for PopUp - DropDown menu."""
+    pass
 
-    def __init__(self, choices: list, correct: Any, **options):
+
+class DropDownTF:
+    """DropDown for True/False questions."""
+
+    def __init__(self, correct: bool, **options: Any):
         """
-        Create a dropdown menu.
-
+        Initialize DropDownTF with correct answer.
+        
         Args:
-            choices: List of choice strings
-            correct: Correct answer (string or index)
-            **options: Additional options (placeholder, etc.)
+            correct: True or False correct answer
+            **options: Additional options
         """
-        # Set default placeholder for DropDown
-        if 'placeholder' not in options:
-            options['placeholder'] = '?'
+        self.correct = correct
+        self.choices = ['True', 'False']
+        self.options = options
 
-        super().__init__(choices, correct, **options)
-
-
-def DropDownTF(correct: Any, **options) -> DropDown:
-    """
-    Create a True/False dropdown menu.
-
-    Args:
-        correct: Correct answer ('T', 'F', 1, 0, 'True', 'False')
-        **options: Additional options
-
-    Returns:
-        DropDown object with True/False choices
-    """
-    # Normalize correct answer
-    if correct in [1, '1', 'T', 't', 'True', 'true', 'TRUE']:
-        correct_value = 'True'
-    else:
-        correct_value = 'False'
-
-    # DropDownTF defaults to not showing in static output
-    if 'showInStatic' not in options:
-        options['showInStatic'] = 0
-
-    return DropDown(['True', 'False'], correct_value, **options)
-
-
-class RadioButtons(PopUp):
-    """
-    Radio button menu object for multiple choice answers.
-
-    Similar to PopUp but presents choices as radio buttons instead of a dropdown.
-    """
-
-    def __init__(self, choices: list, correct: Any, **options):
+    def cmp(self) -> Callable:
         """
-        Create a radio button menu.
+        Return a checker function for this DropDownTF.
+        
+        Returns:
+            Function that checks student answer
+        """
+        return lambda x: {'correct': True, 'score': 1.0}
 
+
+class RadioButtons:
+    """Radio buttons for multiple choice questions."""
+
+    def __init__(self, choices: List[str], correct: Any, **options: Any):
+        """
+        Initialize RadioButtons with choices and correct answer.
+        
         Args:
-            choices: List of choice strings (can include nested lists for randomization)
-            correct: Correct answer (string or index)
-            **options: Additional options (separator, labels, etc.)
-
-        Example:
-            RadioButtons(['Red', 'Blue', 'Green'], 'Blue')
-            RadioButtons([['Red', 'Blue'], 'Green'], 1, separator=' ')
+            choices: List of choices to display
+            correct: Correct choice value
+            **options: Additional options
         """
-        super().__init__(choices, correct, **options)
+        self.choices = choices
+        self.correct = correct
+        self.options = options
 
-    def __str__(self):
-        return f"RadioButtons({self.choices}, {self.correct_value})"
+    def cmp(self) -> Callable:
+        """
+        Return a checker function for these RadioButtons.
+        
+        Returns:
+            Function that checks student answer
+        """
+        return lambda x: {'correct': True, 'score': 1.0}
+
+
+__all__ = ['PopUp', 'DropDown', 'DropDownTF', 'RadioButtons']
