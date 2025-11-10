@@ -6,9 +6,9 @@ sys.path.insert(0, str(project_root / "packages" / "pg_translator"))
 
 from pg_translator.pg_preprocessor_pygment import PGPreprocessor
 
-# Test .with() conversion
+# Test .transpose property access
 source_lines = [
-    "answer = Real('pi / 2')->with(period => pi);",
+    "$answer = $A * ($B->transpose);",
 ]
 
 source = "\n".join(source_lines)
@@ -24,8 +24,3 @@ out_lines = result.code.split('\n')
 for i, line in enumerate(out_lines, 1):
     if line.strip():
         print(f"{i:2d}: {line}")
-
-print("\n\nLine map:")
-for out_line in sorted(result.line_map.keys()):
-    in_line = result.line_map[out_line]
-    print(f"Out {out_line:2d} <- In {in_line}")

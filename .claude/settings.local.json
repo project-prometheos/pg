@@ -58,7 +58,10 @@
       "Bash(do echo \"=== $test ===\" \"C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe\" -m pytest \"d:\\pg\\packages\\pg_translator\\tests\\test_tutorial_sample_problems.py::test_tutorial_problem_renders[$test]\" --tb=line)",
       "Bash(for test in Vectors ParametricPlotAlt MatrixAnswer1 Matching)",
       "Bash(do echo -n \"$test: \" \"C:/Users/mdahl/.conda/envs/pytorch-5090/python.exe\" -m pytest \"d:\\pg\\packages\\pg_translator\\tests\\test_tutorial_sample_problems.py::test_tutorial_problem_renders[$test]\" --tb=short)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(nul)",
+      "Bash(find.exe:*)",
+      "Bash(powershell -Command:*)"
     ],
     "deny": [],
     "ask": []
