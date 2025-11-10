@@ -21,6 +21,15 @@ from typing import Any, Callable
 
 from pg_parser import Context
 
+# Import macro modules
+try:
+    from pg_macros.graph.parser_graphtool import GraphTool
+    from pg_macros.math.draggable_proof import DraggableProof
+    from pg_macros.ui.nice_tables import LayoutTable
+    _MACROS_AVAILABLE = True
+except ImportError:
+    _MACROS_AVAILABLE = False
+
 
 @dataclass
 class ExecutionResult:
@@ -1030,33 +1039,40 @@ class InProcessSandbox:
 
                 return result
 
-            def GraphTool(*args, **kwargs):
-                """
-                Stub for GraphTool - interactive graphing tool for WeBWorK.
+            # Use imported GraphTool if available, otherwise fallback to inline stub
+            if not _MACROS_AVAILABLE:
+                # Fallback inline stub (deprecated - use pg_macros module instead)
+                def GraphTool(*args, **kwargs):
+                    """
+                    Stub for GraphTool - interactive graphing tool for WeBWorK.
 
-                Returns a stub object that can be used in answer blanks.
-                """
-                class GraphToolStub:
-                    def __init__(self, *args, **kwargs):
-                        self.args = args
-                        self.kwargs = kwargs
+                    Returns a stub object that can be used in answer blanks.
+                    """
+                    class GraphToolStub:
+                        def __init__(self, *args, **kwargs):
+                            self.args = args
+                            self.kwargs = kwargs
 
-                    def with_params(self, **params):
-                        """Set parameters for the GraphTool."""
-                        self.kwargs.update(params)
-                        return self
+                        def with_params(self, **params):
+                            """Set parameters for the GraphTool."""
+                            self.kwargs.update(params)
+                            return self
 
-                    def __str__(self):
-                        return "[GraphTool]"
+                        def __str__(self):
+                            return "[GraphTool]"
 
-                return GraphToolStub(*args, **kwargs)
+                    return GraphToolStub(*args, **kwargs)
+            # Note: When _MACROS_AVAILABLE is True, GraphTool is imported at module level
 
-            def DraggableProof(*args, **kwargs):
-                """Stub for DraggableProof - drag-and-drop proof interface."""
-                return type('DraggableProof', (), {
-                    'Print': lambda *a, **k: '',
-                    'CorrectProof': lambda *a, **k: [],
-                })()
+            # Use imported DraggableProof if available, otherwise fallback to inline stub
+            if not _MACROS_AVAILABLE:
+                # Fallback inline stub (deprecated - use pg_macros module instead)
+                def DraggableProof(*args, **kwargs):
+                    """Stub for DraggableProof - drag-and-drop proof interface."""
+                    return type('DraggableProof', (), {
+                        'Print': lambda *a, **k: '',
+                        'CorrectProof': lambda *a, **k: [],
+                    })()
 
             def DraggableSubsets(*args, **kwargs):
                 """Stub for DraggableSubsets - drag-and-drop subset interface."""
@@ -1259,7 +1275,8 @@ class InProcessSandbox:
                 'COMPOSITION_ANS': COMPOSITION_ANS,
                 'UNORDERED_ANS': UNORDERED_ANS,
                 'nicestring': nicestring,
-                'GraphTool': GraphTool,
+                # Use imported modules if available, otherwise use local stubs
+                'GraphTool': globals()['GraphTool'] if _MACROS_AVAILABLE else GraphTool,
                 # GraphTool object type constants (used in f-strings)
                 'point': 'point',
                 'solid': 'solid',
@@ -1269,7 +1286,7 @@ class InProcessSandbox:
                 'parabola': 'parabola',
                 'vector': 'vector',
                 'interval': 'interval',
-                'DraggableProof': DraggableProof,
+                'DraggableProof': globals()['DraggableProof'] if _MACROS_AVAILABLE else DraggableProof,
                 'DraggableSubsets': DraggableSubsets,
                 'CheckboxList': CheckboxList,
                 'tag': tag,
@@ -2213,12 +2230,17 @@ class InProcessSandbox:
             """Stub for helpLink - returns a help link."""
             return f'<a href="/help/{topic}" target="_blank">Help</a>'
 
-        # Stub for LayoutTable - creates formatted table layouts
-        def LayoutTableStub(rows, **kwargs):
-            """Stub for LayoutTable - returns a simple table representation."""
-            # In real PG, this creates nicely formatted tables
-            # For now, just return a simple string representation
-            return f"[Table with {len(rows)} rows]"
+        # Use imported LayoutTable if available, otherwise fallback to inline stub
+        if not _MACROS_AVAILABLE:
+            # Fallback inline stub (deprecated - use pg_macros module instead)
+            def LayoutTableStub(rows, **kwargs):
+                """Stub for LayoutTable - returns a simple table representation."""
+                # In real PG, this creates nicely formatted tables
+                # For now, just return a simple string representation
+                return f"[Table with {len(rows)} rows]"
+        else:
+            # Use imported LayoutTable as LayoutTableStub for backward compatibility
+            LayoutTableStub = LayoutTable
 
         self.namespace['LimitedPowers'] = LimitedPowersStub
         self.namespace['MultiAnswer'] = MultiAnswerStub
