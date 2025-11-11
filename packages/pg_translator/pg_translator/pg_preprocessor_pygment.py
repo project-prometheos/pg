@@ -145,13 +145,14 @@ class PGPreprocessor:
     # Public API
     # ------------------------------------------------------------------
 
-    def preprocess(self, pg_source: str, use_sandbox_macros: bool = False) -> PreprocessResult:
+    def preprocess(self, pg_source: str, use_sandbox_macros: bool = False, standalone: bool = False) -> PreprocessResult:
         """
         Preprocess PG source code.
 
         Args:
             pg_source: Raw PG file content
-            use_sandbox_macros: DEPRECATED - Always generates imports now (sandbox no longer pre-loads)
+            use_sandbox_macros: If True, assumes sandbox pre-loads macros (no imports generated)
+            standalone: If True, generates standalone executable .pyg with boilerplate
 
         Returns:
             PreprocessResult with transformed code and metadata
@@ -172,6 +173,11 @@ class PGPreprocessor:
         import_lines: List[str] = []
         loaded_macros_comment: Optional[str] = None
         if not use_sandbox_macros:
+            # If standalone mode, always import MathObjects
+            # (Context, Compute, etc. are used in almost every problem)
+            if standalone:
+                import_lines.append("from MathObjects import *")
+            
             for line in lines:
                 if "loadMacros" in line:
                     match = re.search(r'loadMacros\((.*?)\)', line, re.DOTALL)
@@ -331,8 +337,16 @@ class PGPreprocessor:
                 i += 1
                 continue
 
-            # Insert imports after DOCUMENT()
+            # Insert imports before/after DOCUMENT() depending on standalone mode
             if not imports_inserted and re.match(r'^\s*DOCUMENT\(\s*\)', original_line):
+                # For standalone mode, emit imports BEFORE DOCUMENT()
+                if standalone and import_lines:
+                    output_lines.extend(import_lines)
+                    if loaded_macros_comment:
+                        output_lines.append(loaded_macros_comment)
+                    output_lines.append("")
+                
+                # Emit DOCUMENT() line
                 # Split multiple statements by semicolon and handle individually
                 if ';' in original_line:
                     parts = [p.strip() for p in original_line.split(';') if p.strip()]
@@ -344,12 +358,15 @@ class PGPreprocessor:
                 else:
                     compiled_lines = self._compile_line(original_line)
                     output_lines.extend(compiled_lines)
-                if import_lines:
+                
+                # For normal mode, emit imports AFTER DOCUMENT()
+                if not standalone and import_lines:
                     output_lines.append("")
                     output_lines.extend(import_lines)
                     if loaded_macros_comment:
                         output_lines.append(loaded_macros_comment)
                     output_lines.append("")
+                
                 imports_inserted = True
                 i += 1
                 continue
@@ -765,6 +782,42 @@ class PGPreprocessor:
         # This occurs when $_ -> [...] is converted to _ . [...]
         # In Python, we just want _[...]
         code = re.sub(r'\b_\.(\[)', r'_\1', code)
+        
+        # If standalone mode, add boilerplate for direct execution
+        if standalone:
+            boilerplate = '''
+
+if __name__ == "__main__":
+    """Execute problem and display results."""
+    from pg_macros.core.pg_core import get_environment
+    
+    env = get_environment()
+    if env:
+        print("=" * 80)
+        print("PROBLEM STATEMENT")
+        print("=" * 80)
+        print(''.join(env.output_array))
+        
+        if env.solution_array:
+            print("\\n" + "=" * 80)
+            print("SOLUTION")
+            print("=" * 80)
+            print(''.join(env.solution_array))
+        
+        if env.hint_array:
+            print("\\n" + "=" * 80)
+            print("HINT")
+            print("=" * 80)
+            print(''.join(env.hint_array))
+        
+        print("\\n" + "=" * 80)
+        print(f"ANSWERS: {len(env.answers_hash)} answer blank(s)")
+        print("=" * 80)
+        for name in sorted(env.answers_hash.keys()):
+            print(f"  {name}")
+'''
+            code += boilerplate
+        
         return PreprocessResult(code=code, text_blocks=text_blocks, line_map=line_map)
 
     def _initialize_arrays(self, code: str) -> str:
@@ -3153,6 +3206,7 @@ def convert_pg_file(
     overwrite: bool = False,
     encoding: str = "utf-8",
     preprocessor: PGPreprocessor | None = None,
+    standalone: bool = False,
 ) -> tuple[Path, PreprocessResult]:
     """Convert a .pg file to Python using the Pygments/Lark preprocessor."""
 
@@ -3162,7 +3216,7 @@ def convert_pg_file(
 
     processor = preprocessor or PGPreprocessor()
     pg_source = pg_path.read_text(encoding=encoding)
-    result = processor.preprocess(pg_source, use_sandbox_macros=use_sandbox_macros)
+    result = processor.preprocess(pg_source, use_sandbox_macros=use_sandbox_macros, standalone=standalone)
 
     output = Path(output_path) if output_path else pg_path.with_suffix('.pyg')
     if output.exists() and not overwrite:

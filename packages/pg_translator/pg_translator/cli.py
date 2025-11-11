@@ -36,6 +36,11 @@ def _build_parser() -> argparse.ArgumentParser:
         help="Emit macro imports instead of assuming the sandbox provides them.",
     )
     parser.add_argument(
+        "--standalone",
+        action="store_true",
+        help="Generate standalone executable .pyg file with boilerplate for direct execution.",
+    )
+    parser.add_argument(
         "--encoding",
         default="utf-8",
         help="Encoding to use when reading and writing files (default: utf-8).",
@@ -55,13 +60,18 @@ def main(argv: list[str] | None = None) -> int:
     parser = _build_parser()
     args = parser.parse_args(argv)
 
+    # --standalone implies --emit-imports
+    if args.standalone:
+        args.use_sandbox_macros = False
+
     try:
-        written_path, _ = convert_pg_file(
+        written_path, result = convert_pg_file(
             args.source,
             output_path=args.output,
             use_sandbox_macros=args.use_sandbox_macros,
             overwrite=args.overwrite,
             encoding=args.encoding,
+            standalone=args.standalone,
         )
     except (FileNotFoundError, FileExistsError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
