@@ -3093,6 +3093,7 @@ class PGPreprocessor:
 
         # Collect imports by module to deduplicate
         imports_by_module: dict[str, set[str]] = {}
+        module_level_imports: list[str] = []  # Modules to import without 'from'
         loaded_macros: list[str] = []
         skipped_macros: list[str] = []
 
@@ -3103,15 +3104,15 @@ class PGPreprocessor:
                 functions = info.get("functions", [])
 
                 if functions:
-                    # Add specific function imports
+                    # Add specific function imports (from X import Y)
                     if module not in imports_by_module:
                         imports_by_module[module] = set()
                     imports_by_module[module].update(functions)
                     loaded_macros.append(macro)
                 elif module:
                     # Module exists but no functions listed - import entire module
-                    if module not in imports_by_module:
-                        imports_by_module[module] = set()
+                    if module not in module_level_imports:
+                        module_level_imports.append(module)
                     loaded_macros.append(macro)
                 else:
                     skipped_macros.append(macro)
@@ -3120,14 +3121,18 @@ class PGPreprocessor:
 
         # Generate import statements
         import_lines = []
+        
+        # For module-level imports (empty function lists), use 'from X import *'
+        # This makes all functions directly accessible without needing module prefix
+        if module_level_imports:
+            for module in sorted(module_level_imports):
+                import_lines.append(f"from {module} import *")
+        
+        # Then, generate function-specific imports: from X import Y, Z
         for module in sorted(imports_by_module.keys()):
             functions = imports_by_module[module]
-            if functions:
-                func_list = ", ".join(sorted(functions))
-                import_lines.append(f"from {module} import {func_list}")
-            else:
-                # No specific functions, import module
-                import_lines.append(f"import {module}")
+            func_list = ", ".join(sorted(functions))
+            import_lines.append(f"from {module} import {func_list}")
 
         # Generate comment
         comment_parts = []

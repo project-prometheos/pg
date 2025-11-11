@@ -17,7 +17,13 @@ import sys
 import time
 from contextlib import contextmanager
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Callable
+
+# Add packages directory to path for top-level macro modules
+_packages_path = Path(__file__).resolve().parents[3] / "packages"
+if _packages_path.exists() and str(_packages_path) not in sys.path:
+    sys.path.insert(0, str(_packages_path))
 
 from pg_parser import Context
 
@@ -219,6 +225,14 @@ class InProcessSandbox:
                 return original_import(name, globals, locals, fromlist, level)
             # Allow pg_math, pg_renderer, etc. (other PG packages)
             if name.startswith('pg_'):
+                return original_import(name, globals, locals, fromlist, level)
+            # Allow top-level PG macro modules (barrel modules for 1:1 Perl parity)
+            pg_macro_modules = {
+                'PG', 'PGstandard', 'PGbasicmacros', 'PGanswermacros', 'PGML', 'MathObjects', 'PGcourse',
+                'parserPopUp', 'parserRadioButtons', 'parserMultiAnswer', 'parserCheckboxList', 'parserGraphTool',
+                'PGgraphmacros'
+            }
+            if name in pg_macro_modules:
                 return original_import(name, globals, locals, fromlist, level)
             # Allow math, random, and re (already in namespace but allow re-import)
             if name in ('math', 'random', 're'):

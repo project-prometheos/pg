@@ -6,7 +6,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from .preprocessor import convert_pg_file
+from .pg_preprocessor_pygment import convert_pg_file
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -46,7 +46,8 @@ def _build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Suppress informational output.",
     )
-    parser.set_defaults(use_sandbox_macros=False)
+    # Default: sandbox provides macros (no imports)
+    parser.set_defaults(use_sandbox_macros=True)
     return parser
 
 

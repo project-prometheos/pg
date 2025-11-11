@@ -1,7 +1,6 @@
 ## DESCRIPTION
 ## Answer blank in the exponent
 ## ENDDESCRIPTION
-
 ## DBsubject(WeBWorK)
 ## DBchapter(WeBWorK tutorial)
 ## DBsection(PGML tutorial 2015)
@@ -10,20 +9,15 @@
 ## Author(Paul Pearson)
 ## MO(1)
 ## KEYWORDS('algebra', 'answer blank in the exponent')
-
 #:% name = Answer Blank in the Exponent
 #:% type = Sample
 #:% subject = [algebra, precalculus]
 #:% categories = [exponent]
-
 #:% section = preamble
 DOCUMENT()
 
-from pg_macros.answers.pg_answer_macros import num_cmp, str_cmp, fun_cmp
-from pg_pgml import PGML
-# loadMacros('PGstandard.pl', 'PGML.pl', 'PGcourse.pl') - loaded
-
-
+import pg_macros.PGML, pg_macros.PGstandard, pg_macros.core.pg_core
+# Loaded: PGstandard.pl, PGML.pl, PGcourse.pl
 
 #:% section = setup
 #: Set the context to allow only the variables `a` and `b` and choose a random
@@ -33,38 +27,33 @@ from pg_pgml import PGML
 #: with the right one shifted up using the CSS style `vertical-align`.
 #: In hardcopy mode, a LaTeX exponent is used.
 Context().variables.are(a = 'Real', b = 'Real')
-
 n = random(3, 9)
-
 # TeX
 expression = f"a^{{{n}}} b^{{{n}}}"
-
 # MathObjects
-base     = Formula("a*b")
+base = Formula("a*b")
 exponent = Formula(f"{n}")
-
 # Display exponents nicely
 if (displayMode == 'TeX'):
-    exp = f"\( \displaystyle {expression} = (" + ans_rule(4) + ")^{" + ans_rule(4) + "}\)"
+    exp = f"\\( \\displaystyle {expression} = ("  +  ans_rule(4)  +  ")^{"  +  ans_rule(4)  +  "}\\)"
 else:
-    exp = f"<span>\(\displaystyle {expression} = \Big(\)" + ans_rule(4) + '\(\Big)\)</span><span style="vertical-align: 12pt;">' + ans_rule(4) + '</span>'
-
-
+    exp = (((f"<span>\\(\\displaystyle {expression} = \\Big(\\)" + str(ans_rule(4))) + '\\(\\Big)\\)</span><span style="vertical-align: 12pt;">') + str(ans_rule(4))) + '</span>'
 #:% section = statement
-#: Insert the exponential stored as `exp`.
-pgml_block_0 = '''\nRewrite the following using a single exponent.
+#: Insert the exponential stored as `$exp`.
+pgml_block_0 = '''
+Rewrite the following using a single exponent.
 
-[$exp]*\n'''
+[$exp]*
+'''
 TEXT(PGML(pgml_block_0))
-
 #:% section = answer
 #: It is necessary to install the answer evaluator with `ANS`
 #: since `ans_rule` was used to produce answer blanks.
 ANS(base.cmp())
 ANS(exponent.cmp())
-
 #:% section = solution
-pgml_block_1 = '''\nSolution explanation goes here.\n'''
+pgml_block_1 = '''
+Solution explanation goes here.
+'''
 SOLUTION(PGML(pgml_block_1))
-
-ENDDOCUMENT();
+ENDDOCUMENT()

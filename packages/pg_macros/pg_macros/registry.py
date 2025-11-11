@@ -35,7 +35,7 @@ CORE_MACROS = {
 OPTIONAL_MACROS = {
     # Core PG functionality
     "PG": {
-        "module": "pg_macros.PG",
+        "module": "PG",
         "aliases": ["PG.pl"],
         "category": "core",
         "functions": [],  # Empty = import entire module
@@ -43,37 +43,37 @@ OPTIONAL_MACROS = {
     },
     # PGstandard.pl - Loads PG.pl + PGbasicmacros.pl + PGanswermacros.pl
     "PGstandard": {
-        "module": "pg_macros.PGstandard",
+        "module": "PGstandard",
         "aliases": ["PGstandard.pl"],
         "category": "core",
         "functions": [],  # Empty = import entire module
         "description": "Standard PG functions (1:1 parity with PGstandard.pl)",
     },
     "PGbasicmacros": {
-        "module": "pg_macros.PGbasicmacros",
+        "module": "PGbasicmacros",
         "aliases": ["PGbasicmacros.pl"],
         "category": "core",
         "functions": [],  # Empty = import entire module
         "description": "Basic UI and formatting macros (1:1 parity with PGbasicmacros.pl)",
     },
     "PGanswermacros": {
-        "module": "pg_macros.PGanswermacros",
+        "module": "PGanswermacros",
         "aliases": ["PGanswermacros.pl"],
         "category": "answers",
         "functions": [],  # Empty = import entire module
         "description": "Answer evaluation macros (1:1 parity with PGanswermacros.pl)",
     },
-    "pg_course": {
-        "module": "pg_macros.core.pg_core",  # PGcourse.pl is typically empty/minimal
+    "PGcourse": {
+        "module": "PGcourse",
         "aliases": ["PGcourse.pl"],
         "category": "core",
-        "functions": [],  # Usually just configuration, no functions
-        "description": "Course-specific configuration (usually empty)",
+        "functions": [],  # Empty = import entire module
+        "description": "Course-specific configuration (1:1 parity with PGcourse.pl)",
     },
 
     # PGML
     "PGML": {
-        "module": "pg_macros.PGML",
+        "module": "PGML",
         "aliases": ["PGML.pl"],
         "category": "markup",
         "functions": [],  # Empty = import entire module
@@ -82,7 +82,7 @@ OPTIONAL_MACROS = {
 
     # MathObjects
     "MathObjects": {
-        "module": "pg_macros.MathObjects",
+        "module": "MathObjects",
         "aliases": ["MathObjects.pl"],
         "category": "core",
         "functions": [],  # Empty = import entire module
@@ -91,28 +91,28 @@ OPTIONAL_MACROS = {
 
     # Parser macros
     "parserPopUp": {
-        "module": "pg_macros.parsers.parserPopUp",
+        "module": "parserPopUp",
         "aliases": ["parserPopUp.pl"],
         "category": "parsers",
         "functions": [],  # Empty = import entire module
         "description": "Popup menu answer type (1:1 parity with parserPopUp.pl)",
     },
     "parserRadioButtons": {
-        "module": "pg_macros.parsers.parserRadioButtons",
+        "module": "parserRadioButtons",
         "aliases": ["parserRadioButtons.pl"],
         "category": "parsers",
         "functions": [],  # Empty = import entire module
         "description": "Radio button answer type (1:1 parity with parserRadioButtons.pl)",
     },
     "parserCheckboxes": {
-        "module": "pg_macros.parsers.parserCheckboxList",
+        "module": "parserCheckboxList",
         "aliases": ["parserCheckboxes.pl"],
         "category": "parsers",
         "functions": [],  # Empty = import entire module
         "description": "Checkbox answer type (1:1 parity with parserCheckboxList.pl)",
     },
     "parserMultiAnswer": {
-        "module": "pg_macros.parsers.parserMultiAnswer",
+        "module": "parserMultiAnswer",
         "aliases": ["parserMultiAnswer.pl"],
         "category": "parsers",
         "functions": [],  # Empty = import entire module
@@ -121,7 +121,7 @@ OPTIONAL_MACROS = {
 
     # Graphics macros (heavy - should be lazy loaded!)
     "PGgraphmacros": {
-        "module": "pg_macros.graph.PGgraphmacros",
+        "module": "PGgraphmacros",
         "aliases": ["PGgraphmacros.pl"],
         "category": "graphics",
         "functions": [],  # Empty = import entire module
@@ -129,7 +129,7 @@ OPTIONAL_MACROS = {
         "lazy": True,  # Heavy dependency
     },
     "parserGraphTool": {
-        "module": "pg_macros.parsers.parserGraphTool",
+        "module": "parserGraphTool",
         "aliases": ["parserGraphTool.pl"],
         "category": "graphics",
         "functions": [],  # Empty = import entire module
