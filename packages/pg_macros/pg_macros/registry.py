@@ -34,93 +34,34 @@ CORE_MACROS = {
 # Organized by category for easier management
 OPTIONAL_MACROS = {
     # Core PG functionality
-    "pg_core": {
-        "module": "pg_macros.core.pg_core",
+    "PG": {
+        "module": "pg_macros.PG",
         "aliases": ["PG.pl"],
         "category": "core",
-        "functions": [
-            "TEXT",
-            "BEGIN_TEXT",
-            "END_TEXT",
-            "HINT",
-            "SOLUTION",
-            "COMMENT",
-            "ANS",
-            "LABELED_ANS",
-            "NAMED_ANS",
-            "DOCUMENT",
-            "ENDDOCUMENT",
-            "loadMacros",
-            "random",
-            "non_zero_random",
-            "list_random",
-            "random_coprime",
-        ],
-        "description": "Core PG macro functions from pg_core.py",
+        "functions": [],  # Empty = import entire module
+        "description": "Core PG macro functions (1:1 parity with PG.pl)",
     },
-    # Functions from pg_standard.pl (via pg_macros.core)
-    # PGstandard.pl in Perl includes everything - map to pg_macros.core which re-exports all
-    "pg_standard": {
-        "module": "pg_macros.core",
+    # PGstandard.pl - Loads PG.pl + PGbasicmacros.pl + PGanswermacros.pl
+    "PGstandard": {
+        "module": "pg_macros.PGstandard",
         "aliases": ["PGstandard.pl"],
         "category": "core",
-        "functions": [
-            # From pg_core
-            "TEXT",
-            "BEGIN_TEXT",
-            "END_TEXT",
-            "HINT",
-            "SOLUTION",
-            "COMMENT",
-            "ANS",
-            "LABELED_ANS",
-            "NAMED_ANS",
-            "DOCUMENT",
-            "ENDDOCUMENT",
-            "loadMacros",
-            "random",
-            "non_zero_random",
-            "list_random",
-            # From pg_standard
-            "random_subset",
-            "shuffle",
-            "image",
-            "bold",
-            "italic",
-            "underline",
-            "ans_rule",
-            "solution",
-            "hint",
-        ],
-        "description": "Standard PG functions (PGstandard.pl)",
+        "functions": [],  # Empty = import entire module
+        "description": "Standard PG functions (1:1 parity with PGstandard.pl)",
     },
-    "pg_basic_macros": {
-        "module": "pg_macros.core.pg_basic_macros",
+    "PGbasicmacros": {
+        "module": "pg_macros.PGbasicmacros",
         "aliases": ["PGbasicmacros.pl"],
         "category": "core",
-        "functions": [
-            "display_matrix",
-            "begintable",
-            "endtable",
-            "row",
-            "ans_rule",
-            "ans_array",
-            "essay_box",
-            "checkbox",
-            "radio",
-        ],
-        "description": "Basic UI and formatting macros",
+        "functions": [],  # Empty = import entire module
+        "description": "Basic UI and formatting macros (1:1 parity with PGbasicmacros.pl)",
     },
-    "pg_answer_macros": {
-        "module": "pg_macros.answers.pg_answer_macros",
+    "PGanswermacros": {
+        "module": "pg_macros.PGanswermacros",
         "aliases": ["PGanswermacros.pl"],
         "category": "answers",
-        "functions": [
-            "cmp_equal",
-            "check_syntax",
-            "AnswerEvaluator",
-        ],
-        "description": "Answer evaluation macros",
+        "functions": [],  # Empty = import entire module
+        "description": "Answer evaluation macros (1:1 parity with PGanswermacros.pl)",
     },
     "pg_course": {
         "module": "pg_macros.core.pg_core",  # PGcourse.pl is typically empty/minimal
@@ -132,65 +73,67 @@ OPTIONAL_MACROS = {
 
     # PGML
     "PGML": {
-        "module": "pg_macros.core.pgml",
+        "module": "pg_macros.PGML",
         "aliases": ["PGML.pl"],
         "category": "markup",
-        "functions": ["PGML"],
-        "description": "PG Markup Language for problem text",
+        "functions": [],  # Empty = import entire module
+        "description": "PG Markup Language (1:1 parity with PGML.pl)",
+    },
+
+    # MathObjects
+    "MathObjects": {
+        "module": "pg_macros.MathObjects",
+        "aliases": ["MathObjects.pl"],
+        "category": "core",
+        "functions": [],  # Empty = import entire module
+        "description": "Math Object system (1:1 parity with MathObjects.pl)",
     },
 
     # Parser macros
     "parserPopUp": {
-        "module": "pg_macros.parsers.parser_popup",
+        "module": "pg_macros.parsers.parserPopUp",
         "aliases": ["parserPopUp.pl"],
         "category": "parsers",
-        "functions": ["PopUp"],
-        "description": "Popup menu answer type",
+        "functions": [],  # Empty = import entire module
+        "description": "Popup menu answer type (1:1 parity with parserPopUp.pl)",
     },
     "parserRadioButtons": {
-        "module": "pg_macros.parsers.parser_popup",
+        "module": "pg_macros.parsers.parserRadioButtons",
         "aliases": ["parserRadioButtons.pl"],
         "category": "parsers",
-        "functions": ["RadioButtons"],
-        "description": "Radio button answer type",
+        "functions": [],  # Empty = import entire module
+        "description": "Radio button answer type (1:1 parity with parserRadioButtons.pl)",
     },
     "parserCheckboxes": {
-        "module": "pg_macros.parsers.parser_checkbox_list",
+        "module": "pg_macros.parsers.parserCheckboxList",
         "aliases": ["parserCheckboxes.pl"],
         "category": "parsers",
-        "functions": ["CheckboxList"],
-        "description": "Checkbox answer type",
+        "functions": [],  # Empty = import entire module
+        "description": "Checkbox answer type (1:1 parity with parserCheckboxList.pl)",
     },
     "parserMultiAnswer": {
-        "module": "pg_macros.parsers.parser_multianswer",
+        "module": "pg_macros.parsers.parserMultiAnswer",
         "aliases": ["parserMultiAnswer.pl"],
         "category": "parsers",
-        "functions": ["MultiAnswer"],
-        "description": "Multiple related answers",
+        "functions": [],  # Empty = import entire module
+        "description": "Multiple related answers (1:1 parity with parserMultiAnswer.pl)",
     },
 
     # Graphics macros (heavy - should be lazy loaded!)
     "PGgraphmacros": {
-        "module": "pg_macros.graph.pg_graph",
+        "module": "pg_macros.graph.PGgraphmacros",
         "aliases": ["PGgraphmacros.pl"],
         "category": "graphics",
-        "functions": [
-            "init_graph",
-            "add_functions",
-            "Plot",
-            "WWPlot",
-            "Label",
-            "Fun",
-        ],
-        "description": "2D graphing functions",
+        "functions": [],  # Empty = import entire module
+        "description": "2D graphing functions (1:1 parity with PGgraphmacros.pl)",
         "lazy": True,  # Heavy dependency
     },
     "parserGraphTool": {
-        "module": "pg_macros.graph.parser_graphtool",
+        "module": "pg_macros.parsers.parserGraphTool",
         "aliases": ["parserGraphTool.pl"],
         "category": "graphics",
-        "functions": ["GraphTool"],
-        "description": "Interactive graph tool",
+        "functions": [],  # Empty = import entire module
+        "description": "Interactive graph tool (1:1 parity with parserGraphTool.pl)",
         "lazy": True,
     },
     "VectorField3D": {
