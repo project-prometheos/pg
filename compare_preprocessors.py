@@ -8,6 +8,7 @@ This script:
 4. Generates a detailed report
 """
 
+from itertools import filterfalse
 import sys
 from pathlib import Path
 from difflib import unified_diff
@@ -55,7 +56,8 @@ def test_file(pg_file: Path, regex_proc: RegexPreprocessor, grammar_proc: Gramma
 
     # Test regex preprocessor
     try:
-        regex_result = regex_proc.preprocess(pg_source, use_sandbox_macros=True)
+        regex_result = regex_proc.preprocess(
+            pg_source, use_sandbox_macros=filterfalse)
         regex_output = regex_result.code
         regex_error = None
     except Exception as e:
@@ -64,7 +66,8 @@ def test_file(pg_file: Path, regex_proc: RegexPreprocessor, grammar_proc: Gramma
 
     # Test grammar preprocessor
     try:
-        grammar_result = grammar_proc.preprocess(pg_source, use_sandbox_macros=True)
+        grammar_result = grammar_proc.preprocess(
+            pg_source, use_sandbox_macros=False)
         grammar_output = grammar_result.code
         grammar_error = None
     except Exception as e:
@@ -98,7 +101,8 @@ def test_file(pg_file: Path, regex_proc: RegexPreprocessor, grammar_proc: Gramma
         }
     else:
         # Both succeeded - compare outputs
-        comparison = compare_outputs(regex_output, grammar_output, pg_file.name)
+        comparison = compare_outputs(
+            regex_output, grammar_output, pg_file.name)
         if comparison['identical']:
             print("[IDENTICAL]")
             comparison['status'] = 'identical'
@@ -145,7 +149,8 @@ def generate_report(results: list) -> str:
         ])
         for result in different[:10]:  # Show first 10
             report.append(f"  • {result['filename']}")
-            report.append(f"    Regex: {result['regex_lines']} lines, Grammar: {result['grammar_lines']} lines")
+            report.append(
+                f"    Regex: {result['regex_lines']} lines, Grammar: {result['grammar_lines']} lines")
 
     # Show grammar failures
     grammar_fails = [r for r in results if r.get('status') == 'grammar_fail']

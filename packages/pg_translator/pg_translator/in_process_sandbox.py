@@ -214,6 +214,12 @@ class InProcessSandbox:
             # Allow pg_mathobjects and its submodules
             if name.startswith('pg_mathobjects'):
                 return original_import(name, globals, locals, fromlist, level)
+            # Allow pg_macros and its submodules (for preprocessor-generated imports)
+            if name.startswith('pg_macros'):
+                return original_import(name, globals, locals, fromlist, level)
+            # Allow pg_math, pg_renderer, etc. (other PG packages)
+            if name.startswith('pg_'):
+                return original_import(name, globals, locals, fromlist, level)
             # Allow math, random, and re (already in namespace but allow re-import)
             if name in ('math', 'random', 're'):
                 return original_import(name, globals, locals, fromlist, level)
@@ -256,18 +262,13 @@ class InProcessSandbox:
         # Load MathObjects
         self._load_mathobjects()
 
-        # Load core PG macros by default
-        self._load_pg_core()  # Load real pg_core (not stubs)
+        # Load all macros (static loading)
+        # Preprocessor converts loadMacros() to Python imports
+        self._load_pg_core()
         self._load_pg_basic_macros()
         self._load_pg_answer_macros()
-
-        # Load additional context macros (stubs)
         self._load_context_macros()
-
-        # Load parser macros (PopUp, DropDown, etc.)
         self._load_parser_macros()
-
-        # Load statistics macros (stats_mean, stats_sd, stats_SX_SXX)
         self._load_statistics_macros()
 
     def _load_mathobjects(self) -> None:
@@ -377,20 +378,21 @@ class InProcessSandbox:
                 f"the pg_macros package to be properly installed. Error: {e}"
             ) from e
 
-    def load_macros(self, *macro_names: str) -> None:
+    def load_macros(self, *_macro_names: str) -> None:
         """
         Load PG macro modules into namespace.
 
+        Note: With preprocessor-based import conversion, this method is largely
+        a no-op since macros are imported at compile time. However, it's kept
+        for backward compatibility with code that manually calls loadMacros().
+
         Args:
-            *macro_names: Macro names (e.g., "PG.pl", "PGbasicmacros.pl")
+            _macro_names: Macro names (ignored - macros imported by preprocessor)
         """
-        for macro_name in macro_names:
-            if macro_name in ("PG.pl", "pg_core"):
-                self._load_pg_core()
-            elif macro_name in ("PGbasicmacros.pl", "pg_basic_macros"):
-                self._load_pg_basic_macros()
-            elif macro_name in ("PGanswermacros.pl", "pg_answer_macros"):
-                self._load_pg_answer_macros()
+        # All macros are already loaded in _setup_safe_namespace()
+        # Preprocessor converts loadMacros() calls to Python imports
+        # This method is kept for compatibility but does nothing
+        pass
 
     def _load_pg_core(self) -> None:
         """Load PG core macros."""
@@ -974,12 +976,13 @@ class InProcessSandbox:
         """
         Initialize PG environment for problem execution.
 
+        Clears namespace and reinitializes to prevent variable pollution between problems.
+
         Args:
             seed: Random seed
             context: Mathematical context
         """
-        # IMPORTANT: Clear namespace and reinitialize for each problem
-        # This prevents variable pollution between problems
+        # Clear namespace and reinitialize to prevent variable pollution
         self.namespace.clear()
         self._setup_safe_namespace()
 

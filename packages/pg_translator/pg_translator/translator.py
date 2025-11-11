@@ -30,7 +30,6 @@ from .grading import (
     std_problem_grader,
     stringify_answers,
 )
-from .macro_loader import MacroLoader
 from .post_processor import ContentPostProcessor
 # Use the structured Pygments/Lark preprocessor by default.
 # The legacy regex-based preprocessor remains available via
@@ -111,14 +110,9 @@ class PGTranslator:
         self.preprocessor = preprocessor or PGPreprocessor()
         self.executor = executor or PGExecutor()
         self.grader = grader or std_problem_grader
-        self.macro_loader = MacroLoader(self.executor.sandbox)
         self.post_processor = ContentPostProcessor()
 
-        # Try to load core macros (if available)
-        try:
-            self.macro_loader.unrestricted_load("PG.pl")
-        except:
-            pass  # PG.pl not yet ported
+        # Macros are now imported via preprocessor - no runtime loading needed
 
     def translate(
         self,

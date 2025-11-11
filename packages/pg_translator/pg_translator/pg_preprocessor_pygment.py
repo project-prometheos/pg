@@ -145,13 +145,13 @@ class PGPreprocessor:
     # Public API
     # ------------------------------------------------------------------
 
-    def preprocess(self, pg_source: str, use_sandbox_macros: bool = True) -> PreprocessResult:
+    def preprocess(self, pg_source: str, use_sandbox_macros: bool = False) -> PreprocessResult:
         """
         Preprocess PG source code.
 
         Args:
             pg_source: Raw PG file content
-            use_sandbox_macros: If True, skip generating imports (sandbox provides them)
+            use_sandbox_macros: DEPRECATED - Always generates imports now (sandbox no longer pre-loads)
 
         Returns:
             PreprocessResult with transformed code and metadata
@@ -3072,32 +3072,71 @@ class PGPreprocessor:
         return '\n'.join(result_lines)
 
     def _transform_load_macros(self, macro_list_str: str) -> Tuple[List[str], str]:
-        """Transform loadMacros() call to Python imports."""
+        """
+        Transform loadMacros() call to Python imports using the macro registry.
+
+        Generates comprehensive imports based on the macro registry which maps
+        Perl macro names to Python modules and their exported functions.
+        """
         import re
+
+        # Import registry from pg_macros package
+        try:
+            from pg_macros.registry import get_macro_info
+        except ImportError:
+            # Fallback if registry not available
+            return [], "# loadMacros() - registry not available"
+
+        # Parse macro names from the loadMacros call
         macros = re.findall(r'"([^"]+)"|\'([^\']+)\'', macro_list_str)
-        # Flatten the tuples into a single list of strings
-        flattened = []
-        for a, b in macros:
-            flattened.append(a or b)
-        macro_imports = {
-            "PG.pl": "from pg_macros.core.pg_core import DOCUMENT, TEXT, ANS, ENDDOCUMENT, SOLUTION, HINT",
-            "PGstandard.pl": "from pg_macros.answers.pg_answer_macros import num_cmp, str_cmp, fun_cmp",
-            "PGbasicmacros.pl": "from pg_macros.core.pg_basic_macros import ans_rule, beginproblem, PAR",
-            "MathObjects.pl": "from pg_math import Context, Real, Complex, Formula, Interval",
-            "PGML.pl": "from pg_pgml import PGML",
-            "contextFraction.pl": "from pg_math import Fraction",
-            "PGcourse.pl": "# PGcourse.pl - course-specific (skipped)",
-        }
-        import_lines: List[str] = []
-        loaded_macros: List[str] = []
+        flattened = [a or b for a, b in macros]
+
+        # Collect imports by module to deduplicate
+        imports_by_module: dict[str, set[str]] = {}
+        loaded_macros: list[str] = []
+        skipped_macros: list[str] = []
+
         for macro in flattened:
-            if macro in macro_imports:
-                imp = macro_imports[macro]
-                if not imp.startswith('#'):
-                    import_lines.append(imp)
-                loaded_macros.append(macro)
-        comment = (f"# loadMacros({', '.join(repr(m) for m in loaded_macros)}) - loaded"
-                   if loaded_macros else "# loadMacros() - no recognized macros")
+            info = get_macro_info(macro)
+            if info and info.get("module"):
+                module = info["module"]
+                functions = info.get("functions", [])
+
+                if functions:
+                    # Add specific function imports
+                    if module not in imports_by_module:
+                        imports_by_module[module] = set()
+                    imports_by_module[module].update(functions)
+                    loaded_macros.append(macro)
+                elif module:
+                    # Module exists but no functions listed - import entire module
+                    if module not in imports_by_module:
+                        imports_by_module[module] = set()
+                    loaded_macros.append(macro)
+                else:
+                    skipped_macros.append(macro)
+            else:
+                skipped_macros.append(macro)
+
+        # Generate import statements
+        import_lines = []
+        for module in sorted(imports_by_module.keys()):
+            functions = imports_by_module[module]
+            if functions:
+                func_list = ", ".join(sorted(functions))
+                import_lines.append(f"from {module} import {func_list}")
+            else:
+                # No specific functions, import module
+                import_lines.append(f"import {module}")
+
+        # Generate comment
+        comment_parts = []
+        if loaded_macros:
+            comment_parts.append(f"# Loaded: {', '.join(loaded_macros)}")
+        if skipped_macros:
+            comment_parts.append(f"# Skipped (not in registry): {', '.join(skipped_macros)}")
+        comment = " | ".join(comment_parts) if comment_parts else "# loadMacros() - no macros"
+
         return import_lines, comment
 
 
@@ -3105,7 +3144,7 @@ def convert_pg_file(
     source_path: str | Path,
     *,
     output_path: str | Path | None = None,
-    use_sandbox_macros: bool = True,
+    use_sandbox_macros: bool = False,
     overwrite: bool = False,
     encoding: str = "utf-8",
     preprocessor: PGPreprocessor | None = None,

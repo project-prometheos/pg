@@ -42,7 +42,7 @@ from .pgml_parser import PGMLParser, PGMLRenderer
 @dataclass
 class PreprocessResult:
     """Result of preprocessing a PG file.
-    
+
     ⚠️ DEPRECATED - Use pg_preprocessor_pygment.PreprocessResult instead
     """
 
@@ -59,18 +59,18 @@ class PreprocessResult:
 class PGPreprocessor:
     """
     ⚠️  DEPRECATED - DO NOT USE ⚠️
-    
+
     This class has been replaced by PygmentPreprocessor in pg_preprocessor_pygment.py
-    
+
     Use PygmentPreprocessor instead - it provides proper Lark grammar-based parsing
     of PG/Perl syntax and correct transformation to Python.
-    
+
     This regex-based preprocessor has known bugs and should not be used.
-    
+
     ---
-    
+
     OLD DESCRIPTION (for reference):
-    
+
     Preprocess PG files to transform syntactic sugar into executable Python.
 
     PG files use Perl-like syntax with special blocks:
@@ -81,7 +81,7 @@ class PGPreprocessor:
 
     This preprocessor transforms these into Python function calls that
     accumulate text in the execution environment.
-    
+
     ⚠️  DEPRECATED - USE PygmentPreprocessor INSTEAD ⚠️
     """
 
@@ -99,7 +99,7 @@ class PGPreprocessor:
     def preprocess(self, pg_source: str, use_sandbox_macros: bool = True) -> PreprocessResult:
         """
         ⚠️ DEPRECATED - Use PygmentPreprocessor.preprocess() instead ⚠️
-        
+
         Preprocess PG source code.
 
         Args:
@@ -108,7 +108,7 @@ class PGPreprocessor:
 
         Returns:
             PreprocessResult with transformed code and metadata
-            
+
         WARNING: This method uses regex-based transformation and has known bugs.
         Use PygmentPreprocessor from pg_preprocessor_pygment.py instead.
         """
@@ -120,7 +120,7 @@ class PGPreprocessor:
             DeprecationWarning,
             stacklevel=2
         )
-        
+
         lines = pg_source.split("\n")
         output_lines: list[str] = []
         text_blocks: list[tuple[str, str]] = []
@@ -177,7 +177,8 @@ class PGPreprocessor:
 
                         # Case 1: Line ends with = or , or ( or [
                         # Strip inline comments first to check actual ending
-                        stripped_no_comment = self._strip_inline_comment(stripped)
+                        stripped_no_comment = self._strip_inline_comment(
+                            stripped)
                         if stripped_no_comment and stripped_no_comment[-1] in '=,([':
                             if next_line and next_line[0] in ' \t':
                                 should_join = True
@@ -201,16 +202,20 @@ class PGPreprocessor:
                         # Case 3: Unmatched parentheses/brackets (check without comments)
                         if not should_join:
                             check_line = self._strip_inline_comment(stripped)
-                            open_count = check_line.count('(') + check_line.count('[') + check_line.count('{')
-                            close_count = check_line.count(')') + check_line.count(']') + check_line.count('}')
+                            open_count = check_line.count(
+                                '(') + check_line.count('[') + check_line.count('{')
+                            close_count = check_line.count(
+                                ')') + check_line.count(']') + check_line.count('}')
                             if open_count > close_count:
                                 should_join = True
 
                         if should_join and next_line.strip():
                             # Strip inline comment from current line before joining
                             # to prevent comment from eating subsequent joined content
-                            line_without_comment = self._strip_inline_comment(original_line.rstrip())
-                            original_line = line_without_comment + ' ' + next_line.lstrip(' \t')
+                            line_without_comment = self._strip_inline_comment(
+                                original_line.rstrip())
+                            original_line = line_without_comment + \
+                                ' ' + next_line.lstrip(' \t')
                             i += 1
                         else:
                             break
@@ -324,14 +329,16 @@ class PGPreprocessor:
                 # Track brace depth to find the end
                 closure_start_idx = i
                 closure_lines = [original_line]
-                brace_depth = original_line.count('{') - original_line.count('}')
+                brace_depth = original_line.count(
+                    '{') - original_line.count('}')
 
                 # Collect all lines of the closure
                 i += 1
                 while i < len(lines) and brace_depth > 0:
                     current_line = lines[i]
                     closure_lines.append(current_line)
-                    brace_depth += current_line.count('{') - current_line.count('}')
+                    brace_depth += current_line.count(
+                        '{') - current_line.count('}')
                     i += 1
 
                 # Now replace the entire sub { ... } with lambda: None
@@ -358,16 +365,19 @@ class PGPreprocessor:
                     # Create the stubbed line and transform it
                     stubbed_line = f"{prefix}lambda *args, **kwargs: None{suffix}"
                     transformed = self._transform_line(stubbed_line)
-                    output_lines.append(f"{transformed}  # Stubbed Perl closure")
+                    output_lines.append(
+                        f"{transformed}  # Stubbed Perl closure")
                 else:
                     # Assignment form: $var = sub { ... }
-                    assign_match = re.search(r'(\w+)\s*=\s*sub\s*\{', first_line)
+                    assign_match = re.search(
+                        r'(\w+)\s*=\s*sub\s*\{', first_line)
                     if assign_match:
                         var_name = assign_match.group(1)
                         indent = re.match(r'^(\s*)', first_line).group(1)
                         stubbed_line = f"{indent}{var_name} = lambda *args, **kwargs: None"
                         transformed = self._transform_line(stubbed_line)
-                        output_lines.append(f"{transformed}  # Stubbed Perl closure")
+                        output_lines.append(
+                            f"{transformed}  # Stubbed Perl closure")
                     else:
                         # Unknown form, comment it out
                         output_lines.append(
@@ -385,7 +395,8 @@ class PGPreprocessor:
 
                 if single_line_until:
                     # Single-line do-until: do { body } until (condition) or do { body } until condition
-                    condition = single_line_until.group(1) or single_line_until.group(2)
+                    condition = single_line_until.group(
+                        1) or single_line_until.group(2)
                     condition = condition.strip()
 
                     # Transform condition
@@ -423,13 +434,15 @@ class PGPreprocessor:
                 # Now check if the last line has "until (condition)" or "until condition"
                 last_line = block_lines[-1] if block_lines else ""
                 # Match with or without parentheses around condition
-                until_match = re.search(r'\}\s*until\s*(?:\(([^)]+)\)|(.+))$', last_line)
+                until_match = re.search(
+                    r'\}\s*until\s*(?:\(([^)]+)\)|(.+))$', last_line)
 
                 # If not found and we have a next line, check if "until" is on the next line
                 if not until_match and i < len(lines):
                     next_line = lines[i]
                     # Check if next line starts with "until"
-                    until_match = re.match(r'^\s*until\s*(?:\(([^)]+)\)|([^;]+))', next_line)
+                    until_match = re.match(
+                        r'^\s*until\s*(?:\(([^)]+)\)|([^;]+))', next_line)
                     if until_match:
                         # Add the next line to block_lines
                         block_lines.append(next_line)
@@ -451,7 +464,8 @@ class PGPreprocessor:
                         body_lines.append(first)
 
                     # Check if last line is just "until" (on separate line from })
-                    last_line_is_until = re.match(r'^\s*until\s+', block_lines[-1])
+                    last_line_is_until = re.match(
+                        r'^\s*until\s+', block_lines[-1])
 
                     if last_line_is_until:
                         # Middle lines: all lines except first and last (skip the "until" line)
@@ -498,7 +512,8 @@ class PGPreprocessor:
             # Check for multi-line Perl for-loops: for my? $VAR (EXPR) { ... }
             # Must handle BEFORE line-by-line conversion to preserve block structure
             # Variable can have $ prefix (Perl) or not (already transformed)
-            for_loop_match = re.match(r'^\s*for\s+(?:my\s+)?(?:\$)?([a-zA-Z_]\w*)\s*\(([^)]+)\)\s*\{', original_line)
+            for_loop_match = re.match(
+                r'^\s*for\s+(?:my\s+)?(?:\$)?([a-zA-Z_]\w*)\s*\(([^)]+)\)\s*\{', original_line)
             if for_loop_match:
                 var = for_loop_match.group(1)
                 expr = for_loop_match.group(2)
@@ -511,8 +526,8 @@ class PGPreprocessor:
                     # Transform expression (handle Perl range: START .. END)
                     # Variables can have $ prefix (e.g., $n) or not
                     expr = re.sub(r'(\d+|(?:\$)?[a-zA-Z_]\w*)\s*\.\.\s*(\d+|(?:\$)?[a-zA-Z_]\w*)',
-                                 lambda m: f'range({m.group(1).strip()}, {m.group(2).strip()}+1)',
-                                 expr)
+                                  lambda m: f'range({m.group(1).strip()}, {m.group(2).strip()}+1)',
+                                  expr)
                     # Transform the expression (strips $ prefixes, converts operators)
                     expr = self._transform_line(expr)
                     transformed_body = self._transform_line(body)
@@ -523,7 +538,8 @@ class PGPreprocessor:
 
                 # Multi-line for-loop: collect the block
                 block_lines = [original_line]
-                brace_depth = original_line.count('{') - original_line.count('}')
+                brace_depth = original_line.count(
+                    '{') - original_line.count('}')
                 i += 1
 
                 # Collect lines until we find the matching }
@@ -536,15 +552,16 @@ class PGPreprocessor:
                 # Transform the expression (handle Perl range: START .. END)
                 # Variables can have $ prefix (e.g., $n) or not
                 expr = re.sub(r'(\d+|(?:\$)?[a-zA-Z_]\w*)\s*\.\.\s*(\d+|(?:\$)?[a-zA-Z_]\w*)',
-                             lambda m: f'range({m.group(1).strip()}, {m.group(2).strip()}+1)',
-                             expr)
+                              lambda m: f'range({m.group(1).strip()}, {m.group(2).strip()}+1)',
+                              expr)
                 # Transform the expression (strips $ prefixes, converts operators)
                 expr = self._transform_line(expr)
 
                 # Extract body lines
                 body_lines = []
                 # First line: remove "for ... {" part
-                first = re.sub(r'^\s*for\s+(?:my\s+)?\w+\s*\([^)]+\)\s*\{', '', block_lines[0]).strip()
+                first = re.sub(
+                    r'^\s*for\s+(?:my\s+)?\w+\s*\([^)]+\)\s*\{', '', block_lines[0]).strip()
                 if first:
                     body_lines.append(first)
 
@@ -564,7 +581,8 @@ class PGPreprocessor:
                     stripped_line = line.lstrip()
                     if stripped_line:
                         # Split by semicolon to handle multiple statements per line
-                        statements = [s.strip() for s in stripped_line.split(';') if s.strip()]
+                        statements = [s.strip()
+                                      for s in stripped_line.split(';') if s.strip()]
                         for stmt in statements:
                             transformed = self._transform_line(stmt)
                             if transformed:
@@ -583,13 +601,16 @@ class PGPreprocessor:
             # DISABLED: This pattern causes issues with complex multi-line if-else blocks
             # that get joined. Multi-line blocks should be handled line-by-line.
             inline_if_match = None  # Temporarily disable
-            if False and inline_if_match:  # inline_if_match = re.match(r'^(\s*)if\s*\(([^)]+)\)\s*\{(.+)\}\s*else\s*\{(.+)\}\s*$', original_line)
+            # inline_if_match = re.match(r'^(\s*)if\s*\(([^)]+)\)\s*\{(.+)\}\s*else\s*\{(.+)\}\s*$', original_line)
+            if False and inline_if_match:
                 import sys
                 print(f"DEBUG: inline if-else matched!", file=sys.stderr)
                 print(f"  Line length: {len(original_line)}", file=sys.stderr)
-                print(f"  else_body length: {len(inline_if_match.group(4))}", file=sys.stderr)
-                print(f"  else_body: {inline_if_match.group(4)!r}", file=sys.stderr)
-                
+                print(
+                    f"  else_body length: {len(inline_if_match.group(4))}", file=sys.stderr)
+                print(
+                    f"  else_body: {inline_if_match.group(4)!r}", file=sys.stderr)
+
                 indent = inline_if_match.group(1)
                 condition = inline_if_match.group(2).strip()
                 if_body = inline_if_match.group(3).strip()
@@ -599,8 +620,10 @@ class PGPreprocessor:
                 transformed_condition = self._transform_line(condition)
 
                 # Split bodies by semicolon
-                if_statements = [s.strip() for s in if_body.split(';') if s.strip()]
-                else_statements = [s.strip() for s in else_body.split(';') if s.strip()]
+                if_statements = [s.strip()
+                                 for s in if_body.split(';') if s.strip()]
+                else_statements = [s.strip()
+                                   for s in else_body.split(';') if s.strip()]
 
                 # Generate Python if-else block
                 output_lines.append(f'{indent}if ({transformed_condition}):')
@@ -618,7 +641,8 @@ class PGPreprocessor:
             # Check for inline if statements (no else): if (cond) { stmt; }
             # Note: This regex must handle braces inside strings, so we use a more robust pattern
             # that matches to the last } on the line, not the first one
-            inline_if_only_match = re.match(r'^(\s*)if\s*\(([^)]+)\)\s*\{(.+)\}\s*$', original_line)
+            inline_if_only_match = re.match(
+                r'^(\s*)if\s*\(([^)]+)\)\s*\{(.+)\}\s*$', original_line)
             if inline_if_only_match:
                 indent = inline_if_only_match.group(1)
                 condition = inline_if_only_match.group(2).strip()
@@ -628,7 +652,8 @@ class PGPreprocessor:
                 transformed_condition = self._transform_line(condition)
 
                 # Split body by semicolon
-                if_statements = [s.strip() for s in if_body.split(';') if s.strip()]
+                if_statements = [s.strip()
+                                 for s in if_body.split(';') if s.strip()]
 
                 # Generate Python if block
                 output_lines.append(f'{indent}if ({transformed_condition}):')
@@ -641,7 +666,8 @@ class PGPreprocessor:
 
             # Check for inline for-loop statements: for VAR in EXPR: stmt1; stmt2; ...
             # Python requires these on separate lines with indentation
-            inline_for_match = re.match(r'^(\s*)(for\s+\w+\s+in\s+[^:]+):\s*(.+)', original_line)
+            inline_for_match = re.match(
+                r'^(\s*)(for\s+\w+\s+in\s+[^:]+):\s*(.+)', original_line)
             if inline_for_match:
                 indent = inline_for_match.group(1)
                 for_header = inline_for_match.group(2)
@@ -712,7 +738,8 @@ class PGPreprocessor:
                     for stmt in statements:
                         transformed_stmt = self._transform_line(stmt)
                         if transformed_stmt:
-                            output_lines.append(f'{indent}    {transformed_stmt}')
+                            output_lines.append(
+                                f'{indent}    {transformed_stmt}')
 
                     i += 1
                     continue
@@ -765,7 +792,8 @@ class PGPreprocessor:
                         # Store as raw string to preserve backslashes
                         block_var = f"tikz_block_{len(text_blocks) - 1}"
                         # Use raw string (r'''...''') to preserve backslashes
-                        escaped_content = block_content.replace("'''", r"\'\'\'")
+                        escaped_content = block_content.replace(
+                            "'''", r"\'\'\'")
                         output_lines.append(
                             f"{block_var} = r'''\\n{escaped_content}\\n'''"
                         )
@@ -799,7 +827,8 @@ class PGPreprocessor:
                             continue
 
                         # Check if this part has do-until/do-while
-                        do_match = re.match(r'do\s*\{([^}]+)\}\s*(until|while)\s+(.+)', part)
+                        do_match = re.match(
+                            r'do\s*\{([^}]+)\}\s*(until|while)\s+(.+)', part)
                         if do_match:
                             body = do_match.group(1).strip()
                             loop_type = do_match.group(2)
@@ -807,17 +836,20 @@ class PGPreprocessor:
 
                             # Transform body and condition
                             transformed_body = self._transform_line(body)
-                            transformed_condition = self._transform_line(condition)
+                            transformed_condition = self._transform_line(
+                                condition)
 
                             # Generate while True loop with break
                             output_lines.append('while True:')
                             output_lines.append(f'    {transformed_body}')
                             if loop_type == 'until':
                                 # until COND means: break if COND is true
-                                output_lines.append(f'    if ({transformed_condition}):')
+                                output_lines.append(
+                                    f'    if ({transformed_condition}):')
                             else:  # while
                                 # while COND means: break if COND is false
-                                output_lines.append(f'    if not ({transformed_condition}):')
+                                output_lines.append(
+                                    f'    if not ({transformed_condition}):')
                             output_lines.append(f'        break')
                         else:
                             # Regular part - transform normally
@@ -863,29 +895,30 @@ class PGPreprocessor:
             # WORKAROUND: Return with embedded newline
             transformed_rest = self._transform_line(rest)
             return f'{indent}else:\n{indent}    {transformed_rest}'
-        
+
         # Handle } else { → else:
         else_bracket_match = re.match(r'^\s*\}\s*else\s*\{\s*$', line)
         if else_bracket_match:
             # Don't preserve indentation - else should be at same level as if
             return 'else:'
-        
+
         # Handle multi-line if statements: if (...) { → if (...)  :
         # This handles if blocks that span multiple lines (body on next line)
-        if_block_match = re.match(r'^(\s*)(if|elsif|while|for|foreach|until|unless)\s*\(([^)]+)\)\s*\{\s*(.*)$', line, re.IGNORECASE)
+        if_block_match = re.match(
+            r'^(\s*)(if|elsif|while|for|foreach|until|unless)\s*\(([^)]+)\)\s*\{\s*(.*)$', line, re.IGNORECASE)
         if if_block_match:
             indent = if_block_match.group(1)
             keyword = if_block_match.group(2).lower()
             condition = if_block_match.group(3)
             rest = if_block_match.group(4).strip()
-            
+
             # Convert elsif → elif
             if keyword == 'elsif':
                 keyword = 'elif'
             # Convert unless → if not
             if keyword == 'unless':
                 keyword = 'if not'
-            
+
             # If there's content after the {, we need to handle it differently
             # For now, just convert the opening line
             if rest:
@@ -900,11 +933,11 @@ class PGPreprocessor:
                 # Convert to: if (...):
                 transformed_condition = self._transform_line(condition)
                 return f'{indent}{keyword} ({transformed_condition}):'
-        
+
         # Handle closing braces (convert to pass or remove)
         if re.match(r'^\s*\}\s*$', line):
             return ''  # Remove standalone closing braces
-        
+
         # Skip loadMacros() - already handled in first pass
         if 'loadMacros' in line:
             # If it's on the same line as other code, remove just the loadMacros call
@@ -947,8 +980,9 @@ class PGPreprocessor:
                     # First, escape literal braces that should remain as-is
                     # In f-strings, { and } need to be {{ and }} if they're literal
                     # We need to escape braces BEFORE converting $var to {var}
-                    escaped_content = content.replace('{', '{{').replace('}', '}}')
-                    
+                    escaped_content = content.replace(
+                        '{', '{{').replace('}', '}}')
+
                     # Now convert $var to {var} - these will be unescaped single braces
                     new_content = re.sub(
                         r'\$([a-zA-Z_][a-zA-Z0-9_]*)', r'{\1}', escaped_content)
@@ -995,7 +1029,8 @@ class PGPreprocessor:
         # Match: .cmp; or .cmp) or .cmp at end of line
         # Don't match: .reduce() (already has parens) or .key (hash access)
         # Common PG methods without parens: cmp, eval, TeX, string, value, etc.
-        line = re.sub(r'\.([a-zA-Z_][a-zA-Z0-9_]*)(?=\s*[;,)\]\}]|\s*$)', r'.\1()', line)
+        line = re.sub(
+            r'\.([a-zA-Z_][a-zA-Z0-9_]*)(?=\s*[;,)\]\}]|\s*$)', r'.\1()', line)
 
         # Remove empty parentheses after methods that should be properties
         # In Perl, ->reduce() and ->reduce are equivalent
@@ -1024,7 +1059,8 @@ class PGPreprocessor:
                 return prefix + bracket
 
         while True:
-            new_line = re.sub(r"([.\)\]'])\{([^}]+)\}", transform_hash_access, line)
+            new_line = re.sub(r"([.\)\]'])\{([^}]+)\}",
+                              transform_hash_access, line)
             if new_line == line:
                 break
             line = new_line
@@ -1204,7 +1240,8 @@ class PGPreprocessor:
         # Match: 'str' . 'str' or var . 'str' or 'str' . var
         # Special handling for expressions: wrap non-string operands in str()
         # Case 1: When second operand is ( expression ), wrap in str()
-        line = re.sub(r'(\)|\'|\"|\w)\s+\.\s+(\([^)]+\))', r'\1 + str(\2)', line)
+        line = re.sub(
+            r'(\)|\'|\"|\w)\s+\.\s+(\([^)]+\))', r'\1 + str(\2)', line)
         # Case 2: Regular concatenation with strings/variables
         line = re.sub(r'(\)|\'|\"|\w)\s+\.\s+(\'|\"|\w)', r'\1 + \2', line)
 
@@ -1249,13 +1286,15 @@ class PGPreprocessor:
             expr = match.group(2)
             # Handle Perl range inside expression: START .. END → range(START, END+1)
             expr = re.sub(r'(\d+|[a-zA-Z_]\w*)\s*\.\.\s*(\d+|[a-zA-Z_]\w*)',
-                         lambda m: f'range({m.group(1).strip()}, {m.group(2).strip()}+1)',
-                         expr)
+                          lambda m: f'range({m.group(1).strip()}, {m.group(2).strip()}+1)',
+                          expr)
             return f'for {var} in {expr}:'
 
         # Pattern: for my? VAR (EXPR) { → for VAR in EXPR:
-        line = re.sub(r'\bfor\s+my\s+([a-zA-Z_]\w*)\s*\(([^)]+)\)\s*\{', convert_for_loop, line)
-        line = re.sub(r'\bfor\s+([a-zA-Z_]\w*)\s*\(([^)]+)\)\s*\{', convert_for_loop, line)
+        line = re.sub(
+            r'\bfor\s+my\s+([a-zA-Z_]\w*)\s*\(([^)]+)\)\s*\{', convert_for_loop, line)
+        line = re.sub(
+            r'\bfor\s+([a-zA-Z_]\w*)\s*\(([^)]+)\)\s*\{', convert_for_loop, line)
 
         # Remove Perl 'my' keyword from variable declarations
         # Pattern: my VAR = → VAR =
@@ -1271,7 +1310,8 @@ class PGPreprocessor:
         # Transform Perl map with blocks: map { EXPR } LIST
         # map { random(1, 10) } 0 .. 7  →  [random(1, 10) for _ in range(0, 8)]
         # map { $f->eval(x => $_) } 0 .. 2  →  [f.eval(x=_) for _ in range(0, 3)]
-        map_match = re.search(r'\bmap\s*\{\s*([^}]+)\}\s+(\d+)\s*\.\.\s*(\d+)', line)
+        map_match = re.search(
+            r'\bmap\s*\{\s*([^}]+)\}\s+(\d+)\s*\.\.\s*(\d+)', line)
         if map_match:
             expr = map_match.group(1).strip()
             # Fix: map { } blocks had => converted to : by replace_hash_arrow
@@ -1283,12 +1323,14 @@ class PGPreprocessor:
             end = int(map_match.group(3))
             # Python range is exclusive on the right, Perl .. is inclusive
             replacement = f'[{expr} for _ in range({start}, {end}+1)]'
-            line = line[:map_match.start()] + replacement + line[map_match.end():]
+            line = line[:map_match.start()] + replacement + \
+                line[map_match.end():]
 
         # Transform Perl range operator: START .. END → range(START, END+1)
         # But only if not already handled by map
         if '..' in line and 'range(' not in line:
-            line = re.sub(r'(\d+)\s*\.\.\s*(\d+)', lambda m: f'range({m.group(1)}, {int(m.group(2))+1})', line)
+            line = re.sub(r'(\d+)\s*\.\.\s*(\d+)',
+                          lambda m: f'range({m.group(1)}, {int(m.group(2))+1})', line)
 
         # Transform Perl unless → if not
         line = re.sub(r'\bunless\s+', 'if not ', line)
@@ -1402,8 +1444,10 @@ class PGPreprocessor:
                     # Not a ternary, continue with statement modifier
                     # Check if this is a statement modifier (not a block if)
                     # Statement modifiers don't have colons or blocks after them
-                    match = re.search(r'^(\s*)(.+?)\s+(if|unless)\s+(.+)$', line)
-                    if match and '{' not in match.group(2):  # No block in statement
+                    match = re.search(
+                        r'^(\s*)(.+?)\s+(if|unless)\s+(.+)$', line)
+                    # No block in statement
+                    if match and '{' not in match.group(2):
                         indent = match.group(1)
                         statement = match.group(2).strip()
                         modifier = match.group(3)
@@ -1418,7 +1462,8 @@ class PGPreprocessor:
                 # Check if this is a statement modifier (not a block if)
                 # Statement modifiers don't have colons or blocks after them
                 match = re.search(r'^(\s*)(.+?)\s+(if|unless)\s+(.+)$', line)
-                if match and '{' not in match.group(2):  # No block in statement
+                # No block in statement
+                if match and '{' not in match.group(2):
                     indent = match.group(1)
                     statement = match.group(2).strip()
                     modifier = match.group(3)
@@ -1723,11 +1768,12 @@ class PGPreprocessor:
 
         return (import_lines, comment)
 
+
 def convert_pg_file(
     source_path: str | Path,
     *,
     output_path: str | Path | None = None,
-    use_sandbox_macros: bool = True,
+    use_sandbox_macros: bool = False,
     overwrite: bool = False,
     encoding: str = "utf-8",
     preprocessor: PGPreprocessor | None = None,
@@ -1739,7 +1785,8 @@ def convert_pg_file(
 
     processor = preprocessor or PGPreprocessor()
     pg_source = pg_path.read_text(encoding=encoding)
-    result = processor.preprocess(pg_source, use_sandbox_macros=use_sandbox_macros)
+    result = processor.preprocess(
+        pg_source, use_sandbox_macros=use_sandbox_macros)
 
     output = Path(output_path) if output_path else pg_path.with_suffix('.pyg')
     if output.exists() and not overwrite:

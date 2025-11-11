@@ -704,3 +704,53 @@ class PGMLParser:
     def _is_at_end(self) -> bool:
         """Check if at end of token stream."""
         return self.current_token is None or self.current_token.type == TokenType.EOF
+
+    def _parse_align_block(self) -> AlignBlock:
+        """
+        Parse alignment block:
+        >> right-aligned
+        << left-aligned  
+        >> centered <<
+        
+        Returns:
+            AlignBlock with alignment type and content
+        """
+        first_token = self._advance()
+        
+        # Determine alignment
+        if first_token.type == TokenType.ALIGN_RIGHT:
+            # Check if this is center (>> ... <<)
+            content_nodes = []
+            
+            while not self._is_at_end():
+                if self._check(TokenType.ALIGN_LEFT):
+                    # Found closing <<, this is center
+                    self._advance()
+                    return AlignBlock(alignment="center", content=content_nodes)
+                
+                if self._check(TokenType.NEWLINE) or self._check(TokenType.BLANK_LINE):
+                    # End of line, this is right-align
+                    break
+                
+                # Parse inline content
+                if self._check(TokenType.TEXT):
+                    content_nodes.append(Text(content=self._advance().value))
+                else:
+                    self._advance()  # Skip other tokens
+            
+            return AlignBlock(alignment="right", content=content_nodes)
+        
+        else:  # ALIGN_LEFT
+            # Left-aligned content
+            content_nodes = []
+            
+            while not self._is_at_end():
+                if self._check(TokenType.NEWLINE) or self._check(TokenType.BLANK_LINE):
+                    break
+                
+                if self._check(TokenType.TEXT):
+                    content_nodes.append(Text(content=self._advance().value))
+                else:
+                    self._advance()
+            
+            return AlignBlock(alignment="left", content=content_nodes)

@@ -46,7 +46,7 @@ def _build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Suppress informational output.",
     )
-    parser.set_defaults(use_sandbox_macros=True)
+    parser.set_defaults(use_sandbox_macros=False)
     return parser
 
 

@@ -72,7 +72,16 @@
       "Bash(tree:*)",
       "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"d:\\pg\\packages\\pg_translator\\tests\\test_tutorial_sample_problems.py\" -v --tb=line)",
       "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"d:\\pg\\packages\\pg_translator\\tests\\test_tutorial_sample_problems.py\" --tb=line -q)",
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"d:\\pg\\packages\\pg_translator\\tests\\test_tutorial_sample_problems.py::test_tutorial_problem_renders[SolutionForEquation]\" -v)"
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"d:\\pg\\packages\\pg_translator\\tests\\test_tutorial_sample_problems.py::test_tutorial_problem_renders[SolutionForEquation]\" -v)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"d:\\pg\\packages\\pg_translator\\tests\\test_tutorial_sample_problems.py::test_tutorial_problem_renders[VectorLineSegment1]\" -v --tb=short)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -c \"from pg_macros.core.fallback_utilities import random_subset; print(''Import OK''); print(random_subset)\")",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest:*)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -c \"from pg_translator import convert_pg_file; output, result = convert_pg_file(''tutorial/sample-problems/Algebra/AlgebraicFractionAnswer.pg'', overwrite=True); print(''Converted to:'', output); import_count = result.code.count(''from ''); print(f''Import statements: {import_count}'')\")",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" pypg.py tutorial/sample-problems/Algebra/AlgebraicFractionAnswer.pg --render-only --seed 423)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"d:\\pg\\packages\\pg_translator\\tests\\test_tutorial_sample_problems.py\" --tb=no -q)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"d:\\pg\\packages\\pg_translator\\tests\\test_tutorial_sample_problems.py::test_tutorial_problem_renders[Logarithms]\" -v --tb=short)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"d:\\pg\\packages\\pg_translator\\tests\\test_tutorial_sample_problems.py::test_tutorial_problem_renders[AlgebraicFractionAnswer]\" -v --tb=line)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"d:\\pg\\packages\\pg_translator\\tests\\test_tutorial_sample_problems.py::test_tutorial_problem_renders[AlgebraicFractionAnswer]\" -v --tb=short)"
     ],
     "deny": [],
     "ask": []
