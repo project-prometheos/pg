@@ -1,36 +1,23 @@
 """
-PGstandard.pl - Load standard PG macro packages.
+pgstandard.py - Standard PG macros.
 
-DEPRECATED: Use 'from webwork import *' instead.
-
-This module is maintained for backwards compatibility only.
-It re-exports from pg_macros.PGstandard.
+Wraps the PGstandard.py barrel export for the webwork namespace.
+This is the primary entry point for most PG problems.
 
 PGstandard.pl in Perl loads: PG.pl, PGbasicmacros.pl, PGanswermacros.pl, PGauxiliaryFunctions.pl
-
-Legacy usage:
-    import PGstandard
-    PGstandard.DOCUMENT()
-    PGstandard.TEXT("Problem text")
-
-Recommended usage:
-    from webwork import *
-    DOCUMENT()
-    TEXT("Problem text")
 
 Reference: macros/core/PGstandard.pl
 """
 
-import warnings
+import sys
+from pathlib import Path
 
-# Emit deprecation warning
-warnings.warn(
-    "Importing from 'PGstandard' is deprecated. Use 'from webwork import *' instead.",
-    DeprecationWarning,
-    stacklevel=2,
-)
+# Add packages directory to path so we can import top-level barrel modules
+_packages_dir = Path(__file__).parent.parent.parent.parent
+if str(_packages_dir) not in sys.path:
+    sys.path.insert(0, str(_packages_dir))
 
-from pg_macros.PGstandard import *  # noqa: F401, F403
+from PGstandard import *  # noqa: F401, F403
 
 __all__ = [
     # From PG.pl (pg_core)
@@ -87,16 +74,6 @@ __all__ = [
     "NBSP",
     "PI",
     "E",
-    "ans_rule",
-    "NAMED_ANS_RULE",
-    "ans_box",
-    "NAMED_ANS_BOX",
-    "ans_radio_buttons",
-    "NAMED_ANS_RADIO_BUTTONS",
-    "pop_up_list",
-    "NAMED_POP_UP_LIST",
-    "MODES",
-    "image",
     # From PGanswermacros.pl (pg_answer_macros)
     "num_cmp",
     "std_num_cmp",
@@ -107,4 +84,3 @@ __all__ = [
     "vector_cmp",
     "matrix_cmp",
 ]
-

@@ -1,0 +1,15 @@
+README.md
+pyproject.toml
+webwork/__init__.py
+webwork/core/__init__.py
+webwork/core/pg.py
+webwork/core/pgcourse.py
+webwork/core/pgml.py
+webwork/core/pgstandard.py
+webwork/math/__init__.py
+webwork/math/objects.py
+webwork_pg.egg-info/PKG-INFO
+webwork_pg.egg-info/SOURCES.txt
+webwork_pg.egg-info/dependency_links.txt
+webwork_pg.egg-info/requires.txt
+webwork_pg.egg-info/top_level.txt

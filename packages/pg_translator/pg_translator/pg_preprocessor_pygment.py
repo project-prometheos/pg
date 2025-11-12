@@ -172,19 +172,25 @@ class PGPreprocessor:
         # Collect import lines from loadMacros when not using sandbox macros
         import_lines: List[str] = []
         loaded_macros_comment: Optional[str] = None
+        webwork_import_added = False
+
         if not use_sandbox_macros:
-            # If standalone mode, always import MathObjects
+            # If standalone mode, always import from webwork
             # (Context, Compute, etc. are used in almost every problem)
             if standalone:
-                import_lines.append("from MathObjects import *")
-            
+                import_lines.append("from webwork import *")
+                webwork_import_added = True
+
             for line in lines:
                 if "loadMacros" in line:
                     match = re.search(r'loadMacros\((.*?)\)', line, re.DOTALL)
                     if match:
-                        imports, comment = self._transform_load_macros(match.group(1))
+                        imports, comment = self._transform_load_macros(match.group(1), webwork_import_added=webwork_import_added)
                         import_lines.extend(imports)
                         loaded_macros_comment = comment
+                        # If loadMacros already generated 'from webwork import *', mark it
+                        if any("from webwork import" in imp for imp in imports):
+                            webwork_import_added = True
 
         imports_inserted = False
         in_load_macros = False
@@ -3124,7 +3130,7 @@ if __name__ == "__main__":
 
         return '\n'.join(result_lines)
 
-    def _transform_load_macros(self, macro_list_str: str) -> Tuple[List[str], str]:
+    def _transform_load_macros(self, macro_list_str: str, webwork_import_added: bool = False) -> Tuple[List[str], str]:
         """
         Transform loadMacros() call to Python imports using the macro registry.
 
@@ -3174,12 +3180,38 @@ if __name__ == "__main__":
 
         # Generate import statements
         import_lines = []
-        
+
+        # Map of legacy barrel modules to webwork namespace
+        WEBWORK_NAMESPACE_MODULES = {
+            "MathObjects",
+            "PGstandard",
+            "PGML",
+            "PG",
+            "PGcourse",
+            "PGbasicmacros",
+            "PGanswermacros",
+        }
+
         # For module-level imports (empty function lists), use 'from X import *'
         # This makes all functions directly accessible without needing module prefix
+        # NEW: Convert legacy barrel modules to webwork namespace
         if module_level_imports:
-            for module in sorted(module_level_imports):
-                import_lines.append(f"from {module} import *")
+            # Check if any of the legacy barrel modules are being imported
+            has_legacy_barrel = any(m in WEBWORK_NAMESPACE_MODULES for m in module_level_imports)
+
+            if has_legacy_barrel:
+                # Use webwork namespace instead of individual legacy modules
+                # But only if we haven't already added it
+                if not webwork_import_added:
+                    import_lines.append("from webwork import *")
+                # Still add any non-legacy modules
+                for module in sorted(module_level_imports):
+                    if module not in WEBWORK_NAMESPACE_MODULES:
+                        import_lines.append(f"from {module} import *")
+            else:
+                # No legacy modules, use them as-is
+                for module in sorted(module_level_imports):
+                    import_lines.append(f"from {module} import *")
         
         # Then, generate function-specific imports: from X import Y, Z
         for module in sorted(imports_by_module.keys()):

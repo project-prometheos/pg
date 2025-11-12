@@ -14,13 +14,10 @@
 #:% subject = [algebra, precalculus]
 #:% categories = [logarithm]
 #:% section = preamble
-DOCUMENT()
-
-from PGML import *
-from PGcourse import *
-from PGstandard import *
+from webwork import *
 # Loaded: PGstandard.pl, PGML.pl, PGcourse.pl
 
+DOCUMENT()
 #:% section = setup
 #: Add the variables `x`, `y`, and `z` to the context and set their limits to be
 #: `[2, 3]` since logarithms are not defined on the default domain `[-1, 1]`.
@@ -59,3 +56,32 @@ Solution explanation goes here.
 '''
 SOLUTION(PGML(pgml_block_1))
 ENDDOCUMENT()
+
+if __name__ == "__main__":
+    """Execute problem and display results."""
+    from pg_macros.core.pg_core import get_environment
+    
+    env = get_environment()
+    if env:
+        print("=" * 80)
+        print("PROBLEM STATEMENT")
+        print("=" * 80)
+        print(''.join(env.output_array))
+        
+        if env.solution_array:
+            print("\n" + "=" * 80)
+            print("SOLUTION")
+            print("=" * 80)
+            print(''.join(env.solution_array))
+        
+        if env.hint_array:
+            print("\n" + "=" * 80)
+            print("HINT")
+            print("=" * 80)
+            print(''.join(env.hint_array))
+        
+        print("\n" + "=" * 80)
+        print(f"ANSWERS: {len(env.answers_hash)} answer blank(s)")
+        print("=" * 80)
+        for name in sorted(env.answers_hash.keys()):
+            print(f"  {name}")

@@ -1,19 +1,36 @@
 """
 PG.pl - Core Program Generation Language functionality.
 
-Top-level barrel module for short imports (1:1 parity with Perl PG.pl).
-Re-exports from pg_macros.PG.
+DEPRECATED: Use 'from webwork import *' instead.
 
-Usage:
+This module is maintained for backwards compatibility only.
+It re-exports from pg_macros.PG.
+
+Legacy usage:
     import PG
     PG.DOCUMENT()
     PG.TEXT("Problem text")
     PG.ANS(answer)
 
+Recommended usage:
+    from webwork import *
+    DOCUMENT()
+    TEXT("Problem text")
+    ANS(answer)
+
 Reference: macros/PG.pl
 """
 
-from pg_macros.PG import *
+import warnings
+
+# Emit deprecation warning
+warnings.warn(
+    "Importing from 'PG' is deprecated. Use 'from webwork import *' instead.",
+    DeprecationWarning,
+    stacklevel=2,
+)
+
+from pg_macros.PG import *  # noqa: F401, F403
 
 __all__ = [
     # Environment

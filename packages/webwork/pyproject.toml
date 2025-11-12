@@ -1,0 +1,93 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "webwork-pg"
+version = "0.1.0"
+description = "Modern Python PG (Problem Generation) system for WeBWorK - reimplementation of WeBWorK's legacy Perl PG language"
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [
+    {name = "WeBWorK Team", email = "developers@webwork.maa.org"},
+]
+license = {text = "GPL-2.0-or-later"}
+keywords = [
+    "webwork",
+    "pg",
+    "problem generation",
+    "mathematics",
+    "education",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Education",
+    "License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Education",
+    "Topic :: Scientific/Engineering :: Mathematics",
+]
+
+dependencies = [
+    "pg_macros>=0.1.0",
+    "pg_math>=0.1.0",
+    "pg_parser>=0.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "black>=23.0",
+    "ruff>=0.1",
+    "mypy>=1.0",
+]
+
+[project.urls]
+Homepage = "https://webwork.maa.org"
+Documentation = "https://webwork.maa.org/wiki"
+Repository = "https://github.com/webwork/pg"
+"Bug Tracker" = "https://github.com/webwork/pg/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["webwork*"]
+
+[tool.black]
+line-length = 100
+target-version = ["py312"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # Pyflakes
+    "I",      # isort
+    "N",      # pep8-naming
+    "UP",     # pyupgrade
+]
+ignore = [
+    "E501",   # line too long (handled by black)
+]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_any_generics = true
+
+[[tool.mypy.overrides]]
+module = [
+    "pg_macros.*",
+    "pg_math.*",
+    "pg_parser.*",
+]
+ignore_missing_imports = true
