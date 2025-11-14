@@ -39,6 +39,11 @@ from .core.pg_utilities import (
     num_sort,
     uniq,
 )
+# Import additional standard functions
+from .core.pg_standard import (
+    shuffle,
+    random_subset,
+)
 
 __all__ = [
     # From PG.pl (pg_core)
@@ -47,7 +52,6 @@ __all__ = [
     "set_environment",
     "DOCUMENT",
     "ENDDOCUMENT",
-    "_PG_init",
     "TEXT",
     "BEGIN_TEXT",
     "END_TEXT",
@@ -75,9 +79,12 @@ __all__ = [
     "random",
     "non_zero_random",
     "list_random",
+    "random_coprime",
+    "shuffle",
+    "random_subset",
     "persistent_data",
     # From PGbasicmacros.pl (pg_basic_macros)
-    "_PGbasicmacros_init",
+    "beginproblem",
     "PAR",
     "BR",
     "BRBR",

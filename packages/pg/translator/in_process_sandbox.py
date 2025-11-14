@@ -40,7 +40,7 @@ try:
     from pg.macros.graph.latex_image import createLaTeXImage, LaTeXImage
 
     # Phase 2: Essential Parsers
-    from pg.macros.parsers.parser_number_with_units import NumberWithUnits
+    from pg.macros.parsers.parser_formula_with_units import NumberWithUnits
     from pg.macros.parsers.parser_implicit_plane import ImplicitPlane
     from pg.macros.parsers.parser_parametric_line import ParametricLine
     from pg.macros.parsers.parser_implicit_equation import ImplicitEquation
@@ -82,10 +82,13 @@ try:
 
     # Phase 10: Fallback Cleanup & Array Utilities
     from pg.macros.core.fallback_utilities import (
-        random_subset, new_match_list, pop_up_list_print_q, undef
+        new_match_list, pop_up_list_print_q, undef
     )
     from pg.macros.core.array_utilities import (
         splice, push, pop, shift, unshift
+    )
+    from pg.macros.core.pg_standard import (
+        random_subset, shuffle
     )
 
     # Phase 11: Final Stubs - Context & Parser Macros
@@ -362,6 +365,7 @@ class InProcessSandbox:
 
             # Array and utility functions are now imported from pg.macros modules
             self.namespace['random_subset'] = random_subset
+            self.namespace['shuffle'] = shuffle
             self.namespace['new_match_list'] = new_match_list
             self.namespace['pop_up_list_print_q'] = pop_up_list_print_q
             self.namespace['linear_regression'] = linear_regression

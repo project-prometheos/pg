@@ -173,6 +173,20 @@ OPTIONAL_MACROS = {
         "functions": ["parserFunction"],
         "description": "Custom function definition for contexts (1:1 parity with parserFunction.pl)",
     },
+    "parserFormulaWithUnits": {
+        "module": "pg.macros.parsers.parser_formula_with_units",
+        "aliases": ["parserFormulaWithUnits.pl"],
+        "category": "parsers",
+        "functions": ["FormulaWithUnits", "FormulaWithUnits_factory"],
+        "description": "Formula with physical units (Phase 2 of contextUnits)",
+    },
+    "parserNumberWithUnits": {
+        "module": "pg.macros.parsers.parser_formula_with_units",
+        "aliases": ["parserNumberWithUnits.pl"],
+        "category": "parsers",
+        "functions": ["NumberWithUnits", "NumberWithUnits_factory"],
+        "description": "Number with physical units (Phase 2 of contextUnits)",
+    },
 
     # Graphics macros (heavy - should be lazy loaded!)
     "PGgraphmacros": {

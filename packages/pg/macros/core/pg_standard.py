@@ -125,42 +125,8 @@ def hint(*args: Any) -> str:
 
 # Random number functions
 
-import random as _random
-
-def random(low: float = 0, high: float = 1, step: float | None = None) -> float:
-    """
-    Generate random number.
-    
-    Reference: PGstandard.pl::random
-    """
-    if step is not None:
-        # Discrete random
-        n_steps = int((high - low) / step) + 1
-        return low + _random.randrange(n_steps) * step
-    else:
-        # Continuous random
-        return _random.uniform(low, high)
-
-
-def non_zero_random(low: float, high: float, step: float | None = None) -> float:
-    """
-    Generate non-zero random number.
-    
-    Reference: PGstandard.pl::non_zero_random
-    """
-    result = 0
-    while result == 0:
-        result = random(low, high, step)
-    return result
-
-
-def list_random(*items):
-    """
-    Select random item from list.
-    
-    Reference: PGstandard.pl::list_random
-    """
-    return _random.choice(items)
+# Import random functions from pg_core (which uses the seeded RNG from PG environment)
+from .pg_core import random, non_zero_random, list_random
 
 
 def shuffle(*items):
@@ -169,6 +135,7 @@ def shuffle(*items):
     
     Reference: PGstandard.pl::shuffle
     """
+    import random as _random
     shuffled = list(items)
     _random.shuffle(shuffled)
     return shuffled
@@ -180,6 +147,7 @@ def random_subset(n: int, *items):
 
     Reference: PGstandard.pl::random_subset
     """
+    import random as _random
     return _random.sample(items, n)
 
 

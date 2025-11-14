@@ -633,6 +633,7 @@ __all__ = [
     "BCENTER", "ECENTER",
     "HR", "NBSP",
     "PI", "E",
+    "beginproblem",
 
     # Answer blanks
     "ans_rule",

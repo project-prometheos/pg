@@ -690,56 +690,9 @@ def random_coprime(*arrays) -> tuple:
 
     Reference: PGauxiliaryFunctions.pl::random_coprime
     """
-    import math
-
-    if not arrays:
-        raise ValueError("random_coprime requires at least one array")
-
-    # Convert all arrays to lists (handles range objects from Perl [1..n] syntax)
-    # Also expand list-wrapped ranges like [range(1, 13)]
-    def expand_array(arr):
-        """Expand array, handling nested range objects."""
-        expanded = list(arr)
-        # If result is a list containing a single range object, expand it
-        if len(expanded) == 1 and isinstance(expanded[0], range):
-            return list(expanded[0])
-        return expanded
-
-    list_arrays = [expand_array(arr) for arr in arrays]
-
-    # Handle single array - return random element
-    if len(list_arrays) == 1:
-        return (list_random(*list_arrays[0]),) if len(list_arrays[0]) > 0 else ()
-
-    # Build all possible tuples
-    from itertools import product
-    all_tuples = list(product(*list_arrays))
-
-    # Filter to coprime tuples (gcd of all elements == 1)
-    def is_coprime(tup):
-        """Check if all elements in tuple are coprime (gcd == 1)."""
-        if len(tup) == 0:
-            return False
-        if len(tup) == 1:
-            return abs(tup[0]) == 1
-
-        # Compute gcd of all elements
-        result = abs(tup[0])
-        for val in tup[1:]:
-            result = math.gcd(result, abs(val))
-            if result == 1:  # Early exit optimization
-                return True
-        return result == 1
-
-    coprime_tuples = [t for t in all_tuples if is_coprime(t)]
-
-    if not coprime_tuples:
-        import warnings
-        warnings.warn("Unable to find a coprime tuple from input")
-        return tuple([0] * len(arrays))
-
-    # Return random coprime tuple
-    return list_random(*coprime_tuples)
+    # Import the comprehensive implementation from pg_auxiliary_functions
+    from .pg_auxiliary_functions import random_coprime as _random_coprime
+    return _random_coprime(*arrays)
 
 
 # ============================================================================
@@ -823,6 +776,7 @@ __all__ = [
     "random",
     "non_zero_random",
     "list_random",
+    "random_coprime",
 
     # Persistent data
     "persistent_data",
