@@ -3,10 +3,12 @@
 This module provides vector manipulation and geometric utilities including
 norm, unit vector calculations, and geometric line representation.
 
+Reference: macros/graph/parserVectorUtils.pl
 Based on Value.pm from the Perl WeBWorK distribution.
 """
 
 import math
+import random
 from typing import List, Optional, Tuple, Union
 
 
@@ -148,9 +150,184 @@ class Line:
         return f"Line({self.point}, {self.direction})"
 
 
+# Formatting constants and functions
+
+def Overline(name: str) -> str:
+    r"""
+    Format a vector name with overline notation.
+
+    Returns: "\overline{" + name + "}" for LaTeX display
+
+    Reference: parserVectorUtils.pl::Overline
+
+    Example:
+        >>> Overline("v")
+        "\\overline{v}"
+    """
+    return f"\\overline{{{name}}}"
+
+
+def BoldMath(name: str) -> str:
+    """
+    Format a vector name in bold math notation.
+
+    Returns: "\\mathbf{" + name + "}"
+
+    Reference: parserVectorUtils.pl::BoldMath
+
+    Example:
+        >>> BoldMath("v")
+        "\\mathbf{v}"
+    """
+    return f"\\mathbf{{{name}}}"
+
+
+# Gradient/Nabla symbol
+GRAD = "\\nabla"
+
+
+# Random vector/point generators
+
+def non_zero_vector(low: int = -9, high: int = 9, dimension: int = 2) -> List[int]:
+    """
+    Generate a random non-zero vector.
+
+    All components are integers in [low, high]. At least one component is nonzero.
+
+    Reference: parserVectorUtils.pl::non_zero_vector
+
+    Args:
+        low: Minimum value for components
+        high: Maximum value for components
+        dimension: Number of dimensions (default 2)
+
+    Returns:
+        List of integers representing non-zero vector
+    """
+    while True:
+        vector = [random.randint(low, high) for _ in range(dimension)]
+        if any(v != 0 for v in vector):
+            return vector
+
+
+def non_zero_vector2D(low: int = -9, high: int = 9) -> List[int]:
+    """Generate a random non-zero 2D vector."""
+    return non_zero_vector(low, high, 2)
+
+
+def non_zero_vector3D(low: int = -9, high: int = 9) -> List[int]:
+    """Generate a random non-zero 3D vector."""
+    return non_zero_vector(low, high, 3)
+
+
+def non_zero_point(low: int = -9, high: int = 9, dimension: int = 2) -> List[int]:
+    """
+    Generate a random non-zero point.
+
+    All coordinates are integers in [low, high]. At least one coordinate is nonzero.
+
+    Reference: parserVectorUtils.pl::non_zero_point
+
+    Args:
+        low: Minimum value for coordinates
+        high: Maximum value for coordinates
+        dimension: Number of dimensions (default 2)
+
+    Returns:
+        List of integers representing non-zero point
+    """
+    # Same implementation as non_zero_vector
+    return non_zero_vector(low, high, dimension)
+
+
+def non_zero_point2D(low: int = -9, high: int = 9) -> List[int]:
+    """Generate a random non-zero 2D point."""
+    return non_zero_point(low, high, 2)
+
+
+def non_zero_point3D(low: int = -9, high: int = 9) -> List[int]:
+    """Generate a random non-zero 3D point."""
+    return non_zero_point(low, high, 3)
+
+
+class Plane:
+    """
+    Representation of a plane in 3D space.
+
+    A plane can be defined by a normal vector and a point, or by coefficients
+    in the equation ax + by + cz = d.
+
+    Reference: parserVectorUtils.pl
+
+    Attributes:
+        normal: Normal vector to the plane
+        point: A point on the plane
+        d: Constant term (ax + by + cz = d)
+    """
+
+    def __init__(
+        self,
+        normal: Union[List[float], Tuple[float, ...], None] = None,
+        point: Union[List[float], Tuple[float, ...], None] = None,
+        d: Optional[float] = None,
+    ):
+        """
+        Create a plane.
+
+        Args:
+            normal: Normal vector [a, b, c] for equation ax + by + cz = d
+            point: A point on the plane
+            d: Constant d in equation (calculated if not provided with point)
+
+        Example:
+            >>> plane = Plane([1, 0, 0], [1, 0, 0])  # x = 1
+            >>> plane = Plane([1, 1, 1])  # x + y + z = d
+        """
+        self.normal = list(normal) if normal else [0, 0, 1]
+        self.point = list(point) if point else [0, 0, 0]
+
+        # Calculate d from plane equation: normal · (point - origin) = d
+        if d is None and point:
+            self.d = sum(self.normal[i] * self.point[i] for i in range(3))
+        else:
+            self.d = d or 0
+
+    def contains_point(self, point: Union[List[float], Tuple[float, ...]]) -> bool:
+        """
+        Check if a point lies on the plane.
+
+        Args:
+            point: Point to check
+
+        Returns:
+            True if point is on the plane (within numerical tolerance)
+        """
+        val = sum(self.normal[i] * point[i] for i in range(3))
+        return abs(val - self.d) < 1e-10
+
+    def __str__(self) -> str:
+        """Return string representation."""
+        a, b, c = self.normal
+        return f"{a}x + {b}y + {c}z = {self.d}"
+
+    def __repr__(self) -> str:
+        """Return developer representation."""
+        return f"Plane({self.normal}, {self.point})"
+
+
 __all__ = [
-    'norm',
-    'unit',
-    'Line',
+    "norm",
+    "unit",
+    "Line",
+    "Overline",
+    "BoldMath",
+    "GRAD",
+    "non_zero_vector",
+    "non_zero_vector2D",
+    "non_zero_vector3D",
+    "non_zero_point",
+    "non_zero_point2D",
+    "non_zero_point3D",
+    "Plane",
 ]
 

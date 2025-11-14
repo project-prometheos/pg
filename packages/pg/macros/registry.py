@@ -63,6 +63,13 @@ OPTIONAL_MACROS = {
         "functions": [],  # Empty = import entire module
         "description": "Answer evaluation macros (1:1 parity with PGanswermacros.pl)",
     },
+    "answerHints": {
+        "module": "pg.macros.answers.answer_hints",
+        "aliases": ["answerHints.pl"],
+        "category": "answers",
+        "functions": ["AnswerHints"],
+        "description": "Custom answer hints for student feedback (1:1 parity with answerHints.pl)",
+    },
     "PGcourse": {
         "module": "pg.course",
         "aliases": ["PGcourse.pl"],
@@ -124,6 +131,27 @@ OPTIONAL_MACROS = {
         "category": "parsers",
         "functions": [],  # Empty = import entire module
         "description": "Multiple related answers (1:1 parity with parserMultiAnswer.pl)",
+    },
+    "parserVectorUtils": {
+        "module": "pg.macros.math.vector_utils",
+        "aliases": ["parserVectorUtils.pl"],
+        "category": "parsers",
+        "functions": [
+            "non_zero_vector",
+            "non_zero_vector2D",
+            "non_zero_vector3D",
+            "non_zero_point",
+            "non_zero_point2D",
+            "non_zero_point3D",
+            "Overline",
+            "BoldMath",
+            "GRAD",
+            "Plane",
+            "Line",
+            "norm",
+            "unit",
+        ],
+        "description": "Vector and plane utilities (1:1 parity with parserVectorUtils.pl)",
     },
 
     # Graphics macros (heavy - should be lazy loaded!)
