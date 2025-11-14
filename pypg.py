@@ -18,8 +18,8 @@ from typing import List, Dict, Any
 # Add packages to path
 sys.path.insert(0, str(Path(__file__).parent / 'packages' / 'pg_renderer'))
 
-from pg_renderer import PGRenderer
-from pg_renderer.answer_checker import AnswerChecker
+from pg.renderer import PGRenderer
+from pg.renderer.answer_checker import AnswerChecker
 
 
 def print_separator(char='=', length=80):

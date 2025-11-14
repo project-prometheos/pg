@@ -4,9 +4,9 @@ Demonstration: Running a "pypg" file (Python-based PG problem)
 This shows that we CAN run Python-based problem files right now.
 """
 
-from pg_macros.core.pg_core import DOCUMENT, TEXT, ANS, ENDDOCUMENT
-from pg_macros.core.pg_basic_macros import ans_rule
-from pg_macros.answers.pg_answer_macros import num_cmp
+from pg.macros.core.pg_core import DOCUMENT, TEXT, ANS, ENDDOCUMENT
+from pg.macros.core.pg_basic_macros import ans_rule
+from pg.macros.answers.pg_answer_macros import num_cmp
 
 print("=" * 70)
 print("DEMONSTRATION: Running a .pypg file")
@@ -16,9 +16,9 @@ print("=" * 70)
 print("\n📄 File contents (example.pypg):")
 print("-" * 70)
 print("""
-from pg_macros.core.pg_core import DOCUMENT, TEXT, ANS, ENDDOCUMENT
-from pg_macros.core.pg_basic_macros import ans_rule
-from pg_macros.answers.pg_answer_macros import num_cmp
+from pg.macros.core.pg_core import DOCUMENT, TEXT, ANS, ENDDOCUMENT
+from pg.macros.core.pg_basic_macros import ans_rule
+from pg.macros.answers.pg_answer_macros import num_cmp
 
 # Problem setup
 DOCUMENT()
@@ -118,7 +118,7 @@ print("🎉 CONCLUSION: .pypg files work perfectly!")
 print("=" * 70)
 print("""
 You can create files with .pypg extension containing:
-1. Python imports from pg_macros
+1. Python imports from pg.macros
 2. Python code (not Perl)
 3. Direct macro calls: DOCUMENT(), TEXT(), ANS(), ENDDOCUMENT()
 4. Python variables and expressions

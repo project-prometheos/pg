@@ -1,0 +1,11 @@
+DOCUMENT()
+
+from pg.mathobjects import *
+from pg.standard import *
+# Loaded: PGstandard.pl
+
+Context("Numeric")
+answer = Formula("x^2")
+TEXT(("The answer is " + str(answer)))
+ANS(answer.cmp())
+ENDDOCUMENT()

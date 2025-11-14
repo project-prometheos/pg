@@ -31,7 +31,7 @@ sys.path.insert(0, str(project_root / "packages" / "pg_parser"))
 sys.path.insert(0, str(project_root / "packages" / "pg_macros"))
 sys.path.insert(0, str(project_root / "packages" / "pg_math"))
 
-from pg_translator import PGTranslator
+from pg.translator import PGTranslator
 
 
 def get_error_category(error_msg: str) -> str:

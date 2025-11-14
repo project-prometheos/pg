@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 from typing import Dict, Any, List
 
-from pg_parser import PGParser
+from pg.parser import PGParser
 
 
 class ProblemImporter:

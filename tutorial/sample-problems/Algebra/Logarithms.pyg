@@ -16,9 +16,9 @@
 #:% section = preamble
 DOCUMENT()
 
-from PGML import *
-from PGcourse import *
-from PGstandard import *
+from pg.course import *
+from pg.pgml_compat import *
+from pg.standard import *
 # Loaded: PGstandard.pl, PGML.pl, PGcourse.pl
 
 #:% section = setup

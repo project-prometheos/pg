@@ -20,7 +20,7 @@ sys.path.insert(0, str(project_root / "packages" / "pg_translator"))
 sys.path.insert(0, str(project_root / "packages" / "pg_macros"))
 sys.path.insert(0, str(project_root / "packages" / "pg_math"))
 
-from pg_translator import PGPreprocessor, PGTranslator
+from pg.translator import PGPreprocessor, PGTranslator
 
 
 def get_failing_problems():

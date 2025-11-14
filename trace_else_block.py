@@ -1,4 +1,4 @@
-from pg_translator.preprocessor import PGPreprocessor
+from pg.translator.preprocessor import PGPreprocessor
 
 # The actual problem file
 with open('tutorial/sample-problems/Algebra/AnswerBlankInExponent.pg', 'r', encoding='utf-8') as f:

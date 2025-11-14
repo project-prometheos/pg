@@ -16,7 +16,7 @@ Example:
 """
 
 import random
-from pg_translator import PGTranslator
+from pg.translator import PGTranslator
 import argparse
 import sys
 import os

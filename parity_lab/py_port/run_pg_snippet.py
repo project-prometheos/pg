@@ -14,38 +14,38 @@ def execute_pg_snippet(snippet_path: Path, seed: int) -> Dict[str, Any]:
     """Execute a PG snippet with full pg_macros + pg_math support."""
 
     # 1. Preprocess PG → Python
-    from pg_translator.preprocessor import PGPreprocessor
+    from pg.translator.preprocessor import PGPreprocessor
     preprocessor = PGPreprocessor()
     content = snippet_path.read_text(encoding='utf-8')
     result = preprocessor.preprocess(content, use_sandbox_macros=False)
 
     # 2. Import all implemented packages
-    import pg_macros.core as pgcore
+    import pg.macros.core as pgcore
 
     HAS_PG_MATH = False
     try:
-        import pg_math
+        import pg.math
         HAS_PG_MATH = True
     except ImportError:
         print("Warning: pg_math not found", file=sys.stderr)
 
     HAS_CHOICE = False
     try:
-        from pg_macros.choice import MultipleChoice, new_multiple_choice
+        from pg.macros.choice import MultipleChoice, new_multiple_choice
         HAS_CHOICE = True
     except ImportError:
         print("Warning: pg_macros.choice not found", file=sys.stderr)
 
     HAS_POPUP = False
     try:
-        from pg_macros.parsers.parser_popup import PopUp
+        from pg.macros.parsers.parser_popup import PopUp
         HAS_POPUP = True
     except ImportError:
         print("Warning: parser_popup not found", file=sys.stderr)
 
     HAS_MULTIANSWER = False
     try:
-        from pg_macros.parsers import MultiAnswer
+        from pg.macros.parsers import MultiAnswer
         HAS_MULTIANSWER = True
     except ImportError:
         print("Warning: MultiAnswer not found", file=sys.stderr)
@@ -113,7 +113,7 @@ def execute_pg_snippet(snippet_path: Path, seed: int) -> Dict[str, Any]:
 
         # Try Fraction separately (may need special import)
         try:
-            from pg_math.fraction import Fraction
+            from pg.math.fraction import Fraction
             math_objects['Fraction'] = Fraction
         except (ImportError, AttributeError):
             pass
@@ -151,7 +151,7 @@ def execute_pg_snippet(snippet_path: Path, seed: int) -> Dict[str, Any]:
     if HAS_PG_ENV:
         try:
             # Get the environment that DOCUMENT() created
-            from pg_macros.core.pg_core import get_environment
+            from pg.macros.core.pg_core import get_environment
             pg_env = get_environment()
 
             # Get text from PGEnvironment

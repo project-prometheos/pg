@@ -64,7 +64,7 @@ def convert_problem_to_python(problem_name: str, output_dir: str = None):
         problem_name: Name of problem (without .pg extension)
         output_dir: Optional output directory (default: same as .pg file)
     """
-    from pg_translator import PGPreprocessor
+    from pg.translator import PGPreprocessor
     
     # Find the .pg file
     tutorial_dir = project_root / "tutorial" / "sample-problems"
@@ -140,7 +140,7 @@ def test_single_problem(problem_name: str):
 
 def analyze_problem(problem_name: str):
     """Analyze a problem's errors in detail."""
-    from pg_translator import PGTranslator
+    from pg.translator import PGTranslator
     
     # Find the .pg file
     tutorial_dir = project_root / "tutorial" / "sample-problems"

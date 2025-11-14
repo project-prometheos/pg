@@ -25,12 +25,12 @@ try:
     print("[SUCCESS] Database rendering router loaded!")
 except ImportError as e:
     print(f"[ERROR] Database rendering not available: {e}")
-    print(f"[DEBUG] Trying to import pg_renderer directly...")
+    print(f"[DEBUG] Trying to import pg.renderer directly...")
     try:
-        import pg_renderer
+        import pg.renderer
         print(f"[INFO] pg_renderer can be imported directly from: {pg_renderer.__file__}")
     except ImportError as e2:
-        print(f"[ERROR] Cannot import pg_renderer at all: {e2}")
+        print(f"[ERROR] Cannot import pg.renderer at all: {e2}")
     DATABASE_RENDERING_AVAILABLE = False
 
 app = FastAPI(

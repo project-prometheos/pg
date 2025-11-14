@@ -1,0 +1,11 @@
+DOCUMENT();
+loadMacros("MathObjects.pl");
+loadMacros("PGstandard.pl");
+
+Context("Numeric");
+$answer = Formula("x^2");
+
+TEXT("The answer is " . $answer);
+ANS($answer->cmp());
+
+ENDDOCUMENT();

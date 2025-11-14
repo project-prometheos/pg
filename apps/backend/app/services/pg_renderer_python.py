@@ -4,8 +4,8 @@ from typing import Dict, Any, List, Set
 
 # Import from installed package (editable mode)
 # Package is installed with: pip install -e packages/pg_renderer
-from pg_renderer import PGRenderer
-from pg_renderer.answer_checker import AnswerChecker
+from pg.renderer import PGRenderer
+from pg.renderer.answer_checker import AnswerChecker
 
 # Reload: Added inequality and interval string comparison
 

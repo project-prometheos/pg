@@ -4,9 +4,9 @@ from typing import Dict, Any, List
 from pathlib import Path
 import tempfile
 
-from pg_translator import PGTranslator
-from pg_answer import AnswerResult
-from pg_parser import Context
+from pg.translator import PGTranslator
+from pg.answer import AnswerResult
+from pg.parser import Context
 
 
 class PGTranslatorService:

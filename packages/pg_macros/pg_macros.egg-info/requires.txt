@@ -1,2 +1,0 @@
-pg_math>=0.1.0
-pg_parser>=0.1.0

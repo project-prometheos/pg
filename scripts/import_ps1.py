@@ -10,7 +10,7 @@ from typing import Dict, Any, List
 # Add scripts directory to path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from pg_parser import PGParser
+from pg.parser import PGParser
 
 
 class PS1Importer:

@@ -2,7 +2,7 @@
 """Analyze why tutorial problems don't render."""
 
 from pathlib import Path
-from pg_translator import PGTranslator
+from pg.translator import PGTranslator
 import os
 os.environ['PYPG_DISABLE_LOGGING'] = '1'
 
