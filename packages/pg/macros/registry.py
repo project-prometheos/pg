@@ -153,6 +153,19 @@ OPTIONAL_MACROS = {
         ],
         "description": "Vector and plane utilities (1:1 parity with parserVectorUtils.pl)",
     },
+    "parserAssignment": {
+        "module": "pg.macros.parsers.parser_assignment",
+        "aliases": ["parserAssignment.pl"],
+        "category": "parsers",
+        "functions": [
+            "AssignmentValue",
+            "AssignmentBOP",
+            "AssignmentFunction",
+            "AssignmentParser",
+            "Assignment",
+        ],
+        "description": "Assignment expressions for variable/function definitions (1:1 parity with parserAssignment.pl)",
+    },
 
     # Graphics macros (heavy - should be lazy loaded!)
     "PGgraphmacros": {
