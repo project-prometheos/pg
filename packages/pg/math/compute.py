@@ -62,6 +62,16 @@ def Compute(expression: Union[str, int, float], context=None):
     if context.name == 'Interval' and _is_interval_notation(expr_str):
         return _parse_interval(expr_str, context)
 
+    # Check for vector notation in Vector contexts (or anything that looks like vector notation)
+    # Pattern: <a, b>, <a, b, c>, etc.
+    # Try vector notation if it looks like one, regardless of context
+    if _is_vector_notation(expr_str):
+        try:
+            return _parse_vector(expr_str, context)
+        except Exception:
+            # If vector parsing fails, fall through to other handlers
+            pass
+
     # Check for fraction notation in Fraction contexts
     # Pattern: a/b, a b/c (mixed number)
     if 'Fraction' in context.name and _is_fraction_notation(expr_str):
@@ -372,3 +382,86 @@ def _parse_fraction(expr: str, context) -> 'Fraction':
         return Fraction(num, den, context)
 
     raise ValueError(f"Invalid fraction notation: {expr}")
+
+
+def _is_vector_notation(expr: str) -> bool:
+    """
+    Check if expression looks like vector notation.
+
+    Patterns: <a>, <a, b>, <a, b, c>, etc.
+    Components can be numbers or expressions.
+    """
+    expr = expr.strip()
+    if len(expr) < 3:
+        return False
+
+    # Must start with < and end with >
+    if expr[0] != '<' or expr[-1] != '>':
+        return False
+
+    # Must contain at least one comma (or single component)
+    content = expr[1:-1].strip()
+
+    # Empty is not a valid vector
+    if not content:
+        return False
+
+    return True
+
+
+def _parse_vector(expr: str, context) -> 'Vector':
+    """
+    Parse vector notation into a Vector object.
+
+    Syntax: <a>, <a, b>, <a, b, c>, etc.
+    Components can be numbers or expressions.
+
+    Reference: lib/Value/Vector.pm
+    """
+    from .geometric import Vector
+
+    expr = expr.strip()
+
+    # Extract content inside angle brackets
+    content = expr[1:-1].strip()
+
+    # Split by comma (accounting for nested parentheses)
+    components = []
+    current = ""
+    depth = 0
+
+    for ch in content:
+        if ch in '([{':
+            depth += 1
+        elif ch in ')]}':
+            depth -= 1
+        elif ch == ',' and depth == 0:
+            components.append(current.strip())
+            current = ""
+            continue
+        current += ch
+
+    # Don't forget the last component
+    if current.strip():
+        components.append(current.strip())
+
+    # Parse each component (may be numbers or expressions)
+    parsed_components = []
+    for comp in components:
+        try:
+            # Try to evaluate as a number
+            value = float(comp)
+            from .numeric import Real
+            parsed_components.append(Real(value))
+        except ValueError:
+            # Try to parse as an expression (Formula)
+            try:
+                # Recursively compute to handle formulas/expressions
+                result = Compute(comp, context)
+                parsed_components.append(result)
+            except Exception:
+                # If all else fails, just use the string as-is
+                from .formula import Formula
+                parsed_components.append(Formula(comp, context.variables.list(), context))
+
+    return Vector(*parsed_components)

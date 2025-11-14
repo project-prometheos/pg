@@ -376,6 +376,57 @@ class Vector(MathValue):
         """Check if vectors are orthogonal (perpendicular)."""
         return abs(self.dot(other).value) < tolerance
 
+    def extract(self, index: int) -> MathValue:
+        """
+        Extract a single component of the vector by 1-based index.
+
+        Perl compatibility method - uses 1-based indexing.
+
+        Args:
+            index: Component index (1-based, so 1 is first component)
+
+        Returns:
+            The component at that position
+
+        Raises:
+            IndexError: If index is out of range
+        """
+        # Convert from 1-based (Perl) to 0-based (Python) indexing
+        py_index = index - 1
+        if py_index < 0 or py_index >= len(self.components):
+            raise IndexError(f"Vector component {index} out of range (vector has {len(self.components)} components)")
+        return self.components[py_index]
+
+    def __getattr__(self, name: str) -> MathValue:
+        """
+        Support component access via v0, v1, v2, etc. attributes.
+
+        Also supports isParallel, isOrthogonal as aliases.
+
+        Args:
+            name: Attribute name
+
+        Returns:
+            Component value for v0/v1/v2, or method for is* methods
+        """
+        # Handle component access: v0, v1, v2, etc. (0-based indexing)
+        if name.startswith("v") and len(name) > 1 and name[1:].isdigit():
+            index = int(name[1:])
+            if index < 0 or index >= len(self.components):
+                raise AttributeError(
+                    f"'Vector' object has no attribute '{name}' "
+                    f"(vector has {len(self.components)} components, use v0-v{len(self.components)-1})"
+                )
+            return self.components[index]
+
+        # Handle method aliases
+        if name == "isParallel":
+            return self.is_parallel
+        if name == "isOrthogonal":
+            return self.is_orthogonal
+
+        raise AttributeError(f"'Vector' object has no attribute '{name}'")
+
     def answer_checker(self, **options):
         """
         Create an answer checker for this Vector.

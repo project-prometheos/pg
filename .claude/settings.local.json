@@ -9,7 +9,10 @@
       "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -c \"\nimport sys\nsys.path.insert(0, r''d:\\pg\\packages'')\n# Test that pg.mathobjects now works (renamed from _compat)\nfrom pg.mathobjects import Context, Formula, Real, Compute, Complex, Vector, Infinity, Interval\nprint(''OK: pg.mathobjects imports work'')\nprint(''OK: Can import Context:'', callable(Context))\nprint(''OK: Can import Formula:'', callable(Formula))\nprint(''OK: Can import Complex:'', callable(Complex))\nprint(''OK: Can import Vector:'', callable(Vector))\nc = Context(''Numeric'')\nf = Formula(''x^2 + 1'')\nprint(''OK: Formula creation works:'', f)\nprint(''OK: 1:1 Perl parity - from pg.mathobjects import * works just like Perl'')\n\")",
       "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\Scripts\\pg-convert.exe\" \"d:\\pg\\test_mathobjects_convert.pg\" --overwrite)",
       "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\Scripts\\pg-convert.exe\" \"d:\\pg\\test_mathobjects_convert.pg\" --overwrite --emit-imports)",
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"d:\\pg\\packages\\pg\\translator\\tests\\test_mathobjects_sandbox.py\" -q --tb=line)"
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"d:\\pg\\packages\\pg\\translator\\tests\\test_mathobjects_sandbox.py\" -q --tb=line)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"packages/pg/translator/tests/test_tutorial_sample_problems.py::test_tutorial_problem_renders[AnswerWithUnits]\" -v)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"packages/pg/translator/tests/test_tutorial_sample_problems.py::test_tutorial_problem_renders[HeavisideStep]\" -v)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"packages/pg/translator/tests/test_tutorial_sample_problems.py::test_tutorial_problem_renders[Vectors]\" -v)"
     ],
     "deny": [],
     "ask": []
