@@ -19,6 +19,5 @@ packages = [
     "pg.macros",
     "pg.translator",
     "pg.renderer",
-    "pg.mathobjects",
 ]
 package-dir = {"" = "."}
