@@ -24,6 +24,9 @@ dev = [
 where = ["."]
 include = ["pg-pgml*"]
 
+[tool.setuptools.package-data]
+"*" = ["py.typed"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]

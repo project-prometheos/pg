@@ -1,0 +1,7 @@
+Metadata-Version: 2.4
+Name: pg-macros
+Version: 0.1.0
+Summary: PG macros package
+Requires-Python: >=3.12
+Requires-Dist: pg-math>=0.1.0
+Requires-Dist: pg-parser>=0.1.0

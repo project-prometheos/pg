@@ -60,18 +60,22 @@ from pygments.token import Token
 # allows the preprocessor to operate purely on the Pygments fallback
 # without raising ImportError.
 try:
-    from lark import Lark, Transformer, v_args  # type: ignore[redefined-builtin]
+    # type: ignore[redefined-builtin]
+    from lark import Lark, Transformer, v_args
     from lark.exceptions import LarkError  # type: ignore[misc]
     _LARK_AVAILABLE = True
 except Exception:
     # Define dummy stand‑ins for the imported symbols
     _LARK_AVAILABLE = False
+
     class LarkError(Exception):
         pass
+
     def v_args(*args, **kwargs):
         def wrapper(func):
             return func
         return wrapper
+
     class Transformer:
         pass
     # The Lark class is defined later in PGPreprocessor.__init__ when not available
@@ -176,13 +180,14 @@ class PGPreprocessor:
             # If standalone mode, always import MathObjects
             # (Context, Compute, etc. are used in almost every problem)
             if standalone:
-                import_lines.append("from MathObjects import *")
-            
+                import_lines.append("from pg.mathobjects import *")
+
             for line in lines:
                 if "loadMacros" in line:
                     match = re.search(r'loadMacros\((.*?)\)', line, re.DOTALL)
                     if match:
-                        imports, comment = self._transform_load_macros(match.group(1))
+                        imports, comment = self._transform_load_macros(
+                            match.group(1))
                         import_lines.extend(imports)
                         loaded_macros_comment = comment
 
@@ -194,7 +199,6 @@ class PGPreprocessor:
         while i < len(lines):
             original_line = lines[i]
             line_start_index = i
-
 
             # Join Perl-style implicit continuations to make downstream parsing easier
             is_comment = original_line.lstrip(' \t').startswith('#')
@@ -216,7 +220,8 @@ class PGPreprocessor:
                             break
 
                         should_join = False
-                        stripped_no_comment = self._strip_inline_comment(stripped)
+                        stripped_no_comment = self._strip_inline_comment(
+                            stripped)
                         # Don't join if the line ends with a semicolon (complete statement)
                         if stripped_no_comment and stripped_no_comment[-1] == ';':
                             should_join = False
@@ -244,7 +249,7 @@ class PGPreprocessor:
                             # Also, keep joining if we have logical operators (&&, ||) or continue until we find semicolon
                             next_stripped = next_line.lstrip(' \t')
                             if (stripped and stripped.endswith('}') and
-                                next_stripped and next_stripped.startswith('until')):
+                                    next_stripped and next_stripped.startswith('until')):
                                 should_join = True
                             # Special case: if current line contains 'map {' or 'grep {' with balanced braces,
                             # the next line is the iterable, so join them
@@ -254,7 +259,7 @@ class PGPreprocessor:
                                 should_join = True
                             # If current line has logical operators, keep joining
                             elif (stripped and (stripped.endswith('&&') or stripped.endswith('||') or
-                                              next_stripped.startswith('&&') or next_stripped.startswith('||'))):
+                                                next_stripped.startswith('&&') or next_stripped.startswith('||'))):
                                 if next_line.lstrip(' \t'):  # Not empty
                                     should_join = True
 
@@ -262,7 +267,8 @@ class PGPreprocessor:
                             check_line = self._strip_inline_comment(stripped)
                             # Account for $# operator which shouldn't affect paren counting
                             # Replace $#name with a placeholder
-                            check_line_adjusted = re.sub(r'\$#\w+', '_placeholder_', check_line)
+                            check_line_adjusted = re.sub(
+                                r'\$#\w+', '_placeholder_', check_line)
                             open_count = (
                                 check_line_adjusted.count('(')
                                 + check_line_adjusted.count('[')
@@ -281,7 +287,8 @@ class PGPreprocessor:
                                 original_line.rstrip()
                             )
                             original_line = (
-                                line_without_comment + ' ' + next_line.lstrip(' \t')
+                                line_without_comment + ' ' +
+                                next_line.lstrip(' \t')
                             )
                             i += 1
                         else:
@@ -323,7 +330,8 @@ class PGPreprocessor:
             # Standalone loadMacros start
             if 'loadMacros' in original_line and '(' in original_line and not in_load_macros:
                 in_load_macros = True
-                paren_depth = original_line.count('(') - original_line.count(')')
+                paren_depth = original_line.count(
+                    '(') - original_line.count(')')
                 if paren_depth == 0:
                     in_load_macros = False
                 i += 1
@@ -331,7 +339,8 @@ class PGPreprocessor:
 
             # If inside loadMacros, skip lines until parens balanced
             if in_load_macros:
-                paren_depth += original_line.count('(') - original_line.count(')')
+                paren_depth += original_line.count('(') - \
+                    original_line.count(')')
                 if paren_depth <= 0:
                     in_load_macros = False
                 i += 1
@@ -345,11 +354,12 @@ class PGPreprocessor:
                     if loaded_macros_comment:
                         output_lines.append(loaded_macros_comment)
                     output_lines.append("")
-                
+
                 # Emit DOCUMENT() line
                 # Split multiple statements by semicolon and handle individually
                 if ';' in original_line:
-                    parts = [p.strip() for p in original_line.split(';') if p.strip()]
+                    parts = [p.strip()
+                             for p in original_line.split(';') if p.strip()]
                     for part in parts:
                         if 'loadMacros' in part:
                             continue
@@ -358,7 +368,7 @@ class PGPreprocessor:
                 else:
                     compiled_lines = self._compile_line(original_line)
                     output_lines.extend(compiled_lines)
-                
+
                 # For normal mode, emit imports AFTER DOCUMENT()
                 if not standalone and import_lines:
                     output_lines.append("")
@@ -366,7 +376,7 @@ class PGPreprocessor:
                     if loaded_macros_comment:
                         output_lines.append(loaded_macros_comment)
                     output_lines.append("")
-                
+
                 imports_inserted = True
                 i += 1
                 continue
@@ -376,8 +386,10 @@ class PGPreprocessor:
             if sub_match:
                 # Check if this is a single-line closure (all braces balanced on this line)
                 sub_start = original_line.find('sub {')
-                after_sub = original_line[sub_start + 5:]  # Everything after "sub {"
-                single_line_brace_count = after_sub.count('{') - after_sub.count('}')
+                # Everything after "sub {"
+                after_sub = original_line[sub_start + 5:]
+                single_line_brace_count = after_sub.count(
+                    '{') - after_sub.count('}')
 
                 # For single-line closures where all braces are balanced, extract and replace them
                 # But we need to be careful with strings, hashes, etc.
@@ -396,14 +408,16 @@ class PGPreprocessor:
                 while i < len(lines) and brace_depth > 0 and lines_collected < max_closure_lines:
                     current_line = lines[i]
                     closure_lines.append(current_line)
-                    brace_depth += current_line.count('{') - current_line.count('}')
+                    brace_depth += current_line.count(
+                        '{') - current_line.count('}')
                     i += 1
                     lines_collected += 1
-                
+
                 if lines_collected >= max_closure_lines:
                     # Hit the safety limit - something went wrong
                     # Just skip this and treat it as a comment
-                    output_lines.append(f"# {original_line[:80]}... # Closure too complex, skipped")
+                    output_lines.append(
+                        f"# {original_line[:80]}... # Closure too complex, skipped")
                     continue
 
                 first_line = closure_lines[0]
@@ -452,11 +466,13 @@ class PGPreprocessor:
 
                     # Transform the line (this handles => to =, -> to ., removes trailing ;)
                     transformed = self._rewrite_statement(stubbed_line)
-                    
+
                     if transformed:
-                        output_lines.append(transformed + "  # Stubbed Perl closure")
+                        output_lines.append(
+                            transformed + "  # Stubbed Perl closure")
                 else:
-                    assign_match = re.search(r'(\w+)\s*=\s*sub\s*\{', first_line)
+                    assign_match = re.search(
+                        r'(\w+)\s*=\s*sub\s*\{', first_line)
                     if assign_match:
                         var_name = assign_match.group(1)
                         indent_match = re.match(r'^(\s*)', first_line)
@@ -467,11 +483,13 @@ class PGPreprocessor:
                             stub_lines = transformed.split('\n')
                             for idx, stub_line in enumerate(stub_lines):
                                 if idx == len(stub_lines) - 1:
-                                    output_lines.append(f"{stub_line}  # Stubbed Perl closure")
+                                    output_lines.append(
+                                        f"{stub_line}  # Stubbed Perl closure")
                                 else:
                                     output_lines.append(stub_line)
                     else:
-                        output_lines.append(f"# {first_line}  # Skipped Perl closure")
+                        output_lines.append(
+                            f"# {first_line}  # Skipped Perl closure")
                 continue
 
             # Detect do { ... } until loops (single or multi line)
@@ -479,7 +497,8 @@ class PGPreprocessor:
             # - do { body } until (condition)
             # - do { body } until (cond1) && (cond2) && (cond3);
             # It captures everything from 'until' to the end of the line/statement
-            do_until_single = re.match(r'^\s*do\s*\{([^}]*)\}\s*until\s+(.+)$', original_line)
+            do_until_single = re.match(
+                r'^\s*do\s*\{([^}]*)\}\s*until\s+(.+)$', original_line)
             if do_until_single:
                 body = do_until_single.group(1).strip()
                 full_condition = do_until_single.group(2).strip()
@@ -513,7 +532,8 @@ class PGPreprocessor:
             do_until_start = re.match(r'^\s*do\s*\{', original_line)
             if do_until_start:
                 block_lines = [original_line]
-                brace_depth = original_line.count('{') - original_line.count('}')
+                brace_depth = original_line.count(
+                    '{') - original_line.count('}')
                 i += 1
 
                 # Collect lines until braces are balanced
@@ -537,17 +557,19 @@ class PGPreprocessor:
                         condition_lines = [next_line]
                         condition_line_idx = i
                         i += 1
-                        
+
                         # Keep collecting lines until we find a semicolon that ends the statement
                         while i < len(lines) and ';' not in condition_lines[-1]:
                             ln = lines[i]
                             condition_lines.append(ln)
                             i += 1
-                        
+
                         # Concatenate all condition lines
-                        full_condition = ' '.join(ln.strip() for ln in condition_lines)
+                        full_condition = ' '.join(ln.strip()
+                                                  for ln in condition_lines)
                         # Extract the condition from "until ... ;"
-                        condition_match = re.match(r'^\s*until\s+(.+?);?\s*$', full_condition)
+                        condition_match = re.match(
+                            r'^\s*until\s+(.+?);?\s*$', full_condition)
                         if condition_match:
                             condition_raw = condition_match.group(1).strip()
                             # Remove surrounding parens if present
@@ -562,7 +584,7 @@ class PGPreprocessor:
                             until_match = None
                     else:
                         until_match = None
-                        
+
                 if until_match:
                     if isinstance(until_match, bool):
                         # Already extracted condition from next line
@@ -572,13 +594,14 @@ class PGPreprocessor:
                         condition = until_match.group(1).strip()
                     # Extract body lines: remove 'do {' and '} until (...)'
                     inner_lines: List[str] = []
-                    
+
                     # All lines in block_lines are now part of the body (not the condition)
                     # since we don't add condition lines to block_lines anymore
-                    
+
                     if len(block_lines) == 1 and block_lines[0].count('{') == block_lines[0].count('}'):
                         # Extract content between 'do {' and '}'
-                        body_match = re.match(r'^\s*do\s*\{(.*)\}\s*$', block_lines[0])
+                        body_match = re.match(
+                            r'^\s*do\s*\{(.*)\}\s*$', block_lines[0])
                         if body_match:
                             body_content = body_match.group(1).strip()
                             if body_content:
@@ -587,24 +610,26 @@ class PGPreprocessor:
                         # Multi-line case: shouldn't happen since we only collect until brace_depth > 0
                         # But handle it just in case
                         # Remove the first line's 'do {'
-                        first_body = re.sub(r'^\s*do\s*\{', '', block_lines[0]).strip()
+                        first_body = re.sub(
+                            r'^\s*do\s*\{', '', block_lines[0]).strip()
                         if first_body:
                             inner_lines.append(first_body)
-                        
+
                         # Middle lines
                         body_end_idx = len(block_lines) - 1
-                        
+
                         for middle_idx in range(1, body_end_idx):
                             inner_lines.append(block_lines[middle_idx])
-                        
+
                         # Process the line with the closing brace (if it's not the first line)
                         if body_end_idx > 0:
                             last_body_line = block_lines[body_end_idx]
                             # Remove the closing }
-                            last_body = re.sub(r'\}\s*$', '', last_body_line).strip()
+                            last_body = re.sub(
+                                r'\}\s*$', '', last_body_line).strip()
                             if last_body:
                                 inner_lines.append(last_body)
-                    
+
                     # Compile body lines
                     compiled_body: List[str] = []
                     for ln in inner_lines:
@@ -647,10 +672,13 @@ class PGPreprocessor:
                     text_blocks.append((block_type, block_content))
                     # PGML blocks require evaluator transformation before storing
                     if "PGML" in block_type:
-                        transformed_pgml = self._transform_pgml_evaluators(block_content)
-                        block_var = f"pgml_block_{len(text_blocks) - 1}"
-                        escaped_content = self._escape_triple_quotes(transformed_pgml)
-                        output_lines.append(f"{block_var} = '''\n{escaped_content}\n'''")
+                        transformed_pgml = self._transform_pgml_evaluators(
+                            block_content)
+                        block_var = f"PGML_BLOCK_{len(text_blocks) - 1}"
+                        escaped_content = self._escape_triple_quotes(
+                            transformed_pgml)
+                        output_lines.append(
+                            f"{block_var} = '''\n{escaped_content}\n'''")
                         if "SOLUTION" in block_type:
                             output_lines.append(f"SOLUTION(PGML({block_var}))")
                         elif "HINT" in block_type:
@@ -659,15 +687,18 @@ class PGPreprocessor:
                             output_lines.append(f"TEXT(PGML({block_var}))")
                     elif block_type == "TIKZ":
                         # Preserve raw TikZ/TeX content verbatim
-                        block_var = f"tikz_block_{len(text_blocks) - 1}"
-                        escaped_content = block_content.replace("'''", r"\'\'\'")
+                        block_var = f"TIKZ_BLOCK_{len(text_blocks) - 1}"
+                        escaped_content = block_content.replace(
+                            "'''", r"\'\'\'")
                         output_lines.append(
                             f"{block_var} = r'''\\n{escaped_content}\\n'''"
                         )
                     else:
-                        transformed_content = self._transform_text_block(block_content)
+                        transformed_content = self._transform_text_block(
+                            block_content)
                         if "SOLUTION" in block_type:
-                            output_lines.append(f"SOLUTION({transformed_content})")
+                            output_lines.append(
+                                f"SOLUTION({transformed_content})")
                         elif "HINT" in block_type:
                             output_lines.append(f"HINT({transformed_content})")
                         else:
@@ -682,8 +713,10 @@ class PGPreprocessor:
             # Handle method-call-style blocks: $obj->BEGIN_TIKZ or $obj->BEGIN_LATEX_IMAGE
             # These should capture content until END_TIKZ/END_LATEX_IMAGE and pass as raw string
             # Note: Use search to find these patterns even if there's trailing whitespace/comments
-            tikz_method_match = re.search(r'(\$\w+)\s*->\s*BEGIN_TIKZ', original_line)
-            latex_method_match = re.search(r'(\$\w+)\s*->\s*BEGIN_LATEX_IMAGE', original_line)
+            tikz_method_match = re.search(
+                r'(\$\w+)\s*->\s*BEGIN_TIKZ', original_line)
+            latex_method_match = re.search(
+                r'(\$\w+)\s*->\s*BEGIN_LATEX_IMAGE', original_line)
 
             if (tikz_method_match or latex_method_match) and original_line.strip().endswith(('BEGIN_TIKZ', 'BEGIN_LATEX_IMAGE')):
                 obj_var = (tikz_method_match or latex_method_match).group(1)
@@ -728,7 +761,8 @@ class PGPreprocessor:
         # Convert empty tuple assignments to empty lists for array variables
         # In Perl: @var = () creates an empty list
         # In Python: () is a tuple, [] is a list, so we need to convert
-        code = re.sub(r'^\s*([a-z_]\w*)\s*=\s*\(\)\s*$', r'\1 = []', code, flags=re.MULTILINE)
+        code = re.sub(r'^\s*([a-z_]\w*)\s*=\s*\(\)\s*$',
+                      r'\1 = []', code, flags=re.MULTILINE)
 
         # Convert parenthesized list assignments to list literals
         # Pattern: var = (item1, item2, ...) or var = (single_item,)
@@ -759,7 +793,8 @@ class PGPreprocessor:
             statement = match.group(2).strip()
             # Extract loop variable from statement (usually $_)
             # For += patterns: capture the variable and iterable
-            add_match = re.match(r'(\w+)\s*\+=\s*(.+?)\s+for\s+(.+)', statement)
+            add_match = re.match(
+                r'(\w+)\s*\+=\s*(.+?)\s+for\s+(.+)', statement)
             if add_match:
                 var = add_match.group(1)
                 expr = add_match.group(2)
@@ -782,7 +817,7 @@ class PGPreprocessor:
         # This occurs when $_ -> [...] is converted to _ . [...]
         # In Python, we just want _[...]
         code = re.sub(r'\b_\.(\[)', r'_\1', code)
-        
+
         # If standalone mode, add boilerplate for direct execution
         if standalone:
             boilerplate = '''
@@ -817,7 +852,7 @@ if __name__ == "__main__":
             print(f"  {name}")
 '''
             code += boilerplate
-        
+
         return PreprocessResult(code=code, text_blocks=text_blocks, line_map=line_map)
 
     def _initialize_arrays(self, code: str) -> str:
@@ -989,20 +1024,25 @@ if __name__ == "__main__":
                     block_content = re_module.sub(r'\$_\b', '_', block_content)
 
                     # Convert fat comma => to =
-                    block_content = re_module.sub(r'\s*=>\s*', ' = ', block_content)
+                    block_content = re_module.sub(
+                        r'\s*=>\s*', ' = ', block_content)
 
                     # Convert Perl range operator .. to Python range()
                     # Handle both "a .. b" and "a..b" formats
                     # First handle parenthesized ranges like (0 .. 3)
-                    list_expr = re_module.sub(r'\((\d+)\s*\.\.\s*(\d+)\)', r'range(\1, \2 + 1)', list_expr)
+                    list_expr = re_module.sub(
+                        r'\((\d+)\s*\.\.\s*(\d+)\)', r'range(\1, \2 + 1)', list_expr)
                     # Then handle non-parenthesized ranges
-                    list_expr = re_module.sub(r'(\S+)\s*\.\.\s*(\S+)', r'range(\1, \2 + 1)', list_expr)
+                    list_expr = re_module.sub(
+                        r'(\S+)\s*\.\.\s*(\S+)', r'range(\1, \2 + 1)', list_expr)
 
                     # Build the list comprehension
                     if keyword == 'map':
-                        result.append(f"[{block_content} for _ in {list_expr}]")
+                        result.append(
+                            f"[{block_content} for _ in {list_expr}]")
                     else:  # grep
-                        result.append(f"[_ for _ in {list_expr} if {block_content}]")
+                        result.append(
+                            f"[_ for _ in {list_expr} if {block_content}]")
 
                     i = list_end
                 else:
@@ -1226,11 +1266,11 @@ if __name__ == "__main__":
             def stmt_modifier(self, child):
                 """Pass through stmt_modifier_if or stmt_modifier_unless."""
                 return child
-            
+
             def stmt_modifier_if(self, stmt, condition):
                 """Lower statement modifier with 'if'."""
                 return ("stmt_modifier", stmt, "if", condition)
-            
+
             def stmt_modifier_unless(self, stmt, condition):
                 """Lower statement modifier with 'unless'."""
                 return ("stmt_modifier", stmt, "unless", condition)
@@ -1272,6 +1312,7 @@ if __name__ == "__main__":
                     cond, true_val, false_val = parts
                     return ("ternary", cond, true_val, false_val)
                 return parts[0]
+
             def binary_expr(self, left, *rest):
                 """Lower binary operations."""
                 expr = left
@@ -1287,7 +1328,7 @@ if __name__ == "__main__":
                     else:
                         # op is already a Token or string
                         op_tok = op
-                    
+
                     # Extract the actual operator string value
                     if hasattr(op_tok, 'value'):
                         op_str = op_tok.value
@@ -1296,7 +1337,7 @@ if __name__ == "__main__":
                         op_str = str(op_tok)
                     else:
                         op_str = str(op_tok)
-                    
+
                     expr = ("bin", expr, op_str, right)
                 return expr
 
@@ -1351,7 +1392,7 @@ if __name__ == "__main__":
                 for op in postfix_ops:
                     expr = ("postfix", expr, op)
                 return expr
-            
+
             def postfix_op(self, child):
                 """Pass through the postfix operation (method_call or subscript)."""
                 return child
@@ -1675,9 +1716,10 @@ if __name__ == "__main__":
                     # f-strings starting with f" or f' are fine
                     # str() calls are fine
                     # Everything else should be wrapped in str()
-                    is_str_literal = (py_right.startswith('"') or py_right.startswith("'"))
+                    is_str_literal = (py_right.startswith(
+                        '"') or py_right.startswith("'"))
                     is_fstring = (py_right.startswith('f"') or py_right.startswith("f'") or
-                                 py_right.startswith('F"') or py_right.startswith("F'"))
+                                  py_right.startswith('F"') or py_right.startswith("F'"))
                     is_str_call = py_right.startswith("str(")
 
                     if not (is_str_literal or is_fstring or is_str_call):
@@ -1737,7 +1779,8 @@ if __name__ == "__main__":
                             return f"{base_py}.reduce"
                         # Special case: properties that shouldn't have parentheses
                         # These are Matrix/Vector properties that shouldn't be called as methods
-                        property_names = {"transpose", "inverse", "norm", "dimensions", "trace", "det", "determinant", "value"}
+                        property_names = {"transpose", "inverse", "norm",
+                                          "dimensions", "trace", "det", "determinant", "value"}
                         if method_name in property_names and len(args) == 0:
                             return f"{base_py}.{method_name}"
                         # Special case: .with(...) needs to become .with_params(...) to avoid 'with' keyword
@@ -1752,7 +1795,8 @@ if __name__ == "__main__":
                                 val_str = self._expr_to_py(val_expr)
                                 # Convert key to bareword if it's a variable
                                 if isinstance(key_expr, tuple) and key_expr[0] == "var":
-                                    key_str = key_expr[1]  # Just the variable name without sigil
+                                    # Just the variable name without sigil
+                                    key_str = key_expr[1]
                                 arg_strs.append(f"{key_str} = {val_str}")
                             else:
                                 arg_strs.append(self._expr_to_py(a))
@@ -1787,7 +1831,8 @@ if __name__ == "__main__":
                         if is_string_literal:
                             # String literal key like 'u(t)' - will create a dict
                             has_string_key_params = True
-                            key_str = self._expr_to_py(key_expr)  # Keep the quotes
+                            key_str = self._expr_to_py(
+                                key_expr)  # Keep the quotes
                             val_str = self._expr_to_py(val_expr)
                             string_key_params.append((key_str, val_str))
                         else:
@@ -1796,7 +1841,8 @@ if __name__ == "__main__":
                             # For variable: key_expr is ("var", name)
                             if isinstance(key_expr, tuple) and key_expr[0] == "var":
                                 # Variable like $var
-                                key_str = key_expr[1]  # Just the variable name without sigil
+                                # Just the variable name without sigil
+                                key_str = key_expr[1]
                             else:
                                 # Bareword - convert to string
                                 key_str = self._expr_to_py(key_expr)
@@ -1837,7 +1883,8 @@ if __name__ == "__main__":
                     's': 're.DOTALL',
                     'x': 're.VERBOSE',
                 }
-                py_flags = ' | '.join(flag_map.get(f, '') for f in str(flags) if f in flag_map)
+                py_flags = ' | '.join(flag_map.get(f, '')
+                                      for f in str(flags) if f in flag_map)
                 if py_flags:
                     return f're.compile(r"{pattern}", {py_flags})'
                 else:
@@ -1869,11 +1916,11 @@ if __name__ == "__main__":
     def _convert_regexes(self, code: str) -> str:
         """Convert Perl qr/pattern/flags regexes to Python re.compile() calls."""
         import re as re_module
-        
+
         # Pattern to match Perl regex literals: qr/pattern/flags
         # This handles patterns with escaped slashes inside
         pattern = r'qr/([^/]*(?:\\.[^/]*)*)/([imsxo]*)'
-        
+
         def replace_regex(match):
             pattern_content = match.group(1)
             flags_str = match.group(2)
@@ -1884,12 +1931,13 @@ if __name__ == "__main__":
                 's': 're.DOTALL',
                 'x': 're.VERBOSE',
             }
-            py_flags = ' | '.join(flag_map.get(f, '') for f in flags_str if f in flag_map)
+            py_flags = ' | '.join(flag_map.get(f, '')
+                                  for f in flags_str if f in flag_map)
             if py_flags:
                 return f're.compile(r"{pattern_content}", {py_flags})'
             else:
                 return f're.compile(r"{pattern_content}")'
-        
+
         return re_module.sub(pattern, replace_regex, code)
 
     def _rewrite_with_pygments(self, code: str) -> str:
@@ -1897,7 +1945,7 @@ if __name__ == "__main__":
         # First, replace qr/pattern/flags with re.compile(pattern, flags)
         import re as re_module
         code = self._convert_regexes(code)
-        
+
         tokens = list(self._perl_lexer.get_tokens_unprocessed(code))
 
         result: List[str] = []
@@ -1906,7 +1954,7 @@ if __name__ == "__main__":
         brace_context_stack: List[bool] = []
         # Track bracket context: nesting level of [...]
         bracket_depth = 0
-        
+
         while i < len(tokens):
             _, ttype, text = tokens[i]
             # Preserve comments verbatim
@@ -1928,7 +1976,7 @@ if __name__ == "__main__":
                         is_fat_comma = True
                     elif next_token[2] == '=' and j + 1 < len(tokens) and tokens[j + 1][2] == '>':
                         is_fat_comma = True
-                    
+
                     if is_fat_comma:
                         # Quote the bare word
                         result.append(f"'{text}'")
@@ -1944,7 +1992,8 @@ if __name__ == "__main__":
                     import re
                     content = text[1:-1] if len(text) > 2 else text
                     # Remove sigils from variables
-                    converted = re.sub(r'\$([a-zA-Z_][a-zA-Z0-9_]*)', r'\1', content)
+                    converted = re.sub(
+                        r'\$([a-zA-Z_][a-zA-Z0-9_]*)', r'\1', content)
                     # Re-add the / as division operators
                     result.append('/' + converted + '/')
                 else:
@@ -1966,7 +2015,8 @@ if __name__ == "__main__":
                         's': 're.DOTALL',
                         'x': 're.VERBOSE',
                     }
-                    py_flags = ' | '.join(flag_map.get(f, '') for f in flags_str if f in flag_map)
+                    py_flags = ' | '.join(flag_map.get(f, '')
+                                          for f in flags_str if f in flag_map)
                     if py_flags:
                         result.append(f're.compile(r"{pattern}", {py_flags})')
                     else:
@@ -1988,7 +2038,8 @@ if __name__ == "__main__":
                     escaped = escaped.replace('{', '{{').replace('}', '}}')
                     # Convert $var to {var}
                     import re
-                    converted = re.sub(r'\$([a-zA-Z_][a-zA-Z0-9_]*)', r'{\1}', escaped)
+                    converted = re.sub(
+                        r'\$([a-zA-Z_][a-zA-Z0-9_]*)', r'{\1}', escaped)
                     result.append(f'f"{converted}"')
                 else:
                     # For non-interpolated strings, escape backslashes
@@ -1999,7 +2050,8 @@ if __name__ == "__main__":
                             quote_char = text[0]
                             content = text[1:-1]
                             escaped_content = content.replace('\\', '\\\\')
-                            result.append(f'{quote_char}{escaped_content}{quote_char}')
+                            result.append(
+                                f'{quote_char}{escaped_content}{quote_char}')
                         else:
                             result.append(text)
                     else:
@@ -2049,10 +2101,10 @@ if __name__ == "__main__":
                 prev_token = tokens[i-1]
                 # Handle if previous token is a variable, closing paren, closing brace, or >
                 # (> indicates we just processed -> which was converted to .)
-                if (prev_token[1] in Token.Name.Variable or 
-                    prev_token[2] == ')' or 
+                if (prev_token[1] in Token.Name.Variable or
+                    prev_token[2] == ')' or
                     prev_token[2] == '}' or
-                    prev_token[2] == '>'):
+                        prev_token[2] == '>'):
                     # gather until closing brace
                     inner: List[str] = []
                     depth = 1
@@ -2115,7 +2167,8 @@ if __name__ == "__main__":
                             # Always append the method/property name
                             result.append(next_text)
                             # Known properties that shouldn't have parentheses (from MathObject/Matrix/Vector)
-                            property_names = {"transpose", "inverse", "norm", "dimensions", "trace", "det", "determinant", "reduce", "value"}
+                            property_names = {
+                                "transpose", "inverse", "norm", "dimensions", "trace", "det", "determinant", "reduce", "value"}
                             # Only add () if no parens AND no arrow AND no brace (i.e., final method in chain)
                             # AND it's not a known property
                             if not has_parens and not has_arrow and not has_brace and next_text not in property_names:
@@ -2252,7 +2305,7 @@ if __name__ == "__main__":
                 bracket_depth += 1
             elif text == ']':
                 bracket_depth = max(0, bracket_depth - 1)
-            
+
             # Track brace context for hash literal detection
             if text == '{':
                 # Determine if this is a hash literal or code block
@@ -2368,7 +2421,8 @@ if __name__ == "__main__":
                 add_num = subtract_match.group(2)
                 if sub_num == add_num:
                     # Remove the " - N + N" part
-                    simplified = re.sub(r'\s*-\s*' + re.escape(sub_num) + r'\s*\+\s*' + re.escape(add_num) + r'$', '', end_expr)
+                    simplified = re.sub(r'\s*-\s*' + re.escape(sub_num) +
+                                        r'\s*\+\s*' + re.escape(add_num) + r'$', '', end_expr)
                     return f"range({prefix}, {simplified})"
 
             return match.group(0)
@@ -2383,9 +2437,11 @@ if __name__ == "__main__":
         # Pattern: (string/variable) x (number) or (variable) x (variable)
         # Be careful not to convert 'x' when it's a variable name or part of identifiers
         rewritten = re.sub(r'(["\'\)])\s+x\s+(\d+)', r'\1 * \2', rewritten)
-        rewritten = re.sub(r'(\b[a-zA-Z_]\w*)\s+x\s+(\d+)', r'\1 * \2', rewritten)
+        rewritten = re.sub(
+            r'(\b[a-zA-Z_]\w*)\s+x\s+(\d+)', r'\1 * \2', rewritten)
         # Also handle variable x variable (e.g., v3 x v4 for cross product)
-        rewritten = re.sub(r'(\b[a-zA-Z_]\w*)\s+x\s+([a-zA-Z_]\w*\b)', r'\1 * \2', rewritten)
+        rewritten = re.sub(
+            r'(\b[a-zA-Z_]\w*)\s+x\s+([a-zA-Z_]\w*\b)', r'\1 * \2', rewritten)
 
         # Condense spaces around equals from fat comma conversion
         rewritten = re.sub(r'\s+=\s+', ' = ', rewritten)
@@ -2410,11 +2466,11 @@ if __name__ == "__main__":
             """Recursively convert ternary operators, handling nesting correctly."""
             if '?' not in text or ':' not in text:
                 return text
-            
+
             # Find all ? positions and their matching : at the same paren/bracket depth
             depth = 0
             ternary_positions = []  # List of (question_pos, colon_pos) tuples
-            
+
             i = 0
             while i < len(text):
                 ch = text[i]
@@ -2437,7 +2493,7 @@ if __name__ == "__main__":
                             break
                         j += 1
                 i += 1
-            
+
             # Process ternaries from innermost (rightmost) to outermost
             # This handles nested ternaries correctly
             for question_pos, colon_pos in reversed(ternary_positions):
@@ -2445,7 +2501,7 @@ if __name__ == "__main__":
                 # Need to find where this ternary starts (the condition)
                 # Work backwards from ? to find the start of the condition
                 # The condition starts after the previous operator or delimiter
-                
+
                 # Find the start of the condition by working backwards
                 cond_start = 0
                 depth = 0
@@ -2462,7 +2518,7 @@ if __name__ == "__main__":
                         # Hit a delimiter at depth 0
                         cond_start = k + 1
                         break
-                
+
                 # Find the end of the false value
                 # Work forward from : to find where it ends
                 false_end = len(text)
@@ -2480,24 +2536,24 @@ if __name__ == "__main__":
                         # Hit a delimiter at depth 0
                         false_end = k
                         break
-                
+
                 cond = text[cond_start:question_pos].strip()
                 true_val = text[question_pos + 1:colon_pos].strip()
                 false_val = text[colon_pos + 1:false_end].strip()
-                
+
                 # Build the replacement
                 replacement = f"{true_val} if ({cond}) else {false_val}"
-                
+
                 # Replace in the text
                 text = text[:cond_start] + replacement + text[false_end:]
-                
+
                 # Only process one ternary at a time, then restart
                 # (because positions change after replacement)
                 if len(ternary_positions) > 1:
                     return convert_ternaries(text)
-                
+
             return text
-        
+
         if '?' in rewritten and ':' in rewritten:
             rewritten = convert_ternaries(rewritten)
 
@@ -2560,7 +2616,8 @@ if __name__ == "__main__":
             return None
 
         indent = for_match.group(1)
-        iterator_token = for_match.group(2).strip() if for_match.group(2) else None
+        iterator_token = for_match.group(
+            2).strip() if for_match.group(2) else None
         iterable_expr = for_match.group(3).strip()
 
         # If no iterator token, default to $_
@@ -2591,7 +2648,7 @@ if __name__ == "__main__":
         if open_index == -1:
             return None
 
-        body_candidates: List[str] = [line[open_index + 1 :]]
+        body_candidates: List[str] = [line[open_index + 1:]]
         body_candidates.extend(block_lines[1:])
 
         for idx, candidate in enumerate(body_candidates):
@@ -2605,7 +2662,7 @@ if __name__ == "__main__":
                     body_part = candidate_text[:closing_index].rstrip()
                     if body_part.strip():
                         body_lines.append(body_part)
-                    tail = candidate_text[closing_index + 1 :].strip()
+                    tail = candidate_text[closing_index + 1:].strip()
                     if tail:
                         tail_lines.append(f"{indent}{tail}")
                 else:
@@ -2634,19 +2691,23 @@ if __name__ == "__main__":
 
                 # Transform the PGML evaluators within the block
                 pgml_content = "\n".join(pgml_content_lines)
-                transformed_pgml = self._transform_pgml_evaluators(pgml_content)
+                transformed_pgml = self._transform_pgml_evaluators(
+                    pgml_content)
                 escaped_content = self._escape_triple_quotes(transformed_pgml)
 
                 # Create PGML block variable
-                block_var = f"pgml_block_loop_{idx}"
-                compiled_body_lines.append(f"{body_indent}{block_var} = '''\n{escaped_content}\n'''")
-                compiled_body_lines.append(f"{body_indent}TEXT(PGML({block_var}))")
+                block_var = f"PGML_BLOCK_LOOP_{idx}"
+                compiled_body_lines.append(
+                    f"{body_indent}{block_var} = '''\n{escaped_content}\n'''")
+                compiled_body_lines.append(
+                    f"{body_indent}TEXT(PGML({block_var}))")
                 idx += 1
                 continue
 
             # Check if this line is a method-call style BEGIN_TIKZ or BEGIN_LATEX_IMAGE
             tikz_match = re.search(r'(\$\w+)\s*->\s*BEGIN_TIKZ', body_line)
-            latex_match = re.search(r'(\$\w+)\s*->\s*BEGIN_LATEX_IMAGE', body_line)
+            latex_match = re.search(
+                r'(\$\w+)\s*->\s*BEGIN_LATEX_IMAGE', body_line)
 
             if (tikz_match or latex_match) and body_line.strip().endswith(('BEGIN_TIKZ', 'BEGIN_LATEX_IMAGE')):
                 obj_var = (tikz_match or latex_match).group(1)
@@ -2669,7 +2730,8 @@ if __name__ == "__main__":
 
                 # Emit the method call with content as raw string argument
                 # Split into multiple lines to avoid embedding newlines in f-string
-                compiled_body_lines.append(f"{body_indent}{py_var}.{method_name}(r'''")
+                compiled_body_lines.append(
+                    f"{body_indent}{py_var}.{method_name}(r'''")
                 # Add content lines with proper indentation
                 for content_line in content_lines:
                     compiled_body_lines.append(content_line)
@@ -2685,7 +2747,8 @@ if __name__ == "__main__":
                     continue
                 inner_indent, inner_body = self._split_indent(compiled_line)
                 inner_body = re.sub(r'^my\s+', '', inner_body)
-                compiled_body_lines.append(f"{body_indent}{inner_indent}{inner_body}")
+                compiled_body_lines.append(
+                    f"{body_indent}{inner_indent}{inner_body}")
 
             idx += 1
 
@@ -2805,7 +2868,8 @@ if __name__ == "__main__":
                 header = f'{indent}{py_keyword} ({cond_py}):'
                 tail = tail.strip()
                 if tail:
-                    rewritten_tail = self._rewrite_statement(f'{indent}    {tail}')
+                    rewritten_tail = self._rewrite_statement(
+                        f'{indent}    {tail}')
                     if rewritten_tail:
                         return f"{header}\n{rewritten_tail}"
                 return header
@@ -2847,7 +2911,8 @@ if __name__ == "__main__":
             content = match.group(2)
             if quote == '"' and '$' in content:
                 escaped = content.replace('{', '{{').replace('}', '}}')
-                converted = re.sub(r'\$([a-zA-Z_][a-zA-Z0-9_]*)', r'{\1}', escaped)
+                converted = re.sub(
+                    r'\$([a-zA-Z_][a-zA-Z0-9_]*)', r'{\1}', escaped)
                 return f'f"{converted}"'
             return match.group(0)
 
@@ -2965,7 +3030,6 @@ if __name__ == "__main__":
         # No comment found
         return line.rstrip()
 
-
     def _transform_pgml_evaluators(self, pgml_content: str) -> str:
         """Transform Perl syntax to Python in PGML evaluator expressions."""
         import re
@@ -2985,8 +3049,10 @@ if __name__ == "__main__":
                     j += 1
                 if brace_depth == 0:
                     code_block = pgml_content[i+1:j]
-                    transformed = code_block.replace('->', '.').replace('::', '.')
-                    transformed = re.sub(r'\$([a-zA-Z_]\w*)', r'\1', transformed)
+                    transformed = code_block.replace(
+                        '->', '.').replace('::', '.')
+                    transformed = re.sub(
+                        r'\$([a-zA-Z_]\w*)', r'\1', transformed)
                     result.append('{')
                     result.append(transformed)
                     result.append('}')
@@ -3038,7 +3104,8 @@ if __name__ == "__main__":
                 # Found a qq construct
                 delimiter = qq_match.group(1)
                 # Determine the closing delimiter
-                closing_delim = {'[': ']', '{': '}', '(': ')', '/': '/', '|': '|'}.get(delimiter, delimiter)
+                closing_delim = {
+                    '[': ']', '{': '}', '(': ')', '/': '/', '|': '|'}.get(delimiter, delimiter)
 
                 # Split the line at the qq start
                 before = line[:qq_match.start()]
@@ -3093,7 +3160,8 @@ if __name__ == "__main__":
 
                 # Split the line at the heredoc marker
                 before = line[:heredoc_match.start()]
-                after_marker = line[heredoc_match.end():]  # Everything after <<MARKER on same line
+                # Everything after <<MARKER on same line
+                after_marker = line[heredoc_match.end():]
 
                 # Collect the content until we find the marker on its own line
                 content_lines: List[str] = []
@@ -3146,7 +3214,8 @@ if __name__ == "__main__":
 
         # Collect imports by module to deduplicate
         imports_by_module: dict[str, set[str]] = {}
-        module_level_imports: list[str] = []  # Modules to import without 'from'
+        # Modules to import without 'from'
+        module_level_imports: list[str] = []
         loaded_macros: list[str] = []
         skipped_macros: list[str] = []
 
@@ -3174,13 +3243,13 @@ if __name__ == "__main__":
 
         # Generate import statements
         import_lines = []
-        
+
         # For module-level imports (empty function lists), use 'from X import *'
         # This makes all functions directly accessible without needing module prefix
         if module_level_imports:
             for module in sorted(module_level_imports):
                 import_lines.append(f"from {module} import *")
-        
+
         # Then, generate function-specific imports: from X import Y, Z
         for module in sorted(imports_by_module.keys()):
             functions = imports_by_module[module]
@@ -3192,8 +3261,10 @@ if __name__ == "__main__":
         if loaded_macros:
             comment_parts.append(f"# Loaded: {', '.join(loaded_macros)}")
         if skipped_macros:
-            comment_parts.append(f"# Skipped (not in registry): {', '.join(skipped_macros)}")
-        comment = " | ".join(comment_parts) if comment_parts else "# loadMacros() - no macros"
+            comment_parts.append(
+                f"# Skipped (not in registry): {', '.join(skipped_macros)}")
+        comment = " | ".join(
+            comment_parts) if comment_parts else "# loadMacros() - no macros"
 
         return import_lines, comment
 
@@ -3216,9 +3287,13 @@ def convert_pg_file(
 
     processor = preprocessor or PGPreprocessor()
     pg_source = pg_path.read_text(encoding=encoding)
-    result = processor.preprocess(pg_source, use_sandbox_macros=use_sandbox_macros, standalone=standalone)
+    result = processor.preprocess(
+        pg_source, use_sandbox_macros=use_sandbox_macros, standalone=standalone)
 
-    output = Path(output_path) if output_path else pg_path.with_suffix('.pyg')
+    # Use .py extension for standalone files, .pyg for sandboxed files
+    default_suffix = '.py' if standalone else '.pyg'
+    output = Path(output_path) if output_path else pg_path.with_suffix(
+        default_suffix)
     if output.exists() and not overwrite:
         raise FileExistsError(f"Refusing to overwrite existing file: {output}")
 

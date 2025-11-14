@@ -22,6 +22,23 @@ from .answers.pg_answer_macros import (
     vector_cmp,
     matrix_cmp,
 )
+# Import from PGauxiliaryFunctions.pl equivalent
+from .core.pg_utilities import (
+    gcf,
+    gcd,
+    lcm,
+    reduce_fraction,
+    sgn,
+    max_number,
+    min_number,
+    step,
+    fact,
+    C,
+    P,
+    lex_sort,
+    num_sort,
+    uniq,
+)
 
 __all__ = [
     # From PG.pl (pg_core)
@@ -97,5 +114,19 @@ __all__ = [
     "interval_cmp",
     "vector_cmp",
     "matrix_cmp",
+    # From PGauxiliaryFunctions.pl (pg_utilities)
+    "gcf",
+    "gcd",
+    "lcm",
+    "reduce_fraction",
+    "sgn",
+    "max_number",
+    "min_number",
+    "step",
+    "fact",
+    "C",
+    "P",
+    "lex_sort",
+    "num_sort",
+    "uniq",
 ]
-

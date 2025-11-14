@@ -46,7 +46,8 @@ class Point(MathValue):
         else:
             coords = args
 
-        self.coords = [MV.from_python(c) if not isinstance(c, MathValue) else c for c in coords]
+        self.coords = [MV.from_python(c) if not isinstance(
+            c, MathValue) else c for c in coords]
 
     def promote(self, other: MathValue) -> MathValue:
         """Points don't promote to other types."""
@@ -99,7 +100,8 @@ class Point(MathValue):
         if len(self.coords) != len(other.coords):
             raise ValueError("Points must have same dimension")
 
-        sum_sq = sum((c1.to_python() - c2.to_python()) ** 2 for c1, c2 in zip(self.coords, other.coords))
+        sum_sq = sum((c1.to_python() - c2.to_python()) **
+                     2 for c1, c2 in zip(self.coords, other.coords))
         return Real(math.sqrt(sum_sq))
 
     # Arithmetic operators (limited for points)
@@ -109,7 +111,8 @@ class Point(MathValue):
         if isinstance(other, (Point, Vector)):
             if len(self.coords) != len(other.coords if hasattr(other, 'coords') else other.components):
                 raise ValueError("Dimensions must match")
-            other_coords = other.coords if isinstance(other, Point) else other.components
+            other_coords = other.coords if isinstance(
+                other, Point) else other.components
             return Point([c1 + c2 for c1, c2 in zip(self.coords, other_coords)])
         else:
             return NotImplemented
@@ -394,7 +397,8 @@ class Vector(MathValue):
         # Convert from 1-based (Perl) to 0-based (Python) indexing
         py_index = index - 1
         if py_index < 0 or py_index >= len(self.components):
-            raise IndexError(f"Vector component {index} out of range (vector has {len(self.components)} components)")
+            raise IndexError(
+                f"Vector component {index} out of range (vector has {len(self.components)} components)")
         return self.components[py_index]
 
     def __getattr__(self, name: str) -> MathValue:
@@ -559,7 +563,8 @@ class Matrix(MathValue):
         from .value import MathValue as MV
 
         self.rows = [
-            [MV.from_python(el) if not isinstance(el, MathValue) else el for el in row]
+            [MV.from_python(el) if not isinstance(
+                el, MathValue) else el for el in row]
             for row in rows
         ]
 
@@ -649,7 +654,8 @@ class Matrix(MathValue):
             return Matrix([])
 
         n_cols = len(self.rows[0])
-        transposed = [[self.rows[i][j] for i in range(len(self.rows))] for j in range(n_cols)]
+        transposed = [[self.rows[i][j]
+                       for i in range(len(self.rows))] for j in range(n_cols)]
         return Matrix(transposed)
 
     def column(self, index: int) -> Matrix:
@@ -668,7 +674,8 @@ class Matrix(MathValue):
             raise IndexError(f"Column index {index} out of range")
 
         # Extract column as a list of single-element rows
-        column_vector = [[self.rows[i][col_idx]] for i in range(len(self.rows))]
+        column_vector = [[self.rows[i][col_idx]]
+                         for i in range(len(self.rows))]
         return Matrix(column_vector)
 
     def row(self, index: int) -> Matrix:
@@ -796,7 +803,8 @@ class Matrix(MathValue):
         elif isinstance(other, Matrix):
             # Matrix multiplication
             if self.shape[1] != other.shape[0]:
-                raise ValueError(f"Cannot multiply {self.shape} by {other.shape} matrices")
+                raise ValueError(
+                    f"Cannot multiply {self.shape} by {other.shape} matrices")
 
             # Use NumPy for efficiency
             result = np.matmul(self.to_numpy(), other.to_numpy())
@@ -804,7 +812,8 @@ class Matrix(MathValue):
         elif isinstance(other, Vector):
             # Matrix * Vector = Vector
             if self.shape[1] != len(other.components):
-                raise ValueError(f"Cannot multiply {self.shape} matrix by {len(other)} vector")
+                raise ValueError(
+                    f"Cannot multiply {self.shape} matrix by {len(other)} vector")
 
             result = np.matmul(self.to_numpy(), other.to_numpy())
             return Vector(result.tolist())
@@ -839,12 +848,14 @@ class Matrix(MathValue):
         """Matrix power (integer powers only)."""
         if isinstance(other, int):
             if self.shape[0] != self.shape[1]:
-                raise ValueError("Matrix power only defined for square matrices")
+                raise ValueError(
+                    "Matrix power only defined for square matrices")
 
             if other == 0:
                 # Identity matrix
                 n = self.shape[0]
-                identity = [[1.0 if i == j else 0.0 for j in range(n)] for i in range(n)]
+                identity = [
+                    [1.0 if i == j else 0.0 for j in range(n)] for i in range(n)]
                 return Matrix(identity)
             elif other > 0:
                 result = self
@@ -871,4 +882,32 @@ class Matrix(MathValue):
 
     def __abs__(self) -> MathValue:
         """Absolute value not well-defined for matrices."""
-        raise TypeError("Absolute value not defined for matrices (use norm or determinant)")
+        raise TypeError(
+            "Absolute value not defined for matrices (use norm or determinant)")
+
+
+# Standalone functions (Perl-style interface)
+
+def norm(obj: Vector | Point) -> Real:
+    """
+    Calculate the Euclidean norm (magnitude) of a vector or point.
+
+    This is a standalone function matching Perl's norm() function.
+
+    Args:
+        obj: Vector or Point object
+
+    Returns:
+        Real number representing the norm
+
+    Examples:
+        >>> v = Vector(3, 4)
+        >>> norm(v)
+        Real(5.0)
+
+    Reference: lib/Value/Vector.pm::norm
+    """
+    if isinstance(obj, (Vector, Point)):
+        return obj.norm()
+    else:
+        raise TypeError(f"norm() requires a Vector or Point, got {type(obj)}")

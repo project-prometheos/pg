@@ -73,7 +73,7 @@ OPTIONAL_MACROS = {
 
     # PGML
     "PGML": {
-        "module": "pg.pgml_compat",
+        "module": "pg.pgml",
         "aliases": ["PGML.pl"],
         "category": "markup",
         "functions": [],  # Empty = import entire module

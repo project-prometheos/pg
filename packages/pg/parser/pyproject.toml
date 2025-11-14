@@ -20,6 +20,9 @@ dev = [
     "ruff>=0.1.0",
 ]
 
+[tool.setuptools.package-data]
+"*" = ["py.typed"]
+
 [tool.mypy]
 strict = true
 warn_return_any = true

@@ -773,7 +773,7 @@ class PGPreprocessor:
                         block_content = self._transform_pgml_evaluators(
                             block_content)
 
-                        block_var = f"pgml_block_{len(text_blocks) - 1}"
+                        block_var = f"PGML_BLOCK_{len(text_blocks) - 1}"
                         escaped_content = self._escape_triple_quotes(
                             block_content)
                         output_lines.append(
@@ -790,7 +790,7 @@ class PGPreprocessor:
                         # TIKZ blocks - raw strings with backslashes preserved
                         # TikZ contains TeX/TikZ code that should NOT be transformed
                         # Store as raw string to preserve backslashes
-                        block_var = f"tikz_block_{len(text_blocks) - 1}"
+                        block_var = f"TIKZ_BLOCK_{len(text_blocks) - 1}"
                         # Use raw string (r'''...''') to preserve backslashes
                         escaped_content = block_content.replace(
                             "'''", r"\'\'\'")

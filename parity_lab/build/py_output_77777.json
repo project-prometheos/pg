@@ -1,10 +1,15 @@
 {
-  "answers": [],
-  "errors": [
-    "Execution error: name 'new_multiple_choice' is not defined",
-    "Traceback (most recent call last):\n  File \"D:\\pg\\parity_lab\\py_port\\run_pg_snippet.py\", line 153, in execute_pg_snippet\n    exec(result.code, namespace)\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<string>\", line 8, in <module>\nNameError: name 'new_multiple_choice' is not defined\n"
+  "answers": [
+    {
+      "correct": false,
+      "message": "",
+      "name": "AnSwEr0001",
+      "score": 0.0,
+      "type": "dict"
+    }
   ],
-  "html": "",
-  "tex": "",
+  "errors": [],
+  "html": "<p>What is 2 + 2?</p> \n <br/> \n <div class=\"choice\"><input type=\"radio\" name=\"answer\" value=\"0\" id=\"choice_0\"><label for=\"choice_0\">A. 4</label></div>\n<div class=\"choice\"><input type=\"radio\" name=\"answer\" value=\"1\" id=\"choice_1\"><label for=\"choice_1\">B. 3</label></div>\n<div class=\"choice\"><input type=\"radio\" name=\"answer\" value=\"2\" id=\"choice_2\"><label for=\"choice_2\">C. 5</label></div>\n<div class=\"choice\"><input type=\"radio\" name=\"answer\" value=\"3\" id=\"choice_3\"><label for=\"choice_3\">D. 22</label></div>",
+  "tex": "<p>What is 2 + 2?</p> \n <br/> \n <div class=\"choice\"><input type=\"radio\" name=\"answer\" value=\"0\" id=\"choice_0\"><label for=\"choice_0\">A. 4</label></div>\n<div class=\"choice\"><input type=\"radio\" name=\"answer\" value=\"1\" id=\"choice_1\"><label for=\"choice_1\">B. 3</label></div>\n<div class=\"choice\"><input type=\"radio\" name=\"answer\" value=\"2\" id=\"choice_2\"><label for=\"choice_2\">C. 5</label></div>\n<div class=\"choice\"><input type=\"radio\" name=\"answer\" value=\"3\" id=\"choice_3\"><label for=\"choice_3\">D. 22</label></div>",
   "warnings": []
 }

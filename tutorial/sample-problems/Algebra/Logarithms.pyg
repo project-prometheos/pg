@@ -17,7 +17,7 @@
 DOCUMENT()
 
 from pg.course import *
-from pg.pgml_compat import *
+from pg.pgml import *
 from pg.standard import *
 # Loaded: PGstandard.pl, PGML.pl, PGcourse.pl
 

@@ -1,0 +1,11 @@
+{
+   "answers" : [],
+   "errors" : [
+      "Error executing PG snippet: Global symbol \"$ans\" requires explicit package name (did you forget to declare \"my $ans\"?) at (eval 69) line 8.\nGlobal symbol \"$BR\" requires explicit package name (did you forget to declare \"my $BR\"?) at (eval 69) line 12.\nsyntax error at (eval 69) line 13, near \"$BR\n$BR\n\"\nExecution of (eval 69) aborted due to compilation errors.\n\n"
+   ],
+   "html" : "",
+   "tex" : "",
+   "warnings" : [
+      "Scalar found where operator expected (Missing semicolon on previous line?) at (eval 69) line 12, near \"$BR\n$BR\"\n"
+   ]
+}

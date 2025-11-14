@@ -55,9 +55,11 @@ class VariableManager:
             for var_name, var_options in options.items():
                 if isinstance(var_options, dict):
                     if var_name in self._variables:
-                        self._variables[var_name]['options'].update(var_options)
+                        self._variables[var_name]['options'].update(
+                            var_options)
                     else:
-                        self._variables[var_name] = {'type': 'Real', 'options': var_options}
+                        self._variables[var_name] = {
+                            'type': 'Real', 'options': var_options}
 
     def remove(self, name: str):
         """Remove a variable from the context."""
@@ -75,7 +77,8 @@ class VariableManager:
         if args:
             # Positional arguments as pairs: 'x', 'Real', 'y', 'Real', ...
             if len(args) % 2 != 0:
-                raise ValueError("are() requires an even number of positional arguments (name, type pairs)")
+                raise ValueError(
+                    "are() requires an even number of positional arguments (name, type pairs)")
             self._variables = {}
             for i in range(0, len(args), 2):
                 name = args[i]
@@ -83,7 +86,8 @@ class VariableManager:
                 self._variables[name] = {'type': type_, 'options': {}}
         elif kwargs:
             # Keyword arguments
-            self._variables = {name: {'type': type_, 'options': {}} for name, type_ in kwargs.items()}
+            self._variables = {name: {'type': type_, 'options': {}}
+                               for name, type_ in kwargs.items()}
 
     def get(self, name: str) -> Optional[dict]:
         """Get variable info (type and options)."""
@@ -405,6 +409,7 @@ class AutovivDict(dict):
 
     Automatically creates nested dicts when accessing non-existent keys.
     """
+
     def __getitem__(self, key):
         if key not in self:
             self[key] = AutovivDict()
@@ -602,8 +607,8 @@ class Context:
 
         Reference: contextFraction.pl::Init
         """
-        # Start with Numeric base
-        self._init_numeric()
+        # Start with empty context, not Numeric
+        # This prevents inheriting unwanted operations
 
         # Strict fraction flags
         self.flags.set(
@@ -617,14 +622,24 @@ class Context:
             contFracMaxDen=10**8,
             reduceConstants=False,
             noDecimals=True,
+            studentsMustReduceFractions=True,
         )
 
         # Only allow division and negation operators
-        # Undefine all other operators
-        for op in ['+', '-', '*', '**', '^']:
-            self.operators.undefine(op)
+        # Clear all operators first by removing them
+        ops_to_remove = ['+', '-', '*', '/', '^',
+                         '**', '==', '!=', '<', '>', '<=', '>=']
+        for op in ops_to_remove:
+            try:
+                self.operators.remove(op)
+            except:
+                pass  # Operator might not exist
 
-        # Undefine all functions
+        # Add back only division and negation
+        self.operators.add('/', priority=3, associativity='left')
+        self.operators.add('-', priority=5, associativity='left', unary=True)
+
+        # Clear all functions - none allowed in LimitedFraction
         for func in self.functions.list():
             self.functions.undefine(func)
 
@@ -650,11 +665,16 @@ class Context:
         Initialize LimitedProperFraction context.
 
         Like LimitedFraction but requires proper fractions.
+        Mixed numbers are displayed (e.g., "2 1/2" instead of "5/2").
 
         Reference: contextFraction.pl::Init
         """
         self._init_limited_fraction()
-        self.flags.set(requireProperFractions=True)
+        self.flags.set(
+            requireProperFractions=True,
+            showMixedNumbers=True,  # Display as "2 1/2"
+            allowMixedNumbers=True,  # Allow input as "2 1/2"
+        )
 
     def _init_limited_polynomial(self, strict: bool = False):
         """Initialize LimitedPolynomial context (Week 5 feature)."""

@@ -1,11 +1,9 @@
 {
    "answers" : [],
    "errors" : [
-      "Error executing PG snippet: Global symbol \"$f1\" requires explicit package name (did you forget to declare \"my $f1\"?) at (eval 8) line 8.\nGlobal symbol \"$f2\" requires explicit package name (did you forget to declare \"my $f2\"?) at (eval 8) line 9.\nGlobal symbol \"$f3\" requires explicit package name (did you forget to declare \"my $f3\"?) at (eval 8) line 10.\nGlobal symbol \"$f4\" requires explicit package name (did you forget to declare \"my $f4\"?) at (eval 8) line 11.\nsyntax error at (eval 8) line 14, near \"Fraction 1\"\nExecution of (eval 8) aborted due to compilation errors.\n\n"
+      "Error executing PG snippet: Global symbol \"$html_text\" requires explicit package name (did you forget to declare \"my $html_text\"?) at (eval 69) line 5.\nGlobal symbol \"$tex_text\" requires explicit package name (did you forget to declare \"my $tex_text\"?) at (eval 69) line 6.\nGlobal symbol \"$ptx_text\" requires explicit package name (did you forget to declare \"my $ptx_text\"?) at (eval 69) line 7.\nsyntax error at (eval 69) line 10, near \"function:\"\nExecution of (eval 69) aborted due to compilation errors.\n\n"
    ],
    "html" : "",
    "tex" : "",
-   "warnings" : [
-      "Number found where operator expected (Do you need to predeclare \"Fraction\"?) at (eval 8) line 14, near \"Fraction 1\"\n"
-   ]
+   "warnings" : []
 }

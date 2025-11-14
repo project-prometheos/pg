@@ -1,0 +1,15 @@
+{
+  "answers": [
+    {
+      "correct": false,
+      "message": "",
+      "name": "AnSwEr0001",
+      "score": 0.0,
+      "type": "dict"
+    }
+  ],
+  "errors": [],
+  "html": "This is a basic problem using PGstandard.pl. <br/> \n <br/> \nWhat is \\( 5  +  4 \\)? <br/> \nAnswer:  <input type=\"text\" size=\"10\" class=\"pg-answer-blank\"> <br/> \n <br/> \n${BBOLD}Bold text${EBOLD} <br/> \n${BITALIC}Italic text${EITALIC} <br/>",
+  "tex": "This is a basic problem using PGstandard.pl. <br/> \n <br/> \nWhat is \\( 5  +  4 \\)? <br/> \nAnswer:  <input type=\"text\" size=\"10\" class=\"pg-answer-blank\"> <br/> \n <br/> \n${BBOLD}Bold text${EBOLD} <br/> \n${BITALIC}Italic text${EITALIC} <br/>",
+  "warnings": []
+}

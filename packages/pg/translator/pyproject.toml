@@ -24,8 +24,8 @@ dev = [
 ]
 
 [tool.setuptools.packages.find]
-where = ["."]
-include = ["pg-translator*"]
+where = [".."]
+include = ["pg.translator*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

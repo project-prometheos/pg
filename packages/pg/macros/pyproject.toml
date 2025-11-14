@@ -28,3 +28,6 @@ packages = [
 
 [tool.setuptools.package-dir]
 "pg.macros" = "."
+
+[tool.setuptools.package-data]
+"*" = ["py.typed"]

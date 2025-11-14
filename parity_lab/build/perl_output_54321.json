@@ -1,0 +1,9 @@
+{
+   "answers" : [],
+   "errors" : [
+      "Error executing PG snippet: Global symbol \"$ans1\" requires explicit package name (did you forget to declare \"my $ans1\"?) at (eval 69) line 8.\nGlobal symbol \"$ans2\" requires explicit package name (did you forget to declare \"my $ans2\"?) at (eval 69) line 9.\nsyntax error at (eval 69) line 14, near \"answer:\"\nExecution of (eval 69) aborted due to compilation errors.\n\n"
+   ],
+   "html" : "",
+   "tex" : "",
+   "warnings" : []
+}

@@ -49,7 +49,24 @@ class Interval(MathValue):
         from .value import MathValue as MV
 
         # Parse arguments based on count and type
-        if len(args) == 4:
+        if len(args) == 1 and isinstance(args[0], str):
+            # String notation: "(0,5)" or "[2,7]"
+            import re
+            s = args[0].strip()
+            
+            # Match pattern: opening bracket, number, comma, number, closing bracket
+            match = re.match(r'^([\(\[])(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)([\)\]])$', s)
+            if not match:
+                raise ValueError(f"Invalid interval string notation: {s}")
+            
+            open_bracket = match.group(1)
+            left_val = float(match.group(2))
+            right_val = float(match.group(3))
+            close_bracket = match.group(4)
+            
+            open_left = (open_bracket == '(')
+            open_right = (close_bracket == ')')
+        elif len(args) == 4:
             # Check if first and last args are bracket strings
             if isinstance(args[0], str) and isinstance(args[3], str):
                 # Perl-style: Interval('[', 1, 5, ']')
@@ -107,6 +124,24 @@ class Interval(MathValue):
             and self.right.compare(other.right, tolerance, mode)
             and self.open_left == other.open_left
             and self.open_right == other.open_right
+        )
+
+    def cmp(self, **options):
+        """
+        Create answer evaluator for this interval.
+
+        Returns:
+            Answer evaluator that checks if student's answer matches this interval
+        """
+        from pg.answer.evaluators.string import StringEvaluator
+        
+        # For now, use string comparison with the interval notation
+        interval_str = str(self)
+        return StringEvaluator(
+            correct_answer=interval_str,
+            case_sensitive=False,
+            trim_whitespace=True,
+            **options,
         )
 
     def contains(self, value: MathValue | float) -> bool:
@@ -612,13 +647,29 @@ class Union(MathValue):
 
     type_precedence = TypePrecedence.UNION
 
-    def __init__(self, sets: list[Interval | Set]):
+    def __init__(self, sets: list[Interval | Set] | str):
         """
         Initialize a Union.
 
         Args:
-            sets: List of Intervals and/or Sets
+            sets: List of Intervals and/or Sets, or string notation like "(0,2) U [5,7]"
         """
+        # Handle string notation
+        if isinstance(sets, str):
+            import re
+            # Split by 'U' or 'u' (union symbol)
+            parts = re.split(r'\s*[Uu]\s*', sets.strip())
+            parsed_sets = []
+            for part in parts:
+                part = part.strip()
+                # Try to parse each part as an Interval
+                try:
+                    parsed_sets.append(Interval(part))
+                except (ValueError, TypeError):
+                    # If not an interval, might be a set - skip for now
+                    pass
+            sets = parsed_sets
+        
         if not all(isinstance(s, (Interval, Set)) for s in sets):
             raise TypeError("Union elements must be Intervals or Sets")
 

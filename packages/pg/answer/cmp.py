@@ -157,6 +157,72 @@ def fun_cmp(
     )
 
 
+def radio_cmp(
+    correct_answer: str | int,
+    **options: Any,
+) -> StringEvaluator:
+    """
+    Create radio button answer checker.
+
+    Args:
+        correct_answer: Correct choice (letter like "A" or index like 0)
+        **options: Additional options
+
+    Returns:
+        StringEvaluator for radio button choice
+
+    Examples:
+        >>> ANS(radio_cmp("A"))
+        >>> ANS(radio_cmp(0))  # Index-based
+
+    Reference:
+        PGanswermacros.pl::radio_cmp
+    """
+    # Convert to string if integer index
+    if isinstance(correct_answer, int):
+        correct_answer = str(correct_answer)
+
+    return StringEvaluator(
+        correct_answer=correct_answer,
+        case_sensitive=False,
+        trim_whitespace=True,
+        **options,
+    )
+
+
+def checkbox_cmp(
+    correct_answers: list[str] | list[int],
+    **options: Any,
+) -> StringEvaluator:
+    """
+    Create checkbox answer checker (multiple correct answers).
+
+    Args:
+        correct_answers: List of correct choices
+        **options: Additional options
+
+    Returns:
+        StringEvaluator for checkbox choices
+
+    Examples:
+        >>> ANS(checkbox_cmp(["A", "C"]))
+        >>> ANS(checkbox_cmp([0, 2]))  # Index-based
+
+    Reference:
+        PGanswermacros.pl::checkbox_cmp
+    """
+    # For now, simple list comparison
+    # Full implementation would use MultiAnswer coordination
+    correct_str = ",".join(str(ans) for ans in sorted(correct_answers))
+
+    return StringEvaluator(
+        correct_answer=correct_str,
+        case_sensitive=False,
+        trim_whitespace=True,
+        **options,
+    )
+
+
 # Aliases for backwards compatibility
 def number_cmp(*args: Any, **kwargs: Any) -> NumericEvaluator:
     """Alias for num_cmp()."""

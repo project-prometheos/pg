@@ -32,7 +32,14 @@ def execute_pg_snippet(snippet_path: Path, seed: int) -> Dict[str, Any]:
 
     HAS_CHOICE = False
     try:
-        from pg.macros.choice import MultipleChoice, new_multiple_choice
+        from pg.macros.choice import (
+            MultipleChoice,
+            CheckboxMultipleChoice,
+            TrueFalse,
+            new_multiple_choice,
+            new_checkbox_multiple_choice,
+            new_true_false,
+        )
         HAS_CHOICE = True
     except ImportError:
         print("Warning: pg_macros.choice not found", file=sys.stderr)
@@ -50,6 +57,13 @@ def execute_pg_snippet(snippet_path: Path, seed: int) -> Dict[str, Any]:
         HAS_MULTIANSWER = True
     except ImportError:
         print("Warning: MultiAnswer not found", file=sys.stderr)
+
+    HAS_ANSWER_CMP = False
+    try:
+        from pg.answer import radio_cmp, checkbox_cmp, num_cmp, str_cmp, fun_cmp
+        HAS_ANSWER_CMP = True
+    except ImportError:
+        print("Warning: pg.answer.cmp not found", file=sys.stderr)
 
     # 3. Setup execution environment
     _random.seed(seed)
@@ -119,7 +133,7 @@ def execute_pg_snippet(snippet_path: Path, seed: int) -> Dict[str, Any]:
         # Try to import each object, skip if not available
         for name in ['Context', 'Compute', 'Formula', 'Real', 'Complex',
                      'Point', 'Vector', 'Matrix', 'Interval', 'Set', 'Union',
-                     'List', 'String', 'Infinity', 'FormulaUpToConstant']:
+                     'List', 'String', 'Infinity', 'FormulaUpToConstant', 'norm']:
             if hasattr(pg_math, name):
                 math_objects[name] = getattr(pg_math, name)
 
@@ -135,7 +149,19 @@ def execute_pg_snippet(snippet_path: Path, seed: int) -> Dict[str, Any]:
     # Add choice macros if available
     if HAS_CHOICE:
         namespace['MultipleChoice'] = MultipleChoice
+        namespace['CheckboxMultipleChoice'] = CheckboxMultipleChoice
+        namespace['TrueFalse'] = TrueFalse
         namespace['new_multiple_choice'] = new_multiple_choice
+        namespace['new_checkbox_multiple_choice'] = new_checkbox_multiple_choice
+        namespace['new_true_false'] = new_true_false
+
+    # Add answer checkers if available
+    if HAS_ANSWER_CMP:
+        namespace['radio_cmp'] = radio_cmp
+        namespace['checkbox_cmp'] = checkbox_cmp
+        namespace['num_cmp'] = num_cmp
+        namespace['str_cmp'] = str_cmp
+        namespace['fun_cmp'] = fun_cmp
 
     # Add popup if available
     if HAS_POPUP:

@@ -1,11 +1,22 @@
 """
 PGchoicemacros.pl - Multiple choice, true/false, matching questions
 
+DEPRECATED: This module is deprecated. Use pg.macros.choice instead.
+
+The correct implementations are in packages/pg/macros/choice/pg_choice_macros.py
+
 Reference: macros/ui/PGchoicemacros.pl (1,089 lines)
 """
 
+import warnings
 import random
 from typing import Any, List, Optional
+
+warnings.warn(
+    "pg.macros.ui.choice_macros is deprecated. Use pg.macros.choice instead.",
+    DeprecationWarning,
+    stacklevel=2
+)
 
 
 class MultipleChoice:

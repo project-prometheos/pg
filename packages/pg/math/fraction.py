@@ -170,7 +170,8 @@ class Fraction(MathValue):
             # Compare as decimals with fraction tolerance
             frac_tolerance = 1e-10
             if self.context:
-                frac_tolerance = self.context.flags.get('fractionTolerance', 1e-10)
+                frac_tolerance = self.context.flags.get(
+                    'fractionTolerance', 1e-10)
             self_value = self._num / self._den
             other_value = other.value
             return abs(self_value - other_value) <= frac_tolerance
@@ -226,6 +227,14 @@ class Fraction(MathValue):
         """Convert to Python float."""
         return self._num / self._den
 
+    def __str__(self) -> str:
+        """String representation for display - returns fraction notation."""
+        return self.to_string()
+
+    def __repr__(self) -> str:
+        """Developer representation showing constructor."""
+        return f"Fraction({self._num}, {self._den})"
+
     def cmp(self, **options):
         """
         Create an answer evaluator for this fraction.
@@ -234,6 +243,7 @@ class Fraction(MathValue):
             studentsMustReduceFractions: Require reduced fractions (default from context)
             showFractionReductionWarnings: Show warnings for unreduced (default True)
             requireFraction: Must enter a fraction, not whole number (default False)
+            requireProperFraction: Must enter a proper fraction (num < den) (default from context)
             strictFractions: Only integer division allowed (default from context)
             strictMinus: Strict minus handling (default False)
             strictMultiplication: Strict multiplication handling (default False)
@@ -248,20 +258,29 @@ class Fraction(MathValue):
 
             def check(self, student_answer):
                 """Check student answer."""
-                # For now, simple equality check
-                # Full implementation would handle all the options
                 try:
                     # Parse student answer as Fraction
                     from .compute import Compute
-                    student_frac = Compute(str(student_answer), self.correct.context)
+                    student_frac = Compute(
+                        str(student_answer), self.correct.context)
 
                     if not isinstance(student_frac, Fraction):
                         return {'correct': False, 'score': 0.0, 'message': 'Answer must be a fraction'}
 
+                    # Check requireFraction: reject whole numbers if set
+                    if self.options.get('requireFraction', False):
+                        if student_frac._den == 1:
+                            return {'correct': False, 'score': 0.0, 'message': 'Your answer must be a fraction'}
+
+                    # Check requireProperFraction: numerator must be < denominator
+                    if self.options.get('requireProperFraction', False):
+                        if abs(student_frac._num) >= abs(student_frac._den):
+                            return {'correct': False, 'score': 0.0, 'message': 'Your answer must be a proper fraction'}
+
                     # Check if equal
                     if self.correct.compare(student_frac):
                         # Check reduction if required
-                        if self.options.get('studentsMustReduceFractions'):
+                        if self.options.get('studentsMustReduceFractions', False):
                             if not student_frac.is_reduced():
                                 msg = 'Your answer is not reduced to lowest terms'
                                 if self.options.get('showFractionReductionWarnings', True):
@@ -275,12 +294,23 @@ class Fraction(MathValue):
                     return {'correct': False, 'score': 0.0, 'message': str(e)}
 
         # Merge options with defaults from context
-        merged_options = {}
+        merged_options = {
+            'studentsMustReduceFractions': False,
+            'showFractionReductionWarnings': True,
+            'requireFraction': False,
+            'requireProperFraction': False,
+            'strictFractions': False,
+        }
+
         if self.context:
             # Get defaults from context flags
             ctx_flags = self.context.flags
-            merged_options['studentsMustReduceFractions'] = ctx_flags.get('studentsMustReduceFractions', False)
-            merged_options['strictFractions'] = ctx_flags.get('strictFractions', False)
+            merged_options['studentsMustReduceFractions'] = ctx_flags.get(
+                'studentsMustReduceFractions', False)
+            merged_options['requireProperFraction'] = ctx_flags.get(
+                'requireProperFractions', False)
+            merged_options['strictFractions'] = ctx_flags.get(
+                'strictFractions', False)
 
         # Override with provided options
         merged_options.update(options)
@@ -295,7 +325,8 @@ class Fraction(MathValue):
             # a/b + c/d = (ad + bc)/(bd)
             # Use LCM for better performance
             l = lcm(self._den, other._den)
-            new_num = self._num * (l // self._den) + other._num * (l // other._den)
+            new_num = self._num * (l // self._den) + \
+                other._num * (l // other._den)
             return Fraction(new_num, l, self.context)
         elif isinstance(other, (int, float, Real)):
             value = other.value if isinstance(other, Real) else other
@@ -311,7 +342,8 @@ class Fraction(MathValue):
         """Subtraction: self - other."""
         if isinstance(other, Fraction):
             l = lcm(self._den, other._den)
-            new_num = self._num * (l // self._den) - other._num * (l // other._den)
+            new_num = self._num * (l // self._den) - \
+                other._num * (l // other._den)
             return Fraction(new_num, l, self.context)
         elif isinstance(other, (int, float, Real)):
             value = other.value if isinstance(other, Real) else other
@@ -379,14 +411,17 @@ class Fraction(MathValue):
                 if self._num < 0 and other_reduced._den % 2 == 1:
                     # Can take fractional root of negative number
                     base_abs = abs(self._num)
-                    result_num = int(round(base_abs ** (other_reduced._num / other_reduced._den)))
+                    result_num = int(
+                        round(base_abs ** (other_reduced._num / other_reduced._den)))
                     if other_reduced._num % 2 == 1:
                         result_num = -result_num
-                    result_den = int(round(self._den ** (other_reduced._num / other_reduced._den)))
+                    result_den = int(
+                        round(self._den ** (other_reduced._num / other_reduced._den)))
                     return Fraction(result_num, result_den, self.context)
                 else:
                     # Standard power
-                    val = (self._num / self._den) ** (other_reduced._num / other_reduced._den)
+                    val = (
+                        self._num / self._den) ** (other_reduced._num / other_reduced._den)
                     return Real(val)
 
             # Integer power

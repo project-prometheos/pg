@@ -8,6 +8,9 @@ Usage:
     from pg.course import loadMacros
     loadMacros("MathObjects.pl")
 
+Note: This is a barrel module that provides a clean top-level import API.
+It aggregates multiple submodules from pg.macros for user convenience.
+
 Reference: macros/PGcourse.pl
 """
 

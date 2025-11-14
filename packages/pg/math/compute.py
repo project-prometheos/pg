@@ -258,11 +258,13 @@ def _parse_interval(expr: str, context) -> 'Interval':
 
     # Check for positive infinity on left
     if left_value == float('inf'):
-        raise ValueError("The left endpoint of an interval can't be positive infinity")
+        raise ValueError(
+            "The left endpoint of an interval can't be positive infinity")
 
     # Check for negative infinity on right
     if right_value == float('-inf'):
-        raise ValueError("The right endpoint of an interval can't be negative infinity")
+        raise ValueError(
+            "The right endpoint of an interval can't be negative infinity")
 
     # Check that infinite endpoints are open
     if left_value == float('-inf') and open_bracket != '(':
@@ -305,7 +307,8 @@ def _parse_interval_endpoint(s: str, context) -> float:
         value = _evaluate_constant(s, context)
         return value
     except Exception:
-        raise ValueError(f"Interval endpoints must be numbers or infinity: {s}")
+        raise ValueError(
+            f"Interval endpoints must be numbers or infinity: {s}")
 
 
 def _is_fraction_notation(expr: str) -> bool:
@@ -331,7 +334,10 @@ def _parse_fraction(expr: str, context) -> 'Fraction':
     """
     Parse fraction notation into a Fraction object.
 
-    Syntax: a/b, a b/c (mixed number if allowMixedNumbers), -a/b
+    Syntax: 
+        - Simple fractions: "3/4", "-3/4"
+        - Mixed numbers: "4 1/2", "-1 1/2" (if allowMixedNumbers is set)
+        - Whole numbers: "5", "-5"
 
     Reference: contextFraction.pl
     """
@@ -340,25 +346,31 @@ def _parse_fraction(expr: str, context) -> 'Fraction':
 
     expr = expr.strip()
 
-    # Check for mixed number: "a b/c"
-    mixed_pattern = r'^(-?)\s*(\d+)\s+(\d+)\s*/\s*(\d+)$'
+    # Check for mixed number: "4 1/2" or "-4 1/2"
+    mixed_pattern = r'^(-?\d+)\s+(\d+)/(\d+)$'
     mixed_match = re.match(mixed_pattern, expr)
 
     if mixed_match:
         # Mixed number
-        sign = mixed_match.group(1)
-        whole = int(mixed_match.group(2))
-        frac_num = int(mixed_match.group(3))
-        frac_den = int(mixed_match.group(4))
+        whole = int(mixed_match.group(1))
+        frac_num = int(mixed_match.group(2))
+        frac_den = int(mixed_match.group(3))
 
         # Check if mixed numbers are allowed
         if not context.flags.get('allowMixedNumbers'):
             raise ValueError("Mixed numbers are not allowed in this context")
 
+        # Validate that fraction part is proper (numerator < denominator)
+        if frac_num >= frac_den:
+            raise ValueError(
+                f"Fraction part of mixed number must be proper: {frac_num}/{frac_den}")
+
         # Convert to improper fraction: a b/c = (a*c + b)/c
-        total_num = whole * frac_den + frac_num
-        if sign == '-':
-            total_num = -total_num
+        # For negative mixed numbers: -a b/c = -(a*c + b)/c = (a*c - b)/c when a is negative
+        if whole < 0:
+            total_num = whole * frac_den - frac_num
+        else:
+            total_num = whole * frac_den + frac_num
 
         return Fraction(total_num, frac_den, context)
 
@@ -462,6 +474,7 @@ def _parse_vector(expr: str, context) -> 'Vector':
             except Exception:
                 # If all else fails, just use the string as-is
                 from .formula import Formula
-                parsed_components.append(Formula(comp, context.variables.list(), context))
+                parsed_components.append(
+                    Formula(comp, context.variables.list(), context))
 
     return Vector(*parsed_components)
