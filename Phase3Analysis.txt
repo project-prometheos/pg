@@ -1,0 +1,254 @@
+PHASE 3 MACRO PRIORITIES - RESEARCH REPORT
+
+Report Date: 2025-11-14
+Repository: d:\pg (WeBWorK PG Monorepo)
+Analysis: 10 Failing Tutorial Problems
+
+========================================
+TOP 3 MACROS FOR PHASE 3 IMPLEMENTATION
+========================================
+
+PRIORITY 1: parserFunction.pl
+Status: Ready for implementation
+Complexity: LOW (125 lines in Perl)
+Effort: 2-3 days
+Fixes: HeavisideStep.pg
+Impact: Enables custom function definitions across all problems
+
+What it does:
+- parserFunction("u(t)" => "step(t)") - Define custom functions
+- Adds functions to Context
+- Clear, simple API
+
+Why implement FIRST:
+- Lowest complexity
+- Quick win (fixes problem immediately)
+- Enables custom functions for all users
+- No complex state management
+
+Python implementation: ~150 lines needed
+Perl reference: d:/pg/macros/parsers/parserFunction.pl
+
+---
+
+PRIORITY 2: contextUnits.pl
+Status: Ready for implementation (can phase)
+Complexity: MEDIUM-HIGH (2262 lines in Perl)
+Effort: 4-5 days (phases possible)
+Fixes: AnswerWithUnits.pg
+Impact: Core for physics/engineering problems
+
+What it does:
+- Context('Units') - Units-aware context
+- withUnitsFor('length', 'time') - Enable unit categories
+- Formula("10 ft") - Formulas with units
+- Unit arithmetic, conversion, answer checking
+
+Implementation can be phased:
+- Phase 1: length + time units (fixes AnswerWithUnits)
+- Phase 2: other unit categories
+
+Python implementation: ~1200 lines needed
+Perl reference: d:/pg/macros/contexts/contextUnits.pl
+
+---
+
+PRIORITY 3: plots.pl
+Status: Ready for implementation
+Complexity: HIGH (590 lines in Perl)
+Effort: 5-7 days
+Fixes: ParametricPlotAlt.pg
+Impact: Modern parametric plotting support
+
+What it does:
+- Plot(xmin, xmax, ymin, ymax, ...) - Create plot
+- add_function() - Add curves (including parametric)
+- Multiple backends: JSXGraph, TikZ, GD
+- Axes, labels, legends, grid
+
+Challenges:
+- Multiple rendering backends
+- Parametric curves
+- JavaScript generation
+- Coordinate transformations
+
+Python status: pg_graph.py exists, needs extension
+Perl reference: d:/pg/macros/graph/plots.pl
+
+========================================
+SUMMARY OF ALL 10 FAILING PROBLEMS
+========================================
+
+1. AnswerWithUnits.pg (DiffCalc)
+   Required: contextUnits.pl
+   Status: BLOCKED - needs contextUnits.pl
+
+2. HeavisideStep.pg (DiffEq)
+   Required: parserFunction.pl
+   Status: BLOCKED - needs parserFunction.pl (QUICK WIN!)
+
+3. MatchingAlt.pg (Misc)
+   Required: parserPopUp.pl (DONE), PGgraders.pl
+   Status: PARTIAL - needs PGgraders.pl
+
+4. ParametricPlotAlt.pg (Parametric)
+   Required: plots.pl
+   Status: BLOCKED - needs plots.pl
+
+5. CustomAnswerCheckers.pg (ProblemTechniques)
+   Required: Core MathObjects
+   Status: VERIFY - should already work
+
+6. GraphsInTables.pg (ProblemTechniques)
+   Required: PGtikz.pl, parserPopUp.pl (DONE), PGchoicemacros.pl
+   Status: PARTIAL - needs PGtikz & PGchoicemacros
+
+7. LinearRegression.pg
+   Status: FILE NOT FOUND
+
+8. ProvingTrigIdentities.pg (Trig)
+   Required: scaffold.pl
+   Status: BLOCKED - needs scaffold.pl
+
+9. VectorOperations.pg (VectorCalc)
+   Required: parserVectorUtils.pl (mostly DONE)
+   Status: VERIFY - likely works
+
+10. Vectors.pg (VectorCalc)
+    Required: Core Vector context
+    Status: VERIFY - likely works
+
+========================================
+SUPPORTING MACROS (PHASE 3 - SECONDARY)
+========================================
+
+scaffold.pl
+- Complexity: MEDIUM (767 lines)
+- Time: 4-5 days
+- Fixes: ProvingTrigIdentities.pg
+- Scope: Multi-part scaffolded problems
+
+PGgraders.pl
+- Complexity: MEDIUM (400+ lines)
+- Time: 3-4 days
+- Fixes: MatchingAlt.pg (custom grading)
+- Scope: Custom problem grading
+
+PGtikz.pl
+- Complexity: LOW-MEDIUM (122 lines)
+- Time: 2-3 days
+- Fixes: GraphsInTables.pg
+- Status: tikz_image.py partially exists
+
+PGchoicemacros.pl
+- Complexity: LOW (400+ lines utility functions)
+- Time: 1-2 days
+- Fixes: GraphsInTables.pg (shuffle, invert)
+- Scope: Array utilities
+
+========================================
+ALREADY IMPLEMENTED (VERIFY)
+========================================
+
+parserPopUp.pl - DONE
+- File: d:/pg/packages/pg/macros/parsers/parserPopUp.py
+- Status: Implemented, needs verification in tests
+
+parserVectorUtils.pl - MOSTLY DONE
+- File: d:/pg/packages/pg/macros/math/vector_utils.py
+- Status: Implemented, needs verification
+
+Vector Context - LIKELY DONE
+- File: Part of MathObjects
+- Status: Should work, needs verification
+
+Custom Answer Checkers - LIKELY DONE
+- File: Core MathObjects system
+- Status: Should work, needs verification
+
+========================================
+IMPLEMENTATION EFFORT SUMMARY
+========================================
+
+Macro                 Lines  Python  Days  Priority
+parserFunction.pl     125    150     2-3   P0 ***
+contextUnits.pl       2262   1200    4-5   P0 ***
+plots.pl              590    400     5-7   P0 ***
+scaffold.pl           767    600     4-5   P1
+PGgraders.pl          400+   250     3-4   P1
+PGtikz.pl             122    100     2-3   P1
+PGchoicemacros.pl     400+   200     1-2   P1
+
+TOTAL                 5266   2900    22-29 days
+
+*** = Highest priority for Phase 3
+
+========================================
+RECOMMENDED IMPLEMENTATION SEQUENCE
+========================================
+
+Week 1: parserFunction.pl
+  Start: Day 1
+  Complete: Day 3-4
+  Result: HeavisideStep.pg PASSES
+  
+Week 2: contextUnits.pl (Phase 1 - length/time)
+  Start: Day 4
+  Complete: Day 8-9
+  Result: AnswerWithUnits.pg PASSES
+
+Week 3: plots.pl
+  Start: Day 10
+  Complete: Day 15-17
+  Result: ParametricPlotAlt.pg PASSES
+
+Week 4: Supporting macros
+  Start: Day 18
+  Tasks: scaffold.pl OR (PGtikz + PGchoicemacros)
+  Complete: Day 22
+
+Week 5: Verification & Integration
+  Start: Day 23
+  Tasks: Test all 10 problems, fix issues
+  Complete: Day 25-27
+
+========================================
+SUCCESS CRITERIA
+========================================
+
+✓ All 10 tutorial problems pass (or 9 if LinearRegression missing)
+✓ parserFunction.pl fully implemented
+✓ contextUnits.pl Phase 1 (length/time) working
+✓ plots.pl basic functionality working
+✓ scaffold.pl core functionality working
+✓ 80%+ test coverage for new code
+✓ Documentation for each macro
+✓ Registry updated with new macros
+
+========================================
+KEY FILE LOCATIONS
+========================================
+
+Perl References:
+- d:/pg/macros/parsers/parserFunction.pl
+- d:/pg/macros/contexts/contextUnits.pl
+- d:/pg/macros/graph/plots.pl
+- d:/pg/macros/core/scaffold.pl
+- d:/pg/macros/answer/PGgraders.pl
+- d:/pg/macros/graph/PGtikz.pl
+- d:/pg/macros/core/PGchoicemacros.pl
+
+Python Implementation:
+- d:/pg/packages/pg/macros/parsers/
+- d:/pg/packages/pg/macros/contexts/
+- d:/pg/packages/pg/macros/graph/
+- d:/pg/packages/pg/macros/core/
+- d:/pg/packages/pg/macros/answers/
+- d:/pg/packages/pg/macros/registry.py
+
+Tutorial Problems:
+- d:/pg/tutorial/sample-problems/
+
+========================================
+END REPORT
+========================================

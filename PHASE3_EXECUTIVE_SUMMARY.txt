@@ -1,0 +1,192 @@
+PHASE 3 MACRO PRIORITIES - EXECUTIVE SUMMARY
+Research Date: 2025-11-14
+Repository: WeBWorK PG (d:\pg)
+
+========================================
+QUICK ANSWER: TOP 3 MACROS FOR PHASE 3
+========================================
+
+1. parserFunction.pl
+   - Fixes: HeavisideStep.pg
+   - Complexity: LOW (125 lines)
+   - Time: 2-3 days
+   - Impact: Enables custom functions for all problems
+   
+2. contextUnits.pl
+   - Fixes: AnswerWithUnits.pg
+   - Complexity: MEDIUM-HIGH (2262 lines)
+   - Time: 4-5 days (can phase)
+   - Impact: Physics/engineering problem support
+   
+3. plots.pl
+   - Fixes: ParametricPlotAlt.pg
+   - Complexity: HIGH (590 lines)
+   - Time: 5-7 days
+   - Impact: Modern parametric plotting
+
+========================================
+THE 10 FAILING PROBLEMS
+========================================
+
+Immediate Fixes (with top 3 macros):
+1. HeavisideStep.pg <- parserFunction.pl (2-3 days)
+2. AnswerWithUnits.pg <- contextUnits.pl (4-5 days)
+3. ParametricPlotAlt.pg <- plots.pl (5-7 days)
+
+Secondary Fixes (supporting macros):
+4. ProvingTrigIdentities.pg <- scaffold.pl (4-5 days)
+5. MatchingAlt.pg <- PGgraders.pl (3-4 days) + parserPopUp (DONE)
+6. GraphsInTables.pg <- PGtikz.pl (2-3 days) + PGchoicemacros.pl (1-2 days)
+
+Already Working (needs verification):
+7. CustomAnswerCheckers.pg <- Core system
+8. Vectors.pg <- Vector context (MathObjects)
+9. VectorOperations.pg <- parserVectorUtils (mostly done)
+10. LinearRegression.pg <- NOT FOUND (may not exist)
+
+========================================
+IMPLEMENTATION ROADMAP
+========================================
+
+Week 1 (Days 1-4): Start with parserFunction.pl
+  - Implement custom function definition
+  - Register in macro registry
+  - Result: 1 problem fixed
+
+Week 2 (Days 5-9): Implement contextUnits.pl Phase 1
+  - Basic units (length, time)
+  - Unit arithmetic
+  - Answer checking
+  - Result: 2 problems fixed
+
+Week 3 (Days 10-17): Implement plots.pl
+  - Plot class with parametric support
+  - Integrate with pg_graph.py
+  - Multiple backends
+  - Result: 3 problems fixed
+
+Week 4 (Days 18-22): Supporting infrastructure
+  - scaffold.pl (multi-part problems)
+  - PGgraders.pl (custom grading)
+  - PGtikz/PGchoicemacros (utilities)
+
+Week 5 (Days 23-27): Verification and integration
+  - Test all 10 problems
+  - Fix integration issues
+  - Complete documentation
+  - Result: 9-10 problems passing
+
+========================================
+WHY START WITH THESE 3?
+========================================
+
+parserFunction.pl FIRST:
+  - Smallest (125 lines)
+  - Quickest win (2-3 days)
+  - Enables custom functions across system
+  - No complex dependencies
+  - Clear API design
+
+contextUnits.pl SECOND:
+  - Critical for science/engineering
+  - Can implement in phases
+  - Well-structured in Perl
+  - High value for many problems
+
+plots.pl THIRD:
+  - Builds on existing code (pg_graph.py)
+  - Complex but well-scoped (590 lines)
+  - Enables parametric plotting
+  - Modern approach vs legacy graphing
+
+========================================
+ALREADY IMPLEMENTED (VERIFY)
+========================================
+
+parserPopUp.pl
+  Status: DONE in Python
+  File: d:/pg/packages/pg/macros/parsers/parserPopUp.py
+  Use: MatchingAlt.pg, GraphsInTables.pg
+  
+parserVectorUtils.pl
+  Status: Mostly DONE in Python
+  File: d:/pg/packages/pg/macros/math/vector_utils.py
+  Use: VectorOperations.pg
+  
+Vector Context (MathObjects)
+  Status: Should be DONE
+  Use: Vectors.pg, VectorOperations.pg
+  
+Custom Answer Checkers
+  Status: Core system should support
+  Use: CustomAnswerCheckers.pg
+
+========================================
+EFFORT ESTIMATE
+========================================
+
+Top 3 (Phase 3):
+- parserFunction.pl: 2-3 days
+- contextUnits.pl: 4-5 days
+- plots.pl: 5-7 days
+  TOTAL: 11-15 days
+
+Supporting:
+- scaffold.pl: 4-5 days
+- PGgraders.pl: 3-4 days
+- PGtikz.pl: 2-3 days
+- PGchoicemacros.pl: 1-2 days
+  TOTAL: 10-14 days
+
+Verification & Integration: 2-3 days
+
+GRAND TOTAL: 23-32 days (4-6 weeks)
+
+========================================
+SUCCESS METRICS
+========================================
+
+Phase 3 Complete When:
+✓ parserFunction.pl implemented & tested
+✓ contextUnits.pl Phase 1 (length/time) working
+✓ plots.pl basic functionality working
+✓ All 10 (or 9) tutorial problems pass
+✓ 80%+ test coverage for new code
+✓ Macro registry updated
+✓ Documentation complete
+
+========================================
+KEY FILES TO MODIFY
+========================================
+
+Add implementations to:
+- d:/pg/packages/pg/macros/parsers/parserFunction.py
+- d:/pg/packages/pg/macros/contexts/contextUnits.py
+- d:/pg/packages/pg/macros/graph/plots.py
+- d:/pg/packages/pg/macros/core/scaffold.py
+- d:/pg/packages/pg/macros/answers/graders.py
+
+Update registry:
+- d:/pg/packages/pg/macros/registry.py
+
+Test with tutorial problems in:
+- d:/pg/tutorial/sample-problems/
+
+Reference implementations:
+- d:/pg/macros/parsers/parserFunction.pl
+- d:/pg/macros/contexts/contextUnits.pl
+- d:/pg/macros/graph/plots.pl
+- etc.
+
+========================================
+NEXT STEPS
+========================================
+
+1. Review this analysis with team
+2. Confirm Phase 3 scope (recommend top 3)
+3. Assign developers to macros
+4. Start with parserFunction.pl
+5. Run tests regularly (weekly)
+6. Document as you go
+
+========================================

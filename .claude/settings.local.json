@@ -1,19 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"d:\\pg\\packages\\pg\\mathobjects\\tests\" -v --tb=line)",
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"d:\\pg\\packages\\pg\\answer\\tests\" -v --tb=line -q)",
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"d:\\pg\\packages\\pg\\translator\\tests\\test_mathobjects_sandbox.py\" -v --tb=short)",
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\Scripts\\pg-convert.exe\" \"d:\\pg\\tutorial\\sample-problems\\Algebra\\AnswerBlankInExponent.pg\" --overwrite --emit-imports)",
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -c \"\nimport sys\nsys.path.insert(0, r''d:\\pg\\packages'')\n# Test that mathobjects_compat still works via registry\nfrom pg.mathobjects_compat import Context, Formula, Real, Compute, Complex, Vector, Infinity, Interval\nprint(''OK: mathobjects_compat imports work'')\nprint(''OK: Can import Context:'', callable(Context))\nprint(''OK: Can import Formula:'', callable(Formula))\nprint(''OK: Can import Complex:'', callable(Complex))\nprint(''OK: Can import Vector:'', callable(Vector))\nprint(''OK: Can import Infinity:'', Infinity)\nc = Context(''Numeric'')\nprint(''OK: Context creation works'')\nf = Formula(''x^2 + 1'')\nprint(''OK: Formula creation works:'', f)\n\")",
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -c \"\nimport sys\nsys.path.insert(0, r''d:\\pg\\packages'')\n# Test that pg.mathobjects now works (renamed from _compat)\nfrom pg.mathobjects import Context, Formula, Real, Compute, Complex, Vector, Infinity, Interval\nprint(''OK: pg.mathobjects imports work'')\nprint(''OK: Can import Context:'', callable(Context))\nprint(''OK: Can import Formula:'', callable(Formula))\nprint(''OK: Can import Complex:'', callable(Complex))\nprint(''OK: Can import Vector:'', callable(Vector))\nc = Context(''Numeric'')\nf = Formula(''x^2 + 1'')\nprint(''OK: Formula creation works:'', f)\nprint(''OK: 1:1 Perl parity - from pg.mathobjects import * works just like Perl'')\n\")",
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\Scripts\\pg-convert.exe\" \"d:\\pg\\test_mathobjects_convert.pg\" --overwrite)",
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\Scripts\\pg-convert.exe\" \"d:\\pg\\test_mathobjects_convert.pg\" --overwrite --emit-imports)",
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"d:\\pg\\packages\\pg\\translator\\tests\\test_mathobjects_sandbox.py\" -q --tb=line)",
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"packages/pg/translator/tests/test_tutorial_sample_problems.py::test_tutorial_problem_renders[AnswerWithUnits]\" -v)",
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"packages/pg/translator/tests/test_tutorial_sample_problems.py::test_tutorial_problem_renders[HeavisideStep]\" -v)",
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"packages/pg/translator/tests/test_tutorial_sample_problems.py::test_tutorial_problem_renders[Vectors]\" -v)",
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"packages/pg/translator/tests/test_tutorial_sample_problems.py::test_tutorial_problem_renders[Vectors]\" -v --cache-clear)"
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -c \"\nimport sys\nsys.path.insert(0, ''packages'')\n\ntry:\n    from pg.macros.parsers.parser_assignment import AssignmentParser, Assignment as parser_Assignment\n    print(''[OK] Import fixed - parser_Assignment is now available'')\n    print(f''[OK] parser_Assignment is: {parser_Assignment}'')\n    print(f''[OK] AssignmentParser is: {AssignmentParser}'')\nexcept ImportError as e:\n    print(f''[FAIL] {e}'')\n\")",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest:*)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"packages/pg/translator/tests/test_tutorial_sample_problems.py::test_tutorial_problem_renders\" -v --tb=no -q)",
+      "Bash(C:Usersmdahl.condaenvspytorch-5090python.exe -m pytest d:pgpackagespgmacrosparsersteststest_parser_function.py -v --tb=short)",
+      "Bash(pnpm exec pytest:*)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\Scripts\\pytest.exe\" \"d:\\pg\\packages\\pg\\macros\\parsers\\tests\\test_parser_function.py\" -v --tb=short)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\Scripts\\pytest.exe\" \"d:\\pg\\packages\\pg\\macros\\parsers\\tests\\test_parser_function.py\" -v --tb=line)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\Scripts\\pytest.exe\" \"d:\\pg\\packages\\pg\\translator\\tests\\test_tutorial_sample_problems.py::test_tutorial_problem_renders[HeavisideStep]\" -v)"
     ],
     "deny": [],
     "ask": []

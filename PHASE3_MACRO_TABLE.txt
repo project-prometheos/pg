@@ -1,0 +1,223 @@
+PHASE 3 MACRO IMPLEMENTATION TABLE
+Research: 10 Failing Tutorial Problems
+Date: 2025-11-14
+
+PROBLEM MATRIX - WHICH MACROS FIX WHICH PROBLEMS
+=================================================
+
+Problem                 | Status   | Primary Macro      | Dependencies    | Days
+------------------------|----------|-------------------|-----------------|--------
+1. AnswerWithUnits      | BLOCKED  | contextUnits.pl   | MathObjects     | 4-5
+2. HeavisideStep        | BLOCKED  | parserFunction.pl | MathObjects     | 2-3 ***
+3. MatchingAlt          | PARTIAL  | PGgraders.pl      | parserPopUp     | 3-4
+4. ParametricPlotAlt    | BLOCKED  | plots.pl          | pg_graph.py     | 5-7
+5. CustomAnswerCheckers | VERIFY   | (core)            | MathObjects     | 0 (test)
+6. GraphsInTables       | PARTIAL  | PGtikz + choices  | parserPopUp     | 3-5
+7. LinearRegression     | UNKNOWN  | Unknown           | Unknown         | ?
+8. ProvingTrigIden      | BLOCKED  | scaffold.pl       | PGML            | 4-5
+9. VectorOperations     | VERIFY   | parserVectorUtils | Vector context  | 0 (test)
+10. Vectors             | VERIFY   | (core)            | Vector context  | 0 (test)
+
+*** = Quickest win (implement first)
+
+MACRO IMPLEMENTATION COMPLEXITY TABLE
+======================================
+
+Macro              | Perl LOC | Python LOC | Complexity | Days | Priority | Status
+-------------------|----------|-----------|------------|------|----------|--------
+parserFunction.pl  | 125      | 150       | LOW        | 2-3  | P0 ***   | Ready
+contextUnits.pl    | 2262     | 1200      | MED-HIGH   | 4-5  | P0 ***   | Ready
+plots.pl           | 590      | 400       | HIGH       | 5-7  | P0 ***   | Ready
+scaffold.pl        | 767      | 600       | MEDIUM     | 4-5  | P1       | Ready
+PGgraders.pl       | 400+     | 250       | MEDIUM     | 3-4  | P1       | Ready
+PGtikz.pl          | 122      | 100       | LOW-MED    | 2-3  | P1       | Partial
+PGchoicemacros.pl  | 400+     | 200       | LOW        | 1-2  | P1       | Ready
+-------------------|----------|-----------|------------|------|----------|--------
+TOTAL              | 5,266    | 2,900     | -          | 22-29| -        | -
+
+IMPLEMENTATION SEQUENCE
+=======================
+
+PHASE 3A (Weeks 1-3): TOP PRIORITY MACROS
+  Week 1: parserFunction.pl
+    - Custom function definitions
+    - Register in registry
+    - Expected result: HeavisideStep.pg PASSES
+  
+  Week 2: contextUnits.pl (Phase 1: length/time)
+    - Unit definitions and categories
+    - Basic arithmetic with units
+    - Expected result: AnswerWithUnits.pg PASSES
+  
+  Week 3: plots.pl
+    - Plot class with parametric support
+    - Integration with pg_graph.py
+    - Expected result: ParametricPlotAlt.pg PASSES
+
+PHASE 3B (Weeks 4-5): SUPPORTING INFRASTRUCTURE
+  Week 4: Choose priority
+    Option A: scaffold.pl (ProvingTrigIdentities.pg)
+    Option B: PGgraders.pl + utilities (MatchingAlt.pg, GraphsInTables.pg)
+  
+  Week 5: Verification & Integration
+    - Test all 10 problems
+    - Fix integration issues
+    - Final documentation
+
+WHAT'S ALREADY DONE (VERIFY PHASE)
+===================================
+
+Macro                 | Status  | File Location                              | Next Step
+----------------------|---------|--------------------------------------------|-----------
+parserPopUp.pl        | DONE    | packages/pg/macros/parsers/parserPopUp.py | VERIFY
+parserVectorUtils.pl  | 90%     | packages/pg/macros/math/vector_utils.py   | VERIFY
+Vector Context        | LIKELY  | Part of MathObjects                        | VERIFY
+Custom Checkers       | LIKELY  | Part of MathObjects                        | VERIFY
+niceTables.pl         | LOADED  | Via PGML.pl (auto-loaded)                  | VERIFY
+
+DEPENDENCIES GRAPH
+==================
+
+HeavisideStep.pg
+  -> parserFunction.pl (NEW)
+     -> MathObjects (DONE)
+     -> Parser Context (DONE)
+
+AnswerWithUnits.pg
+  -> contextUnits.pl (NEW)
+     -> MathObjects (DONE)
+     -> Parser (DONE)
+
+ParametricPlotAlt.pg
+  -> plots.pl (NEW)
+     -> pg_graph.py (PARTIAL)
+     -> PGgraphmacros (PARTIAL)
+
+ProvingTrigIdentities.pg
+  -> scaffold.pl (NEW)
+     -> PGML (DONE)
+     -> Answer system (DONE)
+
+MatchingAlt.pg
+  -> parserPopUp.pl (DONE)
+  -> PGgraders.pl (NEW)
+
+GraphsInTables.pg
+  -> parserPopUp.pl (DONE)
+  -> PGtikz.pl (PARTIAL)
+     -> tikz_image.py (PARTIAL)
+  -> PGchoicemacros.pl (NEW)
+
+VectorOperations.pg
+  -> parserVectorUtils.pl (DONE)
+     -> vector_utils.py (DONE)
+  -> Vector context (DONE)
+
+Vectors.pg
+  -> Vector context (DONE)
+  -> Vector MathObject (DONE)
+
+CustomAnswerCheckers.pg
+  -> Answer system (DONE)
+  -> Custom checker support (DONE)
+
+FILE LOCATIONS - PERL REFERENCES
+=================================
+
+Perl Implementation (Read For Reference)
+- d:/pg/macros/parsers/parserFunction.pl (125 lines)
+- d:/pg/macros/contexts/contextUnits.pl (2262 lines)
+- d:/pg/macros/graph/plots.pl (590 lines)
+- d:/pg/macros/core/scaffold.pl (767 lines)
+- d:/pg/macros/answer/PGgraders.pl (400+ lines)
+- d:/pg/macros/graph/PGtikz.pl (122 lines)
+- d:/pg/macros/core/PGchoicemacros.pl (400+ lines)
+
+FILE LOCATIONS - PYTHON IMPLEMENTATIONS
+========================================
+
+Target Directories (Write Here)
+- d:/pg/packages/pg/macros/parsers/
+- d:/pg/packages/pg/macros/contexts/
+- d:/pg/packages/pg/macros/graph/
+- d:/pg/packages/pg/macros/core/
+- d:/pg/packages/pg/macros/answers/
+
+Configuration
+- d:/pg/packages/pg/macros/registry.py (update here)
+
+Tests
+- d:/pg/packages/pg/macros/*/tests/
+
+FILE LOCATIONS - TUTORIAL PROBLEMS (TEST)
+==========================================
+
+Problems to Fix
+- d:/pg/tutorial/sample-problems/DiffCalc/AnswerWithUnits.pg
+- d:/pg/tutorial/sample-problems/DiffEq/HeavisideStep.pg
+- d:/pg/tutorial/sample-problems/Misc/MatchingAlt.pg
+- d:/pg/tutorial/sample-problems/Parametric/ParametricPlotAlt.pg
+- d:/pg/tutorial/sample-problems/ProblemTechniques/CustomAnswerCheckers.pg
+- d:/pg/tutorial/sample-problems/ProblemTechniques/GraphsInTables.pg
+- d:/pg/tutorial/sample-problems/Trig/ProvingTrigIdentities.pg
+- d:/pg/tutorial/sample-problems/VectorCalc/VectorOperations.pg
+- d:/pg/tutorial/sample-problems/VectorCalc/Vectors.pg
+
+EFFORT ALLOCATION (RECOMMENDED)
+================================
+
+parserFunction.pl      2-3 days (1 developer)
+contextUnits.pl        4-5 days (1-2 developers)
+plots.pl               5-7 days (1-2 developers)
+Integration/Testing    2-3 days (1 developer)
+
+Total: 13-18 person-days or 4-6 weeks with sequential implementation
+
+RISK ANALYSIS
+=============
+
+LOW RISK (Go Ahead):
+- parserFunction.pl - Simple, clear spec, small codebase
+- PGchoicemacros.pl - Utility functions, straightforward
+
+MEDIUM RISK (Manageable):
+- contextUnits.pl - Large but well-structured, can phase
+- plots.pl - Complex but builds on existing code
+- scaffold.pl - State machine but clear requirements
+- PGgraders.pl - Integration heavy, requires careful testing
+
+SUCCESS CRITERIA
+================
+
+For Phase 3 to be complete, ALL of these must be true:
+
+✓ parserFunction.pl fully implemented
+  └─ HeavisideStep.pg passes
+
+✓ contextUnits.pl Phase 1 (length/time) implemented
+  └─ AnswerWithUnits.pg passes
+
+✓ plots.pl basic functionality implemented
+  └─ ParametricPlotAlt.pg passes
+
+✓ Supporting macros (scaffold, graders, TikZ, choices)
+  └─ At least 2 of: ProvingTrig, MatchingAlt, GraphsInTables pass
+
+✓ Verification of already-done macros
+  └─ CustomAnswerCheckers, Vectors, VectorOperations pass
+
+✓ Test coverage >= 80% for new code
+
+✓ Macro registry updated with all new macros
+
+✓ Documentation complete for each macro
+
+EXPECTED OUTCOME
+================
+
+Start: 5-6 problems passing (from earlier phases)
+After Phase 3A: 8-9 problems passing
+After Phase 3B: 9-10 problems passing
+Total improvement: +4-5 problems fixed
+
+===== END TABLE =====

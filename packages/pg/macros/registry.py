@@ -166,6 +166,13 @@ OPTIONAL_MACROS = {
         ],
         "description": "Assignment expressions for variable/function definitions (1:1 parity with parserAssignment.pl)",
     },
+    "parserFunction": {
+        "module": "pg.macros.parsers.parser_function",
+        "aliases": ["parserFunction.pl"],
+        "category": "parsers",
+        "functions": ["parserFunction"],
+        "description": "Custom function definition for contexts (1:1 parity with parserFunction.pl)",
+    },
 
     # Graphics macros (heavy - should be lazy loaded!)
     "PGgraphmacros": {
@@ -190,6 +197,14 @@ OPTIONAL_MACROS = {
         "category": "graphics",
         "functions": ["VectorField3D"],
         "description": "3D vector field visualization",
+        "lazy": True,
+    },
+    "plots": {
+        "module": "pg.macros.graph.plots",
+        "aliases": ["plots.pl"],
+        "category": "graphics",
+        "functions": ["Plot", "PlotObject", "PlotData", "PlotAxes"],
+        "description": "Modern plotting with parametric curves (1:1 parity with plots.pl)",
         "lazy": True,
     },
 
@@ -232,6 +247,13 @@ OPTIONAL_MACROS = {
         "category": "contexts",
         "functions": ["Fraction"],
         "description": "Fraction context for exact fractional answers (1:1 parity with contextFraction.pl)",
+    },
+    "contextUnits": {
+        "module": "pg.macros.contexts.context_units",
+        "aliases": ["contextUnits.pl"],
+        "category": "contexts",
+        "functions": ["Context_Units", "UnitsContext"],
+        "description": "Units context for answers with physical units (Phase 1: length, time)",
     },
     # Note: contextLimitedPolynomial and other contexts will be added in future phases
 }
