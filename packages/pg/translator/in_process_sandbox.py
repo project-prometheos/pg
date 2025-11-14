@@ -72,7 +72,7 @@ try:
 
     # Phase 8: Context & Grading
     from pg.macros.contexts.limited_powers import LimitedPowers
-    from pg.macros.parsers.parser_assignment import parser_Assignment
+    from pg.macros.parsers.parser_assignment import AssignmentParser, Assignment as parser_Assignment
     from pg.macros.parsers.parser_function import parserFunction
     from pg.macros.core.pg_graders import install_problem_grader, custom_problem_grader_fluid
 
