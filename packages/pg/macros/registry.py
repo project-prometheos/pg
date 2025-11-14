@@ -70,6 +70,13 @@ OPTIONAL_MACROS = {
         "functions": [],  # Empty = import entire module
         "description": "Course-specific configuration (1:1 parity with PGcourse.pl)",
     },
+    "PGauxiliaryFunctions": {
+        "module": "pg.macros.core.pg_auxiliary_functions",
+        "aliases": ["PGauxiliaryFunctions.pl"],
+        "category": "core",
+        "functions": [],  # Empty = import entire module
+        "description": "Auxiliary mathematical functions (1:1 parity with PGauxiliaryFunctions.pl)",
+    },
 
     # PGML
     "PGML": {
