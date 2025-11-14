@@ -1,0 +1,10 @@
+{
+  "answers": [],
+  "errors": [
+    "Execution error: name 'new_multiple_choice' is not defined",
+    "Traceback (most recent call last):\n  File \"D:\\pg\\parity_lab\\py_port\\run_pg_snippet.py\", line 153, in execute_pg_snippet\n    exec(result.code, namespace)\n    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<string>\", line 8, in <module>\nNameError: name 'new_multiple_choice' is not defined\n"
+  ],
+  "html": "",
+  "tex": "",
+  "warnings": []
+}

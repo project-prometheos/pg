@@ -1,0 +1,36 @@
+DOCUMENT();
+loadMacros("PGstandard.pl", "MathObjects.pl");
+TEXT(beginproblem());
+
+Context("Numeric");
+Context()->variables->add(t => 'Real');
+
+$a = random(2, 5, 1);
+$b = random(1, 4, 1);
+
+$f = Formula("$a*x^2 + $b*x");
+$derivative = $f->D('x');
+
+BEGIN_TEXT
+${BBOLD}Derivative Problem${EBOLD}$BR
+$BR
+Given the function: \(f(x) = $f\)$BR
+$BR
+Find the derivative: \(f'(x) = \) \{ans_rule(20)\}
+END_TEXT
+
+ANS($derivative->cmp());
+
+BEGIN_SOLUTION
+${BBOLD}Solution:${EBOLD}$BR
+$BR
+Using the power rule:$BR
+\[\frac{d}{dx}\left($f\right) = $derivative\]
+END_SOLUTION
+
+BEGIN_HINT
+Remember the power rule: \(\frac{d}{dx}[x^n] = n x^{n-1}\)
+END_HINT
+
+ENDDOCUMENT();
+

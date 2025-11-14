@@ -1,0 +1,7 @@
+{
+  "answers": [],
+  "errors": [],
+  "html": "<div class=\"pgml-document\">\n<h1>Main Heading</h1>\n<p>This is a paragraph with *bold text* and _italic text_.</p>\n<h2>Subheading</h2>\n<p>Here&#39;s a list: * Item 1 * Item 2 * Item 3</p>\n<p>And a numbered list: 1. First 2. Second 3. Third</p>\n<hr class=\"pgml-rule\">\n<p>Horizontal rule above. </p>\n</div>",
+  "tex": "<div class=\"pgml-document\">\n<h1>Main Heading</h1>\n<p>This is a paragraph with *bold text* and _italic text_.</p>\n<h2>Subheading</h2>\n<p>Here&#39;s a list: * Item 1 * Item 2 * Item 3</p>\n<p>And a numbered list: 1. First 2. Second 3. Third</p>\n<hr class=\"pgml-rule\">\n<p>Horizontal rule above. </p>\n</div>",
+  "warnings": []
+}

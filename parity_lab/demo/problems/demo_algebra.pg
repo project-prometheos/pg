@@ -1,0 +1,32 @@
+DOCUMENT();
+loadMacros("PGstandard.pl", "MathObjects.pl");
+TEXT(beginproblem());
+
+Context("Numeric");
+
+$a = random(2, 6, 1);
+$b = random(1, 5, 1);
+$c = $a + $b;
+
+$ans = Compute("($c - $b)/$a");
+
+BEGIN_TEXT
+${BBOLD}Solve for x:${EBOLD}$BR
+$BR
+\[$a x + $b = $c\]
+$BR
+\(x = \) \{ans_rule(10)\}
+END_TEXT
+
+ANS($ans->cmp());
+
+BEGIN_SOLUTION
+${BBOLD}Solution:${EBOLD}$BR
+$BR
+Starting with: \($a x + $b = $c\)$BR
+Subtract \($b\) from both sides: \($a x = $c - $b\)$BR
+Divide by \($a\): \(x = \frac{$c - $b}{$a} = $ans\)
+END_SOLUTION
+
+ENDDOCUMENT();
+

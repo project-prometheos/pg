@@ -1,0 +1,72 @@
+{
+  "PGstandard.pl": {
+    "file": "pg_macros.core",
+    "symbols": [],
+    "globals": [],
+    "exports": [],
+    "error": "Import failed: No module named 'pg_macros'"
+  },
+  "PGcourse.pl": {
+    "file": "pg_macros.core.pg_basic_macros",
+    "symbols": [],
+    "globals": [],
+    "exports": [],
+    "error": "Import failed: No module named 'pg_macros'"
+  },
+  "MathObjects.pl": {
+    "file": "pg_macros.core.math_objects",
+    "symbols": [],
+    "globals": [],
+    "exports": [],
+    "error": "Import failed: No module named 'pg_macros'"
+  },
+  "PGchoicemacros.pl": {
+    "file": "pg_macros.choice",
+    "symbols": [],
+    "globals": [],
+    "exports": [],
+    "error": "Import failed: No module named 'pg_macros'"
+  },
+  "PGML.pl": {
+    "file": "pg_macros.core.pgml",
+    "symbols": [],
+    "globals": [],
+    "exports": [],
+    "error": "Import failed: No module named 'pg_macros'"
+  },
+  "PGgraphmacros.pl": {
+    "file": "pg_macros.graph",
+    "symbols": [],
+    "globals": [],
+    "exports": [],
+    "error": "Import failed: No module named 'pg_macros'"
+  },
+  "AnswerFormatHelp.pl": {
+    "file": "pg_macros.answers",
+    "symbols": [],
+    "globals": [],
+    "exports": [],
+    "error": "Import failed: No module named 'pg_macros'"
+  },
+  "parserPopUp.pl": {
+    "file": "pg_macros.parsers.parser_popup",
+    "symbols": [],
+    "globals": [],
+    "exports": [],
+    "error": "Import failed: No module named 'pg_macros'"
+  },
+  "parserMultiAnswer.pl": {
+    "file": "pg_macros.parsers",
+    "symbols": [],
+    "globals": [],
+    "exports": [],
+    "error": "Import failed: No module named 'pg_macros'"
+  },
+  "contextFraction.pl": {
+    "file": "pg_macros.contexts",
+    "symbols": [],
+    "globals": [],
+    "exports": [],
+    "error": "Import failed: No module named 'pg_macros'"
+  }
+}

@@ -24,10 +24,11 @@ def execute_pg_snippet(snippet_path: Path, seed: int) -> Dict[str, Any]:
 
     HAS_PG_MATH = False
     try:
-        import pg.math
+        import pg.math as pg_math
         HAS_PG_MATH = True
     except ImportError:
         print("Warning: pg_math not found", file=sys.stderr)
+        pg_math = None
 
     HAS_CHOICE = False
     try:
@@ -95,10 +96,21 @@ def execute_pg_snippet(snippet_path: Path, seed: int) -> Dict[str, Any]:
         'BR': lambda: '<br/>',  # Line break function
         'PAR': lambda: '<p>',   # Paragraph function
         'HR': lambda: '<hr/>',  # Horizontal rule function
+        'MODES': pgcore.MODES if hasattr(pgcore, 'MODES') else lambda **kw: kw.get('HTML', ''),
+
+        # Formatting helpers
+        'BBOLD': lambda: '<b>',
+        'EBOLD': lambda: '</b>',
+        'BITALIC': lambda: '<i>',
+        'EITALIC': lambda: '</i>',
 
         # Solution/Hint
         'SOLUTION': pgcore.SOLUTION if hasattr(pgcore, 'SOLUTION') else lambda *args: '',
         'HINT': pgcore.HINT if hasattr(pgcore, 'HINT') else lambda *args: '',
+        'BEGIN_SOLUTION': lambda: '',
+        'END_SOLUTION': lambda: '',
+        'BEGIN_HINT': lambda: '',
+        'END_HINT': lambda: '',
     }
 
     # Add MathObjects if available (only add what exists)

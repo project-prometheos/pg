@@ -12,7 +12,8 @@
       "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"d:\\pg\\packages\\pg\\translator\\tests\\test_mathobjects_sandbox.py\" -q --tb=line)",
       "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"packages/pg/translator/tests/test_tutorial_sample_problems.py::test_tutorial_problem_renders[AnswerWithUnits]\" -v)",
       "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"packages/pg/translator/tests/test_tutorial_sample_problems.py::test_tutorial_problem_renders[HeavisideStep]\" -v)",
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"packages/pg/translator/tests/test_tutorial_sample_problems.py::test_tutorial_problem_renders[Vectors]\" -v)"
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"packages/pg/translator/tests/test_tutorial_sample_problems.py::test_tutorial_problem_renders[Vectors]\" -v)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"packages/pg/translator/tests/test_tutorial_sample_problems.py::test_tutorial_problem_renders[Vectors]\" -v --cache-clear)"
     ],
     "deny": [],
     "ask": []

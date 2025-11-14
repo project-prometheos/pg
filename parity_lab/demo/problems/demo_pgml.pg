@@ -1,0 +1,47 @@
+DOCUMENT();
+loadMacros("PGstandard.pl", "MathObjects.pl", "PGML.pl");
+TEXT(beginproblem());
+
+Context("Numeric");
+
+$a = random(2, 9, 1);
+$b = random(2, 9, 1);
+$product = $a * $b;
+
+BEGIN_PGML
+# PGML Demonstration Problem
+
+## Problem Statement
+
+Compute the product of [$a] and [$b].
+
+Answer: [_____]{$product}
+
+---
+
+## Features Demonstrated
+
+This problem showcases:
+* *Headings* at different levels
+* _Italic_ and *bold* text
+* Math variables: [`[$a] \times [$b]`]
+* Answer blanks with integrated checking
+* Formatted lists
+
+## Instructions
+
+Enter your answer as an integer in the box above.
+END_PGML
+
+BEGIN_PGML_SOLUTION
+# Solution
+
+To multiply [$a] by [$b]:
+
+[```[$a] \times [$b] = [$product]```]
+
+The answer is [$product].
+END_PGML_SOLUTION
+
+ENDDOCUMENT();
+

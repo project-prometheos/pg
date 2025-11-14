@@ -1,0 +1,7 @@
+{
+  "answers": [],
+  "errors": [],
+  "html": "Random number between 1 and 10:  9 <br/> \nNon-zero random between -5 and 5:  -2 <br/> \nList random from [2,4,6,8]:  6 <br/>",
+  "tex": "Random number between 1 and 10:  9 <br/> \nNon-zero random between -5 and 5:  -2 <br/> \nList random from [2,4,6,8]:  6 <br/>",
+  "warnings": []
+}

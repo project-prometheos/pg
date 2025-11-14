@@ -1,0 +1,60 @@
+DOCUMENT();
+loadMacros("PGstandard.pl", "MathObjects.pl", "PGML.pl", "contextFraction.pl");
+TEXT(beginproblem());
+
+Context("Fraction");
+
+$a = random(2, 5, 1);
+$b = random(1, 3, 1);
+$f1 = Fraction($a, $b);
+$f2 = Fraction($b, $a);
+$sum = $f1 + $f2;
+
+Context("Numeric");
+$decimal = Real($sum);
+
+BEGIN_PGML
+# Comprehensive Demo Problem
+
+This problem tests multiple macro systems working together.
+
+## Fraction Operations
+
+Given two fractions:
+* [`f_1 = \frac{[$a]}{[$b]}`]
+* [`f_2 = \frac{[$b]}{[$a]}`]
+
+### Questions
+
+1. What is [`f_1 + f_2`] as a fraction? [_____]{$sum}
+
+2. What is this sum as a decimal? [_____]{$decimal}
+
+---
+
+### Visual Elements
+
+${BBOLD}Bold text${EBOLD} and ${BITALIC}italic text${EITALIC}$BR
+$BR
+Horizontal rule:$BR
+\{HR()\}
+$BR
+Line break: \{BR()\} done.
+
+END_PGML
+
+BEGIN_PGML_SOLUTION
+# Solution
+
+## Step 1: Add fractions
+
+[```\frac{[$a]}{[$b]} + \frac{[$b]}{[$a]} = \frac{[$a] \cdot [$a] + [$b] \cdot [$b]}{[$a] \cdot [$b]} = [$sum]```]
+
+## Step 2: Convert to decimal
+
+[```[$sum] = [$decimal]```]
+
+END_PGML_SOLUTION
+
+ENDDOCUMENT();
+

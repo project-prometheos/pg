@@ -11,3 +11,20 @@ dependencies = [
     "pg-math>=0.1.0",
     "pg-parser>=0.1.0",
 ]
+
+[tool.setuptools]
+packages = [
+    "pg.macros",
+    "pg.macros.core",
+    "pg.macros.answers",
+    "pg.macros.choice",
+    "pg.macros.contexts",
+    "pg.macros.graph",
+    "pg.macros.math",
+    "pg.macros.parsers",
+    "pg.macros.runtime",
+    "pg.macros.ui",
+]
+
+[tool.setuptools.package-dir]
+"pg.macros" = "."

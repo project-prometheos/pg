@@ -1,0 +1,68 @@
+DOCUMENT();
+loadMacros(
+    "PGstandard.pl",
+    "MathObjects.pl",
+    "PGML.pl",
+    "parserPopUp.pl",
+    "parserMultiAnswer.pl"
+);
+TEXT(beginproblem());
+
+Context("Numeric");
+
+# PopUp example
+$popup = PopUp(
+    ["Choose", "Increasing", "Decreasing", "Constant", "Neither"],
+    "Increasing"
+);
+
+# MultiAnswer example - Pythagorean triple
+$multians = MultiAnswer(3, 4, 5)->with(
+    singleResult => 1,
+    checker => sub {
+        my ($correct, $student, $self) = @_;
+        my ($a_stu, $b_stu, $c_stu) = @{$student};
+        
+        # Check if it's a valid Pythagorean triple
+        return ($a_stu**2 + $b_stu**2 == $c_stu**2);
+    }
+);
+
+BEGIN_PGML
+# Interactive Problem Elements Demo
+
+## Part 1: Multiple Choice
+
+The function [`f(x) = x^2`] for [`x > 0`] is:
+
+[_]{$popup}
+
+## Part 2: Multi-Answer
+
+Enter a Pythagorean triple ([`a^2 + b^2 = c^2`]):
+
+* [`a = `] [_____]{$multians}
+* [`b = `] [_____]{$multians}  
+* [`c = `] [_____]{$multians}
+
+---
+
+_Hint: Try 3, 4, 5 or any multiple thereof._
+END_PGML
+
+BEGIN_PGML_SOLUTION
+# Solution
+
+## Part 1
+For [`x > 0`], the function [`f(x) = x^2`] is *increasing* because as [`x`] gets larger, so does [`x^2`].
+
+## Part 2
+Common Pythagorean triples include:
+* 3, 4, 5 (since [`3^2 + 4^2 = 9 + 16 = 25 = 5^2`])
+* 5, 12, 13
+* 8, 15, 17
+* Any multiple of these also works!
+END_PGML_SOLUTION
+
+ENDDOCUMENT();
+

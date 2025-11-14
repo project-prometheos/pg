@@ -9,8 +9,22 @@ use warnings;
 use v5.20;
 use FindBin;
 use lib "$FindBin::Bin/../../lib";
+use lib "$FindBin::Bin/../..";  # For macros
 use JSON;
 use Carp;
+
+# Load WeBWorK PG modules
+BEGIN {
+    eval {
+        require WeBWorK::PG;
+        require WeBWorK::PG::Translator;
+        require WeBWorK::PG::Environment;
+    };
+    if ($@) {
+        # Fallback to minimal environment if WeBWorK modules not available
+        warn "WeBWorK::PG modules not found, using minimal environment\n";
+    }
+}
 
 # Minimal PG environment setup
 our $displayMode = 'HTML';
@@ -100,21 +114,31 @@ eval {
         my @files = @_;
         for my $file (@files) {
             my $macro_path;
-            # Try different locations
-            for my $dir ("$FindBin::Bin/../../macros/core",
-                        "$FindBin::Bin/../../macros",
-                        "$FindBin::Bin/../../macros/parsers",
-                        "$FindBin::Bin/../../macros/contexts") {
+            # Try different locations in order
+            my @search_dirs = (
+                "$FindBin::Bin/../../macros/core",
+                "$FindBin::Bin/../../macros/parsers",
+                "$FindBin::Bin/../../macros/contexts",
+                "$FindBin::Bin/../../macros/ui",
+                "$FindBin::Bin/../../macros/math",
+                "$FindBin::Bin/../../macros/graph",
+                "$FindBin::Bin/../../macros/answers",
+                "$FindBin::Bin/../../macros",
+            );
+            
+            for my $dir (@search_dirs) {
                 if (-f "$dir/$file") {
                     $macro_path = "$dir/$file";
                     last;
                 }
             }
+            
             if ($macro_path && -f $macro_path) {
                 # Load the macro file
+                package main;
                 do $macro_path or warn "Error loading $file: $@";
             } else {
-                warn "Macro file not found: $file";
+                warn "Macro file not found: $file (searched in macros/)";
             }
         }
     }
