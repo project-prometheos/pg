@@ -185,8 +185,14 @@ OPTIONAL_MACROS = {
     },
 
     # Context macros
-    # Note: contextLimitedPolynomial and contextFraction modules don't exist yet
-    # They have been removed from the registry until implemented
+    "contextFraction": {
+        "module": "pg.math.fraction",
+        "aliases": ["contextFraction.pl"],
+        "category": "contexts",
+        "functions": ["Fraction"],
+        "description": "Fraction context for exact fractional answers (1:1 parity with contextFraction.pl)",
+    },
+    # Note: contextLimitedPolynomial and other contexts will be added in future phases
 }
 
 
