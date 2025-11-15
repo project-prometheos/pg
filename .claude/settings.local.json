@@ -1,9 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"d:\\pg\\packages\\pg\\translator\\tests\\test_tutorial_sample_problems_all.py\" -v --tb=no -q)",
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"d:\\pg\\packages\\pg\\translator\\tests\\test_tutorial_sample_problems_all.py\" -v -k \"Snippets\" --tb=short)",
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -c \"\nfrom pathlib import Path\nimport sys\nsys.path.insert(0, str(Path(''packages'')))\n\nfrom pg.translator import PGTranslator\n\ntranslator = PGTranslator()\nproblem_file = Path(''tutorial/sample-problems/Snippets/CommentsForInstructors.pg'')\n\nresult = translator.translate(str(problem_file), seed=1234)\n\nprint(''Errors:'', result.errors)\nprint(''Warnings:'', result.warnings)\nprint(''Statement HTML length:'', len(result.statement_html))\nprint(''Statement HTML:'', result.statement_html[:200] if result.statement_html else ''EMPTY'')\")"
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest:*)"
     ],
     "deny": [],
     "ask": []

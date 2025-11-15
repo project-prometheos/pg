@@ -78,7 +78,9 @@ try:
 
     # Phase 9: Core Utilities
     from pg.macros.core.pgml_utils import tag, helpLink
-    from pg.macros.math.statistics_utils import linear_regression
+    from pg.macros.math.statistics_utils import (
+        linear_regression, sample_correlation
+    )
 
     # Phase 10: Fallback Cleanup & Array Utilities
     from pg.macros.core.fallback_utilities import (
@@ -1345,6 +1347,8 @@ class InProcessSandbox:
         self.namespace['stats_mean'] = stats_mean
         self.namespace['stats_sd'] = stats_sd
         self.namespace['stats_SX_SXX'] = stats_SX_SXX
+        self.namespace['sample_correlation'] = sample_correlation
+        self.namespace['linear_regression'] = linear_regression
 
 
 def create_in_process_sandbox(timeout: int = 30) -> InProcessSandbox:
