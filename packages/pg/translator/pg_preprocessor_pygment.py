@@ -500,12 +500,34 @@ class PGPreprocessor:
                     closure_expr_text = closure_text[sub_start_pos:pos]  # Includes 'sub { ... }'
 
                     if self._parser is not None:
-                        # Try to parse just the closure
-                        tree = self._parser.parse(closure_expr_text, start='sub_closure')
-                        closure_ir = self._transformer.transform(tree)
+                        # Try to parse the closure as an expression within a dummy assignment
+                        # This allows us to use the normal 'start' rule instead of a special 'sub_closure' rule
+                        # Note: must use $dummy (with sigil) because grammar only accepts variables with sigils
+                        dummy_stmt = f"$__closure__ = {closure_expr_text};"
+                        try:
+                            tree = self._parser.parse(dummy_stmt)
+                            # Extract the assignment IR from the parse tree
+                            stmt_list = self._transformer.transform(tree)
+                            if stmt_list and len(stmt_list) > 0:
+                                assign_ir = stmt_list[0]
+                                # assign_ir should be ("assign", var, closure_ir)
+                                if isinstance(assign_ir, tuple) and assign_ir[0] == "assign" and len(assign_ir) >= 3:
+                                    closure_ir = assign_ir[2]  # Extract the RHS (the closure)
+                                else:
+                                    closure_ir = None
+                            else:
+                                closure_ir = None
+                        except Exception as parse_err:
+                            # Parsing as statement failed, try alternative approach
+                            # DEBUG: Uncomment to see parsing errors
+                            # print(f"DEBUG: Closure parsing failed: {type(parse_err).__name__}: {str(parse_err)[:200]}")
+                            closure_ir = None
 
                         # Emit the closure to Python
-                        closure_py = self._emit_ir(closure_ir, 0)
+                        if closure_ir:
+                            closure_py = self._emit_ir(closure_ir, 0)
+                        else:
+                            closure_py = None
 
                         if closure_py:
                             # Reconstruct the line
@@ -516,8 +538,28 @@ class PGPreprocessor:
                                 output_lines.append(final_line)
                             else:
                                 output_lines.append(transformed_line)
+                            continue  # Successfully translated, skip to next closure
+
+                        # If we get here, parsing or emission failed - fall through to fallback
+                        # Don't use try-except, just check if we can stub it
+                        param_match = re.search(r'(\w+)\s*=>\s*sub\s*\{', first_line)
+                        if param_match:
+                            stubbed_line = f"{prefix}lambda *args, **kwargs: None{suffix_from_last_line}"
+                            transformed = self._rewrite_statement(stubbed_line)
+                            if transformed:
+                                output_lines.append(transformed + "  # Stubbed Perl closure (parsing failed)")
                         else:
-                            output_lines.append(f"# {first_line}  # Failed to translate closure")
+                            assign_match = re.search(r'(\w+)\s*=\s*sub\s*\{', first_line)
+                            if assign_match:
+                                var_name = assign_match.group(1)
+                                indent_match = re.match(r'^(\s*)', first_line)
+                                indent = indent_match.group(1) if indent_match else ''
+                                stubbed_line = f"{indent}{var_name} = lambda *args, **kwargs: None"
+                                transformed = self._rewrite_statement(stubbed_line)
+                                if transformed:
+                                    output_lines.append(transformed + "  # Stubbed Perl closure (parsing failed)")
+                            else:
+                                output_lines.append(f"# {first_line}  # Skipped Perl closure")
                     else:
                         output_lines.append(f"# {first_line}  # Parser not available")
 
@@ -1236,6 +1278,7 @@ if __name__ == "__main__":
                 | do_until_stmt
                 | decl
                 | assign
+                | return_stmt
                 | expr_stmt
                 | document
                 | enddocument
@@ -1292,9 +1335,11 @@ if __name__ == "__main__":
                                | "@" "$" NAME  -> deref_var
 
             // Return statement: return expr; or return [expr, ...];
-            return_stmt: "return" return_value
-            return_value: "[" return_list "]"  -> return_array
-                        | expr                 -> return_expr
+            // Must handle [ ... ] specially because [ is ambiguous (could be subscript or array literal)
+            return_stmt: "return" return_expr_special
+            return_expr_special: "[" return_list "]"  -> return_array
+                               | "[" "]"              -> return_empty_array
+                               | expr
             return_list: expr ("," expr)*
 
             // Args can be comma-separated expressions or named parameters with =>
@@ -1682,9 +1727,14 @@ if __name__ == "__main__":
                 """Lower return statement."""
                 return ("return", value)
 
+            def return_expr_special(self, expr):
+                """Unwrap return expression special (handles both arrays and regular exprs)."""
+                return expr
+
             def return_array(self, expr_list):
                 """Lower return [...];"""
-                return ("array", expr_list)
+                # expr_list is the result of return_list which is a list of expressions
+                return ("array", expr_list if isinstance(expr_list, list) else [expr_list])
 
             def return_expr(self, expr):
                 """Lower return expr;"""
@@ -1693,6 +1743,10 @@ if __name__ == "__main__":
             def return_list(self, *exprs):
                 """Lower comma-separated return list."""
                 return list(exprs)
+
+            def return_empty_array(self):
+                """Lower return [] (empty array)."""
+                return ("array", [])
 
             # Array dereferencing in expressions
             def array_deref_var(self, name):
@@ -1932,7 +1986,8 @@ if __name__ == "__main__":
         """Emit a Python function for a Perl closure (sub { ... }).
 
         Closures are emitted as lambda functions with the signature extracted
-        from parameter unpacking statements.
+        from parameter unpacking statements. Complex closures with multiple
+        statements are emitted as nested def functions.
 
         Example Perl:
             sub { my ($correct, $student) = @_; return $correct == $student }
@@ -1972,23 +2027,32 @@ if __name__ == "__main__":
             return f"lambda {params_str}: {return_py}"
 
         # Multi-statement body or complex logic
-        # Emit as a nested function (can't use lambda)
-        lines = [f"(lambda {params_str}: ("]
+        # Emit as a def function that returns the result
+        lines = []
 
-        # Emit each statement in the body
-        inner_stmts = []
+        # Generate function name (using a dummy name that won't conflict)
+        func_name = "_closure_func"
+
+        # Emit function definition
+        lines.append(f"(lambda: (")
+        lines.append(f"{'    ' * (indent + 1)}def {func_name}({params_str}):")
+
+        # Emit function body
+        body_lines = []
         for stmt in body_for_return:
             emitted = self._emit_ir(stmt, indent + 2)
             if emitted:
-                inner_stmts.append(emitted)
+                body_lines.append(emitted)
 
-        # For now, just emit the final return value if it exists
-        if inner_stmts:
-            lines.extend(inner_stmts)
-        else:
-            lines.append("    " * (indent + 2) + "None")
+        # Ensure function has at least a pass or return statement
+        if not body_lines:
+            body_lines.append(f"{'    ' * (indent + 2)}pass")
 
-        lines.append("))()")  # IIFE - immediately invoked function expression
+        lines.extend(body_lines)
+
+        # Close the lambda and return the function
+        lines.append(f"{'    ' * (indent + 1)}return {func_name}")
+        lines.append(f"{'    ' * indent}))()")
 
         return "\n".join(lines)
 
