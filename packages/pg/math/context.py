@@ -666,14 +666,77 @@ class Context:
         self.flags.set(trigInDegrees=True)
 
     def _init_units(self, limited: bool = False):
-        """Initialize Units context (minimal stub)."""
+        """Initialize Units context with full units support."""
         self._init_numeric()
-        # In full implementation, would add comprehensive units system
-        # For now, just mark context as supporting units
+        # Mark context as supporting units
         self.flags.set(allowUnits=True)
         if limited:
             # LimitedUnits: no operations, only single values with units
             self.flags.set(limitedUnits=True)
+
+        # Initialize units tracking (will be populated by withUnitsFor)
+        self._enabled_units = {}
+        self._variable_units = {}
+        self._unit_defs = {}
+
+    def withUnitsFor(self, *categories: str) -> 'Context':
+        """
+        Enable units for one or more categories.
+
+        Args:
+            *categories: Category names like 'length', 'time', 'volume', etc.
+
+        Returns:
+            self (for method chaining)
+
+        Example:
+            >>> Context('Units').withUnitsFor('length', 'time')
+        """
+        # Import here to avoid circular imports
+        from pg.macros.contexts.context_units import UNIT_DEFINITIONS
+
+        for category in categories:
+            if category in UNIT_DEFINITIONS:
+                self._enabled_units[category] = True
+                # Add units as constants to the context
+                for unit_name, unit_info in UNIT_DEFINITIONS[category].items():
+                    self.constants.add(unit_name, unit_info['value'])
+                    self._unit_defs[unit_name] = unit_info
+
+                    # Add aliases
+                    for alias in unit_info.get('aliases', []):
+                        self.constants.add(alias, unit_info['value'])
+                        self._unit_defs[alias] = unit_info
+            else:
+                # Warn but don't fail for unknown categories
+                print(f"Warning: Unit category '{category}' not yet implemented")
+
+        return self
+
+    def assignUnits(self, *args, **kwargs) -> 'Context':
+        """
+        Assign units to variables.
+
+        Args:
+            *args: Optional dict of variable=>unit mappings
+            **kwargs: variable=unit keyword arguments
+
+        Returns:
+            self (for method chaining)
+
+        Example:
+            >>> Context('Units').assignUnits(t='s', x='ft')
+        """
+        # Handle dict argument
+        if args and isinstance(args[0], dict):
+            for var_name, unit in args[0].items():
+                self._variable_units[var_name] = unit
+
+        # Handle keyword arguments
+        for var_name, unit in kwargs.items():
+            self._variable_units[var_name] = unit
+
+        return self
 
     def _init_limited_proper_fraction(self):
         """
@@ -945,6 +1008,7 @@ def get_context(name: Optional[str] = None) -> Context:
         _contexts[name] = _create_context(name)
 
     _current_context = _contexts[name]
+    
     return _current_context
 
 

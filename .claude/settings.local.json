@@ -1,10 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -c \"\nfrom pg.math.context import Context\nfrom pg.math.numeric import Complex\n\nctx = Context(''Complex'')\ni_value = ctx.constants.get(''i'')\nprint(f''i from context: {i_value}'')\nprint(f''i type: {type(i_value)}'')\n\n# What we need is a Complex MathObject\ni_complex = Complex(0, 1)\nprint(f''i as Complex: {i_complex}'')\nprint(f''i_complex type: {type(i_complex)}'')\n\")",
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -c:*)",
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" pg_solve.py \"tutorial/sample-problems/Complex/ComplexOperations.pg\" --seed 1234)",
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\":*)"
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" debug_units.py)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" debug_units2.py)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" debug_units3.py)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" debug_units4.py)",
+      "Bash(python3:*)",
+      "Bash(where:*)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" debug_units5.py)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" debug_context_global.py)"
     ],
     "deny": [],
     "ask": []

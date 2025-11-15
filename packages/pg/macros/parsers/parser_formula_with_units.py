@@ -41,8 +41,24 @@ class FormulaWithUnits:
         
         # Parse formula and units
         if units is not None:
-            # Formula object provided with separate units
-            self.formula = formula_str
+            # Formula or string provided with separate units
+            if isinstance(formula_str, str):
+                # It's a string - parse it as Formula
+                try:
+                    from pg.math.formula import Formula
+                    
+                    # Get variables from context if available
+                    variables = None
+                    if self.context and hasattr(self.context, 'variables'):
+                        variables = self.context.variables.list()
+                    
+                    self.formula = Formula(formula_str, variables=variables, context=self.context)
+                except Exception as e:
+                    # Fallback: keep as string
+                    self.formula = formula_str
+            else:
+                # It's already a Formula object
+                self.formula = formula_str
             self.units_str = str(units).strip()
         else:
             # String format: "formula units"
@@ -63,7 +79,7 @@ class FormulaWithUnits:
         """
         # Try to import Formula
         try:
-            from pg.macros.core.mathobjects import Formula
+            from pg.math.formula import Formula
         except ImportError:
             Formula = None
         
@@ -82,9 +98,15 @@ class FormulaWithUnits:
                 # Parse the formula part
                 if Formula:
                     try:
-                        formula = Formula(formula_part, context=self.context)
+                        # Get variables from context if available
+                        variables = None
+                        if self.context and hasattr(self.context, 'variables'):
+                            variables = self.context.variables.list()
+                        
+                        formula = Formula(formula_part, variables=variables, context=self.context)
                         return formula, unit_part
                     except Exception:
+                        # If Formula creation fails, store as string
                         pass
                 
                 # Fallback: store as string

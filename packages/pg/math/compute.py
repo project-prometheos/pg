@@ -77,6 +77,12 @@ def Compute(expression: Union[str, int, float], context=None):
     if 'Fraction' in context.name and _is_fraction_notation(expr_str):
         return _parse_fraction(expr_str, context)
 
+    # Check for unit expressions in Units context
+    if context.name == 'Units' or context.name == 'LimitedUnits':
+        unit_obj = _parse_unit_expression(expr_str, context)
+        if unit_obj is not None:
+            return unit_obj
+
     # Check if it's a constant expression (no variables)
     if _is_constant_expression(expr_str, context):
         # Evaluate as constant
@@ -478,3 +484,102 @@ def _parse_vector(expr: str, context) -> 'Vector':
                     Formula(comp, context.variables.list(), context))
 
     return Vector(*parsed_components)
+
+
+def _parse_unit_expression(expr: str, context) -> Union[object, None]:
+    """
+    Parse a unit expression like "75 ml", "33 ft/s", or "x^2 ft".
+
+    Returns a NumberWithUnits or FormulaWithUnits object if recognized,
+    otherwise returns None to fall through to other parsing methods.
+
+    Args:
+        expr: Expression string that may contain units
+        context: Units context
+
+    Returns:
+        NumberWithUnits or FormulaWithUnits object, or None
+    """
+    expr = expr.strip()
+
+    # Try to split on last space to separate formula/number from unit
+    # This handles:
+    # - "75 ml" → number + unit
+    # - "(-16 t^2 + 64 t) ft" → formula + unit
+    # - "x^2 + 1 m/s" → formula + unit
+
+    # Look for pattern: (expression) unit or expression unit
+    # Split by the LAST space to get potential unit
+    parts = expr.rsplit(None, 1)  # Split on last whitespace
+
+    if len(parts) != 2:
+        return None
+
+    formula_str, unit_str = parts
+
+    # Check if unit_str looks like a unit (letters, possibly with / or ^)
+    if not re.match(r'^[a-zA-Z][a-zA-Z0-9/\*\^\-]*$', unit_str):
+        return None
+
+    # Check if unit is actually defined in the context
+    if not _is_known_unit(unit_str, context):
+        return None
+
+    # Try to parse formula_str as a number first
+    try:
+        number_val = float(formula_str)
+        # It's a number! Return NumberWithUnits
+        from pg.macros.contexts.context_units import NumberWithUnits
+        return NumberWithUnits(number_val, unit_str, context)
+    except (ValueError, SyntaxError):
+        pass
+
+    # Not a simple number - try as formula
+    try:
+        from pg.macros.parsers.parser_formula_with_units import FormulaWithUnits
+        return FormulaWithUnits(formula_str, unit_str, context=context)
+    except Exception:
+        pass
+
+    return None
+
+
+def _is_known_unit(unit_str: str, context) -> bool:
+    """
+    Check if a unit string is a known unit in the context.
+
+    Args:
+        unit_str: Unit string to check (e.g., 'ml', 'ft/s')
+        context: Context to check in
+
+    Returns:
+        True if unit is known, False otherwise
+    """
+    # Handle compound units (e.g., "ft/s")
+    if '/' in unit_str:
+        parts = unit_str.split('/')
+        if len(parts) == 2:
+            # Check if both parts are known units
+            return (_is_simple_unit_known(parts[0].strip(), context) and
+                    _is_simple_unit_known(parts[1].strip(), context))
+
+    return _is_simple_unit_known(unit_str, context)
+
+
+def _is_simple_unit_known(unit_str: str, context) -> bool:
+    """Check if a simple (non-compound) unit is known."""
+    try:
+        from pg.macros.contexts.context_units import UNIT_DEFINITIONS
+
+        # Check all categories
+        for category, units in UNIT_DEFINITIONS.items():
+            if unit_str in units:
+                return True
+            # Check aliases
+            for unit_name, unit_info in units.items():
+                if unit_str in unit_info.get('aliases', []):
+                    return True
+
+        return False
+    except ImportError:
+        return False

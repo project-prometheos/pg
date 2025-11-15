@@ -311,7 +311,10 @@ class InProcessSandbox:
             # Compute function that delegates to pg_math
             def Compute(expr):
                 """Compute function - delegates to pg_math.compute.Compute."""
-                return _Compute(expr)
+                # Get the current context and pass it to Compute
+                # Use the context wrapper to ensure it's consistent
+                _current_context = _get_context()  # This uses the namespace's Context function
+                return _Compute(expr, context=_current_context)
 
             # Wrapper for Complex that handles list arguments (Perl compatibility)
             def Complex(real, imag=0, **kwargs):
@@ -349,9 +352,26 @@ class InProcessSandbox:
                     # Multiple arguments: List(1, 2, 3)
                     return _List(list(args), **kwargs)
 
+            # Wrapper for Formula that uses Compute in Units context  
+            def Formula_wrapper(expr, **kwargs):
+                """Formula wrapper that uses Compute for unit expressions in Units context."""
+                # Get current context
+                _current_ctx = _get_context()
+                
+                # ONLY modify behavior for Units context to handle unit expressions
+                # For all other contexts, use Formula directly without changes
+                if _current_ctx and _current_ctx.name in ('Units', 'LimitedUnits') and isinstance(expr, str):
+                    # In Units context, use Compute to handle unit expressions
+                    result = _Compute(expr, context=_current_ctx)
+                    # Return whatever Compute returns (Formula, FormulaWithUnits, or NumberWithUnits)
+                    return result
+                
+                # For non-Units contexts or non-string expressions, use Formula unchanged
+                return Formula(expr, **kwargs)
+
             # Make available in namespace
             self.namespace['Context'] = Context
-            self.namespace['Formula'] = Formula
+            self.namespace['Formula'] = Formula_wrapper
             self.namespace['Real'] = Real
             self.namespace['Complex'] = Complex
             self.namespace['Compute'] = Compute
@@ -1204,6 +1224,7 @@ class InProcessSandbox:
                 # 1. Simple types (int, float, str, bool, list, tuple, dict)
                 # 2. MathValue objects (Complex, Real, Vector, Matrix, Formula, etc.)
                 # 3. Answer evaluators (objects with evaluate/cmp/check methods)
+                # 4. NumberWithUnits objects (for Units context)
                 if isinstance(value, (int, float, str, bool, list, tuple, dict)):
                     variables[key] = value
                 elif hasattr(value, 'evaluate') or hasattr(value, 'cmp') or hasattr(value, 'check'):
@@ -1214,6 +1235,14 @@ class InProcessSandbox:
                     try:
                         from pg.math.value import MathValue
                         if isinstance(value, MathValue):
+                            variables[key] = value
+                    except ImportError:
+                        pass
+                    
+                    # Try to import NumberWithUnits to check instance
+                    try:
+                        from pg.macros.contexts.context_units import NumberWithUnits
+                        if isinstance(value, NumberWithUnits):
                             variables[key] = value
                     except ImportError:
                         pass
