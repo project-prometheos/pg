@@ -562,6 +562,12 @@ class Context:
         # Same as Point but with vector operations
         self._init_point()
 
+        # Add vector unit constants i, j, k
+        from pg.math.geometric import Vector
+        self.constants.add('i', Vector([1, 0, 0]))
+        self.constants.add('j', Vector([0, 1, 0]))
+        self.constants.add('k', Vector([0, 0, 1]))
+
     def _init_interval(self):
         """Initialize Interval context for interval notation."""
         # Start with Numeric base

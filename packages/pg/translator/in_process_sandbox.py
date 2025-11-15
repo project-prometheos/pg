@@ -298,7 +298,15 @@ class InProcessSandbox:
                     ctx = Context('Numeric')  # Switch to Numeric context
                     Context().variables.are(x='Real', y='Real')
                 """
-                return _get_context(name)
+                ctx = _get_context(name)
+
+                # Sync context constants to namespace
+                # This makes i, j, k (and other context-specific constants) available
+                for const_name in ['i', 'j', 'k']:
+                    if const_name in ctx.constants:  # Uses __contains__ method
+                        self.namespace[const_name] = ctx.constants.get(const_name)
+
+                return ctx
 
             # Compute function that delegates to pg_math
             def Compute(expr):
@@ -358,9 +366,13 @@ class InProcessSandbox:
 
             # Create imaginary unit i = Complex(0, 1)
             # Also define j and k as aliases for i (engineering notation and vector unit vectors)
+            # i, j, k are now context-dependent constants
+            # They will be set by Context() when called
+            # In Complex context: i is the imaginary unit
+            # In Vector context: i, j, k are unit vectors
+            # Initialize with Complex defaults for backward compatibility
             self.namespace['i'] = _Complex(0, 1)
             self.namespace['j'] = _Complex(0, 1)
-            # Also used as unit vector in some contexts
             self.namespace['k'] = _Complex(0, 1)
 
             # Array and utility functions are now imported from pg.macros modules
@@ -479,6 +491,39 @@ class InProcessSandbox:
                 """Stub pop_up_list_print_q - dummy function for printing questions."""
                 return ""
 
+            # Helper functions for operators that can work with multiple types
+            def pg_concat(left, right):
+                """
+                Perl dot (.) operator: concatenates two values.
+                Works with strings, vectors (dot product), and converts to strings as needed.
+                """
+                # Check if left is a Vector (has a __mul__ method for dot product)
+                if hasattr(left, '__mul__') and hasattr(left, 'value'):
+                    # This is likely a Vector - use dot product
+                    return left * right
+                # Otherwise, treat as string concatenation
+                return str(left) + str(right)
+
+            def pg_repeat(left, right):
+                """
+                Perl repetition (x) operator: repeats a string or computes cross product.
+                Works with strings, integers, and vectors (cross product).
+                """
+                # Check if left is a Vector (has a cross method or cross product support)
+                if hasattr(left, '__mul__') and hasattr(left, 'value'):
+                    # This is likely a Vector - might have cross product
+                    # Try to use cross product if right is also a Vector
+                    if hasattr(right, '__mul__') and hasattr(right, 'value'):
+                        # Both are Vectors, compute cross product
+                        if hasattr(left, 'cross'):
+                            return left.cross(right)
+                        # Fallback: use * operator if defined
+                        return left * right
+                # Otherwise, treat as string repetition
+                if isinstance(right, int):
+                    return str(left) * right
+                raise TypeError(f"can't use '{type(right).__name__}' as repeat count")
+
             # Add pg_core functions to namespace
             # Register core functions
             self.namespace.update({
@@ -502,6 +547,9 @@ class InProcessSandbox:
                 'PGEnvironment': pg_core.PGEnvironment,
                 'set_environment': pg_core.set_environment,
                 'get_environment': pg_core.get_environment,
+                # Helper functions for operators
+                'pg_concat': pg_concat,
+                'pg_repeat': pg_repeat,
                 # Common constants
                 'SPACE': ' ',
                 # Phase 4: Use imported math utilities directly
@@ -680,13 +728,6 @@ class InProcessSandbox:
             # Fallback: return list
             return [non_zero_random(-5, 5), non_zero_random(-5, 5), non_zero_random(-5, 5)]
 
-        def non_zero_vector3D(*args):
-            """Stub for non_zero_vector3D - generates non-zero 3D vector."""
-            Vector = self.namespace.get('Vector')
-            if Vector:
-                return Vector([non_zero_random(-5, 5), non_zero_random(-5, 5), non_zero_random(-5, 5)])
-            return [non_zero_random(-5, 5), non_zero_random(-5, 5), non_zero_random(-5, 5)]
-
         def norm(vector):
             """Compute the norm (magnitude/length) of a vector."""
             if hasattr(vector, 'norm'):
@@ -743,6 +784,39 @@ class InProcessSandbox:
             """Stub for Perl's undef - returns None."""
             return None
 
+        # Helper functions for operators that can work with multiple types
+        def pg_concat(left, right):
+            """
+            Perl dot (.) operator: concatenates two values.
+            Works with strings, vectors (dot product), and converts to strings as needed.
+            """
+            # Check if left is a Vector (has a __mul__ method for dot product)
+            if hasattr(left, '__mul__') and hasattr(left, 'value'):
+                # This is likely a Vector - use dot product
+                return left * right
+            # Otherwise, treat as string concatenation
+            return str(left) + str(right)
+
+        def pg_repeat(left, right):
+            """
+            Perl repetition (x) operator: repeats a string or computes cross product.
+            Works with strings, integers, and vectors (cross product).
+            """
+            # Check if left is a Vector (has a cross method or cross product support)
+            if hasattr(left, '__mul__') and hasattr(left, 'value'):
+                # This is likely a Vector - might have cross product
+                # Try to use cross product if right is also a Vector
+                if hasattr(right, '__mul__') and hasattr(right, 'value'):
+                    # Both are Vectors, compute cross product
+                    if hasattr(left, 'cross'):
+                        return left.cross(right)
+                    # Fallback: use * operator if defined
+                    return left * right
+            # Otherwise, treat as string repetition
+            if isinstance(right, int):
+                return str(left) * right
+            raise TypeError(f"can't use '{type(right).__name__}' as repeat count")
+
         self.namespace.update({
             'DOCUMENT': DOCUMENT,
             'ENDDOCUMENT': ENDDOCUMENT,
@@ -764,6 +838,9 @@ class InProcessSandbox:
             'parserFunction': parserFunction,
             'get_environment': get_environment,
             'set_environment': set_environment,
+            # Helper functions for operators
+            'pg_concat': pg_concat,
+            'pg_repeat': pg_repeat,
             # Geometric stubs
             'non_zero_point3D': non_zero_point3D,
             'non_zero_vector3D': non_zero_vector3D,

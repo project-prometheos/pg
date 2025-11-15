@@ -224,9 +224,15 @@ def non_zero_vector2D(low: float = -9, high: float = 9, step: float | None = 1) 
 
 
 
-def non_zero_vector3D(low: float = -9, high: float = 9, step: float | None = 1) -> List[float]:
-    """Generate a random non-zero 3D vector."""
-    return non_zero_vector(low, high, 3, step)
+def non_zero_vector3D(low: float = -9, high: float = 9, step: float | None = 1):
+    """
+    Generate a random non-zero 3D vector as a Vector MathObject.
+
+    Returns a Vector object with 3 components, all non-zero.
+    """
+    from pg.math.geometric import Vector
+    components = non_zero_vector(low, high, 3, step)
+    return Vector(components)
 
 
 

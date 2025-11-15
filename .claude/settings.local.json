@@ -23,7 +23,18 @@
       "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest packages/pg/translator/tests/test_tutorial_sample_problems.py::test_tutorial_problem_renders[VectorOperations] packages/pg/translator/tests/test_tutorial_sample_problems.py::test_tutorial_problem_renders[Vectors] -xvs)",
       "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" debug_vector.py)",
       "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest packages/pg/translator/tests/test_tutorial_sample_problems.py::test_tutorial_problem_renders[CustomAnswerCheckers] -xvs)",
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" debug_customchecker.py)"
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" debug_customchecker.py)",
+      "Bash(python -m pytest:*)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\":*)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -c:*)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -c \"\nimport sys\nsys.path.insert(0, ''d:/pg/packages'')\nfrom pg.translator.translator import PGTranslator\nprint(''Import successful'')\n\")",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest packages/pg/translator/tests/test_tutorial_sample_problems.py::test_tutorial_problem_renders[VectorOperations] -xvs)",
+      "Bash(find:*)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest packages/pg/translator/tests/test_tutorial_sample_problems.py::test_tutorial_problem_renders[VectorOperations] -xvs -p no:cacheprovider)",
+      "Bash(set:*)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -c \"\nimport subprocess\nimport sys\nresult = subprocess.run([\n    sys.executable, ''''-m'''', ''''pytest'''', \n    ''''packages/pg/translator/tests/test_tutorial_sample_problems.py::test_tutorial_problem_renders[VectorOperations]'''',\n    ''''-xvs''''\n], cwd=''''d:/pg/packages/pg/translator'''')\nsys.exit(result.returncode)\n\")",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -c \"\ncode = ''''''d = v1 . v2''''''\ntry:\n    compile(code, ''<test>'', ''exec'')\n    print(''Compiled successfully'')\nexcept SyntaxError as e:\n    print(f''Syntax error: {e}'')\n\")",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest packages/pg/translator/tests/test_tutorial_sample_problems.py -v --tb=no)"
     ],
     "deny": [],
     "ask": []

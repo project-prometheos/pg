@@ -183,30 +183,38 @@ def non_zero_point3D(*args, **kwargs) -> List[float]:
     return [non_zero_random(), non_zero_random(), non_zero_random()]
 
 
-def non_zero_vector3D(*args, **kwargs) -> List[float]:
+def non_zero_vector3D(*args, **kwargs):
     """
-    Generate a random non-zero 3D vector.
-    
-    All components are non-zero integers in range [-5, 5].
-    
+    Generate a random non-zero 3D vector as a Vector MathObject.
+
+    All components are non-zero integers in range (or specified range).
+
     Args:
-        *args: Optional range arguments (unused in basic version)
-        **kwargs: Additional options
-        
+        *args: Optional range arguments (low, high, step)
+               If provided: (low, high, step) - generates values in [low, high] by step
+               If not provided: uses range [-5, 5] by 1
+        **kwargs: Additional options (seed, rng, etc.)
+
     Returns:
-        List [x, y, z] representing a non-zero 3D vector
-        
+        Vector object with 3 components [x, y, z]
+
     Example:
         >>> vector = non_zero_vector3D()
-        >>> len(vector)
-        3
-        >>> all(v != 0 for v in vector)
+        >>> vector.components
+        [x, y, z]
+        >>> all(v != 0 for v in vector.value)
         True
-    
+
     Perl Source: PGauxiliaryFunctions.pl non_zero_vector3D function
     """
-    # Same implementation as non_zero_point3D
-    return non_zero_point3D(*args, **kwargs)
+    from pg.math.geometric import Vector
+
+    # Generate the component list using the point function
+    components = non_zero_point3D(*args, **kwargs)
+
+    # Wrap in Vector MathObject and return
+    result = Vector(components)
+    return result
 
 
 __all__ = [

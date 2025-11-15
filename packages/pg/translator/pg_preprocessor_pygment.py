@@ -172,6 +172,17 @@ class PGPreprocessor:
         # so if we convert ->with( to .with_params(, Lark will parse it as string concatenation.
         # Instead, we'll handle ->with( in the IR emission phase via post-processing.
 
+        # Handle Perl's . (concatenation) and x (repetition) operators for compatibility with Vector dot/cross
+        # These will be converted to pg_concat/pg_repeat which can handle both string ops and Vector operations
+        # Use word boundaries to avoid matching dots in numbers or method calls
+        import re
+        # Replace ` . ` with ` pg_concat( ... ) ` - matches spaces around the dot
+        # Handle both $var and var (with and without leading $)
+        pg_source = re.sub(r'(\$?\w+)\s+\.\s+(\$?\w+)',  r'pg_concat(\1, \2)', pg_source)
+        # Replace ` x ` with ` pg_repeat( ... ) ` - matches word boundaries around x operator
+        # But be careful not to match 'x' in identifiers, so require word boundaries
+        pg_source = re.sub(r'(\$?\w+)\s+x\s+(\$?\w+)',  r'pg_repeat(\1, \2)', pg_source)
+
         lines = pg_source.split("\n")
         output_lines: List[str] = []
         text_blocks: List[Tuple[str, str]] = []
@@ -1837,23 +1848,19 @@ if __name__ == "__main__":
                 }
                 py_op = op_map.get(op, op)
 
-                # Special handling for string concatenation (Perl's . operator)
-                # In Perl, . automatically converts values to strings
-                # In Python, we need to explicitly convert non-string operands
+                # Special handling for . and x operators
+                # These could be either string operations or Vector dot/cross products
+                # For now, use function calls that can handle both cases
                 if op == ".":
-                    # Check if right operand needs wrapping in str()
-                    # String literals starting with " or ' are fine
-                    # f-strings starting with f" or f' are fine
-                    # str() calls are fine
-                    # Everything else should be wrapped in str()
-                    is_str_literal = (py_right.startswith(
-                        '"') or py_right.startswith("'"))
-                    is_fstring = (py_right.startswith('f"') or py_right.startswith("f'") or
-                                  py_right.startswith('F"') or py_right.startswith("F'"))
-                    is_str_call = py_right.startswith("str(")
-
-                    if not (is_str_literal or is_fstring or is_str_call):
-                        py_right = f"str({py_right})"
+                    # Could be string concatenation or dot product
+                    # Use a helper function that tries dot first (for Vector)
+                    # then falls back to string concatenation
+                    return f"pg_concat({py_left}, {py_right})"
+                elif op == "x":
+                    # Could be string repetition or cross product
+                    # Use a helper function that tries cross product first (for Vector)
+                    # then falls back to string repetition
+                    return f"pg_repeat({py_left}, {py_right})"
 
                 return f"({py_left} {py_op} {py_right})"
 
