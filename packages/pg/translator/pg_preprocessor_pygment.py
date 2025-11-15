@@ -844,11 +844,15 @@ class PGPreprocessor:
                 # Convert $obj_var to Python name (remove $)
                 py_var = obj_var[1:] if obj_var.startswith('$') else obj_var
 
+                # Preserve indentation from the original line
+                match = re.match(r'^(\s*)', original_line)
+                indent = match.group(1) if match else ''
+
                 # Emit the method call with content as argument
                 # Split into multiple lines to avoid embedding newlines in f-string
-                output_lines.append(f"{py_var}.{method_name}(r'''")
+                output_lines.append(f"{indent}{py_var}.{method_name}(r'''")
                 output_lines.append(escaped_content)
-                output_lines.append("''')")
+                output_lines.append(f"{indent}''')")
 
                 # Skip the END marker
                 i += 1
