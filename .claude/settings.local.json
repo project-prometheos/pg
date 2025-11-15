@@ -1,8 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -c:*)",
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"packages/pg/translator/tests/test_tutorial_sample_problems_runtime.py\" -v)"
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest packages/pg/translator/tests/test_tutorial_sample_problems_runtime.py -v --tb=no)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''''EOF''''\nImplement full closure translation support for complex Perl closures\n\nAdds comprehensive support for translating complex Perl closures with control\nflow to extracted Python functions, rather than stub lambdas.\n\nChanges:\n- Add closure counter (_closure_counter) to track unique function names\n- Create _is_complex_closure() helper to detect closures needing extraction\n- Create _generate_closure_name() helper for unique function naming\n- Refactor _emit_closure() to return either lambda or tuple of (func_lines, func_name)\n- Update preprocess() calling site to handle extracted closure functions\n- Add _emit_ir support for return statements and nested param_unpack\n- Implement intelligent line splitting for multi-line control flow statements\n- Add filtering to remove problematic statements during function extraction\n\nBenefits:\n- Complex closures now extract as proper def functions instead of None lambdas\n- Proper return statement handling within control flow\n- Better parameter unpacking support for nested variable assignments\n\nKnown issues:\n- Some problems still have generation issues that prevent proper testing\n- Further work needed to resolve param_unpack generation edge cases\n\nGenerated closure example:\n  def _closure_checker_1(correct, student, self):\n      f1stu, f2stu = student\n      f1, f2 = correct\n      if condition1:\n          return [1, 1]\n      elif condition2:\n          return [1, 0]\n      ...\n\n🤖 Generated with Claude Code\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []

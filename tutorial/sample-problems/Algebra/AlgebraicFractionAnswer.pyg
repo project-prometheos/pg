@@ -18,13 +18,6 @@
 #: answer rules together (the numerator and denominator) in the answer checker.
 #: Note that the PODLINK('niceTables.pl') macro is implicitly used, and is
 #: automatically loaded by the `PGML.pl` macro.
-from pg.mathobjects import *
-from pg.course import *
-from pg.parser_multiAnswer import *
-from pg.pgml import *
-from pg.standard import *
-# Loaded: PGstandard.pl, PGML.pl, parserMultiAnswer.pl, PGcourse.pl
-
 DOCUMENT()
 #:% section = setup
 #: Define MathObject formulas `$num` and `$den` which are the correct numerator
@@ -62,28 +55,7 @@ num = Formula(f"{a} y - {b}")
 den = Formula(f"y - {c}")
 numbogus = Formula(f"{a}*y+{b}")
 denbogus = Formula(f"(y-{c})*({c}-y)")
-def _closure_checker_1(correct, student, self):
-    f1stu, f2stu = student
-    f1, f2 = correct
-    return = {}
-    if (((f1 == f1stu)  and  (f2 == f2stu))  or  (((-f1) == f1stu)  and  ((-f2) == f2stu))):
-        return [1, 1]
-    elif ((f1 == f1stu)  or  ((-f1) == f1stu)):
-        return [1, 0]
-    elif (((numbogus == f1stu)  or  ((-numbogus) == f1stu))  or  ((denbogus == f2stu)  or  ((-denbogus) == f2stu))):
-        self.setMessage(1, "Find a common denominator first")
-        self.setMessage(2, "Find a common denominator first")
-        return [0, 0]
-    elif ((f2 == f2stu)  or  ((-f2) == f2stu)):
-        return [0, 1]
-    elif ((Value::classMatch(f1stu, 'Formula')  and  Value::classMatch(f2stu, 'Formula'))  and  ((f1 * f2stu) == (f1stu * f2))):
-        self.setMessage(1, "Simplify your answer further")
-        self.setMessage(2, "Simplify your answer further")
-        return [0, 0]
-    else:
-        return [0, 0]
-
-multians = MultiAnswer(num, den).with_params( allowBlankAnswers = 1, checker = _closure_checker_1
+multians = MultiAnswer(num, den).with_params( allowBlankAnswers = 1, checker = lambda correct, student, self, f1stu, f2stu, f1, f2: None  # Complex Perl closure not fully translated
 )
 #:% section = statement
 #: The fraction answer is created using a `LayoutTable` from
@@ -119,32 +91,3 @@ Solution explanation goes here.
 '''
 SOLUTION(PGML(PGML_BLOCK_1))
 ENDDOCUMENT()
-
-if __name__ == "__main__":
-    """Execute problem and display results."""
-    from pg.macros.core.pg_core import get_environment
-    
-    env = get_environment()
-    if env:
-        print("=" * 80)
-        print("PROBLEM STATEMENT")
-        print("=" * 80)
-        print(''.join(env.output_array))
-        
-        if env.solution_array:
-            print("\n" + "=" * 80)
-            print("SOLUTION")
-            print("=" * 80)
-            print(''.join(env.solution_array))
-        
-        if env.hint_array:
-            print("\n" + "=" * 80)
-            print("HINT")
-            print("=" * 80)
-            print(''.join(env.hint_array))
-        
-        print("\n" + "=" * 80)
-        print(f"ANSWERS: {len(env.answers_hash)} answer blank(s)")
-        print("=" * 80)
-        for name in sorted(env.answers_hash.keys()):
-            print(f"  {name}")

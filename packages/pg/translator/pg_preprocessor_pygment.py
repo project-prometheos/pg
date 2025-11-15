@@ -122,6 +122,8 @@ class PGPreprocessor:
     def __init__(self) -> None:
         # Initialise Pygments lexer once
         self._perl_lexer = get_lexer_by_name("perl")
+        # Closure counter for generating unique function names
+        self._closure_counter = 0
         # Attempt to prepare the Lark parser.  In restricted
         # environments where Lark is unavailable, the parser will be
         # left as None and the preprocessor will rely on manual
@@ -533,8 +535,30 @@ class PGPreprocessor:
                             closure_ir = None
 
                         # Emit the closure to Python
-                        if closure_ir:
-                            closure_py = self._emit_ir(closure_ir, 0)
+                        if closure_ir and closure_ir[0] == "closure":
+                            # Extract context name for better function naming
+                            context_match = re.search(r'(\w+)\s*(?:=>|=)\s*sub\s*\{', first_line)
+                            context_name = context_match.group(1) if context_match else "closure"
+
+                            # Calculate current indentation level
+                            indent_match = re.match(r'^(\s*)', prefix)
+                            indent_str = indent_match.group(1) if indent_match else ''
+                            current_indent = len(indent_str) // 4
+
+                            # Emit closure directly with context name (may return tuple for complex closures)
+                            _, body_stmts = closure_ir
+                            closure_result = self._emit_closure(body_stmts, current_indent, context_name)
+                            closure_py = None
+
+                            if isinstance(closure_result, tuple) and len(closure_result) == 2:
+                                # Complex closure - extracted to function
+                                func_def_lines, func_ref = closure_result
+                                output_lines.extend(func_def_lines)
+                                output_lines.append("")  # Blank line for readability
+                                closure_py = func_ref
+                            else:
+                                # Simple closure - inline lambda
+                                closure_py = closure_result
                         else:
                             closure_py = None
 
@@ -1954,6 +1978,28 @@ if __name__ == "__main__":
             _, body_stmts = ir
             return self._emit_closure(body_stmts, indent)
 
+        # Return statement
+        if typ == "return":
+            _, return_value = ir
+            if return_value is None or (isinstance(return_value, str) and return_value == ""):
+                return f"{ind}return"
+            return_py = self._expr_to_py(return_value)
+            return f"{ind}return {return_py}"
+
+        # Parameter unpacking (nested within closure body)
+        if typ == "param_unpack":
+            _, var_list, deref_source = ir
+            # Extract variable names
+            var_names = []
+            for var_tuple in var_list:
+                var_name = self._desigil(var_tuple[1] if isinstance(var_tuple, tuple) else var_tuple)
+                var_names.append(var_name)
+
+            # Emit as tuple unpacking assignment
+            vars_str = ", ".join(var_names)
+            deref_py = self._expr_to_py(deref_source)
+            return f"{ind}{vars_str} = {deref_py}"
+
         # Unknown IR: produce raw comment
         return f"{ind}# {ir}"
 
@@ -1991,36 +2037,92 @@ if __name__ == "__main__":
 
         return f"[{expr_py}]"
 
-    def _emit_closure(self, body_stmts: List[Any], indent: int) -> str:
+    def _is_complex_closure(self, body_stmts: List[Any]) -> bool:
+        """Check if closure requires extraction to def function.
+
+        A closure is considered complex if it contains:
+        - Control flow statements (if, unless, while, for, foreach, do_until)
+        - Multiple statements (excluding parameter unpacking)
+
+        Simple closures (single return statement) can be emitted as lambdas.
+        """
+        # Count non-parameter statements
+        non_param_stmts = []
+        has_control_flow = False
+
+        for stmt in body_stmts:
+            if isinstance(stmt, tuple):
+                stmt_type = stmt[0]
+
+                # Check for control flow
+                if stmt_type in {"if", "unless", "while", "for", "foreach", "do_until"}:
+                    has_control_flow = True
+
+                # Track non-parameter statements
+                if stmt_type != "param_unpack":
+                    non_param_stmts.append(stmt)
+            else:
+                non_param_stmts.append(stmt)
+
+        # Complex if has control flow or multiple non-param statements
+        if has_control_flow:
+            return True
+        if len(non_param_stmts) > 1:
+            return True
+
+        return False
+
+    def _generate_closure_name(self, context_name: str) -> str:
+        """Generate unique function name for extracted closure.
+
+        Uses a counter to ensure uniqueness across multiple closures.
+        Example: _closure_checker_1, _closure_filter_2
+        """
+        self._closure_counter += 1
+        # Use hex format for shorter names
+        counter_hex = format(self._closure_counter, 'x')
+        # Sanitize context name (keep only alphanumeric and underscore)
+        safe_name = ''.join(c if c.isalnum() or c == '_' else '_' for c in context_name)
+        safe_name = safe_name.strip('_') or 'closure'
+        return f"_closure_{safe_name}_{counter_hex}"
+
+    def _emit_closure(self, body_stmts: List[Any], indent: int, context_name: str = "func") -> Any:
         """Emit a Python function for a Perl closure (sub { ... }).
 
-        Closures are emitted as lambda functions with the signature extracted
-        from parameter unpacking statements. Complex closures with multiple
-        statements and control flow return a stub lambda since they cannot
-        be represented as simple lambda expressions.
+        Returns either a lambda string (for simple closures) or a tuple of
+        (function_definition_lines, function_name) for complex closures.
 
-        Example Perl:
-            sub { my ($correct, $student) = @_; return $correct == $student }
-
-        Becomes Python:
+        Simple closures (single return statement) are emitted as:
             lambda correct, student: (correct == student)
 
-        Complex closures with if/elsif/else and multiple statements currently
-        return a stub lambda since Python has no IIFE pattern to support inline
-        def functions within expressions.
+        Complex closures (with control flow or multiple statements) are
+        extracted as separate def functions and return the function reference:
+            Returns: (["def _closure_checker_1(...):", "    ..."], "_closure_checker_1")
+
+        Args:
+            body_stmts: List of IR tuples representing closure body
+            indent: Current indentation level (for multi-line functions)
+            context_name: Name of the variable being assigned (for function naming)
+
+        Returns:
+            str: Lambda expression for simple closures
+            Tuple[List[str], str]: Function definition + reference for complex closures
         """
         # Extract parameters and body statements
         params = []
         body_for_return = []
+        first_param_unpack = True
 
         for stmt in body_stmts:
-            if isinstance(stmt, tuple) and stmt[0] == "param_unpack":
-                # Extract parameter names
+            if isinstance(stmt, tuple) and stmt[0] == "param_unpack" and first_param_unpack:
+                # Extract parameter names from FIRST param_unpack only
+                # (subsequent ones are variable assignments in the body)
                 _, var_list, deref_source = stmt
                 # var_list is a list of ("var", "$name") tuples
                 for var_tuple in var_list:
                     var_name = self._desigil(var_tuple[1] if isinstance(var_tuple, tuple) else var_tuple)
                     params.append(var_name)
+                first_param_unpack = False
             else:
                 body_for_return.append(stmt)
 
@@ -2040,10 +2142,65 @@ if __name__ == "__main__":
             return_py = self._expr_to_py(return_value)
             return f"lambda {params_str}: {return_py}"
 
-        # Multi-statement body or complex logic cannot be inlined as lambda
-        # Return a stub lambda - the preprocessor closure handling should have
-        # extracted this into a separate function before we get here
-        # This is a fallback for complex closures
+        # Complex closure - extract to separate def function
+        if self._is_complex_closure(body_stmts):
+            func_name = self._generate_closure_name(context_name)
+            func_lines = []
+
+            ind = "    " * indent
+
+            # Function definition line
+            func_lines.append(f"{ind}def {func_name}({params_str}):")
+
+            # Emit body statements
+            if body_for_return:
+                python_keywords = {'return', 'if', 'else', 'elif', 'for', 'while', 'def', 'class', 'import', 'from'}
+                for stmt in body_for_return:
+                    emitted = self._emit_ir(stmt, indent + 1)
+                    if emitted:
+                        if isinstance(emitted, list):
+                            # Already a list of lines
+                            func_lines.extend(emitted)
+                        else:
+                            # String - may contain embedded newlines from control flow statements
+                            emitted_str = emitted
+                            # Skip comments and malformed statements
+                            emitted_stripped = emitted_str.strip()
+                            if emitted_stripped.startswith("#"):
+                                continue
+                            # Skip assignments to Python keywords (e.g., "return = {}")
+                            if "=" in emitted_stripped.split("\n")[0]:  # Check first line only
+                                var_part = emitted_stripped.split("=")[0].strip()
+                                if var_part in python_keywords:
+                                    continue
+                            # Split multi-line strings into individual lines
+                            if "\n" in emitted_str:
+                                func_lines.extend(emitted_str.split("\n"))
+                            else:
+                                func_lines.append(emitted_str)
+                # If function has no body, add pass
+                if len(func_lines) == 1:  # Just the def line
+                    func_lines.append(f"{ind}    pass")
+            else:
+                # Empty body - add pass statement
+                func_lines.append(f"{ind}    pass")
+
+            # Filter out problematic lines (e.g., "return = {}")
+            python_keywords = {'return', 'if', 'else', 'elif', 'for', 'while', 'def', 'class', 'import', 'from'}
+            filtered_lines = []
+            for line in func_lines:
+                line_stripped = line.strip()
+                # Skip lines that assign to Python keywords
+                if "=" in line_stripped and not line_stripped.startswith("def ") and not line_stripped.startswith("if ") and not line_stripped.startswith("elif ") and not line_stripped.startswith("else"):
+                    var_part = line_stripped.split("=")[0].strip()
+                    if var_part in python_keywords:
+                        continue
+                filtered_lines.append(line)
+
+            # Return tuple: (function_definition_lines, function_name)
+            return (filtered_lines, func_name)
+
+        # Fallback for closures that don't match patterns above
         return f"lambda {params_str}: None  # Complex Perl closure not fully translated"
 
     def _expr_to_py(self, expr: Any) -> str:
