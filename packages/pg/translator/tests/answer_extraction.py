@@ -32,6 +32,7 @@ def extract_correct_answers(result: Any) -> Dict[str, str]:
         return {}
 
     correct_answers = {}
+    multi_answer_map = {}  # Track MultiAnswer objects and their blank indices
 
     for blank_name, blank_info in result.answer_blanks.items():
         if not blank_info:
@@ -52,6 +53,15 @@ def extract_correct_answers(result: Any) -> Dict[str, str]:
         if not ans_eval:
             continue
 
+        # Check if this is a MultiAnswer object
+        if hasattr(ans_eval, "correct_answers") and isinstance(ans_eval.correct_answers, (list, tuple)):
+            # This is a MultiAnswer - store it for special handling
+            obj_id = id(ans_eval)
+            if obj_id not in multi_answer_map:
+                multi_answer_map[obj_id] = {"obj": ans_eval, "blanks": []}
+            multi_answer_map[obj_id]["blanks"].append(blank_name)
+            continue
+
         # Extract the answer string
         try:
             answer_str = extract_answer_string(ans_eval)
@@ -60,6 +70,23 @@ def extract_correct_answers(result: Any) -> Dict[str, str]:
         except Exception as e:
             # Log but don't fail - some answer types may not be extractable
             # These will be skipped from testing
+            pass
+
+    # Process MultiAnswer objects
+    for obj_id, multi_data in multi_answer_map.items():
+        ans_eval = multi_data["obj"]
+        blank_names = multi_data["blanks"]
+
+        try:
+            # Extract each answer from correct_answers list
+            if hasattr(ans_eval, "correct_answers"):
+                for i, ans in enumerate(ans_eval.correct_answers):
+                    if i < len(blank_names):
+                        answer_str = extract_answer_string(ans)
+                        if answer_str:
+                            correct_answers[blank_names[i]] = answer_str
+        except Exception:
+            # If extraction fails for MultiAnswer, skip it
             pass
 
     return correct_answers

@@ -326,7 +326,7 @@ def check_answers(translator, problem_file, seed, user_answers):
     max_score = len(result.answer_results)
 
     for i, (blank_name, answer_result) in enumerate(result.answer_results.items(), 1):
-        correct = answer_result.get('score', 0) == 1
+        correct = answer_result.score >= 1.0
         user_answer = user_answers.get(blank_name, '')
 
         if correct:
@@ -338,8 +338,8 @@ def check_answers(translator, problem_file, seed, user_answers):
         print(f"  Your answer: {user_answer}")
 
         # Show feedback if available
-        if answer_result.get('ans_message'):
-            print(f"  Feedback: {answer_result['ans_message']}")
+        if hasattr(answer_result, 'answer_message') and answer_result.answer_message:
+            print(f"  Feedback: {answer_result.answer_message}")
 
         print()
 

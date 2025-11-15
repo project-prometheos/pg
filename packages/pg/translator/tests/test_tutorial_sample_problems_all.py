@@ -186,7 +186,12 @@ class TestTutorialSampleProblems:
         # Basic checks
         assert result.statement_html is not None, "Problem should have statement_html"
         assert isinstance(result.statement_html, str), "statement_html should be a string"
-        assert len(result.statement_html) > 0, "statement_html should not be empty"
+
+        # Allow empty statement for snippet problems (they demonstrate techniques, not full problems)
+        problem_content = problem_path.read_text()
+        is_snippet = "type = snippet" in problem_content
+        if not is_snippet:
+            assert len(result.statement_html) > 0, "statement_html should not be empty"
 
     def test_sample_problems_directory_exists(self):
         """Verify that the tutorial/sample-problems directory exists."""

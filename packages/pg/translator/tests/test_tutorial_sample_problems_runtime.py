@@ -153,20 +153,28 @@ class TestTutorialSampleProblemsRuntime:
         if check_result.score < 1.0:
             # Build detailed failure message
             details = []
-            for blank_name, answer_result in check_result.answer_results.items():
-                if answer_result.score < 1.0:
-                    details.append(
-                        f"  {blank_name}:\n"
-                        f"    Score: {answer_result.score}\n"
-                        f"    Submitted: {correct_answers.get(blank_name, '?')}\n"
-                        f"    Expected: {answer_result.correct_answer}\n"
-                        f"    Feedback: {answer_result.answer_message}"
-                    )
+
+            if check_result.answer_results:
+                for blank_name, answer_result in check_result.answer_results.items():
+                    if answer_result.score < 1.0:
+                        details.append(
+                            f"  {blank_name}:\n"
+                            f"    Score: {answer_result.score}\n"
+                            f"    Submitted: {correct_answers.get(blank_name, '?')}\n"
+                            f"    Expected: {answer_result.correct_answer}\n"
+                            f"    Feedback: {answer_result.answer_message}"
+                        )
+            else:
+                # No answer results returned - answer checker may not have run properly
+                details.append(
+                    f"  No answer results returned from checker\n"
+                    f"  Submitted answers: {correct_answers}"
+                )
 
             pytest.fail(
                 f"Correct answer(s) did not score full credit\n"
                 f"Overall score: {check_result.score} (expected 1.0)\n"
-                f"Details:\n" + "\n".join(details)
+                f"Details:\n" + "\n".join(details) if details else "No details available"
             )
 
     def test_all_correct_answers(self):

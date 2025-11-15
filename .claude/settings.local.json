@@ -1,7 +1,26 @@
 {
   "permissions": {
     "allow": [
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest:*)"
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -c \"\ninputs = {''AnSwEr0001'': '''', ''AnSwEr0002'': ''''}\nprint(f''inputs: {inputs}'')\nprint(f''bool(inputs): {bool(inputs)}'')\nprint(f''inputs is not None: {inputs is not None}'')\n\")",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -c:*)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" pg_solve.py tutorial/sample-problems/Algebra/AnswerBlankInExponent.pg --seed 1234)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"d:\\pg\\packages\\pg\\translator\\tests\\test_tutorial_sample_problems_all.py::TestTutorialSampleProblems::test_problem_renders\" -v -k \"MatchingGraphs\" --tb=short)",
+      "Bash(python:*)",
+      "Bash(.venvScriptsActivate.ps1)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"packages\\pg\\translator\\tests\\test_tutorial_sample_problems_runtime.py::TestTutorialSampleProblemsRuntime::test_correct_answer_scores_full_credit[Algebra/ExpandedPolynomial.pg]\" -v --tb=short)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"packages/pg/translator/tests/test_tutorial_sample_problems_runtime.py\" -v --tb=short -k \"ExpandedPolynomial\")",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"packages/pg/translator/tests/test_tutorial_sample_problems_runtime.py\" -v --tb=short -k \"Arithmetic or LinearAlgebra or DiffCalc\")",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"packages/pg/translator/tests/test_tutorial_sample_problems_runtime.py\" -v --tb=long -k \"LinearApprox\")",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"packages/pg/translator/tests/test_tutorial_sample_problems_runtime.py\" -v --tb=short -k \"LinearApprox\")",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest:*)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"packages/pg/translator/tests/test_tutorial_sample_problems_runtime.py::TestTutorialSampleProblemsRuntime::test_all_correct_answers\" -v)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nAdd runtime testing framework and fix critical answer blanks bug\n\nThis commit introduces comprehensive runtime testing for tutorial sample problems\nand fixes a critical translator bug affecting answer blank registration.\n\n**New Features:**\n- Added answer_extraction.py: Module to extract correct answers from MathObject evaluators\n- Added test_tutorial_sample_problems_runtime.py: Parametrized test suite that:\n  - Generates each problem with seed 1234\n  - Extracts the correct answer from evaluators\n  - Submits the correct answer and verifies 100% score\n  - Provides comprehensive pass/skip/fail summary\n- Added RUNTIME_TESTING.md: User guide with examples and troubleshooting\n- Added documentation of test findings and answer type support\n\n**Critical Bug Fix - Answer Blanks Not Registering:**\nThis bug affected 130 of 159 problems (82%) - they rendered HTML correctly but\nhad no answer blanks registered for answer checking.\n\nRoot cause: Multiple issues prevented answer registration:\n1. Stub PGML function (line 736) overwrote proper implementation (line 480)\n2. Module export collision - pg.pgml/__init__.py exported a simplified PGML\n3. Overly cautious environment retrieval in in_process_sandbox.py\n\n**Fixes Applied:**\n- Removed stub PGML definition from in_process_sandbox.py (line 736)\n- Changed pg/pgml/__init__.py to NOT export PGML, allowing sandbox version\n- Improved environment retrieval using try-except pattern\n\n**Results:**\nBefore: 15 passed (9.5%), 130 skipped (82%), 12 failed (7.6%)\nAfter:  50 passed (31.8%), 69 skipped (43.9%), 38 failed (24.2%)\n\nThis is a 3.3x improvement in the pass rate and resolves the critical issue\nwhere most problems had no answer blanks. The 38 remaining failures need\ninvestigation for answer format issues or checker bugs.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"packages/pg/translator/tests/test_tutorial_sample_problems_runtime.py\" -v -k \"AlgebraicFractionAnswer\" --tb=short)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"packages/pg/translator/tests/test_tutorial_sample_problems_runtime.py\" -v -k \"AlgebraicFractionAnswer\" --tb=long)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" pg_solve.py tutorial/sample-problems/Algebra/AlgebraicFractionAnswer.pg --seed 1234 --solution)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"packages/pg/translator/tests/test_tutorial_sample_problems_runtime.py\" -v -k \"ExpandedPolynomial\" --tb=short)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
