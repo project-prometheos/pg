@@ -65,7 +65,6 @@ denbogus = Formula(f"(y-{c})*({c}-y)")
 def _closure_checker_1(correct, student, self):
     f1stu, f2stu = student
     f1, f2 = correct
-    return = {}
     if (((f1 == f1stu)  and  (f2 == f2stu))  or  (((-f1) == f1stu)  and  ((-f2) == f2stu))):
         return [1, 1]
     elif ((f1 == f1stu)  or  ((-f1) == f1stu)):

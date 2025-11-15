@@ -1065,6 +1065,23 @@ if __name__ == "__main__":
 
         code = wrap_with_perllist_nested(code)
 
+        # Final cleanup: remove invalid statements like "return = {}"
+        # These can appear as artifacts from closure translation
+        lines = code.split('\n')
+        python_keywords = {'return', 'if', 'else', 'elif', 'for', 'while', 'def', 'class', 'import', 'from'}
+        cleaned_lines = []
+        for line in lines:
+            line_stripped = line.strip()
+            # Skip lines that try to assign to Python keywords
+            if "=" in line_stripped and not line_stripped.startswith("def ") and not line_stripped.startswith("if ") and not line_stripped.startswith("elif ") and not line_stripped.startswith("else") and not line_stripped.startswith("class "):
+                var_part = line_stripped.split("=")[0].strip()
+                if var_part in python_keywords:
+                    # Skip this line - it's invalid
+                    continue
+            cleaned_lines.append(line)
+
+        code = '\n'.join(cleaned_lines)
+
         return PreprocessResult(code=code, text_blocks=text_blocks, line_map=line_map)
 
     def _initialize_arrays(self, code: str) -> str:
