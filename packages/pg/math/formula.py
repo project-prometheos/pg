@@ -133,6 +133,12 @@ class Formula(MathValue):
         # If expression is a string and SymPy is available, parse it
         if isinstance(expression, str) and SYMPY_AVAILABLE:
             try:
+                # Preprocess: convert Perl ^ operator to Python ** operator
+                # Only convert ^ when it appears to be used for exponentiation:
+                # After a number, variable, or closing paren/bracket: 2^3, x^2, (x+1)^2, [a]^2
+                import re
+                processed_expr = re.sub(r'([0-9a-zA-Z_\)\]])\^', r'\1**', expression)
+
                 # Build local_dict with variables as symbols and constants
                 local_dict = {var: sp.Symbol(var) for var in self.variables}
                 # Add mathematical constants
@@ -141,7 +147,7 @@ class Formula(MathValue):
                 local_dict['E'] = sp.E
                 local_dict['PI'] = sp.pi
                 self._sympy_expr = parse_expr(
-                    expression,
+                    processed_expr,
                     transformations=_SYMPY_TRANSFORMATIONS,
                     local_dict=local_dict,
                 )
@@ -204,8 +210,11 @@ class Formula(MathValue):
                     # Parse string values as sympy expressions
                     try:
                         # Handle implicit multiplication like '2pi' -> '2*pi'
+                        # Also convert ^ to ** for exponentiation (only when used as exponent)
+                        import re
+                        processed_value = re.sub(r'([0-9a-zA-Z_\)\]])\^', r'\1**', value)
                         parsed_value = parse_expr(
-                            value,
+                            processed_value,
                             transformations=_SYMPY_TRANSFORMATIONS,
                             local_dict={'pi': sp.pi, 'e': sp.E,
                                         'E': sp.E, 'PI': sp.pi}
@@ -243,7 +252,17 @@ class Formula(MathValue):
             from pg.parser.parser import Parser
             from pg.parser.visitors import EvalVisitor
 
-            parser = Parser(self.context)
+            # Use the formula's context if available, otherwise try to get the current context
+            eval_context = self.context
+            if eval_context is None:
+                try:
+                    from pg.math.context import get_current_context
+                    eval_context = get_current_context()
+                except (ImportError, RuntimeError):
+                    # No current context available
+                    pass
+
+            parser = Parser(eval_context)
             ast = parser.parse(expr_source)
 
             eval_bindings = {}
@@ -253,7 +272,7 @@ class Formula(MathValue):
                 else:
                     eval_bindings[var] = value
 
-            visitor = EvalVisitor(eval_bindings, self.context)
+            visitor = EvalVisitor(eval_bindings, eval_context)
             result = ast.accept(visitor)
 
             return MathValue.from_python(result)

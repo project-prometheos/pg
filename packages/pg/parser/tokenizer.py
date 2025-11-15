@@ -295,6 +295,7 @@ class Tokenizer:
                 if next_token.type in (
                     TokenType.VARIABLE,
                     TokenType.CONSTANT,
+                    TokenType.FUNCTION,
                     TokenType.LPAREN,
                     TokenType.LBRACKET,
                     TokenType.LANGLE,

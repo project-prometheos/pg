@@ -26,15 +26,40 @@ class Real(MathValue):
 
     type_precedence = TypePrecedence.REAL
 
-    def __init__(self, value: float | int, context=None):
+    def __init__(self, value: float | int | str, context=None):
         """
         Initialize a Real number.
 
         Args:
-            value: Numeric value (will be converted to float)
+            value: Numeric value (will be converted to float) or string expression (e.g., 'pi', 'pi/2')
             context: The Context (None = use current default)
         """
-        self.value = float(value)
+        # Handle string expressions like 'pi', 'pi/2', etc.
+        if isinstance(value, str):
+            try:
+                # Try to evaluate as a simple number first
+                self.value = float(value)
+            except (ValueError, SyntaxError):
+                # Try to evaluate as a mathematical expression
+                try:
+                    import math as _math
+                    # Create a namespace with math constants
+                    namespace = {
+                        'pi': _math.pi,
+                        'e': _math.e,
+                        'sqrt': _math.sqrt,
+                        'sin': _math.sin,
+                        'cos': _math.cos,
+                        'tan': _math.tan,
+                    }
+                    # Evaluate the expression
+                    self.value = float(eval(value, {"__builtins__": {}}, namespace))
+                except Exception:
+                    # If all else fails, raise the original error
+                    raise ValueError(f"Could not convert '{value}' to a real number")
+        else:
+            self.value = float(value)
+
         if context is not None:
             self.context = context
         else:

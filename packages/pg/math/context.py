@@ -474,13 +474,47 @@ class Context:
     Reference: lib/Context.pm (lines 1-500) in legacy Perl codebase
     """
 
+    def __new__(cls, name: str = 'Numeric'):
+        """
+        Create or get a Context.
+
+        When called with default 'Numeric', returns the current global context
+        (matching Perl's Context() behavior).
+        When called with a specific context name, switches to or creates that context.
+
+        Args:
+            name: Context name ('Numeric' returns current, others create/switch)
+
+        Returns:
+            A Context instance
+        """
+        # If called with default 'Numeric', return the current context (Perl-like behavior)
+        # This matches Perl's Context() which returns the current context
+        # We check for '__skip_singleton' in kwargs to allow internal creation
+        import sys
+        frame = sys._getframe(1)
+        calling_func = frame.f_code.co_name
+
+        # Skip singleton behavior when called from _create_context
+        if calling_func == '_create_context' or name != 'Numeric':
+            # Create a new instance
+            instance = object.__new__(cls)
+            return instance
+
+        # For Context() with default name, return current context
+        return get_context()
+
     def __init__(self, name: str = 'Numeric'):
         """
-        Create a new Context.
+        Create a new Context or initialize an existing one.
 
         Args:
             name: Context name (Numeric, Complex, Point, Vector, Interval, LimitedPolynomial, etc.)
         """
+        # If this context has already been initialized, skip re-initialization
+        if hasattr(self, 'name'):
+            return
+
         self.name = name
         self.variables = VariableManager()
         self.constants = ConstantManager()

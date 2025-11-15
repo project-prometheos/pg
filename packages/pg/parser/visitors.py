@@ -430,6 +430,10 @@ class EvalVisitor:
     def visit_function_call(self, node: FunctionCall) -> float:
         args = [arg.accept(self) for arg in node.args]
 
+        # Heaviside/step function: 0 if x <= 0, 1 if x > 0
+        def heaviside(x):
+            return 1.0 if x > 0 else 0.0
+
         # Map function names to math functions
         functions = {
             "sin": math.sin,
@@ -457,6 +461,8 @@ class EvalVisitor:
             "sign": lambda x: math.copysign(1, x) if x != 0 else 0,
             "max": max,
             "min": min,
+            "step": heaviside,
+            "u": heaviside,  # Alternative name for step function
         }
 
         if node.name in functions:

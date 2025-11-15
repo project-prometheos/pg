@@ -979,6 +979,11 @@ if __name__ == "__main__":
 '''
             code += boilerplate
 
+        # Postprocessing: Convert empty list literals [] to PerlList() for Perl-like array behavior
+        # This allows arrays to auto-vivify when assigning to arbitrary indices
+        import re as re_module
+        code = re_module.sub(r'(\w+)\s*=\s*\[\]', r'\1 = PerlList()', code)
+
         return PreprocessResult(code=code, text_blocks=text_blocks, line_map=line_map)
 
     def _initialize_arrays(self, code: str) -> str:

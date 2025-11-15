@@ -92,7 +92,12 @@ def parserFunction(name_spec: Any = None, formula_spec: Any = None, context: Opt
 
     # Get the current context if not provided
     if context is None:
-        context = Context()  # Default context
+        try:
+            from pg.math.context import get_current_context
+            context = get_current_context()
+        except (ImportError, RuntimeError):
+            # Fallback to default context if current context not available
+            context = Context()
 
     # Parse the function name and extract argument names
     func_name: str = name_spec

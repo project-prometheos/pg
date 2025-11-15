@@ -34,9 +34,9 @@ apps/backend/.pytest_cache/
 coverage/
 dist/
 
-# Debugging and analysis scripts (development artifacts)
+# Debugging and analysis scripts (development artifacts - root only)
+# These patterns only apply to the root directory, not to test/ or tests/ subdirectories
 debug_*.py
-test_*.py
 analyze_*.py
 show_*.py
 check_*.py

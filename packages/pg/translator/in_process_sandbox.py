@@ -136,6 +136,42 @@ class TimeoutError(Exception):
     pass
 
 
+class PerlList(list):
+    """
+    A Python list that behaves like a Perl array.
+
+    Perl arrays auto-vivify when you assign to an index beyond the current size.
+    This class replicates that behavior for compatibility with converted Perl code.
+
+    Example:
+        >>> arr = PerlList()
+        >>> arr[5] = 'value'  # No IndexError - extends list
+        >>> arr
+        PerlList([None, None, None, None, None, 'value'])
+    """
+
+    def __setitem__(self, index, value):
+        """
+        Set an item, auto-extending the list if necessary.
+
+        If index is greater than the current length, fill intermediate positions
+        with None (like Perl's undef).
+        """
+        if isinstance(index, slice):
+            # Handle slice assignment normally
+            super().__setitem__(index, value)
+        else:
+            # Handle integer index with auto-vivification
+            if index < 0:
+                # Negative indices work normally
+                super().__setitem__(index, value)
+            else:
+                # Extend list with None values if needed
+                while len(self) <= index:
+                    self.append(None)
+                super().__setitem__(index, value)
+
+
 class InProcessSandbox:
     """
     Safe in-process code execution sandbox.
@@ -168,7 +204,7 @@ class InProcessSandbox:
             'float': float,
             'str': str,
             'bool': bool,
-            'list': list,
+            'list': PerlList,  # Use PerlList instead of list for Perl-like array behavior
             'tuple': tuple,
             'dict': dict,
             'set': set,
@@ -233,6 +269,9 @@ class InProcessSandbox:
 
         # Restricted builtins dict
         self.namespace['__builtins__'] = safe_builtins
+
+        # Add PerlList for Perl-like array behavior
+        self.namespace['PerlList'] = PerlList
 
         # Import safe modules
         import math

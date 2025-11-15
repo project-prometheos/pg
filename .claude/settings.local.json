@@ -1,14 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" debug_units.py)",
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" debug_units2.py)",
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" debug_units3.py)",
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" debug_units4.py)",
-      "Bash(python3:*)",
-      "Bash(where:*)",
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" debug_units5.py)",
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" debug_context_global.py)"
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -c:*)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"d:\\pg\\packages\\pg\\translator\\tests\\test_tutorial_sample_problems_all.py\" -v -k \"ChemicalReaction\" --tb=short)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" pg_solve.py \"tutorial/sample-problems/Misc/ChemicalReaction.pg\" --seed 1234 --no-check)"
     ],
     "deny": [],
     "ask": []
