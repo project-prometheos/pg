@@ -193,7 +193,7 @@ class MultiAnswerEvaluator:
                 'message': ''
             }
 
-        # Use custom checker
+        # Use custom checker (only reached if ma.checker is not None)
         try:
             # Parse student answers into MathObjects before passing to checker
             # In Perl, student answers are already parsed by Parser::Formula
@@ -227,6 +227,7 @@ class MultiAnswerEvaluator:
             # In Perl: checker->($correct, $student, $self)
             # In Python: checker(correct, student, self)
             # Note: checker should return a list of scores [score1, score2, ...]
+            # At this point, ma.checker is guaranteed to be not None (checked at line 174)
             result = ma.checker(ma.correct_answers, parsed_student_answers, ma)
             
             # Debug: if result is None, the checker might have failed silently

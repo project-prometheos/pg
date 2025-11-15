@@ -1,19 +1,19 @@
-## DESCRIPTION
-## Algebraic fraction answer requiring simplification
-## ENDDESCRIPTION
-## DBsubject(WeBWorK)
-## DBchapter(WeBWorK tutorial)
-## DBsection(PGML tutorial 2015)
-## Date(06/01/2015)
-## Institution(Hope College)
-## Author(Paul Pearson)
-## MO(1)
-## KEYWORDS('algebra', 'algebraic fraction answer')
-#:% name = Algebraic Fraction Answer
-#:% type = Sample
-#:% subject = PerlList([algebra, precalculus])
-#:% categories = PerlList([fraction])
-#:% section = preamble
+# DESCRIPTION
+# Algebraic fraction answer requiring simplification
+# ENDDESCRIPTION
+# DBsubject(WeBWorK)
+# DBchapter(WeBWorK tutorial)
+# DBsection(PGML tutorial 2015)
+# Date(06/01/2015)
+# Institution(Hope College)
+# Author(Paul Pearson)
+# MO(1)
+# KEYWORDS('algebra', 'algebraic fraction answer')
+# :% name = Algebraic Fraction Answer
+# :% type = Sample
+# :% subject = PerlList([algebra, precalculus])
+# :% categories = PerlList([fraction])
+# :% section = preamble
 #: Load the PODLINK('parserMultiAnswer.pl') macro to be able to consider two
 #: answer rules together (the numerator and denominator) in the answer checker.
 #: Note that the PODLINK('niceTables.pl') macro is implicitly used, and is
@@ -22,11 +22,12 @@ from pg.mathobjects import *
 from pg.course import *
 from pg.parser_multiAnswer import *
 from pg.pgml import *
+from pg.macros.core.pgml import PGML
 from pg.standard import *
 # Loaded: PGstandard.pl, PGML.pl, parserMultiAnswer.pl, PGcourse.pl
 
 DOCUMENT()
-#:% section = setup
+# :% section = setup
 #: Define MathObject formulas `$num` and `$den` which are the correct numerator
 #: and denominator for the answer, as well as the bogus answers `$numbogus` and
 #: `$denbogus` that result from not finding a common denominator (used in the
@@ -51,7 +52,7 @@ DOCUMENT()
 #: the `MultiAnswer` object that `$self` refers to.  For example, with
 #: `$self->setMessage(1, "Simplify your answer further")`,
 #: where 1 means to set the message for the first answer blank.
-Context().variables.are(y = 'Real')
+Context().variables.are(y='Real')
 while True:
     a = random(2, 8, 2)
     b = random(3, 9, 2)
@@ -62,29 +63,32 @@ num = Formula(f"{a} y - {b}")
 den = Formula(f"y - {c}")
 numbogus = Formula(f"{a}*y+{b}")
 denbogus = Formula(f"(y-{c})*({c}-y)")
+
+
 def _closure_checker_1(correct, student, self):
     f1stu, f2stu = student
     f1, f2 = correct
-    if (((f1 == f1stu)  and  (f2 == f2stu))  or  (((-f1) == f1stu)  and  ((-f2) == f2stu))):
+    if (((f1 == f1stu) and (f2 == f2stu)) or (((-f1) == f1stu) and ((-f2) == f2stu))):
         return [1, 1]
-    elif ((f1 == f1stu)  or  ((-f1) == f1stu)):
+    elif ((f1 == f1stu) or ((-f1) == f1stu)):
         return [1, 0]
-    elif (((numbogus == f1stu)  or  ((-numbogus) == f1stu))  or  ((denbogus == f2stu)  or  ((-denbogus) == f2stu))):
+    elif (((numbogus == f1stu) or ((-numbogus) == f1stu)) or ((denbogus == f2stu) or ((-denbogus) == f2stu))):
         self.setMessage(1, "Find a common denominator first")
         self.setMessage(2, "Find a common denominator first")
         return [0, 0]
-    elif ((f2 == f2stu)  or  ((-f2) == f2stu)):
+    elif ((f2 == f2stu) or ((-f2) == f2stu)):
         return [0, 1]
-    elif ((Value::classMatch(f1stu, 'Formula')  and  Value::classMatch(f2stu, 'Formula'))  and  ((f1 * f2stu) == (f1stu * f2))):
+    elif ((isinstance(f1stu, Formula) and isinstance(f2stu, Formula)) and ((f1 * f2stu) == (f1stu * f2))):
         self.setMessage(1, "Simplify your answer further")
         self.setMessage(2, "Simplify your answer further")
         return [0, 0]
     else:
         return [0, 0]
 
-multians = MultiAnswer(num, den).with_params( allowBlankAnswers = 1, checker = _closure_checker_1
-)
-#:% section = statement
+
+multians = MultiAnswer(num, den).with_params(allowBlankAnswers=1, checker=_closure_checker_1
+                                             )
+# :% section = statement
 #: The fraction answer is created using a `LayoutTable` from
 #: PODLINK('niceTables.pl') via its `PGML` syntax. A `LayoutTable` is started
 #: with `[#` and is ended with `#]*`. Options for the table are set in braces
@@ -112,7 +116,7 @@ Perform the indicated operations. Express your answer in reduced form.
 #]*{ padding => [ 0, 0.5 ], valign => 'middle' }
 '''
 TEXT(PGML(PGML_BLOCK_0))
-#:% section = solution
+# :% section = solution
 PGML_BLOCK_1 = '''
 Solution explanation goes here.
 '''
@@ -122,26 +126,26 @@ ENDDOCUMENT()
 if __name__ == "__main__":
     """Execute problem and display results."""
     from pg.macros.core.pg_core import get_environment
-    
+
     env = get_environment()
     if env:
         print("=" * 80)
         print("PROBLEM STATEMENT")
         print("=" * 80)
         print(''.join(env.output_array))
-        
+
         if env.solution_array:
             print("\n" + "=" * 80)
             print("SOLUTION")
             print("=" * 80)
             print(''.join(env.solution_array))
-        
+
         if env.hint_array:
             print("\n" + "=" * 80)
             print("HINT")
             print("=" * 80)
             print(''.join(env.hint_array))
-        
+
         print("\n" + "=" * 80)
         print(f"ANSWERS: {len(env.answers_hash)} answer blank(s)")
         print("=" * 80)

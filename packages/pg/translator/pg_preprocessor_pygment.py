@@ -180,10 +180,12 @@ class PGPreprocessor:
         import re
         # Replace ` . ` with ` pg_concat( ... ) ` - matches spaces around the dot
         # Handle both $var and var (with and without leading $)
-        pg_source = re.sub(r'(\$?\w+)\s+\.\s+(\$?\w+)',  r'pg_concat(\1, \2)', pg_source)
+        pg_source = re.sub(r'(\$?\w+)\s+\.\s+(\$?\w+)',
+                           r'pg_concat(\1, \2)', pg_source)
         # Replace ` x ` with ` pg_repeat( ... ) ` - matches word boundaries around x operator
         # But be careful not to match 'x' in identifiers, so require word boundaries
-        pg_source = re.sub(r'(\$?\w+)\s+x\s+(\$?\w+)',  r'pg_repeat(\1, \2)', pg_source)
+        pg_source = re.sub(r'(\$?\w+)\s+x\s+(\$?\w+)',
+                           r'pg_repeat(\1, \2)', pg_source)
 
         lines = pg_source.split("\n")
         output_lines: List[str] = []
@@ -407,25 +409,29 @@ class PGPreprocessor:
 
             # Handle standalone Perl subroutine definitions: sub name { ... }
             # These are typically used in packages for method overrides
-            standalone_sub_match = re.match(r'^\s*sub\s+(\w+)\s*\{', original_line)
+            standalone_sub_match = re.match(
+                r'^\s*sub\s+(\w+)\s*\{', original_line)
             if standalone_sub_match:
                 # Collect the subroutine body until we find the matching closing brace
                 sub_lines = [original_line]
-                brace_depth = original_line.count('{') - original_line.count('}')
+                brace_depth = original_line.count(
+                    '{') - original_line.count('}')
                 i += 1
                 max_sub_lines = 100
                 lines_collected = 0
                 while i < len(lines) and brace_depth > 0 and lines_collected < max_sub_lines:
                     current_line = lines[i]
                     sub_lines.append(current_line)
-                    brace_depth += current_line.count('{') - current_line.count('}')
+                    brace_depth += current_line.count(
+                        '{') - current_line.count('}')
                     i += 1
                     lines_collected += 1
 
                 # Comment out the entire subroutine definition
                 # (It's probably defining a method override that won't work in Python anyway)
                 for sub_line in sub_lines:
-                    output_lines.append(f"# {sub_line}  # Perl subroutine definition skipped")
+                    output_lines.append(
+                        f"# {sub_line}  # Perl subroutine definition skipped")
                 continue
 
             # Parse and translate Perl sub { ... } closures using Lark grammar
@@ -434,7 +440,8 @@ class PGPreprocessor:
                 # Collect the closure lines (same multi-line logic as before)
                 sub_start = original_line.find('sub {')
                 after_sub = original_line[sub_start + 5:]
-                single_line_brace_count = after_sub.count('{') - after_sub.count('}')
+                single_line_brace_count = after_sub.count(
+                    '{') - after_sub.count('}')
 
                 closure_lines = [original_line]
                 brace_depth = 1 + single_line_brace_count
@@ -445,14 +452,16 @@ class PGPreprocessor:
                     while i < len(lines) and brace_depth > 0 and lines_collected < max_closure_lines:
                         current_line = lines[i]
                         closure_lines.append(current_line)
-                        brace_depth += current_line.count('{') - current_line.count('}')
+                        brace_depth += current_line.count(
+                            '{') - current_line.count('}')
                         i += 1
                         lines_collected += 1
                 else:
                     i += 1
 
                 if brace_depth > 0 and lines_collected >= max_closure_lines:
-                    output_lines.append(f"# {original_line[:80]}... # Closure too complex, skipped")
+                    output_lines.append(
+                        f"# {original_line[:80]}... # Closure too complex, skipped")
                     continue
 
                 first_line = closure_lines[0]
@@ -473,17 +482,20 @@ class PGPreprocessor:
                         elif first_line[pos] == '}':
                             brace_count -= 1
                         pos += 1
-                    suffix_from_last_line = first_line[pos:] if pos < len(first_line) else ''
+                    suffix_from_last_line = first_line[pos:] if pos < len(
+                        first_line) else ''
                 else:
                     # Multi-line closure
                     close_brace_match = re.search(r'\}(.*)$', last_line)
-                    suffix_from_last_line = close_brace_match.group(1) if close_brace_match else ''
+                    suffix_from_last_line = close_brace_match.group(
+                        1) if close_brace_match else ''
 
                 # Join closure lines and extract just the sub { ... } part
                 closure_text = '\n'.join(closure_lines)
                 sub_body_start = closure_text.find('sub {')
                 if sub_body_start < 0:
-                    output_lines.append(f"# {first_line}  # Could not find closure")
+                    output_lines.append(
+                        f"# {first_line}  # Could not find closure")
                     continue
 
                 # Try to parse and translate with Lark
@@ -499,7 +511,8 @@ class PGPreprocessor:
                             brace_count -= 1
                         pos += 1
 
-                    closure_expr_text = closure_text[sub_start_pos:pos]  # Includes 'sub { ... }'
+                    # Includes 'sub { ... }'
+                    closure_expr_text = closure_text[sub_start_pos:pos]
 
                     if self._parser is not None:
                         # Try to parse the closure as an expression within a dummy assignment
@@ -510,7 +523,8 @@ class PGPreprocessor:
                         # before we had a chance to parse the closure
                         # The grammar expects @$var syntax, not list($var)
                         closure_for_parse = closure_expr_text
-                        closure_for_parse = re.sub(r'list\(\$(\w+)\)', r'@$\1', closure_for_parse)
+                        closure_for_parse = re.sub(
+                            r'list\(\$(\w+)\)', r'@$\1', closure_for_parse)
 
                         # Clean up excessive whitespace but preserve structure
                         # Replace multiple spaces/tabs with single space, keep newlines for readability in errors
@@ -524,7 +538,8 @@ class PGPreprocessor:
                                 assign_ir = stmt_list[0]
                                 # assign_ir should be ("assign", var, closure_ir)
                                 if isinstance(assign_ir, tuple) and assign_ir[0] == "assign" and len(assign_ir) >= 3:
-                                    closure_ir = assign_ir[2]  # Extract the RHS (the closure)
+                                    # Extract the RHS (the closure)
+                                    closure_ir = assign_ir[2]
                                 else:
                                     closure_ir = None
                             else:
@@ -537,24 +552,29 @@ class PGPreprocessor:
                         # Emit the closure to Python
                         if closure_ir and closure_ir[0] == "closure":
                             # Extract context name for better function naming
-                            context_match = re.search(r'(\w+)\s*(?:=>|=)\s*sub\s*\{', first_line)
-                            context_name = context_match.group(1) if context_match else "closure"
+                            context_match = re.search(
+                                r'(\w+)\s*(?:=>|=)\s*sub\s*\{', first_line)
+                            context_name = context_match.group(
+                                1) if context_match else "closure"
 
                             # Calculate current indentation level
                             indent_match = re.match(r'^(\s*)', prefix)
-                            indent_str = indent_match.group(1) if indent_match else ''
+                            indent_str = indent_match.group(
+                                1) if indent_match else ''
                             current_indent = len(indent_str) // 4
 
                             # Emit closure directly with context name (may return tuple for complex closures)
                             _, body_stmts = closure_ir
-                            closure_result = self._emit_closure(body_stmts, current_indent, context_name)
+                            closure_result = self._emit_closure(
+                                body_stmts, current_indent, context_name)
                             closure_py = None
 
                             if isinstance(closure_result, tuple) and len(closure_result) == 2:
                                 # Complex closure - extracted to function
                                 func_def_lines, func_ref = closure_result
                                 output_lines.extend(func_def_lines)
-                                output_lines.append("")  # Blank line for readability
+                                # Blank line for readability
+                                output_lines.append("")
                                 closure_py = func_ref
                             else:
                                 # Simple closure - inline lambda
@@ -566,7 +586,8 @@ class PGPreprocessor:
                             # Reconstruct the line
                             transformed_line = f"{prefix}{closure_py}{suffix_from_last_line}"
                             # Further transform (=> to =, etc.)
-                            final_line = self._rewrite_statement(transformed_line)
+                            final_line = self._rewrite_statement(
+                                transformed_line)
                             if final_line:
                                 output_lines.append(final_line)
                             else:
@@ -575,48 +596,62 @@ class PGPreprocessor:
 
                         # If we get here, parsing or emission failed - fall through to fallback
                         # Don't use try-except, just check if we can stub it
-                        param_match = re.search(r'(\w+)\s*=>\s*sub\s*\{', first_line)
+                        param_match = re.search(
+                            r'(\w+)\s*=>\s*sub\s*\{', first_line)
                         if param_match:
                             stubbed_line = f"{prefix}lambda *args, **kwargs: None{suffix_from_last_line}"
                             transformed = self._rewrite_statement(stubbed_line)
                             if transformed:
-                                output_lines.append(transformed + "  # Stubbed Perl closure (parsing failed)")
+                                output_lines.append(
+                                    transformed + "  # Stubbed Perl closure (parsing failed)")
                         else:
-                            assign_match = re.search(r'(\w+)\s*=\s*sub\s*\{', first_line)
+                            assign_match = re.search(
+                                r'(\w+)\s*=\s*sub\s*\{', first_line)
                             if assign_match:
                                 var_name = assign_match.group(1)
                                 indent_match = re.match(r'^(\s*)', first_line)
-                                indent = indent_match.group(1) if indent_match else ''
+                                indent = indent_match.group(
+                                    1) if indent_match else ''
                                 stubbed_line = f"{indent}{var_name} = lambda *args, **kwargs: None"
-                                transformed = self._rewrite_statement(stubbed_line)
+                                transformed = self._rewrite_statement(
+                                    stubbed_line)
                                 if transformed:
-                                    output_lines.append(transformed + "  # Stubbed Perl closure (parsing failed)")
+                                    output_lines.append(
+                                        transformed + "  # Stubbed Perl closure (parsing failed)")
                             else:
-                                output_lines.append(f"# {first_line}  # Skipped Perl closure")
+                                output_lines.append(
+                                    f"# {first_line}  # Skipped Perl closure")
                     else:
-                        output_lines.append(f"# {first_line}  # Parser not available")
+                        output_lines.append(
+                            f"# {first_line}  # Parser not available")
 
                 except Exception as e:
                     # Fall back to stubbing if Lark parsing fails
                     # This maintains backward compatibility for complex or unsupported closures
-                    param_match = re.search(r'(\w+)\s*=>\s*sub\s*\{', first_line)
+                    param_match = re.search(
+                        r'(\w+)\s*=>\s*sub\s*\{', first_line)
                     if param_match:
                         stubbed_line = f"{prefix}lambda *args, **kwargs: None{suffix_from_last_line}"
                         transformed = self._rewrite_statement(stubbed_line)
                         if transformed:
-                            output_lines.append(transformed + "  # Stubbed Perl closure (parsing failed)")
+                            output_lines.append(
+                                transformed + "  # Stubbed Perl closure (parsing failed)")
                     else:
-                        assign_match = re.search(r'(\w+)\s*=\s*sub\s*\{', first_line)
+                        assign_match = re.search(
+                            r'(\w+)\s*=\s*sub\s*\{', first_line)
                         if assign_match:
                             var_name = assign_match.group(1)
                             indent_match = re.match(r'^(\s*)', first_line)
-                            indent = indent_match.group(1) if indent_match else ''
+                            indent = indent_match.group(
+                                1) if indent_match else ''
                             stubbed_line = f"{indent}{var_name} = lambda *args, **kwargs: None"
                             transformed = self._rewrite_statement(stubbed_line)
                             if transformed:
-                                output_lines.append(transformed + "  # Stubbed Perl closure (parsing failed)")
+                                output_lines.append(
+                                    transformed + "  # Stubbed Perl closure (parsing failed)")
                         else:
-                            output_lines.append(f"# {first_line}  # Skipped Perl closure")
+                            output_lines.append(
+                                f"# {first_line}  # Skipped Perl closure")
                 continue
 
             # Detect do { ... } until loops (single or multi line)
@@ -1049,7 +1084,8 @@ if __name__ == "__main__":
                             if bracket_count == 0:
                                 # Found matching closing bracket
                                 list_literal = code_str[bracket_start:j+1]
-                                result.append(f'{var_name} = PerlList({list_literal})')
+                                result.append(
+                                    f'{var_name} = PerlList({list_literal})')
                                 i = j + 1
                                 break
                         j += 1
@@ -1068,7 +1104,8 @@ if __name__ == "__main__":
         # Final cleanup: remove invalid statements like "return = {}"
         # These can appear as artifacts from closure translation
         lines = code.split('\n')
-        python_keywords = {'return', 'if', 'else', 'elif', 'for', 'while', 'def', 'class', 'import', 'from'}
+        python_keywords = {'return', 'if', 'else', 'elif',
+                           'for', 'while', 'def', 'class', 'import', 'from'}
         cleaned_lines = []
         for line in lines:
             line_stripped = line.strip()
@@ -1578,6 +1615,9 @@ if __name__ == "__main__":
             def call_expr(self, name, *args):
                 """Lower a function call expression."""
                 arglist = args[0] if args else []
+                # Convert Perl namespace operator :: to Python dot notation
+                name = name.replace("::", ".") if isinstance(
+                    name, str) else name
                 return ("call", name, arglist)
 
             def expr_stmt(self, expr):
@@ -2009,7 +2049,8 @@ if __name__ == "__main__":
             # Extract variable names
             var_names = []
             for var_tuple in var_list:
-                var_name = self._desigil(var_tuple[1] if isinstance(var_tuple, tuple) else var_tuple)
+                var_name = self._desigil(var_tuple[1] if isinstance(
+                    var_tuple, tuple) else var_tuple)
                 var_names.append(var_name)
 
             # Emit as tuple unpacking assignment
@@ -2099,7 +2140,8 @@ if __name__ == "__main__":
         # Use hex format for shorter names
         counter_hex = format(self._closure_counter, 'x')
         # Sanitize context name (keep only alphanumeric and underscore)
-        safe_name = ''.join(c if c.isalnum() or c == '_' else '_' for c in context_name)
+        safe_name = ''.join(c if c.isalnum() or c ==
+                            '_' else '_' for c in context_name)
         safe_name = safe_name.strip('_') or 'closure'
         return f"_closure_{safe_name}_{counter_hex}"
 
@@ -2137,7 +2179,8 @@ if __name__ == "__main__":
                 _, var_list, deref_source = stmt
                 # var_list is a list of ("var", "$name") tuples
                 for var_tuple in var_list:
-                    var_name = self._desigil(var_tuple[1] if isinstance(var_tuple, tuple) else var_tuple)
+                    var_name = self._desigil(var_tuple[1] if isinstance(
+                        var_tuple, tuple) else var_tuple)
                     params.append(var_name)
                 first_param_unpack = False
             else:
@@ -2153,7 +2196,7 @@ if __name__ == "__main__":
         # Check if body is a single return statement
         if (len(body_for_return) == 1 and
             isinstance(body_for_return[0], tuple) and
-            body_for_return[0][0] == "return"):
+                body_for_return[0][0] == "return"):
             # Single return - emit as lambda
             _, return_value = body_for_return[0]
             return_py = self._expr_to_py(return_value)
@@ -2171,7 +2214,8 @@ if __name__ == "__main__":
 
             # Emit body statements
             if body_for_return:
-                python_keywords = {'return', 'if', 'else', 'elif', 'for', 'while', 'def', 'class', 'import', 'from'}
+                python_keywords = {'return', 'if', 'else', 'elif',
+                                   'for', 'while', 'def', 'class', 'import', 'from'}
                 for stmt in body_for_return:
                     emitted = self._emit_ir(stmt, indent + 1)
                     if emitted:
@@ -2186,8 +2230,10 @@ if __name__ == "__main__":
                             if emitted_stripped.startswith("#"):
                                 continue
                             # Skip assignments to Python keywords (e.g., "return = {}")
-                            if "=" in emitted_stripped.split("\n")[0]:  # Check first line only
-                                var_part = emitted_stripped.split("=")[0].strip()
+                            # Check first line only
+                            if "=" in emitted_stripped.split("\n")[0]:
+                                var_part = emitted_stripped.split("=")[
+                                    0].strip()
                                 if var_part in python_keywords:
                                     continue
                             # Split multi-line strings into individual lines
@@ -2203,7 +2249,8 @@ if __name__ == "__main__":
                 func_lines.append(f"{ind}    pass")
 
             # Filter out problematic lines (e.g., "return = {}")
-            python_keywords = {'return', 'if', 'else', 'elif', 'for', 'while', 'def', 'class', 'import', 'from'}
+            python_keywords = {'return', 'if', 'else', 'elif',
+                               'for', 'while', 'def', 'class', 'import', 'from'}
             filtered_lines = []
             for line in func_lines:
                 line_stripped = line.strip()
@@ -2346,6 +2393,42 @@ if __name__ == "__main__":
             # Function calls
             if head == "call":
                 _, name, args = expr
+                # Convert Perl namespace operator :: to Python dot notation
+                if isinstance(name, str):
+                    name = name.replace("::", ".")
+
+                # Special handling for ClassName.classMatch(obj, 'ClassName') -> isinstance(obj, ClassName)
+                # This works for any class with a classMatch method (Value.classMatch, XYZ.classMatch, etc.)
+                if name.endswith(".classMatch") and len(args) >= 2:
+                    obj_expr = args[0]
+                    class_name_expr = args[1]
+
+                    # Extract the object to check
+                    obj_py = self._expr_to_py(obj_expr)
+
+                    # Extract the class name string (could be a string literal or variable)
+                    class_name_py = self._expr_to_py(class_name_expr)
+
+                    # Remove quotes if it's a string literal
+                    # STRING tokens are returned as strings with quotes, e.g., '"Formula"' or "'Formula'"
+                    if isinstance(class_name_py, str):
+                        # Check if it's a quoted string (starts and ends with same quote)
+                        if (class_name_py.startswith('"') and class_name_py.endswith('"')) or \
+                           (class_name_py.startswith("'") and class_name_py.endswith("'")):
+                            # Strip quotes to get the class name
+                            class_name_str = class_name_py[1:-1]
+                        else:
+                            # Not a quoted string, use as-is (might be a variable)
+                            class_name_str = class_name_py
+                    else:
+                        # Not a string, convert to string and try to extract
+                        class_name_str = str(class_name_py).strip('"\'')
+
+                    # Convert class name string to Python class name
+                    # 'Formula' -> Formula, 'Real' -> Real, etc.
+                    # These should be available from pg.mathobjects import *
+                    return f"isinstance({obj_py}, {class_name_str})"
+
                 arg_strings = []
                 # Track if we have any string-key named params (only string literals)
                 has_string_key_params = False
@@ -3265,7 +3348,8 @@ if __name__ == "__main__":
 
             # Check if this line is a method-call style BEGIN_TIKZ or BEGIN_LATEX_IMAGE
             # Also handle array indexing like $graph[$i]->BEGIN_TIKZ
-            tikz_match = re.search(r'(\$\w+(?:\[[^\]]*\])*)\s*->\s*BEGIN_TIKZ', body_line)
+            tikz_match = re.search(
+                r'(\$\w+(?:\[[^\]]*\])*)\s*->\s*BEGIN_TIKZ', body_line)
             latex_match = re.search(
                 r'(\$\w+(?:\[[^\]]*\])*)\s*->\s*BEGIN_LATEX_IMAGE', body_line)
 
