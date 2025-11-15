@@ -503,7 +503,17 @@ class PGPreprocessor:
                         # Try to parse the closure as an expression within a dummy assignment
                         # This allows us to use the normal 'start' rule instead of a special 'sub_closure' rule
                         # Note: must use $dummy (with sigil) because grammar only accepts variables with sigils
-                        dummy_stmt = f"$__closure__ = {closure_expr_text};"
+
+                        # Undo early transformations that were applied to the whole source
+                        # before we had a chance to parse the closure
+                        # The grammar expects @$var syntax, not list($var)
+                        closure_for_parse = closure_expr_text
+                        closure_for_parse = re.sub(r'list\(\$(\w+)\)', r'@$\1', closure_for_parse)
+
+                        # Clean up excessive whitespace but preserve structure
+                        # Replace multiple spaces/tabs with single space, keep newlines for readability in errors
+                        cleaned_closure = ' '.join(closure_for_parse.split())
+                        dummy_stmt = f"$__closure__ = {cleaned_closure};"
                         try:
                             tree = self._parser.parse(dummy_stmt)
                             # Extract the assignment IR from the parse tree
@@ -519,8 +529,7 @@ class PGPreprocessor:
                                 closure_ir = None
                         except Exception as parse_err:
                             # Parsing as statement failed, try alternative approach
-                            # DEBUG: Uncomment to see parsing errors
-                            # print(f"DEBUG: Closure parsing failed: {type(parse_err).__name__}: {str(parse_err)[:200]}")
+                            # The closure may contain unsupported Perl constructs or edge cases
                             closure_ir = None
 
                         # Emit the closure to Python
