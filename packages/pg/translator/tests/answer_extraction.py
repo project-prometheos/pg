@@ -138,6 +138,23 @@ def extract_answer_string(math_obj: Any) -> Optional[str]:
         except Exception:
             pass
 
+    # 2.5. Check if it's a List object with elements (needs special handling)
+    if hasattr(math_obj, "elements"):
+        try:
+            result = extract_list_string(math_obj)
+            if result:
+                return result
+        except Exception:
+            pass
+
+    # 2.6. Check if it's a Point object
+    if type(math_obj).__name__ == "Point":
+        try:
+            if hasattr(math_obj, "string") and callable(math_obj.string):
+                return math_obj.string()
+        except Exception:
+            pass
+
     # 3. Try string() method - returns student-input format
     if hasattr(math_obj, "string") and callable(math_obj.string):
         try:
@@ -254,6 +271,31 @@ def extract_list_string(list_obj: Any) -> Optional[str]:
         String representation, or None if extraction fails
     """
     try:
+        # Try elements attribute (for List objects with individual elements)
+        if hasattr(list_obj, "elements"):
+            elements = list_obj.elements
+            if isinstance(elements, (list, tuple)):
+                items = []
+                for item in elements:
+                    item_str = extract_answer_string(item)
+                    if item_str:
+                        items.append(item_str)
+                if items:
+                    return ", ".join(items)
+
+        # Try to_string method
+        if hasattr(list_obj, "to_string") and callable(list_obj.to_string):
+            try:
+                result = list_obj.to_string()
+                if result:
+                    # to_string() returns "[a, b, c]" format, we need to remove brackets
+                    result = result.strip()
+                    if result.startswith("[") and result.endswith("]"):
+                        result = result[1:-1].strip()
+                    return result
+            except Exception:
+                pass
+
         # Try to get value attribute
         if hasattr(list_obj, "value"):
             value = list_obj.value
