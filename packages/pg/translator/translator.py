@@ -18,14 +18,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from pg.answer import AnswerResult, EvaluatorRegistry
+from pg.answer import AnswerResult
 from pg.parser import Context
 
 from .error_handler import PGError, format_execution_error, install_error_handlers
 from .executor import PGEnvironment, PGExecutor
 from .grading import (
     ProblemGrader,
-    avg_problem_grader,
     process_checkbox_radio_input,
     std_problem_grader,
     stringify_answers,
@@ -118,155 +117,63 @@ class PGTranslator:
         self,
         pg_file_path: str | Path,
         seed: int,
-        inputs: dict[str, str] | None = None,
+        inputs: dict[str, Any] | None = None,
         context: Context | None = None,
+        problem_state: dict[str, Any] | None = None,
+        grader: ProblemGrader | None = None,
     ) -> ProblemResult:
         """
-        Translate a PG file to a problem.
+        Translate a PG file to a renderable problem.
 
         Args:
             pg_file_path: Path to .pg file
             seed: Random seed for problem generation
             inputs: Student answer inputs (for checking)
-            context: Mathematical context (defaults to Numeric)
+            context: Mathematical context
+            problem_state: Current problem state (optional)
+            grader: Custom grader override
 
         Returns:
             ProblemResult with statement, answers, solutions, etc.
         """
-        errors: list[str] = []
+        pg_path = Path(pg_file_path)
 
-        try:
-            # 1. Load .pg file
-            pg_file_path = Path(pg_file_path)
-            if not pg_file_path.exists():
-                return ProblemResult(
-                    statement_html="",
-                    answer_blanks={},
-                    errors=[f"File not found: {pg_file_path}"],
-                )
-
-            pg_source = pg_file_path.read_text(encoding="utf-8")
-
-            # 2. Preprocess
-            preprocess_result = self.preprocessor.preprocess(pg_source)
-
-            # 3. Execute in sandbox
-            try:
-                env = self.executor.execute(
-                    preprocess_result.code,
-                    seed=seed,
-                    context=context,
-                )
-            except (SyntaxError, RuntimeError) as e:
-                return ProblemResult(
-                    statement_html="",
-                    answer_blanks={},
-                    errors=[f"Execution error: {e}"],
-                )
-
-            # 4. Render text
-            statement_html = env.render_text()
-            solution_html = env.render_solution()
-            hint_html = env.render_hint()
-
-            # Collect any execution errors from environment
-            if env.errors:
-                errors.append(env.errors)
-
-            # 5. Collect answer blanks
-            answer_blanks = {
-                name: {"evaluator": evaluator}
-                for name, evaluator in env.answers.items()
-            }
-
-            # 6. Check answers (if inputs provided)
-            answer_results: dict[str, AnswerResult] | None = None
-            score: float | None = None
-
-            if inputs:
-                answer_results = {}
-                scores: list[float] = []
-
-                for name, student_answer in inputs.items():
-                    if name in env.answers:
-                        # Extract evaluator from answer hash entry
-                        ans_entry = env.answers[name]
-                        if isinstance(ans_entry, dict) and "ans_eval" in ans_entry:
-                            evaluator = ans_entry["ans_eval"]
-                        else:
-                            evaluator = ans_entry
-
-                        # Check if it's a MathObject (Formula, Real, etc.) - need to call .cmp() first
-                        if hasattr(evaluator, 'cmp'):
-                            checker = evaluator.cmp()
-                            # Now call check() method
-                            if hasattr(checker, 'check'):
-                                check_result = checker.check(student_answer)
-                                # Convert dict to AnswerResult
-                                result = AnswerResult(
-                                    score=check_result.get('score', 0.0),
-                                    correct=check_result.get('correct', False),
-                                    student_answer=student_answer,
-                                    answer_message=check_result.get(
-                                        'message', ''),
-                                    correct_answer=str(evaluator) if hasattr(
-                                        evaluator, '__str__') else '',
-                                )
-                                answer_results[name] = result
-                                scores.append(result.score)
-                        elif hasattr(evaluator, 'check') and not hasattr(evaluator, 'cmp'):
-                            # It's an AnswerChecker object (like FormulaAnswerChecker from .cmp() call)
-                            check_result = evaluator.check(student_answer)
-                            # Convert dict to AnswerResult
-                            result = AnswerResult(
-                                score=check_result.get('score', 0.0),
-                                correct=check_result.get('correct', False),
-                                student_answer=student_answer,
-                                answer_message=check_result.get('message', ''),
-                                correct_answer=check_result.get(
-                                    'correct_answer', str(evaluator)),
-                            )
-                            answer_results[name] = result
-                            scores.append(result.score)
-                        elif hasattr(evaluator, 'evaluate'):
-                            # It's already an answer checker - call evaluate directly
-                            result = evaluator.evaluate(student_answer)
-                            answer_results[name] = result
-                            scores.append(result.score)
-
-                # Calculate overall score (average)
-                if scores:
-                    score = sum(scores) / len(scores)
-
-            # 7. Return result
-            return ProblemResult(
-                statement_html=statement_html,
-                answer_blanks=answer_blanks,
-                solution_html=solution_html,
-                hint_html=hint_html,
-                answer_results=answer_results,
-                score=score,
-                metadata={
-                    "seed": seed,
-                    "num_answers": len(env.answers),
-                },
-                errors=errors if errors else None,
-            )
-
-        except Exception as e:
-            # Catch-all for unexpected errors
+        if not pg_path.exists():
             return ProblemResult(
                 statement_html="",
                 answer_blanks={},
-                errors=[f"Unexpected error: {e}"],
+                errors=[f"File not found: {pg_path}"],
             )
+
+        try:
+            pg_source = pg_path.read_text(encoding="utf-8")
+        except Exception as error:
+            error_msg = format_execution_error(error, "", None)
+            return ProblemResult(
+                statement_html="",
+                answer_blanks={},
+                errors=[error_msg],
+            )
+
+        return self.translate_source(
+            pg_source,
+            seed,
+            inputs=inputs,
+            context=context,
+            problem_state=problem_state,
+            grader=grader,
+            filename=str(pg_path),
+        )
 
     def translate_source(
         self,
         pg_source: str,
         seed: int,
-        inputs: dict[str, str] | None = None,
+        inputs: dict[str, Any] | None = None,
         context: Context | None = None,
+        problem_state: dict[str, Any] | None = None,
+        grader: ProblemGrader | None = None,
+        filename: str | None = None,
     ) -> ProblemResult:
         """
         Translate PG source code directly (without file).
@@ -276,183 +183,285 @@ class PGTranslator:
             seed: Random seed
             inputs: Student answer inputs
             context: Mathematical context
+            problem_state: Current problem state
+            grader: Problem grader override
+            filename: Optional filename for metadata
 
         Returns:
             ProblemResult
         """
+        active_grader = grader or self.grader
+        state = (
+            dict(problem_state)
+            if problem_state is not None
+            else {
+                "recorded_score": 0,
+                "num_of_correct_ans": 0,
+                "num_of_incorrect_ans": 0,
+            }
+        )
+        environment: PGEnvironment | None = None
         errors: list[str] = []
 
+        # Auto-wrap bare PG snippets with DOCUMENT/ENDDOCUMENT so the core
+        # macros have a valid environment during testing.
+        if "DOCUMENT" not in pg_source:
+            pg_source = f"DOCUMENT()\n{pg_source}\nENDDOCUMENT()\n"
+
         try:
-            # 1. Preprocess
             preprocess_result = self.preprocessor.preprocess(pg_source)
 
-            # 2. Execute
-            try:
-                env = self.executor.execute(
-                    preprocess_result.code,
-                    seed=seed,
-                    context=context,
-                )
-            except (SyntaxError, RuntimeError) as e:
-                return ProblemResult(
-                    statement_html="",
-                    answer_blanks={},
-                    errors=[f"Execution error: {e}"],
-                )
+            environment = self.executor.execute(
+                preprocess_result.code,
+                seed=seed,
+                context=context,
+            )
+            install_error_handlers(environment)
 
-            # 3. Render
-            statement_html = env.render_text()
-            solution_html = env.render_solution()
-            hint_html = env.render_hint()
+            statement_html = environment.render_text()
+            solution_html = environment.render_solution()
+            hint_html = environment.render_hint()
+            header_html = getattr(environment, "render_header", lambda: "")()
 
-            # Collect any execution errors from environment
-            if env.errors:
-                errors.append(env.errors)
+            normalized_answers = self._normalize_answers(environment.answers)
+            environment.answers = normalized_answers
 
-            # 4. Collect answers
-            answer_blanks = {
-                name: {"evaluator": evaluator}
-                for name, evaluator in env.answers.items()
-            }
-
-            # 5. Check answers (if inputs provided)
             answer_results: dict[str, AnswerResult] | None = None
-            score: float | None = None
+            problem_result_dict: dict[str, Any] | None = None
 
             if inputs:
-                answer_results = {}
-                scores: list[float] = []
+                answer_results = self._evaluate_answers(environment, inputs)
+                problem_result_dict, state = active_grader(
+                    answer_results,
+                    state,
+                    answers_submitted=True,
+                )
+                stringify_answers(answer_results)
+            else:
+                problem_result_dict = {
+                    "score": 0,
+                    "errors": "",
+                    "type": "not_submitted",
+                    "msg": "",
+                }
 
-                # Group answer blanks by their evaluator (for MultiAnswer)
-                # id(evaluator) -> [(name, student_answer), ...]
-                evaluator_groups: dict[int, list[tuple[str, str]]] = {}
-                # id(evaluator) -> evaluator
-                evaluator_map: dict[int, Any] = {}
+            per_answer_average: float | None = None
+            if answer_results:
+                per_answer_scores = [res.score for res in answer_results.values()]
+                if per_answer_scores:
+                    per_answer_average = sum(per_answer_scores) / len(per_answer_scores)
+                else:
+                    per_answer_average = 0.0
 
-                for name, student_answer in inputs.items():
-                    if name in env.answers:
-                        # Extract evaluator from answer hash entry
-                        ans_entry = env.answers[name]
-                        if isinstance(ans_entry, dict) and "ans_eval" in ans_entry:
-                            evaluator = ans_entry["ans_eval"]
-                        else:
-                            evaluator = ans_entry
+            display_mode = getattr(environment, "display_mode", "HTML")
+            if self.post_processor.processors:
+                statement_html, header_html = self.post_processor.process(
+                    statement_html,
+                    header_html,
+                    display_mode,
+                    problem_result_dict,
+                )
 
-                        # Group by evaluator object identity
-                        eval_id = id(evaluator)
-                        if eval_id not in evaluator_groups:
-                            evaluator_groups[eval_id] = []
-                            evaluator_map[eval_id] = evaluator
-                        evaluator_groups[eval_id].append(
-                            (name, student_answer))
+            answer_blanks = {
+                name: {"evaluator": evaluator}
+                for name, evaluator in environment.answers.items()
+            }
 
-                # Check each group
-                for eval_id, group_items in evaluator_groups.items():
-                    evaluator = evaluator_map[eval_id]
+            if getattr(environment, "errors", None):
+                errors.append(str(environment.errors))
 
-                    # Check if it's a MultiAnswer (multiple blanks with same evaluator)
-                    if len(group_items) > 1 and hasattr(evaluator, 'cmp'):
-                        # MultiAnswer case - check all answers together
-                        checker = evaluator.cmp()
-                        if hasattr(checker, 'check'):
-                            # Extract student answers in order
-                            student_answers = [ans for _, ans in group_items]
+            warnings: list[str] | None = None
+            warning_tracker = getattr(environment, "_warning_tracker", None)
+            if warning_tracker:
+                has_debug = getattr(environment, "view_problem_debugging_info", False)
+                warning_text = warning_tracker.get_formatted_warnings(has_debug)
+                if warning_text:
+                    warnings = [warning_text]
 
-                            # Call check with all student answers
-                            check_result = checker.check(*student_answers)
+            metadata = {
+                "seed": seed,
+                "num_answers": len(environment.answers),
+                "display_mode": display_mode,
+            }
+            if filename:
+                metadata["source_file"] = filename
 
-                            # MultiAnswer checker returns results for all blanks
-                            if 'results' in check_result and isinstance(check_result['results'], list):
-                                # Individual results for each blank
-                                for i, (name, student_ans) in enumerate(group_items):
-                                    individual_score = check_result['results'][i] if i < len(
-                                        check_result['results']) else 0.0
-                                    result = AnswerResult(
-                                        score=individual_score,
-                                        correct=individual_score >= 1.0,
-                                        student_answer=student_ans,
-                                        answer_message=check_result.get(
-                                            'message', ''),
-                                        correct_answer=str(evaluator.answers[i]) if hasattr(
-                                            evaluator, 'answers') and i < len(evaluator.answers) else '',
-                                    )
-                                    answer_results[name] = result
-                                    scores.append(individual_score)
-                            else:
-                                # Fallback: same result for all blanks
-                                for name, student_ans in group_items:
-                                    result = AnswerResult(
-                                        score=check_result.get('score', 0.0),
-                                        correct=check_result.get(
-                                            'correct', False),
-                                        student_answer=student_ans,
-                                        answer_message=check_result.get(
-                                            'message', ''),
-                                        correct_answer=str(evaluator),
-                                    )
-                                    answer_results[name] = result
-                                    scores.append(result.score)
-                    else:
-                        # Single answer or regular evaluator - check individually
-                        for name, student_answer in group_items:
-                            # Check if it's already a checker (has check method directly)
-                            if hasattr(evaluator, 'check') and not hasattr(evaluator, 'cmp'):
-                                # It's an AnswerChecker object (from .cmp() call)
-                                check_result = evaluator.check(student_answer)
-                                result = AnswerResult(
-                                    score=check_result.get('score', 0.0),
-                                    correct=check_result.get('correct', False),
-                                    student_answer=student_answer,
-                                    answer_message=check_result.get(
-                                        'message', ''),
-                                    correct_answer=check_result.get('correct_answer', str(
-                                        evaluator)) if hasattr(evaluator, '__str__') else '',
-                                )
-                                answer_results[name] = result
-                                scores.append(result.score)
-                            # Check if it's a MathObject (Formula, Real, etc.) - need to call .cmp() first
-                            elif hasattr(evaluator, 'cmp'):
-                                checker = evaluator.cmp()
-                                # Now call check() method
-                                if hasattr(checker, 'check'):
-                                    check_result = checker.check(
-                                        student_answer)
-                                    # Convert dict to AnswerResult
-                                    result = AnswerResult(
-                                        score=check_result.get('score', 0.0),
-                                        correct=check_result.get(
-                                            'correct', False),
-                                        student_answer=student_answer,
-                                        answer_message=check_result.get(
-                                            'message', ''),
-                                        correct_answer=str(evaluator) if hasattr(
-                                            evaluator, '__str__') else '',
-                                    )
-                                    answer_results[name] = result
-                                    scores.append(result.score)
-                            elif hasattr(evaluator, 'evaluate'):
-                                # It's already an answer checker - call evaluate directly
-                                result = evaluator.evaluate(student_answer)
-                                answer_results[name] = result
-                                scores.append(result.score)
-
-                if scores:
-                    score = sum(scores) / len(scores)
+            score: float | None = None
+            if problem_result_dict:
+                grader_type = problem_result_dict.get("type")
+                if grader_type and grader_type != "std_problem_grader":
+                    score = problem_result_dict.get("score")
+                elif per_answer_average is not None:
+                    score = per_answer_average
+                else:
+                    score = problem_result_dict.get("score")
+            else:
+                score = per_answer_average
 
             return ProblemResult(
                 statement_html=statement_html,
+                header_html=header_html,
                 answer_blanks=answer_blanks,
                 solution_html=solution_html,
                 hint_html=hint_html,
                 answer_results=answer_results,
                 score=score,
-                metadata={"seed": seed, "num_answers": len(env.answers)},
+                problem_result=problem_result_dict,
+                problem_state=state,
+                metadata=metadata,
                 errors=errors if errors else None,
+                warnings=warnings,
             )
 
-        except Exception as e:
+        except PGError as error:
             return ProblemResult(
                 statement_html="",
                 answer_blanks={},
-                errors=[f"Unexpected error: {e}"],
+                errors=[str(error)],
             )
+        except Exception as error:
+            error_msg = format_execution_error(error, pg_source, environment)
+            return ProblemResult(
+                statement_html="",
+                answer_blanks={},
+                errors=[error_msg],
+            )
+
+    def _evaluate_answers(
+        self,
+        environment: PGEnvironment,
+        raw_inputs: dict[str, Any],
+    ) -> dict[str, AnswerResult]:
+        """
+        Evaluate student answers, handling checkbox/radio inputs and MultiAnswer groups.
+        """
+        processed_inputs = {
+            name: process_checkbox_radio_input(value)
+            for name, value in raw_inputs.items()
+        }
+
+        answer_results: dict[str, AnswerResult] = {}
+        evaluator_groups: dict[int, list[tuple[str, Any]]] = {}
+        evaluator_map: dict[int, Any] = {}
+
+        for name, student_answer in processed_inputs.items():
+            if name not in environment.answers:
+                continue
+
+            ans_entry = environment.answers[name]
+            evaluator = (
+                ans_entry["ans_eval"]
+                if isinstance(ans_entry, dict) and "ans_eval" in ans_entry
+                else ans_entry
+            )
+
+            eval_id = id(evaluator)
+            evaluator_groups.setdefault(eval_id, []).append((name, student_answer))
+            evaluator_map[eval_id] = evaluator
+
+        for eval_id, group_items in evaluator_groups.items():
+            evaluator = evaluator_map[eval_id]
+
+            if len(group_items) > 1 and hasattr(evaluator, "cmp"):
+                checker = evaluator.cmp()
+                if hasattr(checker, "check"):
+                    student_answers = [ans for _, ans in group_items]
+                    check_result = checker.check(*student_answers)
+
+                    if "results" in check_result and isinstance(check_result["results"], list):
+                        answers = getattr(evaluator, "answers", [])
+                        for index, (name, student_answer) in enumerate(group_items):
+                            individual_score = (
+                                check_result["results"][index]
+                                if index < len(check_result["results"])
+                                else 0.0
+                            )
+                            correct_answer = ""
+                            if isinstance(answers, list) and index < len(answers):
+                                correct_answer = str(answers[index])
+
+                            answer_results[name] = AnswerResult(
+                                score=individual_score,
+                                correct=individual_score >= 1.0,
+                                student_answer=student_answer,
+                                answer_message=check_result.get("message", ""),
+                                correct_answer=correct_answer,
+                            )
+                    else:
+                        for name, student_answer in group_items:
+                            answer_results[name] = AnswerResult(
+                                score=check_result.get("score", 0.0),
+                                correct=check_result.get("correct", False),
+                                student_answer=student_answer,
+                                answer_message=check_result.get("message", ""),
+                                correct_answer=str(evaluator),
+                            )
+                continue
+
+            for name, student_answer in group_items:
+                if hasattr(evaluator, "check") and not hasattr(evaluator, "cmp"):
+                    check_result = evaluator.check(student_answer)
+                    answer_results[name] = AnswerResult(
+                        score=check_result.get("score", 0.0),
+                        correct=check_result.get("correct", False),
+                        student_answer=student_answer,
+                        answer_message=check_result.get("message", ""),
+                        correct_answer=check_result.get(
+                            "correct_answer",
+                            str(evaluator),
+                        ),
+                    )
+                elif hasattr(evaluator, "cmp"):
+                    checker = evaluator.cmp()
+                    if hasattr(checker, "check"):
+                        check_result = checker.check(student_answer)
+                        answer_results[name] = AnswerResult(
+                            score=check_result.get("score", 0.0),
+                            correct=check_result.get("correct", False),
+                            student_answer=student_answer,
+                            answer_message=check_result.get("message", ""),
+                            correct_answer=str(evaluator)
+                            if hasattr(evaluator, "__str__")
+                            else "",
+                        )
+                elif hasattr(evaluator, "evaluate"):
+                    result = evaluator.evaluate(student_answer)
+                    answer_results[name] = result
+
+        return answer_results
+
+    def _normalize_answers(
+        self,
+        answers: dict[str, Any],
+    ) -> dict[str, Any]:
+        """
+        Normalize answer registry, applying aliases from ANS label arguments.
+        """
+        normalized: dict[str, Any] = {}
+        last_key: str | None = None
+        pending_alias: str | None = None
+
+        for name, entry in answers.items():
+            evaluator = (
+                entry["ans_eval"]
+                if isinstance(entry, dict) and "ans_eval" in entry
+                else entry
+            )
+
+            if isinstance(evaluator, str):
+                alias = evaluator.strip()
+                if not alias:
+                    continue
+                if last_key is not None and last_key in normalized:
+                    normalized[alias] = normalized.pop(last_key)
+                    last_key = alias
+                else:
+                    pending_alias = alias
+                continue
+
+            target_name = pending_alias or name
+            pending_alias = None
+            normalized[target_name] = entry
+            last_key = target_name
+
+        return normalized

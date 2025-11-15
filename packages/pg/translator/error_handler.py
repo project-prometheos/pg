@@ -189,7 +189,7 @@ class PGWarning:
             warnings.append(formatted)
 
         # Backend warnings (only with debug permission)
-        if backend_warnings and has_debug_permission:
+        if self.backend_warnings and has_debug_permission:
             formatted = PG_errorMessage(
                 "message",
                 "Non-fatal warnings (debugging only):",
