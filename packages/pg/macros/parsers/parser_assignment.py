@@ -248,25 +248,41 @@ class AssignmentParser:
     _registered_functions: Dict[str, List[str]] = {}
 
     @classmethod
-    def Allow(cls, allow: bool = True, context: Optional[Dict[str, Any]] = None) -> None:
+    def Allow(cls, allow: bool = True, context: Optional[Any] = None) -> None:
         """
         Enable or disable assignment operator in a context.
+
+        Reference: macros/parsers/parserAssignment.pl::Allow (lines 210-233)
 
         Args:
             allow: True to enable, False to disable
             context: Context to modify (if None, uses current context)
         """
+        if context is None:
+            from pg.math.context import get_current_context
+            context = get_current_context()
+        
         if allow:
-            if context is None:
-                # Would need actual context system
-                pass
-            # Would register '=' operator in context
-            # Set precedence just above comma
-            # Register value classes
+            # Get comma precedence (or default to 1)
+            comma_op = context.operators.get(',')
+            comma_prec = comma_op.get('precedence', 1) if comma_op else 1
+            
+            # Register '=' operator with precedence just above comma
+            context.operators.add(
+                '=',
+                class_name='parser::Assignment',
+                precedence=comma_prec + 0.25,  # Just above comma
+                associativity='left',
+                type='bin',  # Binary operator
+                string=' = ',
+            )
+            
+            # Store assignment-enabled flag
+            context.flags.set(assignmentEnabled=True)
         else:
-            if context is None:
-                pass
-            # Would remove '=' operator from context
+            # Remove '=' operator from context
+            context.operators.remove('=')
+            context.flags.set(assignmentEnabled=False)
 
     @classmethod
     def Function(cls, *function_names: str, context: Optional[Dict[str, Any]] = None) -> None:

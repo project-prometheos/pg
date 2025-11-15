@@ -699,6 +699,15 @@ class Context:
         # For now, just mark context as TrigDegrees
         self.flags.set(trigInDegrees=True)
 
+    def has_assignment_operator(self) -> bool:
+        """
+        Check if assignment operator ('=') is enabled in this context.
+        
+        Returns:
+            True if assignment operator is registered, False otherwise
+        """
+        return self.operators.get('=') is not None
+    
     def _init_units(self, limited: bool = False):
         """Initialize Units context with full units support."""
         self._init_numeric()

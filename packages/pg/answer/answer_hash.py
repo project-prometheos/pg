@@ -61,9 +61,15 @@ class AnswerResult:
     # Error handling
     error_message: str = ""  # Error description
     error_flag: bool = False  # True if evaluation failed
+    typeError: bool = False  # True if type mismatch (Perl parity)
 
     # Answer blank identification
     ans_label: str = ""  # e.g., "ans_1", "ans_2"
+
+    # MathObject references (for parity with Perl AnswerHash)
+    correct_value: Any = None  # MathObject reference for correct answer
+    student_value: Any = None  # MathObject reference for parsed student answer
+    student_formula: Any = None  # Formula reference for student answer (if applicable)
 
     # Metadata for debugging/extensions
     metadata: dict[str, Any] = field(default_factory=dict)
@@ -119,7 +125,7 @@ class AnswerResult:
         Returns:
             Dictionary representation suitable for JSON/API responses
         """
-        return {
+        result = {
             "score": self.score,
             "correct": self.correct,
             "student_answer": self.student_answer,
@@ -131,9 +137,20 @@ class AnswerResult:
             "preview": self.preview,
             "error_message": self.error_message,
             "error_flag": self.error_flag,
+            "typeError": self.typeError,
             "ans_label": self.ans_label,
             "metadata": self.metadata,
         }
+        
+        # Add MathObject references as strings (for serialization)
+        if self.correct_value is not None:
+            result["correct_value"] = str(self.correct_value)
+        if self.student_value is not None:
+            result["student_value"] = str(self.student_value)
+        if self.student_formula is not None:
+            result["student_formula"] = str(self.student_formula)
+        
+        return result
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> AnswerResult:

@@ -113,6 +113,27 @@ class Formula(MathValue):
             limits: Variable limits for random test point generation {var: (min, max)}
         """
         self.expression = expression
+        # Extract variables from expression if not provided
+        if variables is None or (isinstance(variables, list) and len(variables) == 0):
+            if isinstance(expression, str):
+                # Extract variables from the expression string
+                import re
+                # Common function names to exclude
+                function_names = {'sin', 'cos', 'tan', 'sec', 'csc', 'cot', 'asin', 'acos', 'atan', 
+                                 'sinh', 'cosh', 'tanh', 'log', 'ln', 'exp', 'sqrt', 'abs', 'sgn', 
+                                 'step', 'fact', 'pi', 'e', 'E', 'PI'}
+                # Find all word-like tokens
+                var_pattern = r'\b([a-zA-Z][a-zA-Z0-9_]*)\b'
+                found_vars = set(re.findall(var_pattern, expression))
+                # Filter out function names and numbers
+                extracted_vars = [v for v in found_vars if v not in function_names and not v.replace('_', '').isdigit()]
+                if extracted_vars:
+                    variables = extracted_vars
+                elif context is not None:
+                    # Fallback to context variables
+                    variables = context.variables.list()
+                else:
+                    variables = []
         self.variables = variables or []
         self.context = context
 
@@ -130,6 +151,21 @@ class Formula(MathValue):
         self.check_undefined_points = False
         self.max_undefined = num_test_points
 
+        # Check for assignment expressions if context has assignments enabled
+        # This should happen before SymPy parsing
+        if isinstance(expression, str) and context is not None:
+            if hasattr(context, 'has_assignment_operator') and context.has_assignment_operator():
+                if '=' in expression:
+                    # Try to parse as assignment
+                    from pg.math.compute import _parse_assignment
+                    assignment_obj = _parse_assignment(expression, context)
+                    if assignment_obj is not None:
+                        # This is an assignment - copy assignment attributes
+                        self._assignment_value = assignment_obj._assignment_value
+                        self._is_assignment = True
+                        # Continue with normal Formula initialization for the expression string
+                        # The assignment_value will be used for comparison
+        
         # If expression is a string and SymPy is available, parse it
         if isinstance(expression, str) and SYMPY_AVAILABLE:
             try:
@@ -626,6 +662,56 @@ class Formula(MathValue):
 
         Reference: lib/Value/Formula.pm::compare (lines 169-235)
         """
+        # Special handling for assignment formulas
+        # Reference: macros/parsers/parserAssignment.pl::compare (lines 385-403)
+        if hasattr(self, '_is_assignment') and self._is_assignment:
+            # This is an assignment formula - compare by right-hand sides
+            if not isinstance(other, Formula):
+                # Try to parse other as assignment if it's a string
+                if isinstance(other, str):
+                    if self.context and self.context.has_assignment_operator():
+                        from pg.math.compute import _parse_assignment
+                        other = _parse_assignment(other, self.context)
+                        if other is None:
+                            return False
+                    else:
+                        return False
+                else:
+                    return False
+            
+            # Check if other is also an assignment
+            if not (hasattr(other, '_is_assignment') and other._is_assignment):
+                return False
+            
+            # Get assignment values
+            self_assign = getattr(self, '_assignment_value', None)
+            other_assign = getattr(other, '_assignment_value', None)
+            
+            if self_assign is None or other_assign is None:
+                return False
+            
+            # Handle function assignment parameter renaming
+            # Reference: Perl lines 390-400
+            if self_assign.is_function and other_assign.is_function:
+                # Both are function assignments
+                if len(self_assign.params) != len(other_assign.params):
+                    return False
+                
+                # Parameter names can differ, but we compare RHS values
+                # For now, just compare RHS values directly
+                # TODO: Implement parameter substitution for proper comparison
+                return self_assign.value.compare(other_assign.value, tolerance, mode) if hasattr(self_assign.value, 'compare') else self_assign.value == other_assign.value
+            
+            # For variable assignments, variable names must match
+            if not self_assign.is_function and not other_assign.is_function:
+                if self_assign.variable != other_assign.variable:
+                    return False
+                # Compare RHS values
+                return self_assign.value.compare(other_assign.value, tolerance, mode) if hasattr(self_assign.value, 'compare') else self_assign.value == other_assign.value
+            
+            # One is function, one is variable - not equal
+            return False
+        
         if not isinstance(other, Formula):
             # Try to promote other to Formula
             if isinstance(other, MathValue):

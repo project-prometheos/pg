@@ -6,7 +6,7 @@ Port to pg_math from pg.mathobjects for Perl 1:1 parity.
 
 import re
 import math
-from typing import Union
+from typing import Union, Any
 
 
 def Compute(expression: Union[str, int, float], context=None):
@@ -83,6 +83,12 @@ def Compute(expression: Union[str, int, float], context=None):
         if unit_obj is not None:
             return unit_obj
 
+    # Check for assignment expressions if assignments are enabled
+    if context.has_assignment_operator() and '=' in expr_str:
+        assignment_obj = _parse_assignment(expr_str, context)
+        if assignment_obj is not None:
+            return assignment_obj
+
     # Check if it's a constant expression (no variables)
     if _is_constant_expression(expr_str, context):
         # Evaluate as constant
@@ -96,8 +102,23 @@ def Compute(expression: Union[str, int, float], context=None):
     # Otherwise, return as Formula
     from .formula import Formula
 
-    # Get variables from context
-    variables = context.variables.list()
+    # Extract variables from the expression string, not just context
+    # This ensures the Formula has the correct variables that actually appear in the expression
+    import re
+    # Find all variable names in the expression (alphanumeric sequences that aren't numbers or functions)
+    # Common function names to exclude
+    function_names = {'sin', 'cos', 'tan', 'sec', 'csc', 'cot', 'asin', 'acos', 'atan', 
+                     'sinh', 'cosh', 'tanh', 'log', 'ln', 'exp', 'sqrt', 'abs', 'sgn', 
+                     'step', 'fact', 'pi', 'e', 'E', 'PI'}
+    # Find all word-like tokens
+    var_pattern = r'\b([a-zA-Z][a-zA-Z0-9_]*)\b'
+    found_vars = set(re.findall(var_pattern, expr_str))
+    # Filter out function names and numbers
+    variables = [v for v in found_vars if v not in function_names and not v.replace('_', '').isdigit()]
+    
+    # If no variables found, use context variables as fallback
+    if not variables:
+        variables = context.variables.list()
 
     return Formula(expr_str, variables, context)
 
@@ -583,3 +604,99 @@ def _is_simple_unit_known(unit_str: str, context) -> bool:
         return False
     except ImportError:
         return False
+
+
+def _parse_assignment(expr: str, context) -> Any:
+    """
+    Parse an assignment expression (e.g., "y = 3x + 1" or "f(x) = x^2").
+    
+    Reference: macros/parsers/parserAssignment.pl
+    
+    Args:
+        expr: Expression string that may contain an assignment
+        context: Context to use for parsing
+        
+    Returns:
+        Formula with type 'Assignment' wrapping AssignmentValue, or None if not an assignment
+    """
+    expr = expr.strip()
+    
+    # Check if it contains '=' (assignment operator)
+    if '=' not in expr:
+        return None
+    
+    # Split on '=' at top level (not inside parentheses)
+    # Find the first '=' that's not inside parentheses
+    depth = 0
+    equals_pos = -1
+    for i, char in enumerate(expr):
+        if char in '([{':
+            depth += 1
+        elif char in ')]}':
+            depth -= 1
+        elif char == '=' and depth == 0:
+            equals_pos = i
+            break
+    
+    if equals_pos < 0:
+        return None
+    
+    # Split into left and right hand sides
+    lhs_str = expr[:equals_pos].strip()
+    rhs_str = expr[equals_pos + 1:].strip()
+    
+    if not lhs_str or not rhs_str:
+        return None
+    
+    # Parse LHS - could be variable or function declaration
+    is_function = False
+    variable_name = None
+    params = []
+    
+    # Check if LHS is a function declaration: f(x) or f(x, y)
+    import re
+    func_match = re.match(r'^(\w+)\s*\(([^)]*)\)\s*$', lhs_str)
+    if func_match:
+        is_function = True
+        variable_name = func_match.group(1)
+        params_str = func_match.group(2).strip()
+        if params_str:
+            params = [p.strip() for p in params_str.split(',')]
+    else:
+        # Simple variable assignment
+        var_match = re.match(r'^(\w+)\s*$', lhs_str)
+        if not var_match:
+            # Invalid LHS - not a simple variable
+            return None
+        variable_name = var_match.group(1)
+    
+    # Parse RHS using Compute (recursive)
+    try:
+        rhs_value = Compute(rhs_str, context)
+    except Exception:
+        # If RHS parsing fails, this isn't a valid assignment
+        return None
+    
+    # Create AssignmentValue
+    from pg.macros.parsers.parser_assignment import AssignmentValue
+    assignment_value = AssignmentValue(
+        variable_name,
+        rhs_value,
+        is_function=is_function,
+        params=params if is_function else None
+    )
+    
+    # Wrap in Formula with type 'Assignment'
+    from .formula import Formula
+    # Create a Formula that wraps the AssignmentValue
+    # We need to avoid parsing the full expression in Formula since it contains '='
+    # Instead, create a minimal Formula and set assignment attributes
+    # Use the RHS expression for the Formula's expression (without '=')
+    formula = Formula(rhs_str, context.variables.list(), context)
+    # Mark it as an assignment formula and store assignment value
+    formula._assignment_value = assignment_value
+    formula._is_assignment = True
+    # Override the expression string to include the full assignment
+    formula.expression = expr
+    
+    return formula

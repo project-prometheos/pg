@@ -177,10 +177,44 @@ class MultiAnswerEvaluator:
 
         # Use custom checker
         try:
+            # Parse student answers into MathObjects before passing to checker
+            # In Perl, student answers are already parsed by Parser::Formula
+            # We need to parse them here using Compute() or the correct answer's context
+            parsed_student_answers = []
+            for i, student_str in enumerate(student_answers):
+                if i < len(ma.correct_answers):
+                    correct_ans = ma.correct_answers[i]
+                    # Get context from correct answer if available
+                    context = None
+                    if hasattr(correct_ans, 'context'):
+                        context = correct_ans.context
+                    elif hasattr(correct_ans, 'getContext'):
+                        context = correct_ans.getContext()
+                    else:
+                        from pg.math.context import get_current_context
+                        context = get_current_context()
+                    
+                    # Parse student answer using Compute (like Parser::Formula in Perl)
+                    from pg.math.compute import Compute
+                    try:
+                        parsed = Compute(str(student_str), context)
+                        parsed_student_answers.append(parsed)
+                    except Exception:
+                        # If parsing fails, use string as-is (checker can handle it)
+                        parsed_student_answers.append(str(student_str))
+                else:
+                    parsed_student_answers.append(str(student_str))
+            
             # Call checker with (correct, student, self)
             # In Perl: checker->($correct, $student, $self)
             # In Python: checker(correct, student, self)
-            result = ma.checker(ma.correct_answers, list(student_answers), ma)
+            # Note: checker should return a list of scores [score1, score2, ...]
+            result = ma.checker(ma.correct_answers, parsed_student_answers, ma)
+            
+            # Debug: if result is None, the checker might have failed silently
+            if result is None:
+                import warnings
+                warnings.warn(f"MultiAnswer checker returned None - checker may have failed silently. Correct: {ma.correct_answers}, Student: {parsed_student_answers}")
 
             # Handle None result (broken checker from Perl translation)
             if result is None:
@@ -233,38 +267,93 @@ class MultiAnswerEvaluator:
                 'results': [0.0] * len(ma.correct_answers)
             }
         
+        # Parse student answers if they're strings
+        parsed_student_answers = []
+        for i, student in enumerate(student_answers):
+            if isinstance(student, str) and i < len(ma.correct_answers):
+                correct_ans = ma.correct_answers[i]
+                # Get context from correct answer if available
+                context = None
+                if hasattr(correct_ans, 'context'):
+                    context = correct_ans.context
+                elif hasattr(correct_ans, 'getContext'):
+                    context = correct_ans.getContext()
+                else:
+                    from pg.math.context import get_current_context
+                    context = get_current_context()
+                
+                # Parse student answer using Compute
+                from pg.math.compute import Compute
+                try:
+                    parsed = Compute(str(student), context)
+                    parsed_student_answers.append(parsed)
+                except Exception:
+                    parsed_student_answers.append(student)
+            else:
+                parsed_student_answers.append(student)
+        
         results = []
-        for correct, student in zip(ma.correct_answers, student_answers):
+        for correct, student in zip(ma.correct_answers, parsed_student_answers):
             score = 0.0
             # Try to use the answer's own checker
             if hasattr(correct, 'cmp'):
                 try:
                     checker = correct.cmp()
                     if hasattr(checker, 'check'):
-                        check_result = checker.check(student)
+                        # Checker expects string input - convert Formula to string
+                        if hasattr(student, 'to_string'):
+                            student_str = student.to_string()
+                        elif hasattr(student, '__str__'):
+                            student_str = str(student)
+                        else:
+                            student_str = str(student) if not isinstance(student, str) else student
+                        check_result = checker.check(student_str)
                         if isinstance(check_result, dict):
                             score = check_result.get('score', 0.0)
                         elif isinstance(check_result, (int, float)):
                             score = float(check_result)
+                        else:
+                            # If checker doesn't return expected format, fall through to direct comparison
+                            raise ValueError("Checker returned unexpected format")
                     elif callable(checker):
                         # Callable checker (like PopUp)
                         check_result = checker(student)
                         if isinstance(check_result, dict):
                             score = check_result.get('score', 0.0)
+                        else:
+                            raise ValueError("Checker returned unexpected format")
+                    else:
+                        # No valid checker, fall through to direct comparison
+                        raise ValueError("No valid checker method")
                 except Exception:
-                    # If checker fails, try string comparison
-                    score = 1.0 if str(correct).strip() == str(student).strip() else 0.0
+                    # If checker fails, try direct comparison using compare() method
+                    if hasattr(correct, 'compare') and callable(correct.compare):
+                        try:
+                            score = 1.0 if correct.compare(student) else 0.0
+                        except Exception:
+                            score = 0.0
+                    else:
+                        # Fallback to == operator
+                        score = 1.0 if correct == student else 0.0
             elif hasattr(correct, 'compare') and callable(correct.compare):
-                # MathObject with compare() method
+                # MathObject with compare() method - use it!
                 try:
-                    # Try to parse student answer and compare
-                    # For now, use string comparison as fallback
-                    score = 1.0 if str(correct).strip() == str(student).strip() else 0.0
-                except Exception:
+                    # Both should be MathObjects at this point
+                    if hasattr(student, 'compare') or hasattr(student, '__eq__'):
+                        # Use compare() method for proper MathObject comparison
+                        score = 1.0 if correct.compare(student) else 0.0
+                    else:
+                        # Student is not a MathObject, try == operator
+                        score = 1.0 if correct == student else 0.0
+                except Exception as e:
+                    # If comparison fails, answer is wrong
                     score = 0.0
             else:
-                # Simple string comparison
-                score = 1.0 if str(correct).strip() == str(student).strip() else 0.0
+                # Simple comparison using == operator
+                try:
+                    score = 1.0 if correct == student else 0.0
+                except Exception:
+                    score = 0.0
             
             results.append(score)
         

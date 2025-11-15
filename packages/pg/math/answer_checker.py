@@ -137,42 +137,89 @@ class FormulaAnswerChecker(AnswerChecker):
                 'message': f'Formula uses different variables. Expected: {correct_vars}, got: {student_vars}'
             }
 
-        # Test at multiple random points
-        for _ in range(self.num_points):
-            # Generate random test point
-            test_point = {}
-            for var in correct_vars:
-                test_point[var] = random.uniform(-5, 5)
-
-            try:
-                # Evaluate both formulas
-                correct_value = self.correct_value.eval(**test_point)
-                student_value = student_formula.eval(**test_point)
-
-                # Compare values - convert to float
-                correct_float = float(correct_value)
-                student_float = float(student_value)
-
-                diff = abs(correct_float - student_float)
-                if diff > self.tolerance:
-                    return {
-                        'score': 0.0,
-                        'correct': False,
-                        'message': f'Formulas differ at {test_point}'
-                    }
-
-            except Exception as e:
+        # Use Formula's compare() method for full test point evaluation with domain checking
+        # This matches Perl's behavior (lib/Value/Formula.pm::cmp_compare)
+        try:
+            # Set number of test points on student formula
+            student_formula._num_test_points = self.num_points
+            
+            # Use Formula.compare() which handles:
+            # - Symbolic comparison first (fast path)
+            # - Test point generation
+            # - Domain mismatch detection
+            # - Tolerance-based comparison
+            is_equal = self.correct_value.compare(student_formula, self.tolerance)
+            
+            # Check for domain mismatches
+            if hasattr(self.correct_value, 'domain_mismatch') and self.correct_value.domain_mismatch:
                 return {
                     'score': 0.0,
                     'correct': False,
-                    'message': f'Error evaluating formula: {e}'
+                    'message': 'The formulas have different domains (one is undefined where the other is defined)'
                 }
+            
+            if is_equal:
+                return {
+                    'score': 1.0,
+                    'correct': True,
+                    'message': 'Correct!'
+                }
+            else:
+                return {
+                    'score': 0.0,
+                    'correct': False,
+                    'message': 'The formulas are not equivalent'
+                }
+                
+        except Exception as e:
+            # Fallback to simplified test point evaluation if compare() fails
+            # Test at multiple random points
+            for _ in range(self.num_points):
+                # Generate random test point
+                test_point = {}
+                for var in correct_vars:
+                    test_point[var] = random.uniform(-5, 5)
 
-        # All test points passed
-        return {
-            'score': 1.0,
-            'correct': True
-        }
+                try:
+                    # Evaluate both formulas
+                    correct_value = self.correct_value.eval(**test_point)
+                    student_value = student_formula.eval(**test_point)
+
+                    # Compare values - convert to float
+                    correct_float = float(correct_value)
+                    student_float = float(student_value)
+
+                    diff = abs(correct_float - student_float)
+
+                    # Check if difference is within tolerance
+                    if diff > self.tolerance:
+                        return {
+                            'score': 0.0,
+                            'correct': False,
+                            'message': f'Formulas differ at test point {test_point}'
+                        }
+                except Exception as e:
+                    # Evaluation error at this point - might be domain issue
+                    # Check if both formulas have the same domain issue
+                    try:
+                        # Try to evaluate correct formula
+                        self.correct_value.eval(**test_point)
+                        # Correct formula works, student doesn't - domain mismatch
+                        return {
+                            'score': 0.0,
+                            'correct': False,
+                            'message': 'The formulas have different domains (one is undefined where the other is defined)'
+                        }
+                    except Exception:
+                        # Both fail - might be OK, continue to next point
+                        pass
+
+            # All test points passed
+            return {
+                'score': 1.0,
+                'correct': True,
+                'message': 'Correct!'
+            }
 
 
 class RealAnswerChecker(AnswerChecker):
@@ -276,7 +323,7 @@ class VectorAnswerChecker(AnswerChecker):
         """
         Check if student answer matches correct answer.
 
-        If custom checker is provided, use it. Otherwise, do component-wise comparison.
+        Uses Parser/Formula system like Perl (Parser::Formula equivalent via Compute).
 
         Args:
             student_answer: Student's answer (string or Vector)
@@ -285,110 +332,54 @@ class VectorAnswerChecker(AnswerChecker):
             dict with 'score', 'correct' keys, and optional 'message'
         """
         from .geometric import Vector
-        from .formula import Formula
-        from .numeric import Real
+        from .compute import Compute
 
         # Parse student answer if it's a string
         if isinstance(student_answer, str):
             student_answer = student_answer.strip()
             
-            # Try to parse as Vector or Formula
-            student_vector = None
-            
-            # Method 1: Try parsing as a Formula (for parametric vectors)
+            # Use Compute() to parse (equivalent to Parser::Formula in Perl)
             try:
-                # Use the correct vector's context if available
+                # Get context from correct vector
                 context = getattr(self.correct_value, 'context', None)
                 if context is None:
                     from .context import get_current_context
                     context = get_current_context()
                 
-                # Create Formula from string
-                student_formula = Formula(student_answer, context=context)
+                # Parse using Compute (handles both simple vectors and parametric formulas)
+                parsed_value = Compute(student_answer, context)
                 
-                # Check if the correct vector can be compared with the formula
-                # For parametric vectors, we compare the string representations
-                # or evaluate at specific points
-                correct_str = str(self.correct_value).strip()
-                student_str = student_answer.strip()
-                
-                # Remove angle brackets for comparison if both have them
-                if correct_str.startswith('<') and correct_str.endswith('>'):
-                    correct_str = correct_str[1:-1].strip()
-                if student_str.startswith('<') and student_str.endswith('>'):
-                    student_str = student_str[1:-1].strip()
-                
-                # Compare the formulas
-                if correct_str == student_str:
-                    return {
-                        'score': 1.0,
-                        'correct': True
-                    }
-                
-                # Try comparing the Formula objects directly
-                correct_formula = Formula(correct_str, context=context) if correct_str else None
-                if correct_formula and hasattr(correct_formula, 'compare'):
-                    # Use test point evaluation for comparison
-                    # This is a simplified approach - full implementation would test at multiple points
+                # If it's already a Vector, use it
+                if isinstance(parsed_value, Vector):
+                    student_vector = parsed_value
+                # If it's a Formula that evaluates to a Vector, try to evaluate
+                elif hasattr(parsed_value, 'isConstant') and parsed_value.isConstant():
                     try:
-                        # For now, use string comparison as fallback
-                        # Full implementation would evaluate at test points
-                        return {
-                            'score': 0.0,
-                            'correct': False,
-                            'message': 'Vector formulas do not match'
-                        }
+                        # Evaluate constant formula - might give us a Vector
+                        evaluated = parsed_value.eval()
+                        if isinstance(evaluated, Vector):
+                            student_vector = evaluated
+                        else:
+                            # Not a vector - try string comparison
+                            return self._compare_strings(student_answer)
                     except Exception:
-                        pass
-                
+                        # Evaluation failed - try string comparison
+                        return self._compare_strings(student_answer)
+                else:
+                    # Formula that might represent a parametric vector
+                    # For parametric vectors, compare string representations
+                    # (Full implementation would evaluate at test points)
+                    return self._compare_strings(student_answer)
+                    
             except Exception as e:
-                # Formula parsing failed, try other methods
-                pass
-            
-            # Method 2: Try parsing as simple vector <x, y, z>
-            try:
-                # Remove angle brackets
-                if student_answer.startswith('<') and student_answer.endswith('>'):
-                    inner = student_answer[1:-1].strip()
-                    # Try to parse as tuple/list
-                    import ast
-                    try:
-                        # Try parsing as Python tuple/list
-                        parsed = ast.literal_eval(inner)
-                        if isinstance(parsed, (list, tuple)):
-                            student_vector = Vector([Real(x) for x in parsed])
-                    except (ValueError, SyntaxError):
-                        # Not a simple tuple, might be a formula
-                        pass
-            except Exception:
-                pass
-            
-            # If we couldn't parse, return error
-            if student_vector is None:
-                # Fall back to string comparison with the correct vector
-                correct_str = str(self.correct_value).strip()
-                student_str = student_answer.strip()
-                
-                # Normalize by removing angle brackets
-                if correct_str.startswith('<') and correct_str.endswith('>'):
-                    correct_str = correct_str[1:-1].strip()
-                if student_str.startswith('<') and student_str.endswith('>'):
-                    student_str = student_str[1:-1].strip()
-                
-                if correct_str == student_str:
-                    return {
-                        'score': 1.0,
-                        'correct': True
-                    }
-                
-                return {
-                    'score': 0.0,
-                    'correct': False,
-                    'message': f'Could not parse vector: {student_answer}'
-                }
+                # Parsing failed - try string comparison as fallback
+                return self._compare_strings(student_answer)
             
             # Use the parsed vector for comparison below
             student_answer = student_vector
+        else:
+            # Already a Vector object
+            student_vector = student_answer
 
         # If custom checker provided, use it
         if self.custom_checker is not None:
@@ -411,7 +402,7 @@ class VectorAnswerChecker(AnswerChecker):
                 }
 
         # Default: component-wise comparison
-        if not isinstance(student_answer, Vector):
+        if not isinstance(student_vector, Vector):
             return {
                 'score': 0.0,
                 'correct': False,
@@ -419,7 +410,7 @@ class VectorAnswerChecker(AnswerChecker):
             }
 
         # Compare dimensions
-        if len(self.correct_value.components) != len(student_answer.components):
+        if len(self.correct_value.components) != len(student_vector.components):
             return {
                 'score': 0.0,
                 'correct': False,
@@ -427,7 +418,7 @@ class VectorAnswerChecker(AnswerChecker):
             }
 
         # Compare component-wise using compare method
-        if self.correct_value.compare(student_answer, self.tolerance):
+        if self.correct_value.compare(student_vector, self.tolerance):
             return {
                 'score': 1.0,
                 'correct': True
@@ -438,3 +429,30 @@ class VectorAnswerChecker(AnswerChecker):
                 'correct': False,
                 'message': 'Vectors do not match'
             }
+    
+    def _compare_strings(self, student_answer: str) -> Dict[str, Any]:
+        """
+        Fallback string comparison for vectors.
+        
+        Used when parsing fails or for parametric vector formulas.
+        """
+        correct_str = str(self.correct_value).strip()
+        student_str = student_answer.strip()
+        
+        # Normalize by removing angle brackets
+        if correct_str.startswith('<') and correct_str.endswith('>'):
+            correct_str = correct_str[1:-1].strip()
+        if student_str.startswith('<') and student_str.endswith('>'):
+            student_str = student_str[1:-1].strip()
+        
+        if correct_str == student_str:
+            return {
+                'score': 1.0,
+                'correct': True
+            }
+        
+        return {
+            'score': 0.0,
+            'correct': False,
+            'message': f'Could not parse vector: {student_answer}'
+        }

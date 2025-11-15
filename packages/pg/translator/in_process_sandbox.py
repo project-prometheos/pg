@@ -1316,14 +1316,31 @@ class InProcessSandbox:
             class Assignment:
                 """Stub for parser::Assignment."""
                 @staticmethod
-                def Allow():
-                    """Stub for parser::Assignment->Allow."""
-                    pass
+                def Allow(*args):
+                    """Call parser::Assignment->Allow to enable assignment operator."""
+                    from pg.macros.parsers.parser_assignment import AssignmentParser
+                    # Allow() can be called with context as first arg, or just allow=True
+                    if len(args) == 0:
+                        AssignmentParser.Allow(True, None)
+                    elif len(args) == 1:
+                        # Could be context or allow flag
+                        if isinstance(args[0], bool):
+                            AssignmentParser.Allow(args[0], None)
+                        else:
+                            # Assume it's a context
+                            AssignmentParser.Allow(True, args[0])
+                    elif len(args) == 2:
+                        AssignmentParser.Allow(args[0], args[1])
+                    else:
+                        AssignmentParser.Allow(True, None)
 
                 @staticmethod
                 def Function(*args):
-                    """Stub for parser::Assignment->Function(name)."""
-                    pass
+                    """Call parser::Assignment->Function to register function names."""
+                    from pg.macros.parsers.parser_assignment import AssignmentParser
+                    # Function() takes function names as args
+                    if args:
+                        AssignmentParser.Function(*args)
 
         self.namespace['parser'] = ParserStub
         self.namespace['helpLink'] = helpLink

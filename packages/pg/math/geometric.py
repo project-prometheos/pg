@@ -29,22 +29,75 @@ class Point(MathValue):
 
     type_precedence = TypePrecedence.POINT
 
-    def __init__(self, *args):
+    def __init__(self, *args, context: Any = None):
         """
         Initialize a Point.
 
         Args:
-            *args: Variable number of coordinates, or a single list/tuple of coordinates
+            *args: Variable number of coordinates, or a single list/tuple of coordinates,
+                   or a string to parse (e.g., Point("(1, 0)"))
                    Point(1, 2, 3) or Point([1, 2, 3]) both work
+            context: Mathematical context (for parsing string input)
+
+        Reference: lib/Value/Point.pm::new (lines 19-47)
         """
         # Convert to MathValue if needed
         from .value import MathValue as MV
 
+        # Handle string input (like Perl's Value::makeValue)
+        # Reference: lib/Value/Point.pm:25 - $p = Value::makeValue($p, context => $context) if defined($p) && !ref($p);
+        if len(args) == 1 and isinstance(args[0], str):
+            # Parse string input using Compute (equivalent to makeValue)
+            if context is None:
+                from .context import get_current_context
+                context = get_current_context()
+
+            from .compute import Compute
+            parsed = Compute(args[0], context)
+
+            # Extract coordinates from parsed result
+            # Handle different return types from Compute
+            coords: list[Any] = []
+            if isinstance(parsed, Point):
+                # Already a Point - use its coordinates
+                self.coords = list(parsed.coords)
+                return
+            elif isinstance(parsed, (list, tuple)):
+                # List/tuple of coordinates
+                coords = list(parsed)
+            elif hasattr(parsed, 'coords'):
+                # Has coords attribute (Vector, etc.)
+                coords = list(parsed.coords)
+            elif hasattr(parsed, 'to_python'):
+                # Try to convert to Python and extract coordinates
+                py_val = parsed.to_python()
+                if isinstance(py_val, (list, tuple)):
+                    coords = list(py_val)
+                elif isinstance(py_val, str):
+                    # Try parsing the string representation
+                    # Handle "(1, 0)" format
+                    import re
+                    match = re.match(r'\(([^)]+)\)', py_val.strip())
+                    if match:
+                        coords_str = match.group(1)
+                        coords = [c.strip() for c in coords_str.split(',')]
+                    else:
+                        coords = [parsed]
+                else:
+                    coords = [parsed]
+            else:
+                # Single value - wrap in list
+                coords = [parsed]
+
+            self.coords = [MV.from_python(c) if not isinstance(
+                c, MathValue) else c for c in coords]
+            return
+
         # Handle both Point(x, y, z) and Point([x, y, z]) calling styles
         if len(args) == 1 and isinstance(args[0], (list, tuple)):
-            coords = args[0]
+            coords = list(args[0])
         else:
-            coords = args
+            coords = list(args)
 
         self.coords = [MV.from_python(c) if not isinstance(
             c, MathValue) else c for c in coords]
@@ -236,7 +289,8 @@ class Vector(MathValue):
                 )
 
         self.components = [
-            literal if isinstance(literal, MathValue) else MV.from_python(literal)
+            literal if isinstance(
+                literal, MathValue) else MV.from_python(literal)
             for literal in raw_components
         ]
 
