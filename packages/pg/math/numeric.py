@@ -351,12 +351,41 @@ class Complex(MathValue):
         Initialize a Complex number.
 
         Args:
-            real: Real part
+            real: Real part (can be a number, list/tuple [real, imag], or string "a+bi" for Perl compatibility)
             imag: Imaginary part (default 0)
             context: The Context (None = use current default)
         """
-        self.real = float(real)
-        self.imag = float(imag)
+        # Handle list/tuple arguments (Perl compatibility): Complex([a, b])
+        if isinstance(real, (list, tuple)):
+            if len(real) >= 2:
+                self.real = float(real[0])
+                self.imag = float(real[1])
+            elif len(real) == 1:
+                self.real = float(real[0])
+                self.imag = 0.0
+            else:
+                self.real = 0.0
+                self.imag = 0.0
+        elif isinstance(real, str):
+            # Parse string like "2-4i" or "2+4i"
+            import re
+            match = re.match(r'([+-]?\d+(?:\.\d+)?)\s*([+-])\s*(\d+(?:\.\d+)?)i', real.replace(' ', ''))
+            if match:
+                self.real = float(match.group(1))
+                sign = match.group(2)
+                self.imag = float(match.group(3))
+                if sign == '-':
+                    self.imag = -self.imag
+            else:
+                # Try to parse as just real part
+                try:
+                    self.real = float(real)
+                    self.imag = 0.0
+                except ValueError:
+                    raise ValueError(f"Cannot parse complex number from string: {real}")
+        else:
+            self.real = float(real)
+            self.imag = float(imag)
         if context is not None:
             self.context = context
         else:

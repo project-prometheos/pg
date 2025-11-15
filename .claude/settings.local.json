@@ -34,7 +34,10 @@
       "Bash(set:*)",
       "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -c \"\nimport subprocess\nimport sys\nresult = subprocess.run([\n    sys.executable, ''''-m'''', ''''pytest'''', \n    ''''packages/pg/translator/tests/test_tutorial_sample_problems.py::test_tutorial_problem_renders[VectorOperations]'''',\n    ''''-xvs''''\n], cwd=''''d:/pg/packages/pg/translator'''')\nsys.exit(result.returncode)\n\")",
       "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -c \"\ncode = ''''''d = v1 . v2''''''\ntry:\n    compile(code, ''<test>'', ''exec'')\n    print(''Compiled successfully'')\nexcept SyntaxError as e:\n    print(f''Syntax error: {e}'')\n\")",
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest packages/pg/translator/tests/test_tutorial_sample_problems.py -v --tb=no)"
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest packages/pg/translator/tests/test_tutorial_sample_problems.py -v --tb=no)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" D:pgtutorialsample-problemsComplexComplexOperations.py)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" \"D:\\pg\\tutorial\\sample-problems\\Complex\\ComplexOperations.py\")",
+      "Bash(C:Usersmdahl.condaenvspytorch-5090python.exe D:pgtutorialsample-problemsComplexComplexOperations.py)"
     ],
     "deny": [],
     "ask": []

@@ -34,6 +34,22 @@ from pg.macros.MathObjects import (
 # Also export Infinity and Union from pg.math
 from pg.math import Infinity, Union
 
+# Define imaginary units for convenience
+# These are based on the current context's constants
+# In Numeric context, i is the imaginary unit (Complex(0, 1))
+# In Vector context, i, j, k are unit vectors
+try:
+    # Try to get i from the current context
+    _ctx = Context()
+    if 'i' in _ctx.constants:
+        i = _ctx.constants.get('i')
+    else:
+        # Fallback: define as Complex imaginary unit
+        i = Complex(0, 1)
+except:
+    # Fallback: define as Complex imaginary unit
+    i = Complex(0, 1)
+
 __all__ = [
     "Context",
     "Formula",
@@ -48,6 +64,7 @@ __all__ = [
     "List",
     "Matrix",
     "Fraction",
+    "i",
     "Union",
     "Infinity",
 ]
