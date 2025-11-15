@@ -62,7 +62,7 @@ num = Formula(f"{a} y - {b}")
 den = Formula(f"y - {c}")
 numbogus = Formula(f"{a}*y+{b}")
 denbogus = Formula(f"(y-{c})*({c}-y)")
-multians = MultiAnswer(num, den).with_params( allowBlankAnswers = 1, checker = lambda *args, **kwargs: None  # Stubbed Perl closure (parsing failed)
+multians = MultiAnswer(num, den).with_params( allowBlankAnswers = 1, checker = lambda correct, student, self, f1stu, f2stu, f1, f2: None  # Complex Perl closure not fully translated
 )
 #:% section = statement
 #: The fraction answer is created using a `LayoutTable` from

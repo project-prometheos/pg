@@ -1431,7 +1431,7 @@ if __name__ == "__main__":
             regex_literal: QR "/" /[^\/]+/ "/" REGEX_FLAGS?  -> regex_literal
 
             QR.2: "qr"
-            NAME: /[A-Za-z_][A-Za-z0-9_]*/
+            NAME: /[A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)*/  
             VAR: /[\$@%][A-Za-z_][A-Za-z0-9_]*/
             STRING: /"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'/
             NUMBER: /[0-9]+(?:\.[0-9]+)?/
@@ -1996,13 +1996,18 @@ if __name__ == "__main__":
 
         Closures are emitted as lambda functions with the signature extracted
         from parameter unpacking statements. Complex closures with multiple
-        statements are emitted as nested def functions.
+        statements and control flow return a stub lambda since they cannot
+        be represented as simple lambda expressions.
 
         Example Perl:
             sub { my ($correct, $student) = @_; return $correct == $student }
 
         Becomes Python:
             lambda correct, student: (correct == student)
+
+        Complex closures with if/elsif/else and multiple statements currently
+        return a stub lambda since Python has no IIFE pattern to support inline
+        def functions within expressions.
         """
         # Extract parameters and body statements
         params = []
@@ -2035,35 +2040,11 @@ if __name__ == "__main__":
             return_py = self._expr_to_py(return_value)
             return f"lambda {params_str}: {return_py}"
 
-        # Multi-statement body or complex logic
-        # Emit as a def function that returns the result
-        lines = []
-
-        # Generate function name (using a dummy name that won't conflict)
-        func_name = "_closure_func"
-
-        # Emit function definition
-        lines.append(f"(lambda: (")
-        lines.append(f"{'    ' * (indent + 1)}def {func_name}({params_str}):")
-
-        # Emit function body
-        body_lines = []
-        for stmt in body_for_return:
-            emitted = self._emit_ir(stmt, indent + 2)
-            if emitted:
-                body_lines.append(emitted)
-
-        # Ensure function has at least a pass or return statement
-        if not body_lines:
-            body_lines.append(f"{'    ' * (indent + 2)}pass")
-
-        lines.extend(body_lines)
-
-        # Close the lambda and return the function
-        lines.append(f"{'    ' * (indent + 1)}return {func_name}")
-        lines.append(f"{'    ' * indent}))()")
-
-        return "\n".join(lines)
+        # Multi-statement body or complex logic cannot be inlined as lambda
+        # Return a stub lambda - the preprocessor closure handling should have
+        # extracted this into a separate function before we get here
+        # This is a fallback for complex closures
+        return f"lambda {params_str}: None  # Complex Perl closure not fully translated"
 
     def _expr_to_py(self, expr: Any) -> str:
         """Lower an expression IR into a Python expression string."""
