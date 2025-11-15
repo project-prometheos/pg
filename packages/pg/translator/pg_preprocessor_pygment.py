@@ -865,10 +865,10 @@ class PGPreprocessor:
 
         # Handle Perl array slice assignments: @inversion[@shuffle] = (0 .. $#shuffle)
         # This creates an inverted mapping: inversion[shuffle[i]] = i
-        # Pattern: dict_var[list_var] = range_expr or (range_expr)
+        # Pattern: dict_var[list_var] = range_expr or (range_expr) or (list with items)
         # Use non-greedy match to handle nested parentheses in range args
         code = re.sub(
-            r'^(\s*)([a-z_]\w*)\[([a-z_]\w*)\]\s*=\s*\(range\(.*?\)\)\s*$',
+            r'^(\s*)([a-z_]\w*)\[([a-z_]\w*)\]\s*=\s*\(?range\(.*?\)\)?\s*$',
             lambda m: f"{m.group(1)}for __i, __idx in enumerate({m.group(3)}):\n{m.group(1)}    {m.group(2)}[__idx] = __i",
             code,
             flags=re.MULTILINE
@@ -899,6 +899,16 @@ class PGPreprocessor:
         code = re.sub(
             r'^(\s*[a-z_]\w*)\s*=\s*\(([^)]+,[^)]*)\)\s*$',
             r'\1 = [\2]',
+            code,
+            flags=re.MULTILINE
+        )
+
+        # Also convert parenthesized single expressions that are ranges to lists
+        # Pattern: var = (range(...)) should become var = list(range(...))
+        # This handles cases like: indices = (0 .. $#answers)
+        code = re.sub(
+            r'^(\s*[a-z_]\w*)\s*=\s*\(\s*range\s*\((.+)\)\s*\)\s*$',
+            r'\1 = list(range(\2))',
             code,
             flags=re.MULTILINE
         )
@@ -979,10 +989,50 @@ if __name__ == "__main__":
 '''
             code += boilerplate
 
-        # Postprocessing: Convert empty list literals [] to PerlList() for Perl-like array behavior
+        # Postprocessing: Convert list literals to PerlList() for Perl-like array behavior
         # This allows arrays to auto-vivify when assigning to arbitrary indices
         import re as re_module
-        code = re_module.sub(r'(\w+)\s*=\s*\[\]', r'\1 = PerlList()', code)
+
+        # Match: var = [...] and wrap with PerlList()
+        # We need to handle nested brackets properly
+        def wrap_with_perllist_nested(code_str):
+            """Convert list literals to PerlList, handling nested brackets."""
+            result = []
+            i = 0
+            while i < len(code_str):
+                # Look for pattern: word = [
+                match = re_module.match(r'(\w+)\s*=\s*\[', code_str[i:])
+                if match:
+                    # Found a list assignment, find the matching closing bracket
+                    var_name = match.group(1)
+                    bracket_start = i + match.end() - 1  # Position of the [
+                    bracket_count = 0
+                    j = bracket_start
+
+                    # Find matching closing bracket
+                    while j < len(code_str):
+                        if code_str[j] == '[':
+                            bracket_count += 1
+                        elif code_str[j] == ']':
+                            bracket_count -= 1
+                            if bracket_count == 0:
+                                # Found matching closing bracket
+                                list_literal = code_str[bracket_start:j+1]
+                                result.append(f'{var_name} = PerlList({list_literal})')
+                                i = j + 1
+                                break
+                        j += 1
+                    else:
+                        # No matching bracket found, keep original
+                        result.append(code_str[i])
+                        i += 1
+                else:
+                    result.append(code_str[i])
+                    i += 1
+
+            return ''.join(result)
+
+        code = wrap_with_perllist_nested(code)
 
         return PreprocessResult(code=code, text_blocks=text_blocks, line_map=line_map)
 

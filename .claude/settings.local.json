@@ -1,9 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"d:\\pg\\packages\\pg\\translator\\tests\\test_tutorial_sample_problems_all.py\" -v -k \"CommentsForInstructors\" --tb=short)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\":*)"
     ],
     "deny": [],
     "ask": []

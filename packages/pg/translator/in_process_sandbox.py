@@ -598,6 +598,7 @@ class InProcessSandbox:
                 'HINT': pg_core.HINT,
                 'COMMENT': pg_core.COMMENT,
                 'PGML': PGML,
+                'HEADER_TEXT': pg_core.HEADER_TEXT,
                 'random': pg_core.random,
                 'non_zero_random': pg_core.non_zero_random,
                 'list_random': pg_core.list_random,
