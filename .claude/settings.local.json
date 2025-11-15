@@ -1,9 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -c:*)",
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"d:\\pg\\packages\\pg\\translator\\tests\\test_tutorial_sample_problems_all.py\" -v -k \"ChemicalReaction\" --tb=short)",
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" pg_solve.py \"tutorial/sample-problems/Misc/ChemicalReaction.pg\" --seed 1234 --no-check)"
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest \"d:\\pg\\packages\\pg\\translator\\tests\\test_tutorial_sample_problems_all.py\" -v -k \"CommentsForInstructors\" --tb=short)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []

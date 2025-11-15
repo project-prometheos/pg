@@ -145,9 +145,26 @@ def random_subset(n: int, *items):
     """
     Select n random items from list without replacement.
 
+    Can be called as:
+    - random_subset(2, item1, item2, item3, ...) - variadic style
+    - random_subset(2, [item1, item2, item3, ...]) - list style
+
     Reference: PGstandard.pl::random_subset
     """
     import random as _random
+
+    # Handle case where a single list is passed (from Perl array conversion)
+    if len(items) == 1 and isinstance(items[0], (list, tuple)):
+        items = items[0]
+
+    if n < 0 or n > len(items):
+        # Match Perl behavior: if sample size is invalid, return what we can
+        # or raise an error if it's clearly wrong
+        if n < 0:
+            raise ValueError("Sample size cannot be negative")
+        # Sample all items if n is larger than population (graceful degradation)
+        return _random.sample(items, len(items))
+
     return _random.sample(items, n)
 
 
