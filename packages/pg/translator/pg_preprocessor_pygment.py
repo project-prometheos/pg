@@ -199,6 +199,13 @@ class PGPreprocessor:
         while i < len(lines):
             original_line = lines[i]
             line_start_index = i
+            stripped_line = original_line.strip()
+            if stripped_line.startswith('package '):
+                i += 1
+                continue
+            if stripped_line.startswith('our') and 'ISA' in stripped_line:
+                i += 1
+                continue
 
             # Join Perl-style implicit continuations to make downstream parsing easier
             is_comment = original_line.lstrip(' \t').startswith('#')
@@ -391,11 +398,36 @@ class PGPreprocessor:
                 single_line_brace_count = after_sub.count(
                     '{') - after_sub.count('}')
 
-                # For single-line closures where all braces are balanced, extract and replace them
-                # But we need to be careful with strings, hashes, etc.
-                # For now, skip this and only handle multi-line closures
-                # The issue is that line joining can create single "lines" that actually contain
-                # multiple statements that have been merged together.
+                # For single-line closures where all braces are balanced AND there's at least one closing brace
+                # (to avoid treating "sub {" with nothing else as single-line)
+                has_closing_brace = '}' in after_sub
+                if single_line_brace_count <= 0 and has_closing_brace:
+                    # Single-line closure - find the matching closing brace
+                    # Extract everything before 'sub' and everything after the matching '}'
+                    prefix = original_line[:sub_start]
+
+                    # Find the matching closing brace for the sub
+                    brace_count = 1
+                    pos = sub_start + 5  # Start after 'sub {'
+                    while pos < len(original_line) and brace_count > 0:
+                        if original_line[pos] == '{':
+                            brace_count += 1
+                        elif original_line[pos] == '}':
+                            brace_count -= 1
+                        pos += 1
+
+                    # Everything after the closing brace
+                    suffix = original_line[pos:] if pos < len(
+                        original_line) else ''
+
+                    # Create the stubbed line
+                    stubbed_line = f"{prefix}lambda *args, **kwargs: None{suffix}"
+                    transformed = self._rewrite_statement(stubbed_line)
+                    if transformed:
+                        output_lines.append(
+                            transformed + "  # Stubbed Perl closure")
+                    i += 1
+                    continue
 
                 # Multi-line closure
                 closure_lines = [original_line]
@@ -758,11 +790,33 @@ class PGPreprocessor:
         code = "\n".join(output_lines)
         # Post-process to initialize arrays/dicts that are assigned to without declaration
         code = self._initialize_arrays(code)
+
+        # Handle Perl array slice assignments: @inversion[@shuffle] = (0 .. $#shuffle)
+        # This creates an inverted mapping: inversion[shuffle[i]] = i
+        # Pattern: dict_var[list_var] = range_expr or (range_expr)
+        # Use non-greedy match to handle nested parentheses in range args
+        code = re.sub(
+            r'^(\s*)([a-z_]\w*)\[([a-z_]\w*)\]\s*=\s*\(range\(.*?\)\)\s*$',
+            lambda m: f"{m.group(1)}for __i, __idx in enumerate({m.group(3)}):\n{m.group(1)}    {m.group(2)}[__idx] = __i",
+            code,
+            flags=re.MULTILINE
+        )
+
         # Convert empty tuple assignments to empty lists for array variables
         # In Perl: @var = () creates an empty list
         # In Python: () is a tuple, [] is a list, so we need to convert
         code = re.sub(r'^\s*([a-z_]\w*)\s*=\s*\(\)\s*$',
                       r'\1 = []', code, flags=re.MULTILINE)
+
+        # Fix array slices with range: array[range(a, b)] -> array[a:b]
+        # This happens when Perl @array[0..$#array] is converted to array[range(0, len(array))]
+        # Need to handle nested parentheses in expressions like len(answers)
+        # Use non-greedy matching to correctly capture arguments
+        code = re.sub(
+            r'([a-zA-Z_][a-zA-Z0-9_]*)\s*\[\s*range\s*\(\s*([^,]+?)\s*,\s*(.*?)\s*\)\s*\]',
+            lambda m: f"{m.group(1)}[{m.group(2).strip()}:{m.group(3).strip()}]",
+            code
+        )
 
         # Convert parenthesized list assignments to list literals
         # Pattern: var = (item1, item2, ...) or var = (single_item,)
@@ -861,10 +915,12 @@ if __name__ == "__main__":
         Detects patterns like:
             x[k] = value
             y[k] = value
+            push(answers, ...)
 
         And adds initialization before the first usage (with less indentation):
             x = {}
             y = {}
+            answers = []
             for k in range(...):
                 x[k] = value
         """
@@ -872,9 +928,9 @@ if __name__ == "__main__":
         lines = code.split('\n')
 
         # Track which variables need initialization and where first used
-        array_vars = {}  # var_name -> (first_line_num, indentation)
+        array_vars = {}  # var_name -> (first_line_num, indentation, is_list)
 
-        # Find all array/dict assignments
+        # Find all array/dict assignments and push calls
         for line_num, line in enumerate(lines):
             # Look for patterns like: varname[...] =
             match = re.search(r'^(\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*\[', line)
@@ -882,11 +938,22 @@ if __name__ == "__main__":
                 indent = match.group(1)
                 var_name = match.group(2)
                 if var_name not in array_vars:
-                    array_vars[var_name] = (line_num, indent)
+                    array_vars[var_name] = (
+                        line_num, indent, False)  # False = dict
+
+            # Look for patterns like: push(varname, ...)
+            push_match = re.search(
+                r'^(\s*)push\s*\(\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*,', line)
+            if push_match:
+                indent = push_match.group(1)
+                var_name = push_match.group(2)
+                if var_name not in array_vars:
+                    array_vars[var_name] = (
+                        line_num, indent, True)  # True = list
 
         # For each array variable, check if it's already defined and add initialization if not
         insertions = []
-        for var_name, (first_use_line, usage_indent) in sorted(array_vars.items(), reverse=True):
+        for var_name, (first_use_line, usage_indent, is_list) in sorted(array_vars.items(), reverse=True):
             # Check if variable is already defined before its first use
             already_defined = False
             for i in range(first_use_line):
@@ -928,11 +995,13 @@ if __name__ == "__main__":
                     insert_line = first_use_line
                     init_indent = ''
 
-                insertions.append((insert_line, init_indent, var_name))
+                insertions.append(
+                    (insert_line, init_indent, var_name, is_list))
 
         # Insert initializations in reverse order (to maintain line numbers)
-        for line_num, indent, var_name in sorted(insertions, reverse=True):
-            lines.insert(line_num, f'{indent}{var_name} = {{}}')
+        for line_num, indent, var_name, is_list in sorted(insertions, reverse=True):
+            init_val = '[]' if is_list else '{}'
+            lines.insert(line_num, f'{indent}{var_name} = {init_val}')
 
         return '\n'.join(lines)
 
@@ -2562,10 +2631,12 @@ if __name__ == "__main__":
         rewritten = rewritten.replace('&&', ' and ')
 
         # Convert Perl $#array (last index) to len(array)-1
+        rewritten = re.sub(r'\$\#\$([a-zA-Z_]\w*)', r'len(\1)-1', rewritten)
         rewritten = re.sub(r'\$\#([a-zA-Z_]\w*)', r'len(\1)-1', rewritten)
 
         # Convert Perl reference operator ~~& to just the function name
         rewritten = re.sub(r'~~&([a-zA-Z_]\w*)', r'\1', rewritten)
+        rewritten = re.sub(r'~~([a-zA-Z_]\w*)', r'\1', rewritten)
 
         # Special case: Wrap CapitalizedWord(...) = "string" patterns in parens for tuple pairs
         # This happens with AnswerHints( Formula(...) => "msg", ... )

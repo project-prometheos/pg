@@ -85,7 +85,7 @@ try:
         new_match_list, pop_up_list_print_q, undef
     )
     from pg.macros.core.array_utilities import (
-        splice, push, pop, shift, unshift
+        splice, push, pop, shift, unshift, scalar
     )
     from pg.macros.core.pg_standard import (
         random_subset, shuffle
@@ -565,10 +565,14 @@ class InProcessSandbox:
                 'pop': pop,
                 'shift': shift,
                 'unshift': unshift,
+                'scalar': scalar,
             })
 
             # Store reference for initialization
             self._pg_core = pg_core
+            
+            # Add ALPHABET constant (used in matching problems)
+            self.namespace['ALPHABET'] = list('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
 
         except ImportError:
             # Fallback: provide stub implementations
@@ -815,6 +819,9 @@ class InProcessSandbox:
             'pop': pop,
             'shift': shift,
             'unshift': unshift,
+            'scalar': scalar,
+            # Constants
+            'ALPHABET': list('ABCDEFGHIJKLMNOPQRSTUVWXYZ'),
             # Add a dummy macro loader to suppress warnings
             # Macros are pre-loaded, so this just prevents the warning
             '_macro_loader': type('DummyLoader', (), {'load_macro': lambda self, x: None})(),

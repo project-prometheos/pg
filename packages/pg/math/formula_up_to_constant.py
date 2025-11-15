@@ -107,10 +107,15 @@ class FormulaUpToConstant(Formula):
                 self.variables.append('C')
 
             # Create new formula with + C
-            c_sym = sp.Symbol('C')
-            new_expr = self._sympy_expr + c_sym
-            # Update the sympy expression
-            self._sympy_expr = new_expr
+            if self._sympy_expr is not None:
+                c_sym = sp.Symbol('C')
+                new_expr = self._sympy_expr + c_sym
+                # Update the sympy expression
+                self._sympy_expr = new_expr
+            else:
+                # If sympy expression is None, append "+C" to string representation
+                if hasattr(self, 'expression') and self.expression:
+                    self.expression = f"{self.expression} + C"
             self.constant = 'C'
             self._arbitrary_constants.add('C')
 
@@ -170,7 +175,7 @@ class FormulaUpToConstant(Formula):
         Raises:
             ValueError: If the formula is not linear in the constant
         """
-        if self.constant is None or not SYMPY_AVAILABLE:
+        if self.constant is None or not SYMPY_AVAILABLE or self._sympy_expr is None:
             return
 
         # Differentiate with respect to the constant

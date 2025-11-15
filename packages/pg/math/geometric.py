@@ -1,4 +1,4 @@
-"""
+﻿"""
 Geometric MathValue types: Point, Vector, Matrix.
 
 These types represent geometric objects with specialized operations.
@@ -9,7 +9,7 @@ Reference: lib/Value/Point.pm, lib/Value/Vector.pm, lib/Value/Matrix.pm
 from __future__ import annotations
 
 import math
-from typing import Any
+from typing import Any, Iterable
 
 import numpy as np
 
@@ -211,24 +211,33 @@ class Vector(MathValue):
 
     type_precedence = TypePrecedence.VECTOR
 
-    def __init__(self, *args):
+    def __init__(self, *args, context: Any | None = None):
         """
         Initialize a Vector.
 
         Args:
-            *args: Variable number of components, or a single list/tuple of components
-                   Vector(1, 2, 3) or Vector([1, 2, 3]) both work
+            *args: Components, vector literal, or iterable of components
+            context: Optional context for parsing string literals
         """
         from .value import MathValue as MV
 
-        # Handle both Vector(x, y, z) and Vector([x, y, z]) calling styles
         if len(args) == 1 and isinstance(args[0], (list, tuple)):
-            components = args[0]
+            raw_components = list(args[0])
         else:
-            components = args
+            raw_components = list(args)
+
+        if len(raw_components) == 1:
+            literal = raw_components[0]
+            if isinstance(literal, str):
+                raw_components = self._parse_vector_literal(literal, context)
+            elif isinstance(literal, MathValue) and hasattr(literal, 'to_string'):
+                raw_components = self._parse_vector_literal(
+                    literal.to_string(), context
+                )
 
         self.components = [
-            MV.from_python(c) if not isinstance(c, MathValue) else c for c in components
+            literal if isinstance(literal, MathValue) else MV.from_python(literal)
+            for literal in raw_components
         ]
 
     def promote(self, other: MathValue) -> MathValue:
@@ -430,6 +439,41 @@ class Vector(MathValue):
             return self.is_orthogonal
 
         raise AttributeError(f"'Vector' object has no attribute '{name}'")
+
+    @staticmethod
+    def _parse_vector_literal(expr: str, context: Any | None) -> list[Any]:
+        expr = expr.strip()
+        if not (expr.startswith('<') and expr.endswith('>')):
+            return [expr]
+
+        content = expr[1:-1]
+        components: list[str] = []
+        current = []
+        depth = 0
+        for ch in content:
+            if ch in '([{':
+                depth += 1
+            elif ch in ')]}':
+                depth -= 1
+            if ch == ',' and depth == 0:
+                components.append(''.join(current).strip())
+                current = []
+                continue
+            current.append(ch)
+        if current:
+            components.append(''.join(current).strip())
+
+        from pg.math.context import get_current_context
+        from pg.math.compute import Compute
+
+        ctx = context or get_current_context()
+        parsed: list[Any] = []
+        for comp in components:
+            if not comp:
+                continue
+            parsed.append(Compute(comp, context=ctx))
+
+        return parsed
 
     def answer_checker(self, **options):
         """

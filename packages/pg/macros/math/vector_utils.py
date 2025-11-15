@@ -1,4 +1,4 @@
-"""Vector Utilities for WeBWorK.
+﻿"""Vector Utilities for WeBWorK.
 
 This module provides vector manipulation and geometric utilities including
 norm, unit vector calculations, and geometric line representation.
@@ -11,12 +11,27 @@ import math
 import random
 from typing import List, Optional, Tuple, Union
 
+def _random_step_value(low: float, high: float, step: float | None = None):
+    """Return a random value between low and high using the provided step."""
+    if step in (None, 0):
+        return random.randint(int(low), int(high))
+
+    if step < 0:
+        raise ValueError("step must be positive")
+
+    steps = int(round((high - low) / step))
+    if steps < 0:
+        raise ValueError("Invalid range for random selection")
+
+    index = random.randint(0, steps)
+    return low + index * step
+
 
 def norm(vector: Union[List[float], Tuple[float, ...], 'Vector']) -> float:
     """
     Compute the norm (magnitude/length) of a vector.
     
-    The norm is calculated as: ||v|| = √(v₁² + v₂² + ... + vₙ²)
+    The norm is calculated as: ||v|| = âˆš(vâ‚Â² + vâ‚‚Â² + ... + vâ‚™Â²)
     
     Args:
         vector: A vector as a list, tuple, or Vector object
@@ -188,66 +203,52 @@ GRAD = "\\nabla"
 
 # Random vector/point generators
 
-def non_zero_vector(low: int = -9, high: int = 9, dimension: int = 2) -> List[int]:
+def non_zero_vector(
+    low: float = -9,
+    high: float = 9,
+    dimension: int = 2,
+    step: float | None = 1,
+) -> List[float]:
     """
-    Generate a random non-zero vector.
-
-    All components are integers in [low, high]. At least one component is nonzero.
-
-    Reference: parserVectorUtils.pl::non_zero_vector
-
-    Args:
-        low: Minimum value for components
-        high: Maximum value for components
-        dimension: Number of dimensions (default 2)
-
-    Returns:
-        List of integers representing non-zero vector
+    Generate a random non-zero vector with components spaced by `step`.
     """
     while True:
-        vector = [random.randint(low, high) for _ in range(dimension)]
+        vector = [_random_step_value(low, high, step) for _ in range(dimension)]
         if any(v != 0 for v in vector):
             return vector
 
 
-def non_zero_vector2D(low: int = -9, high: int = 9) -> List[int]:
+def non_zero_vector2D(low: float = -9, high: float = 9, step: float | None = 1) -> List[float]:
     """Generate a random non-zero 2D vector."""
-    return non_zero_vector(low, high, 2)
+    return non_zero_vector(low, high, 2, step)
 
 
-def non_zero_vector3D(low: int = -9, high: int = 9) -> List[int]:
+
+def non_zero_vector3D(low: float = -9, high: float = 9, step: float | None = 1) -> List[float]:
     """Generate a random non-zero 3D vector."""
-    return non_zero_vector(low, high, 3)
+    return non_zero_vector(low, high, 3, step)
 
 
-def non_zero_point(low: int = -9, high: int = 9, dimension: int = 2) -> List[int]:
-    """
-    Generate a random non-zero point.
 
-    All coordinates are integers in [low, high]. At least one coordinate is nonzero.
-
-    Reference: parserVectorUtils.pl::non_zero_point
-
-    Args:
-        low: Minimum value for coordinates
-        high: Maximum value for coordinates
-        dimension: Number of dimensions (default 2)
-
-    Returns:
-        List of integers representing non-zero point
-    """
-    # Same implementation as non_zero_vector
-    return non_zero_vector(low, high, dimension)
+def non_zero_point(
+    low: float = -9,
+    high: float = 9,
+    dimension: int = 2,
+    step: float | None = 1,
+) -> List[float]:
+    """Generate a random non-zero point."""
+    return non_zero_vector(low, high, dimension, step)
 
 
-def non_zero_point2D(low: int = -9, high: int = 9) -> List[int]:
+def non_zero_point2D(low: float = -9, high: float = 9, step: float | None = 1) -> List[float]:
     """Generate a random non-zero 2D point."""
-    return non_zero_point(low, high, 2)
+    return non_zero_point(low, high, 2, step)
 
 
-def non_zero_point3D(low: int = -9, high: int = 9) -> List[int]:
+
+def non_zero_point3D(low: float = -9, high: float = 9, step: float | None = 1) -> List[float]:
     """Generate a random non-zero 3D point."""
-    return non_zero_point(low, high, 3)
+    return non_zero_point(low, high, 3, step)
 
 
 class Plane:
@@ -286,7 +287,7 @@ class Plane:
         self.normal = list(normal) if normal else [0, 0, 1]
         self.point = list(point) if point else [0, 0, 0]
 
-        # Calculate d from plane equation: normal · (point - origin) = d
+        # Calculate d from plane equation: normal Â· (point - origin) = d
         if d is None and point:
             self.d = sum(self.normal[i] * self.point[i] for i in range(3))
         else:

@@ -152,11 +152,37 @@ def unshift(array: List[Any], *items: Any) -> Optional[int]:
     return len(array)
 
 
+def scalar(array: Any) -> int:
+    """
+    Scalar function - returns the length/size of an array or scalar context.
+    
+    In Perl, scalar() forces scalar context evaluation. For arrays, this 
+    returns the number of elements. For other values, it returns 1 if the
+    value is truthy, 0 if falsy.
+    
+    Args:
+        array: Array/list or any value
+        
+    Returns:
+        Length of array/list, or 1/0 for scalar values
+        
+    Perl Source: Perl scalar(@array) or scalar($value)
+    """
+    if isinstance(array, (list, tuple)):
+        return len(array)
+    elif hasattr(array, '__len__'):
+        return len(array)
+    else:
+        # Scalar context for non-array values
+        return 1 if array else 0
+
+
 __all__ = [
     'splice',
     'push',
     'pop',
     'shift',
     'unshift',
+    'scalar',
 ]
 

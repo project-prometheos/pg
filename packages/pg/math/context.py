@@ -177,6 +177,10 @@ class ConstantManager:
         new_mgr._constants = self._constants.copy()
         return new_mgr
 
+    def __contains__(self, name: str) -> bool:
+        """Check if a constant exists."""
+        return name in self._constants
+
 
 class FunctionManager:
     """Manages functions available in the context."""
@@ -213,6 +217,10 @@ class FunctionManager:
         """Remove a function from the context."""
         if name in self._functions:
             del self._functions[name]
+
+    def __contains__(self, name: str) -> bool:
+        """Check if a function exists."""
+        return name in self._functions
 
     def undefine(self, *names):
         """Undefine (remove) one or more functions."""
@@ -715,6 +723,62 @@ class Context:
                 singleFactors=True,
                 reduceConstants=False
             )
+
+    def get_operator_precedence(self, op: str, is_unary: bool = False) -> int:
+        """
+        Get the precedence of an operator.
+
+        Args:
+            op: Operator symbol
+            is_unary: Whether this is a unary operator
+
+        Returns:
+            Precedence value (higher = binds tighter)
+        """
+        # Define default precedences matching Perl WeBWorK behavior
+        # These values align with standard mathematical operator precedence
+        precedences = {
+            '**': 8,  # Exponentiation (highest)
+            '^': 8,   # Power
+            '-u': 7,  # Unary minus
+            '+u': 7,  # Unary plus
+            '!': 7,   # Factorial/NOT
+            '*': 6,   # Multiplication
+            '/': 6,   # Division
+            '%': 6,   # Modulo
+            '+': 5,   # Addition
+            '-': 5,   # Subtraction
+            '<': 4,   # Less than
+            '>': 4,   # Greater than
+            '<=': 4,  # Less than or equal
+            '>=': 4,  # Greater than or equal
+            '==': 3,  # Equality
+            '!=': 3,  # Not equal
+            ',': 1,   # Comma (list separator, lowest)
+        }
+
+        # Build key for lookup
+        key = f"{op}u" if is_unary else op
+        return precedences.get(key, 0)
+
+    def get_operator_associativity(self, op: str, is_unary: bool = False):
+        """
+        Get the associativity of an operator.
+
+        Args:
+            op: Operator symbol
+            is_unary: Whether this is a unary operator
+
+        Returns:
+            Associativity enum value
+        """
+        from pg.parser.context import Associativity
+
+        # Most operators are left-associative
+        # Only exponentiation and unary operators are right-associative
+        if is_unary or op in ('**', '^'):
+            return Associativity.RIGHT
+        return Associativity.LEFT
 
     def copy(self, name: Optional[str] = None) -> 'Context':
         """

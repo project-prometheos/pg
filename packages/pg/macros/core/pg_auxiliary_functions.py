@@ -271,6 +271,20 @@ def preformat(coefficient: Union[int, float], variable_str: str) -> str:
         return f"-{variable_str}" if variable_str else "-1"
     else:
         return f"{coefficient} {variable_str}" if variable_str else str(coefficient)
+def _expand_coprime_array(arr):
+    """Flatten arrays or ranges passed to coprime helpers."""
+    if isinstance(arr, range):
+        return list(arr)
+    if isinstance(arr, (list, tuple)):
+        expanded = []
+        for item in arr:
+            if isinstance(item, range):
+                expanded.extend(list(item))
+            else:
+                expanded.append(item)
+        return expanded
+    return [arr]
+
 
 
 def random_coprime(
@@ -292,12 +306,7 @@ def random_coprime(
         raise ValueError("random_coprime requires at least one array")
 
     # Convert single arrays or mixed iterables to list refs
-    arrays = []
-    for arr in array_refs:
-        if isinstance(arr, (list, tuple)):
-            arrays.append(list(arr))
-        else:
-            arrays.append([arr])
+    arrays = [_expand_coprime_array(arr) for arr in array_refs]
 
     # Start with first array as 1-tuples
     candidates = [[x] for x in arrays[0]]
@@ -353,12 +362,7 @@ def random_pairwise_coprime(
         raise ValueError("random_pairwise_coprime requires at least one array")
 
     # Convert to list refs
-    arrays = []
-    for arr in array_refs:
-        if isinstance(arr, (list, tuple)):
-            arrays.append(list(arr))
-        else:
-            arrays.append([arr])
+    arrays = [_expand_coprime_array(arr) for arr in array_refs]
 
     # Start with first array as 1-tuples
     candidates = [[x] for x in arrays[0]]

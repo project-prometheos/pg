@@ -24,20 +24,27 @@ NEW FEATURES FOR PARITY:
 """
 
 from __future__ import annotations
+from .value import MathValue, ToleranceMode, TypePrecedence
 
 import random
 import types
 from typing import Any, Callable
 
+_SYMPY_TRANSFORMATIONS: tuple = ()
 try:
     import sympy as sp
-    from sympy.parsing.sympy_parser import parse_expr
+    from sympy.parsing.sympy_parser import (
+        parse_expr,
+        implicit_multiplication_application,
+        standard_transformations,
+    )
 
+    _SYMPY_TRANSFORMATIONS = (
+        standard_transformations + (implicit_multiplication_application,)
+    )
     SYMPY_AVAILABLE = True
 except ImportError:
     SYMPY_AVAILABLE = False
-
-from .value import MathValue, ToleranceMode, TypePrecedence
 
 
 class CMPWrapper:
@@ -47,6 +54,7 @@ class CMPWrapper:
     Handles Perl idiom where ->cmp can be used without parentheses and
     chained with ->withPostFilter.
     """
+
     def __init__(self, formula, **default_options):
         self.formula = formula
         self.default_options = default_options
@@ -134,7 +142,7 @@ class Formula(MathValue):
                 local_dict['PI'] = sp.pi
                 self._sympy_expr = parse_expr(
                     expression,
-                    transformations="all",
+                    transformations=_SYMPY_TRANSFORMATIONS,
                     local_dict=local_dict,
                 )
             except Exception:
@@ -168,12 +176,14 @@ class Formula(MathValue):
             if not is_valid:
                 raise ValueError(error)
 
-    def eval(self, **bindings: float | MathValue) -> MathValue:
+    def eval(
+        self, **bindings: float | MathValue
+    ) -> MathValue:
         """
         Evaluate the formula with variable bindings.
 
         Args:
-            **bindings: Variable name → value mappings
+            **bindings: Variable name -> value mappings
 
         Returns:
             Result as MathValue (Real, Complex, etc.)
@@ -183,60 +193,80 @@ class Formula(MathValue):
             >>> f.eval(x=3)
             Real(10)
         """
+        sympy_failed_message: str | None = None
+
         if self._sympy_expr is not None:
-            # Use SymPy evaluation
             sympy_bindings = {}
             for var, value in bindings.items():
                 if isinstance(value, MathValue):
                     sympy_bindings[sp.Symbol(var)] = value.to_python()
+                elif isinstance(value, str):
+                    # Parse string values as sympy expressions
+                    try:
+                        # Handle implicit multiplication like '2pi' -> '2*pi'
+                        parsed_value = parse_expr(
+                            value,
+                            transformations=_SYMPY_TRANSFORMATIONS,
+                            local_dict={'pi': sp.pi, 'e': sp.E,
+                                        'E': sp.E, 'PI': sp.pi}
+                        )
+                        sympy_bindings[sp.Symbol(var)] = parsed_value
+                    except:
+                        # If parsing fails, use the original value
+                        sympy_bindings[sp.Symbol(var)] = value
                 else:
                     sympy_bindings[sp.Symbol(var)] = value
 
             try:
                 result = self._sympy_expr.subs(sympy_bindings)
             except RecursionError:
-                # SymPy substitution triggered recursion - likely a malformed expression
                 raise ValueError(
-                    f"SymPy recursion error during substitution of {self.to_string()}")
+                    f"SymPy recursion error during substitution of {self.to_string()}"
+                )
 
-            # Convert back to MathValue
-            # Use a safer check that doesn't trigger SymPy recursion
             try:
-                # Try to convert to float - if it works, it's a number
                 numeric_value = float(result)
                 from .numeric import Real
+
                 return Real(numeric_value)
             except (TypeError, ValueError, RecursionError):
-                # Still symbolic - this means the formula has undefined variables
-                # or couldn't be evaluated at this point
-                raise ValueError(
-                    f"Formula evaluation resulted in symbolic expression: {result}")
-        else:
-            # Fallback: string-based evaluation
-            # This requires the pg_parser package
-            try:
-                from pg.parser.parser import Parser
-                from pg.parser.visitors import EvalVisitor
+                sympy_failed_message = (
+                    f"Formula evaluation resulted in symbolic expression: {result}"
+                )
 
-                parser = Parser(self.context)
-                ast = parser.parse(self.expression)
+        expr_source = (
+            self.expression if isinstance(
+                self.expression, str) else str(self.expression)
+        )
 
-                # Convert MathValue bindings to float
-                eval_bindings = {}
-                for var, value in bindings.items():
-                    if isinstance(value, MathValue):
-                        eval_bindings[var] = value.to_python()
-                    else:
-                        eval_bindings[var] = value
+        try:
+            from pg.parser.parser import Parser
+            from pg.parser.visitors import EvalVisitor
 
-                visitor = EvalVisitor(eval_bindings, self.context)
-                result = ast.accept(visitor)
+            parser = Parser(self.context)
+            ast = parser.parse(expr_source)
 
-                # Convert to MathValue
-                return MathValue.from_python(result)
-            except ImportError:
-                raise RuntimeError(
-                    "Cannot evaluate Formula: neither SymPy nor pg_parser available")
+            eval_bindings = {}
+            for var, value in bindings.items():
+                if isinstance(value, MathValue):
+                    eval_bindings[var] = value.to_python()
+                else:
+                    eval_bindings[var] = value
+
+            visitor = EvalVisitor(eval_bindings, self.context)
+            result = ast.accept(visitor)
+
+            return MathValue.from_python(result)
+        except ImportError as parser_exc:
+            if sympy_failed_message:
+                raise ValueError(sympy_failed_message) from parser_exc
+            raise RuntimeError(
+                "Cannot evaluate Formula: neither SymPy nor pg_parser available"
+            ) from parser_exc
+        except Exception as parser_exc:
+            if sympy_failed_message:
+                raise ValueError(sympy_failed_message) from parser_exc
+            raise
 
     @property
     def reduce(self) -> Formula:

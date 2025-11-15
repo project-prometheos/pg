@@ -53,17 +53,18 @@ class Interval(MathValue):
             # String notation: "(0,5)" or "[2,7]"
             import re
             s = args[0].strip()
-            
+
             # Match pattern: opening bracket, number, comma, number, closing bracket
-            match = re.match(r'^([\(\[])(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)([\)\]])$', s)
+            match = re.match(
+                r'^([\(\[])(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)([\)\]])$', s)
             if not match:
                 raise ValueError(f"Invalid interval string notation: {s}")
-            
+
             open_bracket = match.group(1)
             left_val = float(match.group(2))
             right_val = float(match.group(3))
             close_bracket = match.group(4)
-            
+
             open_left = (open_bracket == '(')
             open_right = (close_bracket == ')')
         elif len(args) == 4:
@@ -93,11 +94,14 @@ class Interval(MathValue):
             open_left = True
             open_right = True
         else:
-            raise ValueError(f"Interval requires 2 or 4 arguments, got {len(args)}")
+            raise ValueError(
+                f"Interval requires 2 or 4 arguments, got {len(args)}")
 
         # Convert to MathValue
-        self.left = MV.from_python(left_val) if not isinstance(left_val, MathValue) else left_val
-        self.right = MV.from_python(right_val) if not isinstance(right_val, MathValue) else right_val
+        self.left = MV.from_python(left_val) if not isinstance(
+            left_val, MathValue) else left_val
+        self.right = MV.from_python(right_val) if not isinstance(
+            right_val, MathValue) else right_val
         self.open_left = open_left
         self.open_right = open_right
 
@@ -134,7 +138,7 @@ class Interval(MathValue):
             Answer evaluator that checks if student's answer matches this interval
         """
         from pg.answer.evaluators.string import StringEvaluator
-        
+
         # For now, use string comparison with the interval notation
         interval_str = str(self)
         return StringEvaluator(
@@ -156,14 +160,17 @@ class Interval(MathValue):
         """
         from .value import MathValue as MV
 
-        val = MV.from_python(value) if not isinstance(value, MathValue) else value
+        val = MV.from_python(value) if not isinstance(
+            value, MathValue) else value
 
         if not isinstance(val, Real):
             return False
 
         v = val.value
-        left_val = self.left.value if isinstance(self.left, Real) else float("-inf")
-        right_val = self.right.value if isinstance(self.right, Real) else float("inf")
+        left_val = self.left.value if isinstance(
+            self.left, Real) else float("-inf")
+        right_val = self.right.value if isinstance(
+            self.right, Real) else float("inf")
 
         # Check left boundary
         if self.open_left:
@@ -323,7 +330,8 @@ class Interval(MathValue):
                 new_right = self.right
                 new_open_right = self.open_right and other.open_right
 
-            merged = Interval(new_left, new_right, new_open_left, new_open_right)
+            merged = Interval(new_left, new_right,
+                              new_open_left, new_open_right)
             return Union([merged])
         else:
             # Disjoint intervals
@@ -428,7 +436,8 @@ class Set(MathValue):
         from .value import MathValue as MV
 
         # Convert to MathValue and remove duplicates
-        converted = [MV.from_python(e) if not isinstance(e, MathValue) else e for e in elements]
+        converted = [MV.from_python(e) if not isinstance(
+            e, MathValue) else e for e in elements]
 
         # Remove duplicates (using Python set with tuple conversion for hashability)
         unique = []
@@ -483,7 +492,8 @@ class Set(MathValue):
         """
         from .value import MathValue as MV
 
-        val = MV.from_python(value) if not isinstance(value, MathValue) else value
+        val = MV.from_python(value) if not isinstance(
+            value, MathValue) else value
 
         for elem in self.elements:
             if val.compare(elem):
@@ -669,7 +679,7 @@ class Union(MathValue):
                     # If not an interval, might be a set - skip for now
                     pass
             sets = parsed_sets
-        
+
         if not all(isinstance(s, (Interval, Set)) for s in sets):
             raise TypeError("Union elements must be Intervals or Sets")
 
