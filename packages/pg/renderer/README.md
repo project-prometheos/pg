@@ -12,8 +12,10 @@ Pure Python renderer for WeBWorK PG (Problem Generation) files.
 
 ## Installation
 
+Install the unified `pg` package from the repository root:
+
 ```bash
-pip install -e packages/pg_renderer
+pip install -e packages
 ```
 
 ## Usage
@@ -43,8 +45,7 @@ print(result['answers'])
 ## Testing
 
 ```bash
-cd packages/pg_renderer
-pytest
+pytest packages/pg/renderer/tests
 ```
 
 ## Architecture
@@ -55,4 +56,3 @@ pytest
 - `pgml.py` - PGML to HTML renderer
 - `answer_checker.py` - Validate student answers
 - `context.py` - MathObjects context system
-

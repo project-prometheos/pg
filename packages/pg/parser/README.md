@@ -16,8 +16,10 @@ A modern Python implementation of the mathematical expression parser for the WeB
 
 ## Installation
 
+Install the unified `pg` package from the repo root:
+
 ```bash
-pip install -e .
+pip install -e packages
 ```
 
 ## Usage
