@@ -547,8 +547,9 @@ class Context:
     def _init_complex(self):
         """Initialize Complex context."""
         self._init_numeric()
-        # Add imaginary constant
-        self.constants.add('i', 1j)
+        # Add imaginary constant as Complex MathObject
+        from pg.math.numeric import Complex
+        self.constants.add('i', Complex(0, 1))
 
     def _init_point(self):
         """Initialize Point context."""

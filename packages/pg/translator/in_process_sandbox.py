@@ -1200,12 +1200,23 @@ class InProcessSandbox:
         variables = {}
         for key, value in self.namespace.items():
             if not key.startswith('_') and key not in ('__builtins__',):
-                # Include simple types AND answer evaluators (objects with evaluate/cmp/check methods)
+                # Include:
+                # 1. Simple types (int, float, str, bool, list, tuple, dict)
+                # 2. MathValue objects (Complex, Real, Vector, Matrix, Formula, etc.)
+                # 3. Answer evaluators (objects with evaluate/cmp/check methods)
                 if isinstance(value, (int, float, str, bool, list, tuple, dict)):
                     variables[key] = value
                 elif hasattr(value, 'evaluate') or hasattr(value, 'cmp') or hasattr(value, 'check'):
                     # This is likely an answer evaluator (Formula, Real, AnswerChecker, etc.)
                     variables[key] = value
+                else:
+                    # Try to import MathValue to check instance
+                    try:
+                        from pg.math.value import MathValue
+                        if isinstance(value, MathValue):
+                            variables[key] = value
+                    except ImportError:
+                        pass
 
         return ExecutionResult(
             success=not errors,
