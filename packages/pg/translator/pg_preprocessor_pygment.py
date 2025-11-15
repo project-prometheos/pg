@@ -426,170 +426,122 @@ class PGPreprocessor:
                     output_lines.append(f"# {sub_line}  # Perl subroutine definition skipped")
                 continue
 
-            # Stub Perl sub { ... } closures so downstream execution sees Python callables
+            # Parse and translate Perl sub { ... } closures using Lark grammar
             sub_match = re.search(r'(=>|=)\s*sub\s*\{', original_line)
             if sub_match:
-                # Check if this is a single-line closure (all braces balanced on this line)
+                # Collect the closure lines (same multi-line logic as before)
                 sub_start = original_line.find('sub {')
-                # Everything after "sub {"
                 after_sub = original_line[sub_start + 5:]
-                single_line_brace_count = after_sub.count(
-                    '{') - after_sub.count('}')
+                single_line_brace_count = after_sub.count('{') - after_sub.count('}')
 
-                # For single-line closures where all braces are balanced AND there's at least one closing brace
-                # (to avoid treating "sub {" with nothing else as single-line)
-                has_closing_brace = '}' in after_sub
-                # DISABLED: Single-line closure handling doesn't work with braces in strings
-                # The brace counter doesn't account for quotes, so hash accesses like {key}
-                # and string interpolations like f-strings throw off the count
-                if False and single_line_brace_count <= 0 and has_closing_brace:
-                    # Single-line closure - find the matching closing brace
-                    # Extract everything before 'sub' and everything after the matching '}'
-                    prefix = original_line[:sub_start]
-
-                    # Find the matching closing brace for the sub
-                    brace_count = 1
-                    pos = sub_start + 5  # Start after 'sub {'
-                    while pos < len(original_line) and brace_count > 0:
-                        if original_line[pos] == '{':
-                            brace_count += 1
-                        elif original_line[pos] == '}':
-                            brace_count -= 1
-                        pos += 1
-
-                    # Everything after the closing brace
-                    suffix = original_line[pos:] if pos < len(
-                        original_line) else ''
-
-                    # Create the stubbed line
-                    stubbed_line = f"{prefix}lambda *args, **kwargs: None{suffix}"
-                    transformed = self._rewrite_statement(stubbed_line)
-                    if transformed:
-                        output_lines.append(
-                            transformed + "  # Stubbed Perl closure")
-                    i += 1
-                    continue
-
-                # Multi-line closure (or single-line closure after line joining)
                 closure_lines = [original_line]
-                # Start with brace depth from the opening sub {
                 brace_depth = 1 + single_line_brace_count
-
-                # If brace_depth <= 0, the closure is already complete on this line
-                # (due to line joining or a complete single-line closure)
-                # In this case, we should NOT try to collect more lines
-                max_closure_lines = 100  # Safety limit to prevent infinite loops
+                max_closure_lines = 100
                 lines_collected = 0
                 if brace_depth > 0:
                     i += 1
                     while i < len(lines) and brace_depth > 0 and lines_collected < max_closure_lines:
                         current_line = lines[i]
                         closure_lines.append(current_line)
-                        brace_depth += current_line.count(
-                            '{') - current_line.count('}')
+                        brace_depth += current_line.count('{') - current_line.count('}')
                         i += 1
                         lines_collected += 1
                 else:
-                    # Closure is complete on the first line, just increment i
                     i += 1
 
                 if brace_depth > 0 and lines_collected >= max_closure_lines:
-                    # Hit the safety limit - something went wrong
-                    # Just skip this and treat it as a comment
-                    output_lines.append(
-                        f"# {original_line[:80]}... # Closure too complex, skipped")
+                    output_lines.append(f"# {original_line[:80]}... # Closure too complex, skipped")
                     continue
 
                 first_line = closure_lines[0]
                 last_line = closure_lines[-1] if closure_lines else ''
 
-                # Look for everything after the closing brace of the closure
-                # This might include }, }, );  or other closing syntax
-                continuation_suffix = ''
-                closing_brace_idx = None
+                # Extract prefix and suffix around the closure
+                sub_start = first_line.find('sub {')
+                prefix = first_line[:sub_start]
 
-                # If the closure was all on the first line (brace_depth <= 0 after collecting lines),
-                # we need to find the matching closing brace within the line
-                if brace_depth <= 0 and len(closure_lines) == 1:
-                    # The closure is on a single (joined) line
-                    # Find the matching closing brace by counting braces
-                    sub_start = first_line.find('sub {')
-                    if sub_start >= 0:
-                        brace_count = 1
-                        pos = sub_start + 5  # Start after 'sub {'
-                        while pos < len(first_line) and brace_count > 0:
-                            if first_line[pos] == '{':
-                                brace_count += 1
-                            elif first_line[pos] == '}':
-                                brace_count -= 1
-                            pos += 1
-                        # pos is now one past the matching closing brace
-                        suffix_from_last_line = first_line[pos:] if pos < len(first_line) else ''
-                    else:
-                        suffix_from_last_line = ''
+                # Find closing brace and suffix
+                if len(closure_lines) == 1:
+                    # Single-line closure
+                    brace_count = 1
+                    pos = sub_start + 5
+                    while pos < len(first_line) and brace_count > 0:
+                        if first_line[pos] == '{':
+                            brace_count += 1
+                        elif first_line[pos] == '}':
+                            brace_count -= 1
+                        pos += 1
+                    suffix_from_last_line = first_line[pos:] if pos < len(first_line) else ''
                 else:
-                    # Normal multi-line closure case - find the last closing brace on the last line
+                    # Multi-line closure
                     close_brace_match = re.search(r'\}(.*)$', last_line)
-                    if close_brace_match:
-                        # Get everything after the closing brace of the closure
-                        suffix_from_last_line = close_brace_match.group(1)
+                    suffix_from_last_line = close_brace_match.group(1) if close_brace_match else ''
+
+                # Join closure lines and extract just the sub { ... } part
+                closure_text = '\n'.join(closure_lines)
+                sub_body_start = closure_text.find('sub {')
+                if sub_body_start < 0:
+                    output_lines.append(f"# {first_line}  # Could not find closure")
+                    continue
+
+                # Try to parse and translate with Lark
+                try:
+                    # Extract the closure expression: sub { ... }
+                    sub_start_pos = sub_body_start
+                    brace_count = 1
+                    pos = sub_body_start + 5  # After 'sub {'
+                    while pos < len(closure_text) and brace_count > 0:
+                        if closure_text[pos] == '{':
+                            brace_count += 1
+                        elif closure_text[pos] == '}':
+                            brace_count -= 1
+                        pos += 1
+
+                    closure_expr_text = closure_text[sub_start_pos:pos]  # Includes 'sub { ... }'
+
+                    if self._parser is not None:
+                        # Try to parse just the closure
+                        tree = self._parser.parse(closure_expr_text, start='sub_closure')
+                        closure_ir = self._transformer.transform(tree)
+
+                        # Emit the closure to Python
+                        closure_py = self._emit_ir(closure_ir, 0)
+
+                        if closure_py:
+                            # Reconstruct the line
+                            transformed_line = f"{prefix}{closure_py}{suffix_from_last_line}"
+                            # Further transform (=> to =, etc.)
+                            final_line = self._rewrite_statement(transformed_line)
+                            if final_line:
+                                output_lines.append(final_line)
+                            else:
+                                output_lines.append(transformed_line)
+                        else:
+                            output_lines.append(f"# {first_line}  # Failed to translate closure")
                     else:
-                        suffix_from_last_line = ''
+                        output_lines.append(f"# {first_line}  # Parser not available")
 
-                # Check if there are continuation lines with more closing syntax
-                temp_i = i
-                continuation_lines = []
-                while temp_i < len(lines) and len(continuation_lines) < 5:  # Safety limit
-                    next_line = lines[temp_i].strip()
-                    # Stop if we hit a line that's not just closing syntax (}, }, );, etc.)
-                    if next_line and not re.match(r'^[}\);]*$', next_line):
-                        break
-                    if next_line:  # Don't add empty lines
-                        continuation_lines.append(next_line)
-                        temp_i += 1
-                    else:
-                        break
-
-                # Incorporate continuation lines
-                continuation_suffix = ' ' + ' '.join(continuation_lines)
-                if continuation_lines:
-                    i = temp_i  # Skip the lines we incorporated
-
-                param_match = re.search(r'(\w+)\s*=>\s*sub\s*\{', first_line)
-                if param_match:
-                    sub_start = first_line.find('sub')
-                    prefix = first_line[:sub_start]
-                    suffix = suffix_from_last_line + continuation_suffix
-
-                    # Create the stubbed line: replace 'sub { ... }' with lambda
-                    stubbed_line = f"{prefix}lambda *args, **kwargs: None{suffix}"
-
-                    # Transform the line (this handles => to =, -> to ., removes trailing ;)
-                    transformed = self._rewrite_statement(stubbed_line)
-
-                    if transformed:
-                        output_lines.append(
-                            transformed + "  # Stubbed Perl closure")
-                else:
-                    assign_match = re.search(
-                        r'(\w+)\s*=\s*sub\s*\{', first_line)
-                    if assign_match:
-                        var_name = assign_match.group(1)
-                        indent_match = re.match(r'^(\s*)', first_line)
-                        indent = indent_match.group(1) if indent_match else ''
-                        stubbed_line = f"{indent}{var_name} = lambda *args, **kwargs: None"
+                except Exception as e:
+                    # Fall back to stubbing if Lark parsing fails
+                    # This maintains backward compatibility for complex or unsupported closures
+                    param_match = re.search(r'(\w+)\s*=>\s*sub\s*\{', first_line)
+                    if param_match:
+                        stubbed_line = f"{prefix}lambda *args, **kwargs: None{suffix_from_last_line}"
                         transformed = self._rewrite_statement(stubbed_line)
                         if transformed:
-                            stub_lines = transformed.split('\n')
-                            for idx, stub_line in enumerate(stub_lines):
-                                if idx == len(stub_lines) - 1:
-                                    output_lines.append(
-                                        f"{stub_line}  # Stubbed Perl closure")
-                                else:
-                                    output_lines.append(stub_line)
+                            output_lines.append(transformed + "  # Stubbed Perl closure (parsing failed)")
                     else:
-                        output_lines.append(
-                            f"# {first_line}  # Skipped Perl closure")
+                        assign_match = re.search(r'(\w+)\s*=\s*sub\s*\{', first_line)
+                        if assign_match:
+                            var_name = assign_match.group(1)
+                            indent_match = re.match(r'^(\s*)', first_line)
+                            indent = indent_match.group(1) if indent_match else ''
+                            stubbed_line = f"{indent}{var_name} = lambda *args, **kwargs: None"
+                            transformed = self._rewrite_statement(stubbed_line)
+                            if transformed:
+                                output_lines.append(transformed + "  # Stubbed Perl closure (parsing failed)")
+                        else:
+                            output_lines.append(f"# {first_line}  # Skipped Perl closure")
                 continue
 
             # Detect do { ... } until loops (single or multi line)
@@ -1312,9 +1264,38 @@ if __name__ == "__main__":
             loadmacros: "loadMacros" "(" /[^)]*/ ")" -> loadmacros_call
 
             decl: "my" var "=" expr               -> assign_stmt
+                | "my" var "=" sub_closure      -> assign_stmt
             assign: var "=" expr                -> assign_stmt
+                  | var "=" sub_closure        -> assign_stmt
                   | var subscript "=" expr      -> subscript_assign
             expr_stmt: expr                      -> expr_stmt
+
+            // Sub closures: sub { ... }
+            sub_closure: "sub" "{" closure_body "}"
+            closure_body: (closure_stmt (";" | "\n")?)*
+            closure_stmt: param_decl
+                        | decl
+                        | assign
+                        | if_stmt
+                        | while_stmt
+                        | for_stmt
+                        | foreach_stmt
+                        | do_until_stmt
+                        | return_stmt
+                        | expr_stmt
+                        | stmt_modifier
+
+            // Parameter unpacking: my ($a, $b) = @_;  or my ($a, $b) = @$arr;
+            param_decl: "my" "(" param_var_list ")" "=" array_deref_special
+            param_var_list: var ("," var)*
+            array_deref_special: "@" "_"  -> deref_args
+                               | "@" "$" NAME  -> deref_var
+
+            // Return statement: return expr; or return [expr, ...];
+            return_stmt: "return" return_value
+            return_value: "[" return_list "]"  -> return_array
+                        | expr                 -> return_expr
+            return_list: expr ("," expr)*
 
             // Args can be comma-separated expressions or named parameters with =>
             args: arg_item ("," arg_item)*
@@ -1378,13 +1359,17 @@ if __name__ == "__main__":
             postfix_op: "->" NAME "(" args? ")"              -> method_call
                       | subscript
 
-            ?primary: call_expr | var | atom | "(" expr ")"
+            ?primary: call_expr | var | atom | array_deref | "(" expr ")"
 
             call_expr: NAME "(" args? ")"          -> call_expr
 
             // Map and grep blocks
             map_expr: "map" "{" expr "}" expr                -> map_expr
             grep_expr: "grep" "{" expr "}" expr              -> grep_expr
+
+            // Array dereferencing: @$var or @_
+            array_deref: "@" "$" NAME                        -> array_deref_var
+                       | "@" "_"                             -> array_deref_args
 
             var: VAR
             atom: NUMBER | STRING | NAME | regex_literal
@@ -1661,6 +1646,63 @@ if __name__ == "__main__":
                 """Unwrap the atom rule to return its child."""
                 return child
 
+            # Sub closures
+            def sub_closure(self, body):
+                """Lower sub { ... } closure."""
+                return ("closure", body)
+
+            def closure_body(self, *stmts):
+                """Lower closure body statements."""
+                return list(stmts)
+
+            def closure_stmt(self, stmt):
+                """Unwrap closure statement."""
+                return stmt
+
+            # Parameter unpacking
+            def param_decl(self, var_list, deref):
+                """Lower my ($a, $b) = @_; or my ($a, $b) = @$arr;"""
+                return ("param_unpack", var_list, deref)
+
+            def param_var_list(self, *vars):
+                """Lower parameter variable list."""
+                return list(vars)
+
+            # Array dereferencing in parameter context
+            def deref_args(self):
+                """Lower @_ dereference."""
+                return ("special_var", "@_")
+
+            def deref_var(self, name):
+                """Lower @$var dereference."""
+                return ("array_deref", ("var", f"${name}"))
+
+            # Return statements
+            def return_stmt(self, value):
+                """Lower return statement."""
+                return ("return", value)
+
+            def return_array(self, expr_list):
+                """Lower return [...];"""
+                return ("array", expr_list)
+
+            def return_expr(self, expr):
+                """Lower return expr;"""
+                return expr
+
+            def return_list(self, *exprs):
+                """Lower comma-separated return list."""
+                return list(exprs)
+
+            # Array dereferencing in expressions
+            def array_deref_var(self, name):
+                """Lower @$name array dereference."""
+                return ("array_deref", ("var", f"${name}"))
+
+            def array_deref_args(self):
+                """Lower @_ array dereference."""
+                return ("special_var", "@_")
+
         return ToIR()
 
     # ------------------------------------------------------------------
@@ -1844,6 +1886,11 @@ if __name__ == "__main__":
         if typ == "bin":
             return f"{ind}{self._expr_to_py(ir)}"
 
+        # Closure IR
+        if typ == "closure":
+            _, body_stmts = ir
+            return self._emit_closure(body_stmts, indent)
+
         # Unknown IR: produce raw comment
         return f"{ind}# {ir}"
 
@@ -1880,6 +1927,70 @@ if __name__ == "__main__":
             return f"[{expr_py}]"
 
         return f"[{expr_py}]"
+
+    def _emit_closure(self, body_stmts: List[Any], indent: int) -> str:
+        """Emit a Python function for a Perl closure (sub { ... }).
+
+        Closures are emitted as lambda functions with the signature extracted
+        from parameter unpacking statements.
+
+        Example Perl:
+            sub { my ($correct, $student) = @_; return $correct == $student }
+
+        Becomes Python:
+            lambda correct, student: (correct == student)
+        """
+        # Extract parameters and body statements
+        params = []
+        body_for_return = []
+
+        for stmt in body_stmts:
+            if isinstance(stmt, tuple) and stmt[0] == "param_unpack":
+                # Extract parameter names
+                _, var_list, deref_source = stmt
+                # var_list is a list of ("var", "$name") tuples
+                for var_tuple in var_list:
+                    var_name = self._desigil(var_tuple[1] if isinstance(var_tuple, tuple) else var_tuple)
+                    params.append(var_name)
+            else:
+                body_for_return.append(stmt)
+
+        # Emit function body
+        if not params:
+            # No parameter unpacking found, use *args, **kwargs
+            params_str = "*args, **kwargs"
+        else:
+            params_str = ", ".join(params)
+
+        # Check if body is a single return statement
+        if (len(body_for_return) == 1 and
+            isinstance(body_for_return[0], tuple) and
+            body_for_return[0][0] == "return"):
+            # Single return - emit as lambda
+            _, return_value = body_for_return[0]
+            return_py = self._expr_to_py(return_value)
+            return f"lambda {params_str}: {return_py}"
+
+        # Multi-statement body or complex logic
+        # Emit as a nested function (can't use lambda)
+        lines = [f"(lambda {params_str}: ("]
+
+        # Emit each statement in the body
+        inner_stmts = []
+        for stmt in body_for_return:
+            emitted = self._emit_ir(stmt, indent + 2)
+            if emitted:
+                inner_stmts.append(emitted)
+
+        # For now, just emit the final return value if it exists
+        if inner_stmts:
+            lines.extend(inner_stmts)
+        else:
+            lines.append("    " * (indent + 2) + "None")
+
+        lines.append("))()")  # IIFE - immediately invoked function expression
+
+        return "\n".join(lines)
 
     def _expr_to_py(self, expr: Any) -> str:
         """Lower an expression IR into a Python expression string."""
@@ -2068,6 +2179,28 @@ if __name__ == "__main__":
                 block_py = self._expr_to_py(block_expr)
                 list_py = self._expr_to_py(list_expr)
                 return f"[_ for _ in {list_py} if {block_py}]"
+
+            # Array dereferencing
+            if head == "array_deref":
+                _, var = expr
+                var_py = self._expr_to_py(var)
+                # In Python, arrays are already dereferenced, so just return the variable
+                return var_py
+
+            # Special variables like @_
+            if head == "special_var":
+                _, var = expr
+                if var == "@_":
+                    # @_ in Perl is the argument list - in Python closures this becomes the params
+                    # We don't emit @_ directly; it's handled during parameter unpacking
+                    return "args"  # Fallback - shouldn't reach here in normal cases
+                return var
+
+            # Array literals
+            if head == "array":
+                _, items = expr
+                item_strs = [self._expr_to_py(item) for item in items]
+                return f"[{', '.join(item_strs)}]"
 
             # Regex literal
             if head == "regex":

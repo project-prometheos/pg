@@ -47,6 +47,9 @@ class MultiAnswer:
         # Answer blank counter
         self._blank_count = 0
 
+        # Custom messages for each answer blank (set by checker)
+        self.messages = {}
+
     def with_params(self, **options) -> MultiAnswer:
         """
         Set options for the multi-answer.
@@ -85,6 +88,21 @@ class MultiAnswer:
             self.tex_separator = options['tex_separator']
 
         return self
+
+    def setMessage(self, blank_index: int, message: str) -> None:
+        """
+        Set a custom message for a specific answer blank.
+
+        Args:
+            blank_index: Index of the answer blank (1-indexed)
+            message: Custom message to display
+
+        Usage:
+            ma.setMessage(1, "Check your arithmetic")
+
+        Reference: parserMultiAnswer.pl::setMessage
+        """
+        self.messages[blank_index] = message
 
     def ans_rule(self, width: int = 20) -> str:
         """
