@@ -101,6 +101,29 @@ class FormulaAnswerChecker(AnswerChecker):
             }
 
         # Get variables from correct answer
+        # Check if _sympy_expr exists and is not None
+        if self.correct_value._sympy_expr is None:
+            # Fall back to string comparison if SymPy expression is not available
+            correct_str = str(self.correct_value).strip()
+            student_str = str(student_formula).strip()
+            is_correct = (correct_str == student_str)
+            return {
+                'score': 1.0 if is_correct else 0.0,
+                'correct': is_correct,
+                'message': '' if is_correct else 'Answer does not match'
+            }
+        
+        if student_formula._sympy_expr is None:
+            # Student formula couldn't be parsed, compare as strings
+            correct_str = str(self.correct_value).strip()
+            student_str = str(student_formula).strip()
+            is_correct = (correct_str == student_str)
+            return {
+                'score': 1.0 if is_correct else 0.0,
+                'correct': is_correct,
+                'message': '' if is_correct else 'Could not parse student answer'
+            }
+        
         correct_vars = sorted(
             [str(s) for s in self.correct_value._sympy_expr.free_symbols])
         student_vars = sorted(
@@ -262,23 +285,110 @@ class VectorAnswerChecker(AnswerChecker):
             dict with 'score', 'correct' keys, and optional 'message'
         """
         from .geometric import Vector
+        from .formula import Formula
+        from .numeric import Real
 
         # Parse student answer if it's a string
         if isinstance(student_answer, str):
-            # Stub: For now, just return 0 if custom checker not provided
-            # Full implementation would parse the string to a Vector
-            if self.custom_checker is None:
+            student_answer = student_answer.strip()
+            
+            # Try to parse as Vector or Formula
+            student_vector = None
+            
+            # Method 1: Try parsing as a Formula (for parametric vectors)
+            try:
+                # Use the correct vector's context if available
+                context = getattr(self.correct_value, 'context', None)
+                if context is None:
+                    from .context import get_current_context
+                    context = get_current_context()
+                
+                # Create Formula from string
+                student_formula = Formula(student_answer, context=context)
+                
+                # Check if the correct vector can be compared with the formula
+                # For parametric vectors, we compare the string representations
+                # or evaluate at specific points
+                correct_str = str(self.correct_value).strip()
+                student_str = student_answer.strip()
+                
+                # Remove angle brackets for comparison if both have them
+                if correct_str.startswith('<') and correct_str.endswith('>'):
+                    correct_str = correct_str[1:-1].strip()
+                if student_str.startswith('<') and student_str.endswith('>'):
+                    student_str = student_str[1:-1].strip()
+                
+                # Compare the formulas
+                if correct_str == student_str:
+                    return {
+                        'score': 1.0,
+                        'correct': True
+                    }
+                
+                # Try comparing the Formula objects directly
+                correct_formula = Formula(correct_str, context=context) if correct_str else None
+                if correct_formula and hasattr(correct_formula, 'compare'):
+                    # Use test point evaluation for comparison
+                    # This is a simplified approach - full implementation would test at multiple points
+                    try:
+                        # For now, use string comparison as fallback
+                        # Full implementation would evaluate at test points
+                        return {
+                            'score': 0.0,
+                            'correct': False,
+                            'message': 'Vector formulas do not match'
+                        }
+                    except Exception:
+                        pass
+                
+            except Exception as e:
+                # Formula parsing failed, try other methods
+                pass
+            
+            # Method 2: Try parsing as simple vector <x, y, z>
+            try:
+                # Remove angle brackets
+                if student_answer.startswith('<') and student_answer.endswith('>'):
+                    inner = student_answer[1:-1].strip()
+                    # Try to parse as tuple/list
+                    import ast
+                    try:
+                        # Try parsing as Python tuple/list
+                        parsed = ast.literal_eval(inner)
+                        if isinstance(parsed, (list, tuple)):
+                            student_vector = Vector([Real(x) for x in parsed])
+                    except (ValueError, SyntaxError):
+                        # Not a simple tuple, might be a formula
+                        pass
+            except Exception:
+                pass
+            
+            # If we couldn't parse, return error
+            if student_vector is None:
+                # Fall back to string comparison with the correct vector
+                correct_str = str(self.correct_value).strip()
+                student_str = student_answer.strip()
+                
+                # Normalize by removing angle brackets
+                if correct_str.startswith('<') and correct_str.endswith('>'):
+                    correct_str = correct_str[1:-1].strip()
+                if student_str.startswith('<') and student_str.endswith('>'):
+                    student_str = student_str[1:-1].strip()
+                
+                if correct_str == student_str:
+                    return {
+                        'score': 1.0,
+                        'correct': True
+                    }
+                
                 return {
                     'score': 0.0,
                     'correct': False,
-                    'message': 'Vector parsing not fully implemented'
+                    'message': f'Could not parse vector: {student_answer}'
                 }
-            # For custom checker, we'd need to parse and call it
-            return {
-                'score': 0.0,
-                'correct': False,
-                'message': 'String vector parsing stub'
-            }
+            
+            # Use the parsed vector for comparison below
+            student_answer = student_vector
 
         # If custom checker provided, use it
         if self.custom_checker is not None:

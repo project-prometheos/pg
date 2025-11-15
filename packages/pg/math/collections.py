@@ -50,12 +50,28 @@ class List(MathValue):
 
     def to_string(self) -> str:
         """Convert to string."""
-        elements_str = ", ".join(el.to_string() for el in self.elements)
+        def elem_to_string(el):
+            if isinstance(el, str):
+                return el
+            elif hasattr(el, 'to_string'):
+                return el.to_string()
+            else:
+                return str(el)
+        
+        elements_str = ", ".join(elem_to_string(el) for el in self.elements)
         return f"[{elements_str}]"
 
     def to_tex(self) -> str:
         """Convert to LaTeX."""
-        elements_str = ", ".join(el.to_tex() for el in self.elements)
+        def elem_to_tex(el):
+            if isinstance(el, str):
+                return el  # Assume string is already in appropriate format
+            elif hasattr(el, 'to_tex'):
+                return el.to_tex()
+            else:
+                return str(el)
+        
+        elements_str = ", ".join(elem_to_tex(el) for el in self.elements)
         return f"\\left[{elements_str}\\right]"
 
     def to_python(self) -> list[Any]:

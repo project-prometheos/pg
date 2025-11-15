@@ -33,7 +33,11 @@ class PopUp:
         Returns:
             Function that checks student answer
         """
-        return lambda x: {'correct': True, 'score': 1.0}
+        correct = self.correct
+        return lambda x: {
+            'correct': str(x) == str(correct),
+            'score': 1.0 if str(x) == str(correct) else 0.0
+        }
 
 
 class DropDown(PopUp):
@@ -44,15 +48,19 @@ class DropDown(PopUp):
 class DropDownTF:
     """DropDown for True/False questions."""
 
-    def __init__(self, correct: bool, **options: Any):
+    def __init__(self, correct: bool | str, **options: Any):
         """
         Initialize DropDownTF with correct answer.
         
         Args:
-            correct: True or False correct answer
+            correct: True/False or 'T'/'F' correct answer
             **options: Additional options
         """
-        self.correct = correct
+        # Normalize: accept 'T'/'F' or True/False
+        if isinstance(correct, str):
+            self.correct = correct.upper()  # 'T' or 'F'
+        else:
+            self.correct = 'T' if correct else 'F'
         self.choices = ['True', 'False']
         self.options = options
 
@@ -63,7 +71,27 @@ class DropDownTF:
         Returns:
             Function that checks student answer
         """
-        return lambda x: {'correct': True, 'score': 1.0}
+        correct = self.correct
+        # Handle both 'T'/'F' format and 'True'/'False' format
+        # Map student input to canonical form
+        def normalize_answer(ans):
+            ans_str = str(ans).strip()
+            if ans_str.upper() in ('T', 'TRUE'):
+                return 'True'
+            elif ans_str.upper() in ('F', 'FALSE'):
+                return 'False'
+            return ans_str
+        
+        # Map correct answer to 'True' or 'False'
+        if correct.upper() in ('T', 'TRUE'):
+            correct_normalized = 'True'
+        else:
+            correct_normalized = 'False'
+        
+        return lambda x: {
+            'correct': normalize_answer(x) == correct_normalized,
+            'score': 1.0 if normalize_answer(x) == correct_normalized else 0.0
+        }
 
 
 class RadioButtons:
@@ -89,7 +117,11 @@ class RadioButtons:
         Returns:
             Function that checks student answer
         """
-        return lambda x: {'correct': True, 'score': 1.0}
+        correct = self.correct
+        return lambda x: {
+            'correct': str(x) == str(correct),
+            'score': 1.0 if str(x) == str(correct) else 0.0
+        }
 
 
 __all__ = ['PopUp', 'DropDown', 'DropDownTF', 'RadioButtons']

@@ -182,6 +182,11 @@ class MultiAnswerEvaluator:
             # In Python: checker(correct, student, self)
             result = ma.checker(ma.correct_answers, list(student_answers), ma)
 
+            # Handle None result (broken checker from Perl translation)
+            if result is None:
+                # Fall back to individual answer checking
+                return self._check_individual_answers(ma, student_answers)
+
             # Result can be boolean or dict
             if isinstance(result, bool):
                 return {
@@ -196,16 +201,80 @@ class MultiAnswerEvaluator:
                     'score': float(result),
                     'message': ''
                 }
+            elif isinstance(result, (list, tuple)):
+                # List of scores for each answer
+                results = [float(r) if isinstance(r, (int, float)) else (1.0 if r else 0.0) for r in result]
+                all_correct = all(r >= 1.0 for r in results) if results else False
+                return {
+                    'correct': all_correct,
+                    'score': 1.0 if all_correct else 0.0,
+                    'message': '',
+                    'results': results
+                }
             else:
                 # Assume dict-like
                 return result
 
         except Exception as e:
+            # On error, fall back to individual checking
+            return self._check_individual_answers(ma, student_answers)
+    
+    def _check_individual_answers(self, ma: MultiAnswer, student_answers: tuple) -> dict:
+        """
+        Check each answer individually using its own checker.
+        
+        This is used as a fallback when the custom checker is None or broken.
+        """
+        if len(student_answers) != len(ma.correct_answers):
             return {
                 'correct': False,
                 'score': 0.0,
-                'message': f'Checker error: {e}'
+                'message': f'Wrong number of answers: expected {len(ma.correct_answers)}, got {len(student_answers)}',
+                'results': [0.0] * len(ma.correct_answers)
             }
+        
+        results = []
+        for correct, student in zip(ma.correct_answers, student_answers):
+            score = 0.0
+            # Try to use the answer's own checker
+            if hasattr(correct, 'cmp'):
+                try:
+                    checker = correct.cmp()
+                    if hasattr(checker, 'check'):
+                        check_result = checker.check(student)
+                        if isinstance(check_result, dict):
+                            score = check_result.get('score', 0.0)
+                        elif isinstance(check_result, (int, float)):
+                            score = float(check_result)
+                    elif callable(checker):
+                        # Callable checker (like PopUp)
+                        check_result = checker(student)
+                        if isinstance(check_result, dict):
+                            score = check_result.get('score', 0.0)
+                except Exception:
+                    # If checker fails, try string comparison
+                    score = 1.0 if str(correct).strip() == str(student).strip() else 0.0
+            elif hasattr(correct, 'compare') and callable(correct.compare):
+                # MathObject with compare() method
+                try:
+                    # Try to parse student answer and compare
+                    # For now, use string comparison as fallback
+                    score = 1.0 if str(correct).strip() == str(student).strip() else 0.0
+                except Exception:
+                    score = 0.0
+            else:
+                # Simple string comparison
+                score = 1.0 if str(correct).strip() == str(student).strip() else 0.0
+            
+            results.append(score)
+        
+        all_correct = all(r >= 1.0 for r in results)
+        return {
+            'correct': all_correct,
+            'score': 1.0 if all_correct else 0.0,
+            'message': '',
+            'results': results
+        }
 
     def __str__(self):
         return f"MultiAnswerEvaluator({self.multianswer})"

@@ -488,20 +488,40 @@ class PGTranslator:
                         ),
                     )
                 elif hasattr(evaluator, "compare") and callable(evaluator.compare):
-                    # MathObject types (List, Point, Vector, etc.) use .compare() method
+                    # MathObject types (List, Point, Vector, Matrix, etc.) use .compare() method
                     try:
-                        # For List/Set types, use string comparison since they use comma-separated format
-                        # List.to_string() returns "[a, b, c]" but student input is "a, b, c"
+                        evaluator_type = type(evaluator).__name__
                         evaluator_str = str(evaluator).strip()
                         student_str = student_answer.strip()
                         
-                        # Remove brackets from List/Set string representation
-                        if evaluator_str.startswith('[') and evaluator_str.endswith(']'):
-                            evaluator_str = evaluator_str[1:-1].strip()
-                        if evaluator_str.startswith('{') and evaluator_str.endswith('}'):
-                            evaluator_str = evaluator_str[1:-1].strip()
+                        # Try to parse student answer and create MathObject for proper comparison
+                        student_obj = None
+                        is_correct = False
                         
-                        is_correct = (evaluator_str == student_str)
+                        if evaluator_type == "Matrix":
+                            # Matrix format: [[1, 2, 3], [4, 5, 6]]
+                            import ast
+                            try:
+                                parsed = ast.literal_eval(student_str)
+                                from pg.math.geometric import Matrix
+                                student_obj = Matrix(parsed)
+                                # compare() returns bool (True if equal)
+                                is_correct = evaluator.compare(student_obj)
+                            except (ValueError, SyntaxError, TypeError) as e:
+                                # Fall back to string comparison
+                                is_correct = (evaluator_str == student_str)
+                        elif evaluator_type == "List":
+                            # List format: "a, b, c" (without brackets)
+                            # Remove brackets from evaluator string representation
+                            eval_str = evaluator_str
+                            if eval_str.startswith('[') and eval_str.endswith(']'):
+                                eval_str = eval_str[1:-1].strip()
+                            is_correct = (eval_str == student_str)
+                        else:
+                            # For other types (Point, Vector, etc.), try string comparison
+                            # TODO: Add proper parsing for Point/Vector types
+                            is_correct = (evaluator_str == student_str)
+                        
                         answer_results[name] = AnswerResult(
                             score=1.0 if is_correct else 0.0,
                             correct=is_correct,
@@ -530,6 +550,19 @@ class PGTranslator:
                             if hasattr(evaluator, "__str__")
                             else "",
                         )
+                    elif callable(checker):
+                        # PopUp/DropDown/RadioButtons return a callable lambda
+                        check_result = checker(student_answer)
+                        if isinstance(check_result, dict):
+                            answer_results[name] = AnswerResult(
+                                score=check_result.get("score", 0.0),
+                                correct=check_result.get("correct", False),
+                                student_answer=student_answer,
+                                answer_message=check_result.get("message", ""),
+                                correct_answer=str(evaluator)
+                                if hasattr(evaluator, "__str__")
+                                else "",
+                            )
                 elif hasattr(evaluator, "evaluate"):
                     result = evaluator.evaluate(student_answer)
                     answer_results[name] = result

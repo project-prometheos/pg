@@ -53,8 +53,14 @@ def extract_correct_answers(result: Any) -> Dict[str, str]:
         if not ans_eval:
             continue
 
-        # Check if this is a MultiAnswer object
+        # Check if this is a MultiAnswer object (check both correct_answers and answers attributes)
+        is_multianswer = False
         if hasattr(ans_eval, "correct_answers") and isinstance(ans_eval.correct_answers, (list, tuple)):
+            is_multianswer = True
+        elif hasattr(ans_eval, "answers") and isinstance(ans_eval.answers, (list, tuple)):
+            is_multianswer = True
+
+        if is_multianswer:
             # This is a MultiAnswer - store it for special handling
             obj_id = id(ans_eval)
             if obj_id not in multi_answer_map:
@@ -78,9 +84,15 @@ def extract_correct_answers(result: Any) -> Dict[str, str]:
         blank_names = multi_data["blanks"]
 
         try:
-            # Extract each answer from correct_answers list
+            # Extract each answer from correct_answers or answers list
+            answer_list = None
             if hasattr(ans_eval, "correct_answers"):
-                for i, ans in enumerate(ans_eval.correct_answers):
+                answer_list = ans_eval.correct_answers
+            elif hasattr(ans_eval, "answers"):
+                answer_list = ans_eval.answers
+
+            if answer_list and isinstance(answer_list, (list, tuple)):
+                for i, ans in enumerate(answer_list):
                     if i < len(blank_names):
                         answer_str = extract_answer_string(ans)
                         if answer_str:
@@ -152,6 +164,26 @@ def extract_answer_string(math_obj: Any) -> Optional[str]:
         try:
             if hasattr(math_obj, "string") and callable(math_obj.string):
                 return math_obj.string()
+        except Exception:
+            pass
+
+    # 2.7. Check if it's a PopUp/DropDown/RadioButtons - extract correct answer
+    obj_type = type(math_obj).__name__
+    if obj_type in ("PopUp", "DropDown", "RadioButtons"):
+        try:
+            if hasattr(math_obj, "correct"):
+                return str(math_obj.correct)
+        except Exception:
+            pass
+    elif obj_type == "DropDownTF":
+        try:
+            if hasattr(math_obj, "correct"):
+                correct = math_obj.correct
+                # Convert 'T'/'F' to 'True'/'False' for student input
+                if isinstance(correct, str):
+                    return 'True' if correct.upper() == 'T' else 'False'
+                else:
+                    return 'True' if correct else 'False'
         except Exception:
             pass
 
