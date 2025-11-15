@@ -730,10 +730,9 @@ class InProcessSandbox:
         def COMMENT(*args): pass
 
         # PGML rendering function
-        def PGML(pgml_text):
-            """Return PGML markup - will be rendered by PGMLRenderer later."""
-            # Don't store in pgml_array - just return so TEXT() can handle it
-            return pgml_text
+        # NOTE: PGML function is already defined in _load_pg_core() above
+        # This stub is deprecated and should not be used
+        # The correct PGML function registers answer blanks with the environment
 
         # Random functions (don't shadow random module)
         import random as _random_module
@@ -1230,7 +1229,11 @@ class InProcessSandbox:
         try:
             if hasattr(self, '_pg_core'):
                 # Use the SAME pg_core instance that was loaded in namespace
-                pg_env = self._pg_core.get_environment() if self._pg_core._pg_environment else None
+                try:
+                    pg_env = self._pg_core.get_environment()
+                except RuntimeError:
+                    # Environment not initialized - get_environment() raises RuntimeError
+                    pg_env = None
             elif hasattr(self, '_stub_env'):
                 # Use stub environment if pg_core not available
                 pg_env = self._stub_env
