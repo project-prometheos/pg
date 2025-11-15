@@ -164,6 +164,10 @@ class PGPreprocessor:
         # Convert Perl heredocs (<<END_MARKER) to Python syntax BEFORE splitting into lines
         pg_source = self._convert_heredocs_global(pg_source)
 
+        # Fix reference dereference arrows before parsing
+        # $x->[$i] -> $x[i], $x->{key} -> $x[key]
+        pg_source = self._fix_reference_dereferences(pg_source)
+
         # Note: Don't convert ->with( early! The Lark grammar treats . as a binary operator,
         # so if we convert ->with( to .with_params(, Lark will parse it as string concatenation.
         # Instead, we'll handle ->with( in the IR emission phase via post-processing.
@@ -388,6 +392,29 @@ class PGPreprocessor:
                 i += 1
                 continue
 
+            # Handle standalone Perl subroutine definitions: sub name { ... }
+            # These are typically used in packages for method overrides
+            standalone_sub_match = re.match(r'^\s*sub\s+(\w+)\s*\{', original_line)
+            if standalone_sub_match:
+                # Collect the subroutine body until we find the matching closing brace
+                sub_lines = [original_line]
+                brace_depth = original_line.count('{') - original_line.count('}')
+                i += 1
+                max_sub_lines = 100
+                lines_collected = 0
+                while i < len(lines) and brace_depth > 0 and lines_collected < max_sub_lines:
+                    current_line = lines[i]
+                    sub_lines.append(current_line)
+                    brace_depth += current_line.count('{') - current_line.count('}')
+                    i += 1
+                    lines_collected += 1
+
+                # Comment out the entire subroutine definition
+                # (It's probably defining a method override that won't work in Python anyway)
+                for sub_line in sub_lines:
+                    output_lines.append(f"# {sub_line}  # Perl subroutine definition skipped")
+                continue
+
             # Stub Perl sub { ... } closures so downstream execution sees Python callables
             sub_match = re.search(r'(=>|=)\s*sub\s*\{', original_line)
             if sub_match:
@@ -401,7 +428,10 @@ class PGPreprocessor:
                 # For single-line closures where all braces are balanced AND there's at least one closing brace
                 # (to avoid treating "sub {" with nothing else as single-line)
                 has_closing_brace = '}' in after_sub
-                if single_line_brace_count <= 0 and has_closing_brace:
+                # DISABLED: Single-line closure handling doesn't work with braces in strings
+                # The brace counter doesn't account for quotes, so hash accesses like {key}
+                # and string interpolations like f-strings throw off the count
+                if False and single_line_brace_count <= 0 and has_closing_brace:
                     # Single-line closure - find the matching closing brace
                     # Extract everything before 'sub' and everything after the matching '}'
                     prefix = original_line[:sub_start]
@@ -429,23 +459,30 @@ class PGPreprocessor:
                     i += 1
                     continue
 
-                # Multi-line closure
+                # Multi-line closure (or single-line closure after line joining)
                 closure_lines = [original_line]
                 # Start with brace depth from the opening sub {
                 brace_depth = 1 + single_line_brace_count
 
-                i += 1
+                # If brace_depth <= 0, the closure is already complete on this line
+                # (due to line joining or a complete single-line closure)
+                # In this case, we should NOT try to collect more lines
                 max_closure_lines = 100  # Safety limit to prevent infinite loops
                 lines_collected = 0
-                while i < len(lines) and brace_depth > 0 and lines_collected < max_closure_lines:
-                    current_line = lines[i]
-                    closure_lines.append(current_line)
-                    brace_depth += current_line.count(
-                        '{') - current_line.count('}')
+                if brace_depth > 0:
                     i += 1
-                    lines_collected += 1
+                    while i < len(lines) and brace_depth > 0 and lines_collected < max_closure_lines:
+                        current_line = lines[i]
+                        closure_lines.append(current_line)
+                        brace_depth += current_line.count(
+                            '{') - current_line.count('}')
+                        i += 1
+                        lines_collected += 1
+                else:
+                    # Closure is complete on the first line, just increment i
+                    i += 1
 
-                if lines_collected >= max_closure_lines:
+                if brace_depth > 0 and lines_collected >= max_closure_lines:
                     # Hit the safety limit - something went wrong
                     # Just skip this and treat it as a comment
                     output_lines.append(
@@ -460,13 +497,33 @@ class PGPreprocessor:
                 continuation_suffix = ''
                 closing_brace_idx = None
 
-                # Find where the closure-ending brace is on the last line
-                close_brace_match = re.search(r'\}(.*)$', last_line)
-                if close_brace_match:
-                    # Get everything after the closing brace of the closure
-                    suffix_from_last_line = close_brace_match.group(1)
+                # If the closure was all on the first line (brace_depth <= 0 after collecting lines),
+                # we need to find the matching closing brace within the line
+                if brace_depth <= 0 and len(closure_lines) == 1:
+                    # The closure is on a single (joined) line
+                    # Find the matching closing brace by counting braces
+                    sub_start = first_line.find('sub {')
+                    if sub_start >= 0:
+                        brace_count = 1
+                        pos = sub_start + 5  # Start after 'sub {'
+                        while pos < len(first_line) and brace_count > 0:
+                            if first_line[pos] == '{':
+                                brace_count += 1
+                            elif first_line[pos] == '}':
+                                brace_count -= 1
+                            pos += 1
+                        # pos is now one past the matching closing brace
+                        suffix_from_last_line = first_line[pos:] if pos < len(first_line) else ''
+                    else:
+                        suffix_from_last_line = ''
                 else:
-                    suffix_from_last_line = ''
+                    # Normal multi-line closure case - find the last closing brace on the last line
+                    close_brace_match = re.search(r'\}(.*)$', last_line)
+                    if close_brace_match:
+                        # Get everything after the closing brace of the closure
+                        suffix_from_last_line = close_brace_match.group(1)
+                    else:
+                        suffix_from_last_line = ''
 
                 # Check if there are continuation lines with more closing syntax
                 temp_i = i
@@ -694,7 +751,9 @@ class PGPreprocessor:
             # Block detection: check for BEGIN_* markers
             block_found = False
             for block_type, (begin_pattern, end_pattern) in self.BLOCK_PATTERNS.items():
-                if re.search(begin_pattern, original_line) and not re.search(r'\$\w+\s*->\s*(BEGIN_TIKZ|BEGIN_LATEX_IMAGE)', original_line):
+                # Skip method-call style TikZ/LaTeX (handled separately below)
+                # Updated to handle array indexing like $graph[$i]
+                if re.search(begin_pattern, original_line) and not re.search(r'\$\w+(?:\[[^\]]*\])?\s*->\s*(BEGIN_TIKZ|BEGIN_LATEX_IMAGE)', original_line):
                     block_content_lines: List[str] = []
                     i += 1
                     while i < len(lines) and not re.match(end_pattern, lines[i]):
@@ -718,13 +777,14 @@ class PGPreprocessor:
                         else:
                             output_lines.append(f"TEXT(PGML({block_var}))")
                     elif block_type == "TIKZ":
-                        # Preserve raw TikZ/TeX content verbatim
+                        # Preserve raw TikZ/TeX content verbatim in a raw string
                         block_var = f"TIKZ_BLOCK_{len(text_blocks) - 1}"
                         escaped_content = block_content.replace(
                             "'''", r"\'\'\'")
-                        output_lines.append(
-                            f"{block_var} = r'''\\n{escaped_content}\\n'''"
-                        )
+                        # Use raw string (r'...') to preserve backslashes in TikZ code
+                        output_lines.append(f"{block_var} = r'''")
+                        output_lines.append(escaped_content)
+                        output_lines.append("'''")
                     else:
                         transformed_content = self._transform_text_block(
                             block_content)
@@ -745,10 +805,11 @@ class PGPreprocessor:
             # Handle method-call-style blocks: $obj->BEGIN_TIKZ or $obj->BEGIN_LATEX_IMAGE
             # These should capture content until END_TIKZ/END_LATEX_IMAGE and pass as raw string
             # Note: Use search to find these patterns even if there's trailing whitespace/comments
+            # Also handle array indexing like $graph[$i]->BEGIN_TIKZ
             tikz_method_match = re.search(
-                r'(\$\w+)\s*->\s*BEGIN_TIKZ', original_line)
+                r'(\$\w+(?:\[[^\]]*\])*)\s*->\s*BEGIN_TIKZ', original_line)
             latex_method_match = re.search(
-                r'(\$\w+)\s*->\s*BEGIN_LATEX_IMAGE', original_line)
+                r'(\$\w+(?:\[[^\]]*\])*)\s*->\s*BEGIN_LATEX_IMAGE', original_line)
 
             if (tikz_method_match or latex_method_match) and original_line.strip().endswith(('BEGIN_TIKZ', 'BEGIN_LATEX_IMAGE')):
                 obj_var = (tikz_method_match or latex_method_match).group(1)
@@ -2776,9 +2837,10 @@ if __name__ == "__main__":
                 continue
 
             # Check if this line is a method-call style BEGIN_TIKZ or BEGIN_LATEX_IMAGE
-            tikz_match = re.search(r'(\$\w+)\s*->\s*BEGIN_TIKZ', body_line)
+            # Also handle array indexing like $graph[$i]->BEGIN_TIKZ
+            tikz_match = re.search(r'(\$\w+(?:\[[^\]]*\])*)\s*->\s*BEGIN_TIKZ', body_line)
             latex_match = re.search(
-                r'(\$\w+)\s*->\s*BEGIN_LATEX_IMAGE', body_line)
+                r'(\$\w+(?:\[[^\]]*\])*)\s*->\s*BEGIN_LATEX_IMAGE', body_line)
 
             if (tikz_match or latex_match) and body_line.strip().endswith(('BEGIN_TIKZ', 'BEGIN_LATEX_IMAGE')):
                 obj_var = (tikz_match or latex_match).group(1)
@@ -3132,6 +3194,50 @@ if __name__ == "__main__":
             result.append(pgml_content[i])
             i += 1
         return ''.join(result)
+
+    def _fix_reference_dereferences(self, pg_source: str) -> str:
+        """Fix Perl reference dereference arrows for parsing.
+
+        Converts:
+            $x->[$i] to $x[$i]
+            $x->{key} to $x{key}
+            $#$x to len(x) - 1
+
+        This must happen before parsing because the grammar doesn't have rules for
+        ->[ or ->{ patterns, and it doesn't understand $# for array length.
+        """
+        # Fix $x->[$i] pattern (dereference to array subscript)
+        # Also handle $x->[expr] patterns
+        pg_source = re.sub(
+            r'\$(\w+(?:\[[^\]]*\])*)\s*->\s*\[',
+            r'$\1[',
+            pg_source
+        )
+
+        # Fix $x->{key} pattern (dereference to hash subscript)
+        pg_source = re.sub(
+            r'\$(\w+(?:\[[^\]]*\])*)\s*->\s*\{',
+            r'$\1{',
+            pg_source
+        )
+
+        # Fix $#$x pattern (array length - returns last index)
+        # $#$arr becomes len(arr) - 1
+        pg_source = re.sub(
+            r'\$#\$(\w+)',
+            r'(len(\1) - 1)',
+            pg_source
+        )
+
+        # Fix @$x pattern (array dereference)
+        # @$arr becomes list($arr)
+        pg_source = re.sub(
+            r'@\$(\w+)',
+            r'list($\1)',
+            pg_source
+        )
+
+        return pg_source
 
     def _convert_heredocs_global(self, pg_source: str) -> str:
         """Convert Perl heredocs (<<END_MARKER) and qq/.../  to Python triple-quoted strings at the source level.

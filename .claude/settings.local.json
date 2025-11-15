@@ -8,7 +8,22 @@
       "Bash(pnpm exec pytest:*)",
       "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\Scripts\\pytest.exe\" \"d:\\pg\\packages\\pg\\macros\\parsers\\tests\\test_parser_function.py\" -v --tb=short)",
       "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\Scripts\\pytest.exe\" \"d:\\pg\\packages\\pg\\macros\\parsers\\tests\\test_parser_function.py\" -v --tb=line)",
-      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\Scripts\\pytest.exe\" \"d:\\pg\\packages\\pg\\translator\\tests\\test_tutorial_sample_problems.py::test_tutorial_problem_renders[HeavisideStep]\" -v)"
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\Scripts\\pytest.exe\" \"d:\\pg\\packages\\pg\\translator\\tests\\test_tutorial_sample_problems.py::test_tutorial_problem_renders[HeavisideStep]\" -v)",
+      "Bash(python -m pytest packages/pg/translator/tests/test_tutorial_sample_problems.py -v --tb=no -q)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest packages/pg/translator/tests/test_tutorial_sample_problems.py -v --tb=no -q)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest packages/pg/translator/tests/test_tutorial_sample_problems.py::test_tutorial_problem_renders[GraphToolCustomChecker] -v --tb=short)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest packages/pg/translator/tests/test_tutorial_sample_problems.py::test_tutorial_problem_renders[GraphToolCustomChecker] -v --tb=line)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" debug_closure.py)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest packages/pg/translator/tests/test_tutorial_sample_problems.py::test_tutorial_problem_renders[GraphToolCustomChecker] -xvs)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest packages/pg/translator/tests/test_tutorial_sample_problems.py::test_tutorial_problem_renders[CustomAnswerListChecker] packages/pg/translator/tests/test_tutorial_sample_problems.py::test_tutorial_problem_renders[SeriesTest] -xvs)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest packages/pg/translator/tests/test_tutorial_sample_problems.py::test_tutorial_problem_renders[GraphsInTables] -xvs)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" debug_tikz.py)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest packages/pg/translator/tests/test_tutorial_sample_problems.py::test_tutorial_problem_renders[LinearRegression] -xvs)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" debug_linearreg.py)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest packages/pg/translator/tests/test_tutorial_sample_problems.py::test_tutorial_problem_renders[VectorOperations] packages/pg/translator/tests/test_tutorial_sample_problems.py::test_tutorial_problem_renders[Vectors] -xvs)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" debug_vector.py)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" -m pytest packages/pg/translator/tests/test_tutorial_sample_problems.py::test_tutorial_problem_renders[CustomAnswerCheckers] -xvs)",
+      "Bash(\"C:\\Users\\mdahl\\.conda\\envs\\pytorch-5090\\python.exe\" debug_customchecker.py)"
     ],
     "deny": [],
     "ask": []
