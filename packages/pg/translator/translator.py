@@ -396,6 +396,82 @@ class PGTranslator:
                                 answer_message=check_result.get("message", ""),
                                 correct_answer=str(evaluator),
                             )
+                elif hasattr(checker, "evaluate"):
+                    # MultiAnswer uses .evaluate() instead of .check()
+                    # Call evaluate with all student answers
+                    student_answers = [ans for _, ans in group_items]
+                    try:
+                        eval_result = checker.evaluate(*student_answers)
+                    except Exception as e:
+                        # Log error and create error results
+                        error_msg = f"Error evaluating MultiAnswer: {str(e)}"
+                        for name, student_answer in group_items:
+                            answer_results[name] = AnswerResult(
+                                score=0.0,
+                                correct=False,
+                                student_answer=student_answer,
+                                answer_message=error_msg,
+                                correct_answer=str(evaluator),
+                            )
+                        continue
+                    
+                    # Handle None result (evaluator not implemented properly)
+                    if eval_result is None:
+                        for name, student_answer in group_items:
+                            answer_results[name] = AnswerResult(
+                                score=0.0,
+                                correct=False,
+                                student_answer=student_answer,
+                                answer_message="MultiAnswer evaluator returned None",
+                                correct_answer=str(evaluator),
+                            )
+                        continue
+                    
+                    # If evaluate returns an AnswerResult, extract the score and info
+                    if hasattr(eval_result, "score"):
+                        # Single result for all answers
+                        score = eval_result.score
+                        message = getattr(eval_result, "answer_message", "")
+                        for name, student_answer in group_items:
+                            answer_results[name] = AnswerResult(
+                                score=score,
+                                correct=score >= 1.0,
+                                student_answer=student_answer,
+                                answer_message=message,
+                                correct_answer=str(evaluator),
+                            )
+                    elif isinstance(eval_result, dict):
+                        # Dictionary with individual results
+                        if "results" in eval_result and isinstance(eval_result["results"], list):
+                            answers = getattr(evaluator, "answers", [])
+                            for index, (name, student_answer) in enumerate(group_items):
+                                individual_score = (
+                                    eval_result["results"][index]
+                                    if index < len(eval_result["results"])
+                                    else 0.0
+                                )
+                                correct_answer = ""
+                                if isinstance(answers, list) and index < len(answers):
+                                    correct_answer = str(answers[index])
+                                
+                                answer_results[name] = AnswerResult(
+                                    score=individual_score,
+                                    correct=individual_score >= 1.0,
+                                    student_answer=student_answer,
+                                    answer_message=eval_result.get("message", ""),
+                                    correct_answer=correct_answer,
+                                )
+                        else:
+                            # Single score for all
+                            score = eval_result.get("score", 0.0)
+                            for name, student_answer in group_items:
+                                answer_results[name] = AnswerResult(
+                                    score=score,
+                                    correct=score >= 1.0,
+                                    student_answer=student_answer,
+                                    answer_message=eval_result.get("message", ""),
+                                    correct_answer=str(evaluator),
+                                )
                 continue
 
             for name, student_answer in group_items:
@@ -411,6 +487,36 @@ class PGTranslator:
                             str(evaluator),
                         ),
                     )
+                elif hasattr(evaluator, "compare") and callable(evaluator.compare):
+                    # MathObject types (List, Point, Vector, etc.) use .compare() method
+                    try:
+                        # For List/Set types, use string comparison since they use comma-separated format
+                        # List.to_string() returns "[a, b, c]" but student input is "a, b, c"
+                        evaluator_str = str(evaluator).strip()
+                        student_str = student_answer.strip()
+                        
+                        # Remove brackets from List/Set string representation
+                        if evaluator_str.startswith('[') and evaluator_str.endswith(']'):
+                            evaluator_str = evaluator_str[1:-1].strip()
+                        if evaluator_str.startswith('{') and evaluator_str.endswith('}'):
+                            evaluator_str = evaluator_str[1:-1].strip()
+                        
+                        is_correct = (evaluator_str == student_str)
+                        answer_results[name] = AnswerResult(
+                            score=1.0 if is_correct else 0.0,
+                            correct=is_correct,
+                            student_answer=student_answer,
+                            answer_message="" if is_correct else "Incorrect",
+                            correct_answer=evaluator_str,
+                        )
+                    except Exception as e:
+                        answer_results[name] = AnswerResult(
+                            score=0.0,
+                            correct=False,
+                            student_answer=student_answer,
+                            answer_message=f"Error comparing answer: {str(e)}",
+                            correct_answer=str(evaluator),
+                        )
                 elif hasattr(evaluator, "cmp"):
                     checker = evaluator.cmp()
                     if hasattr(checker, "check"):

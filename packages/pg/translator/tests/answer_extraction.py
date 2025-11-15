@@ -361,7 +361,8 @@ def get_extractable_blanks(result: Any) -> Dict[str, bool]:
         # Try to extract
         try:
             answer_str = extract_answer_string(ans_eval)
-            extractable[blank_name] = answer_str is not None and len(answer_str) > 0
+            extractable[blank_name] = answer_str is not None and len(
+                answer_str) > 0
         except Exception:
             extractable[blank_name] = False
 
