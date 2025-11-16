@@ -339,11 +339,18 @@ class PGTranslator:
         Returns:
             Dictionary of flag name -> value to set
         """
+        # Get options from metadata (including those from cmp options)
+        cmp_options = ans_result.metadata.get('cmp_options', {})
+
         # Get studentsMustReduceUnions from metadata (if set)
         students_must_reduce_unions = ans_result.metadata.get('studentsMustReduceUnions', False)
         show_union_reduce_warnings = ans_result.metadata.get('showUnionReduceWarnings', False)
         require_paren_match = ans_result.metadata.get('requireParenMatch', False)
-        
+
+        # Get studentsMustReduceFractions from cmp options
+        students_must_reduce_fractions = cmp_options.get(
+            'studentsMustReduceFractions', False)
+
         flags = {
             'StringifyAsTeX': 0,  # reset this, just in case
             'no_parameters': 1,  # don't let students enter parameters
@@ -351,7 +358,15 @@ class PGTranslator:
             'reduceConstants': 0,  # don't combine student constants
             'reduceConstantFunctions': 0,  # don't reduce constant functions
         }
-        
+
+        # Fraction reduction flags
+        # When studentsMustReduceFractions is enabled, disable reduceFractions
+        # so we can check if the student's fraction is already reduced
+        if students_must_reduce_fractions:
+            flags['reduceFractions'] = 0
+        else:
+            flags['reduceFractions'] = 1
+
         # Union/Set reduction flags
         if students_must_reduce_unions:
             flags.update({
