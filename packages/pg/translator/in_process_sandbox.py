@@ -1251,6 +1251,17 @@ class InProcessSandbox:
                 output_text = ''
 
             answers = dict(pg_env.answers_hash)
+
+            # Also merge answers registered via PGML() function
+            # (which registers in the real PGEnvironment via pg_core.get_environment())
+            try:
+                if hasattr(self, '_pg_core') and hasattr(self._pg_core, '_pg_environment'):
+                    real_pg_env = self._pg_core._pg_environment
+                    if real_pg_env and hasattr(real_pg_env, 'answers'):
+                        # Merge answers from real environment
+                        answers.update(real_pg_env.answers)
+            except Exception:
+                pass  # If something fails, just use what we have
             solution_text = ''.join(getattr(pg_env, 'solution_array', [])) if hasattr(
                 pg_env, 'solution_array') else None
             hint_text = ''.join(getattr(pg_env, 'hint_array', [])) if hasattr(
