@@ -262,10 +262,22 @@ class PGTranslator:
                     problem_result_dict,
                 )
 
-            answer_blanks = {
-                name: {"evaluator": evaluator}
-                for name, evaluator in environment.answers.items()
-            }
+            # Build answer_blanks from environment.answers
+            # environment.answers may contain either:
+            # 1. Direct evaluator objects
+            # 2. PGML spec dicts with 'evaluator' and 'options' keys
+            # 3. Legacy dicts with 'ans_eval' key
+            answer_blanks = {}
+            for name, entry in environment.answers.items():
+                if isinstance(entry, dict) and "evaluator" in entry:
+                    # PGML spec format - keep the full spec with options
+                    answer_blanks[name] = entry
+                elif isinstance(entry, dict) and "ans_eval" in entry:
+                    # Legacy format - wrap in simple dict
+                    answer_blanks[name] = {"evaluator": entry["ans_eval"]}
+                else:
+                    # Direct evaluator object
+                    answer_blanks[name] = {"evaluator": entry}
 
             if getattr(environment, "errors", None):
                 errors.append(str(environment.errors))
