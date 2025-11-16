@@ -1062,10 +1062,59 @@ if __name__ == "__main__":
         # Match: var = [...] and wrap with PerlList()
         # We need to handle nested brackets properly
         def wrap_with_perllist_nested(code_str):
-            """Convert list literals to PerlList, handling nested brackets."""
+            """Convert list literals to PerlList, handling nested brackets.
+
+            Skips over triple-quoted strings to avoid modifying PGML block content.
+            """
             result = []
             i = 0
             while i < len(code_str):
+                # Skip over triple-quoted strings (don't modify content inside them)
+                if i <= len(code_str) - 3 and code_str[i:i+3] == "'''":
+                    # Found start of triple-quoted string, copy until end
+                    result.append("'''")
+                    i += 3
+                    # Find the closing '''
+                    while i <= len(code_str) - 3:
+                        if code_str[i:i+3] == "'''":
+                            result.append("'''")
+                            i += 3
+                            break
+                        result.append(code_str[i])
+                        i += 1
+                    else:
+                        # Reached end without finding closing ''', just copy remainder
+                        while i < len(code_str):
+                            result.append(code_str[i])
+                            i += 1
+                    continue
+
+                # Also skip double-quoted strings
+                if code_str[i] == '"':
+                    result.append(code_str[i])
+                    i += 1
+                    while i < len(code_str):
+                        if code_str[i] == '"' and (i == 0 or code_str[i-1] != '\\'):
+                            result.append(code_str[i])
+                            i += 1
+                            break
+                        result.append(code_str[i])
+                        i += 1
+                    continue
+
+                # Also skip single-quoted strings
+                if code_str[i] == "'":
+                    result.append(code_str[i])
+                    i += 1
+                    while i < len(code_str):
+                        if code_str[i] == "'" and (i == 0 or code_str[i-1] != '\\'):
+                            result.append(code_str[i])
+                            i += 1
+                            break
+                        result.append(code_str[i])
+                        i += 1
+                    continue
+
                 # Look for pattern: word = [
                 match = re_module.match(r'(\w+)\s*=\s*\[', code_str[i:])
                 if match:
@@ -1174,8 +1223,22 @@ if __name__ == "__main__":
         # Track which variables need initialization and where first used
         array_vars = {}  # var_name -> (first_line_num, indentation, is_list)
 
+        # Track whether we're inside a triple-quoted string
+        in_triple_quote = False
+
         # Find all array/dict assignments and push calls
         for line_num, line in enumerate(lines):
+            # Toggle triple-quote tracking
+            # Count occurrences of ''' on this line
+            triple_quote_count = line.count("'''")
+            if triple_quote_count > 0:
+                # Each pair toggles, odd count means we end in a different state
+                in_triple_quote = not in_triple_quote
+
+            # Skip lines that are inside triple-quoted strings
+            if in_triple_quote:
+                continue
+
             # Look for patterns like: varname[...] =
             match = re.search(r'^(\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*\[', line)
             if match:
