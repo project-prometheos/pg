@@ -8,8 +8,7 @@ Reference: PGML.pl
 """
 
 import sys
-from pg.pgml import HTMLRenderer, PGMLParser, TeXRenderer
-from pg.pgml.parser import AnswerBlank
+from pg.pgml import HTMLRenderer, PGMLParser, TeXRenderer, AnswerBlank
 
 # Export list
 __exports__ = [
