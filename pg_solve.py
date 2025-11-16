@@ -251,8 +251,9 @@ def display_problem(result, show_solution=False, show_hint=False):
     print("="*70 + "\n")
 
     if result.statement_html:
-        statement = strip_html(result.statement_html)
-        statement = format_math(statement)
+        # Apply format_math BEFORE strip_html so LaTeX delimiters are still present
+        statement = format_math(result.statement_html)
+        statement = strip_html(statement)
         print(statement)
     else:
         print("(No problem statement)")
@@ -270,8 +271,9 @@ def display_problem(result, show_solution=False, show_hint=False):
         print("\n" + "-"*70)
         print("  HINT")
         print("-"*70 + "\n")
-        hint = strip_html(result.hint_html)
-        hint = format_math(hint)
+        # Apply format_math BEFORE strip_html so LaTeX delimiters are still present
+        hint = format_math(result.hint_html)
+        hint = strip_html(hint)
         print(hint)
 
     # Show solution if requested
@@ -279,8 +281,9 @@ def display_problem(result, show_solution=False, show_hint=False):
         print("\n" + "-"*70)
         print("  SOLUTION")
         print("-"*70 + "\n")
-        solution = strip_html(result.solution_html)
-        solution = format_math(solution)
+        # Apply format_math BEFORE strip_html so LaTeX delimiters are still present
+        solution = format_math(result.solution_html)
+        solution = strip_html(solution)
         print(solution)
 
     print()
