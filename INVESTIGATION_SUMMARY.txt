@@ -1,0 +1,174 @@
+================================================================================
+PGML PARSING ISSUE - INVESTIGATION SUMMARY
+================================================================================
+
+PROBLEM:
+--------
+The FractionAnswer.pg problem is not being rendered correctly. The PGML output
+shows raw syntax like "Answer = PerlList([_]){answer.cmp(...)}{15}" instead of
+being parsed into answer blanks.
+
+KEY SYMPTOMS:
+1. PGML is not being parsed - answer blank syntax [_]{...} shows as raw text
+2. Variable interpolation not working properly
+3. Raw PGML text appears in output instead of rendered form
+4. No answer blanks are created
+
+================================================================================
+ROOT CAUSE IDENTIFIED
+================================================================================
+
+BROKEN METHOD:
+  File: d:\pg\packages\pg\translator\pg_preprocessor_pygment.py
+  Lines: 3677-3707
+  Method: _transform_pgml_evaluators()
+
+THE BUG:
+  The method converts Perl syntax to Python in PGML answer blank expressions:
+  - Converts -> to . (method call) ✓
+  - Converts :: to . (scope resolution) ✓
+  - Removes $ from variable names ✓
+  - BUT: Does NOT convert => to = (fat comma operator) ✗ MISSING!
+
+EXAMPLE OF THE BUG:
+
+  Original Perl PGML:
+    Answer = [_]{$answer->cmp(
+        studentsMustReduceFractions => 1,
+        reduceFractions => 1,
+        allowMixedNumbers => 0
+    )}{15}
+
+  After _transform_pgml_evaluators (BROKEN):
+    Answer = [_]{answer.cmp(
+        studentsMustReduceFractions => 1,  # INVALID PYTHON!
+        reduceFractions => 1,              # INVALID PYTHON!
+        allowMixedNumbers => 0             # INVALID PYTHON!
+    )}{15}
+
+  Expected after fix (CORRECT):
+    Answer = [_]{answer.cmp(
+        studentsMustReduceFractions = 1,   # Valid Python!
+        reduceFractions = 1,               # Valid Python!
+        allowMixedNumbers = 0              # Valid Python!
+    )}{15}
+
+WHAT CAUSES THE WRONG OUTPUT:
+  1. The preprocessor creates invalid Python syntax (=> instead of =)
+  2. This gets stored in the PGML_BLOCK variable
+  3. When the PGML() function tries to render it, the regex patterns match but
+  4. The _create_answer_blank() method tries to evaluate invalid Python
+  5. Evaluation fails, and the raw PGML text is returned as-is
+  6. The raw text appears in the output instead of proper answer blanks
+
+================================================================================
+FILES INVOLVED
+================================================================================
+
+PRIMARY ISSUE:
+  d:\pg\packages\pg\translator\pg_preprocessor_pygment.py (lines 3677-3707)
+    - Method: _transform_pgml_evaluators
+    - Issue: Missing => to = conversion
+    - Recent changes: Line formatting only (commit 5aea5d58)
+
+AFFECTED COMPONENTS:
+  d:\pg\packages\pg\renderer\pgml.py (lines 19-82)
+    - PGMLRenderer.render() method
+    - Tries to process the malformed PGML from preprocessor
+    
+  d:\pg\packages\pg\translator\in_process_sandbox.py (line 480)
+    - PGML() function that calls PGMLRenderer
+    - Receives invalid Python from preprocessor
+    
+EXAMPLE PROBLEM:
+  d:\pg\tutorial\sample-problems\Algebra\FractionAnswer.pg (lines 44-52)
+    - Multi-line answer blank with cmp() options using =>
+
+================================================================================
+THE PROCESSING PIPELINE
+================================================================================
+
+1. PREPROCESSING PHASE:
+   - PGPreprocessor reads FractionAnswer.pg
+   - Detects BEGIN_PGML...END_PGML block
+   - Calls _transform_pgml_evaluators() on the PGML content
+   - Converts to invalid Python (the bug!)
+   - Generates: TEXT(PGML(PGML_BLOCK_0))
+
+2. EXECUTION PHASE:
+   - Python code runs in InProcessSandbox
+   - PGML(PGML_BLOCK_0) function is called
+   - This calls PGMLRenderer(variables=namespace).render(pgml_text)
+
+3. RENDERING PHASE:
+   - PGMLRenderer processes the PGML
+   - Regex on line 53 tries to match [_]{...} patterns
+   - Tries to evaluate the expression inside {} (which is invalid Python)
+   - Fails and returns raw PGML instead of rendered output
+
+================================================================================
+SOLUTION
+================================================================================
+
+ADD ONE LINE to _transform_pgml_evaluators() method:
+
+File: d:\pg\packages\pg\translator\pg_preprocessor_pygment.py
+Lines: 3696-3702
+
+Current code:
+    transformed = code_block.replace(
+        '->', '.').replace('::', '.')
+    transformed = re.sub(
+        r'\$([a-zA-Z_]\w*)', r'\1', transformed)
+    result.append('{')
+
+Fixed code:
+    transformed = code_block.replace(
+        '->', '.').replace('::', '.')
+    transformed = re.sub(
+        r'\$([a-zA-Z_]\w*)', r'\1', transformed)
+    # Convert Perl fat comma => to Python equals =
+    transformed = re.sub(
+        r'\s*=>\s*', ' = ', transformed)
+    result.append('{')
+
+================================================================================
+VERIFICATION
+================================================================================
+
+After applying the fix, verify with:
+
+1. Test FractionAnswer.pg:
+   pytest packages/pg/translator/tests/test_tutorial_sample_problems_runtime.py \
+     -k "FractionAnswer" -v
+
+2. Test all Algebra problems:
+   pytest packages/pg/translator/tests/test_tutorial_sample_problems_runtime.py \
+     -k "Algebra" -v
+
+3. Visual check:
+   - FractionAnswer should render with proper answer blank
+   - "Simplify 6/4" text should appear
+   - Input field should be present
+   - Variable interpolation should work
+
+================================================================================
+RECENT CHANGES ANALYSIS
+================================================================================
+
+Recent commit (5aea5d58): "Refactor parser_multianswer.py and 
+pg_preprocessor_pygment.py for improved clarity and functionality"
+
+This commit only changed:
+  - Line formatting and whitespace
+  - Made multi-line regex patterns more readable
+  - Did NOT change the functionality
+  
+The bug existed before this commit and remains after it.
+
+The bug was likely introduced when _transform_pgml_evaluators was originally
+added or when Perl syntax transformation was first implemented.
+
+================================================================================
+END OF INVESTIGATION SUMMARY
+================================================================================

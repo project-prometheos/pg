@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(where:*)",
+      "Bash(\"C:\\Users\\mdahl\\AppData\\Local\\Microsoft\\WindowsApps\\python.exe\" pg_solve.py tutorial/sample-problems/Algebra/FractionAnswer.pg)",
+      "Bash(findstr:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

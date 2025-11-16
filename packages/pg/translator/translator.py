@@ -965,14 +965,23 @@ class PGTranslator:
                 continue
 
             ans_entry = environment.answers[name]
-            evaluator = (
-                ans_entry["ans_eval"]
-                if isinstance(ans_entry, dict) and "ans_eval" in ans_entry
-                else ans_entry
-            )
+
+            # Handle different answer entry formats
+            if isinstance(ans_entry, dict) and "ans_eval" in ans_entry:
+                # Legacy format with explicit ans_eval key
+                evaluator = ans_entry["ans_eval"]
+                cmp_options = {}
+            elif isinstance(ans_entry, dict) and "evaluator" in ans_entry:
+                # PGML spec format with evaluator and options
+                evaluator = ans_entry["evaluator"]
+                cmp_options = ans_entry.get("options", {})
+            else:
+                # Direct evaluator object
+                evaluator = ans_entry
+                cmp_options = {}
 
             eval_id = id(evaluator)
-            evaluator_groups.setdefault(eval_id, []).append((name, student_answer))
+            evaluator_groups.setdefault(eval_id, []).append((name, student_answer, cmp_options))
             evaluator_map[eval_id] = evaluator
 
         for eval_id, group_items in evaluator_groups.items():
@@ -981,12 +990,12 @@ class PGTranslator:
             if len(group_items) > 1 and hasattr(evaluator, "cmp"):
                 checker = evaluator.cmp()
                 if hasattr(checker, "check"):
-                    student_answers = [ans for _, ans in group_items]
+                    student_answers = [ans for _, ans, _ in group_items]
                     check_result = checker.check(*student_answers)
 
                     if "results" in check_result and isinstance(check_result["results"], list):
                         answers = getattr(evaluator, "answers", [])
-                        for index, (name, student_answer) in enumerate(group_items):
+                        for index, (name, student_answer, _cmp_opts) in enumerate(group_items):
                             individual_score = (
                                 check_result["results"][index]
                                 if index < len(check_result["results"])
@@ -1004,7 +1013,7 @@ class PGTranslator:
                                 correct_answer=correct_answer,
                             )
                     else:
-                        for name, student_answer in group_items:
+                        for name, student_answer, _cmp_opts in group_items:
                             answer_results[name] = AnswerResult(
                                 score=check_result.get("score", 0.0),
                                 correct=check_result.get("correct", False),
@@ -1015,13 +1024,13 @@ class PGTranslator:
                 elif hasattr(checker, "evaluate"):
                     # MultiAnswer uses .evaluate() instead of .check()
                     # Call evaluate with all student answers
-                    student_answers = [ans for _, ans in group_items]
+                    student_answers = [ans for _, ans, _ in group_items]
                     try:
                         eval_result = checker.evaluate(*student_answers)
                     except Exception as e:
                         # Log error and create error results
                         error_msg = f"Error evaluating MultiAnswer: {str(e)}"
-                        for name, student_answer in group_items:
+                        for name, student_answer, _cmp_opts in group_items:
                             answer_results[name] = AnswerResult(
                                 score=0.0,
                                 correct=False,
@@ -1030,10 +1039,10 @@ class PGTranslator:
                                 correct_answer=str(evaluator),
                             )
                         continue
-                    
+
                     # Handle None result (evaluator not implemented properly)
                     if eval_result is None:
-                        for name, student_answer in group_items:
+                        for name, student_answer, _cmp_opts in group_items:
                             answer_results[name] = AnswerResult(
                                 score=0.0,
                                 correct=False,
@@ -1042,13 +1051,13 @@ class PGTranslator:
                                 correct_answer=str(evaluator),
                             )
                         continue
-                    
+
                     # If evaluate returns an AnswerResult, extract the score and info
                     if hasattr(eval_result, "score"):
                         # Single result for all answers
                         score = eval_result.score
                         message = getattr(eval_result, "answer_message", "")
-                        for name, student_answer in group_items:
+                        for name, student_answer, _cmp_opts in group_items:
                             answer_results[name] = AnswerResult(
                                 score=score,
                                 correct=score >= 1.0,
@@ -1060,7 +1069,7 @@ class PGTranslator:
                         # Dictionary with individual results
                         if "results" in eval_result and isinstance(eval_result["results"], list):
                             answers = getattr(evaluator, "answers", [])
-                            for index, (name, student_answer) in enumerate(group_items):
+                            for index, (name, student_answer, _cmp_opts) in enumerate(group_items):
                                 individual_score = (
                                     eval_result["results"][index]
                                     if index < len(eval_result["results"])
@@ -1080,7 +1089,7 @@ class PGTranslator:
                         else:
                             # Single score for all
                             score = eval_result.get("score", 0.0)
-                            for name, student_answer in group_items:
+                            for name, student_answer, _cmp_opts in group_items:
                                 answer_results[name] = AnswerResult(
                                     score=score,
                                     correct=score >= 1.0,
@@ -1090,19 +1099,20 @@ class PGTranslator:
                                 )
                 continue
 
-            for name, student_answer in group_items:
+            for name, student_answer, cmp_options in group_items:
                 # Check for cmp() first (MathObjects with Perl-equivalent flow)
                 # This must come before compare() check since many MathObjects have both
                 if hasattr(evaluator, "cmp"):
                     # MathObject with cmp() - use Perl-equivalent flow
                     checker = evaluator.cmp()
-                    
+
                     # Create initial AnswerResult
                     ans_result = AnswerResult(
                         original_student_answer=student_answer,
                         ans_label=name,
                         type=f"Value ({type(evaluator).__name__})",
                         correct_answer=str(evaluator) if hasattr(evaluator, "__str__") else "",
+                        metadata={'cmp_options': cmp_options},
                     )
                     
                     # Step 1: Parse student answer (cmp_parse equivalent)
