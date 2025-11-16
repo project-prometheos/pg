@@ -1,7 +1,40 @@
 {
-  "answers": [],
+  "answers": [
+    {
+      "correct": true,
+      "correct_value": "5",
+      "message": "",
+      "name": "AnSwEr0001",
+      "score": 1.0,
+      "type": "Real"
+    },
+    {
+      "correct": true,
+      "correct_value": "6",
+      "message": "",
+      "name": "AnSwEr0002",
+      "score": 1.0,
+      "type": "Real"
+    },
+    {
+      "correct": true,
+      "correct_value": "5",
+      "message": "",
+      "name": "AnSwEr0003",
+      "score": 1.0,
+      "type": "Real"
+    },
+    {
+      "correct": true,
+      "correct_value": "6",
+      "message": "",
+      "name": "AnSwEr0004",
+      "score": 1.0,
+      "type": "Real"
+    }
+  ],
   "errors": [],
-  "html": "<div class=\"pgml-document\">\n<h2>Answer Blank Examples</h2>\n<p>Short answer: <input type=\"text\" name=\"AnSwEr0001\" id=\"AnSwEr0001\" class=\"pgml-answer-blank\" size=\"5\" style=\"width: 50px;\" aria-label=\"Answer 1\"></p>\n<p>Longer answer blank: <input type=\"text\" name=\"AnSwEr0002\" id=\"AnSwEr0002\" class=\"pgml-answer-blank\" size=\"10\" style=\"width: 100px;\" aria-label=\"Answer 2\"></p>\n<p>What is <span class=\"pgml-variable\">[$a]</span> + <span class=\"pgml-variable\">[$b]</span>? <input type=\"text\" name=\"AnSwEr0003\" id=\"AnSwEr0003\" class=\"pgml-answer-blank\" size=\"5\" style=\"width: 50px;\" aria-label=\"Answer 3\"></p>\n<p>What is [`<span class=\"pgml-variable\">[$a]</span> \\times <span class=\"pgml-variable\">[$b]</span>`]? <input type=\"text\" name=\"AnSwEr0004\" id=\"AnSwEr0004\" class=\"pgml-answer-blank\" size=\"5\" style=\"width: 50px;\" aria-label=\"Answer 4\"> </p>\n</div>",
-  "tex": "<div class=\"pgml-document\">\n<h2>Answer Blank Examples</h2>\n<p>Short answer: <input type=\"text\" name=\"AnSwEr0001\" id=\"AnSwEr0001\" class=\"pgml-answer-blank\" size=\"5\" style=\"width: 50px;\" aria-label=\"Answer 1\"></p>\n<p>Longer answer blank: <input type=\"text\" name=\"AnSwEr0002\" id=\"AnSwEr0002\" class=\"pgml-answer-blank\" size=\"10\" style=\"width: 100px;\" aria-label=\"Answer 2\"></p>\n<p>What is <span class=\"pgml-variable\">[$a]</span> + <span class=\"pgml-variable\">[$b]</span>? <input type=\"text\" name=\"AnSwEr0003\" id=\"AnSwEr0003\" class=\"pgml-answer-blank\" size=\"5\" style=\"width: 50px;\" aria-label=\"Answer 3\"></p>\n<p>What is [`<span class=\"pgml-variable\">[$a]</span> \\times <span class=\"pgml-variable\">[$b]</span>`]? <input type=\"text\" name=\"AnSwEr0004\" id=\"AnSwEr0004\" class=\"pgml-answer-blank\" size=\"5\" style=\"width: 50px;\" aria-label=\"Answer 4\"> </p>\n</div>",
+  "html": "\n## Answer Blank Examples\n\nShort answer: ___ANSWER_BLANK_AnSwEr0001___\n\nLonger answer blank: ___ANSWER_BLANK_AnSwEr0002___\n\nWhat is 3 + 2? ___ANSWER_BLANK_AnSwEr0003___\n\nWhat is $3 \\times 2$? ___ANSWER_BLANK_AnSwEr0004___\n",
+  "tex": "\n## Answer Blank Examples\n\nShort answer: ___ANSWER_BLANK_AnSwEr0001___\n\nLonger answer blank: ___ANSWER_BLANK_AnSwEr0002___\n\nWhat is 3 + 2? ___ANSWER_BLANK_AnSwEr0003___\n\nWhat is $3 \\times 2$? ___ANSWER_BLANK_AnSwEr0004___\n",
   "warnings": []
 }

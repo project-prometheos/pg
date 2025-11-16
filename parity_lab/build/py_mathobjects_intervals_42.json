@@ -1,11 +1,12 @@
 {
   "answers": [
     {
-      "correct": false,
-      "message": "",
+      "correct": true,
+      "correct_value": "(0, 5)",
+      "message": "Correct!",
       "name": "AnSwEr0001",
-      "score": 0.0,
-      "type": "dict"
+      "score": 1.0,
+      "type": "StringEvaluator"
     }
   ],
   "errors": [],

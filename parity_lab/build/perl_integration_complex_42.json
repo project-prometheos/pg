@@ -1,0 +1,40 @@
+{
+   "answers" : [
+      {
+         "correct" : 1,
+         "correct_value" : "7",
+         "message" : "",
+         "name" : "AnSwEr0001",
+         "score" : 1,
+         "type" : "AnswerEvaluator"
+      },
+      {
+         "correct" : 1,
+         "correct_value" : "4*x+3",
+         "message" : "",
+         "name" : "AnSwEr0002",
+         "score" : 1,
+         "type" : "AnswerEvaluator"
+      },
+      {
+         "correct" : 1,
+         "correct_value" : "Linear",
+         "message" : "",
+         "name" : "AnSwEr0003",
+         "score" : 1,
+         "type" : "AnswerEvaluator"
+      }
+   ],
+   "errors" : [],
+   "html" : "1<div class=\"PGML\">\n<h2 style=\"margin:0\">Complex Integration Test</h2>\n<div style=\"margin-top:1em\"></div>\nGiven: <span class='tex2jax_ignore'>\\(a = [4]\\)</span> and <span class='tex2jax_ignore'>\\(b = [3]\\)</span>\n<div style=\"margin-top:1em\"></div>\n<ol type=\"1\" style=\"margin:0; padding-left:2.25em\">\n<li>What is <span class='tex2jax_ignore'>\\(a + b\\)</span>? <div class=\"text-nowrap d-inline\"><input class=\"codeshard\" autocomplete=\"off\" id=\"AnSwEr0001\" dir=\"auto\" name=\"AnSwEr0001\" spellcheck=\"false\" autocapitalize=\"off\" aria-label=\"1\" value=\"\" type=\"text\" size=\"5\"></div><input type=\"hidden\" value=\"\" name=\"previous&#95;AnSwEr0001\"></li>\n<div style=\"margin-top:1em\"></div>\n<li>What is the function <span class='tex2jax_ignore'>\\(f(x) = ax + b\\)</span>? <div class=\"text-nowrap d-inline\"><input autocomplete=\"off\" class=\"codeshard\" dir=\"auto\" name=\"AnSwEr0002\" id=\"AnSwEr0002\" spellcheck=\"false\" aria-label=\"2\" autocapitalize=\"off\" value=\"\" type=\"text\" size=\"10\"></div><input name=\"previous&#95;AnSwEr0002\" value=\"\" type=\"hidden\"></li>\n<div style=\"margin-top:1em\"></div>\n<li>What type of function is this? <div class=\"text-nowrap d-inline\"><input size=\"1\" type=\"text\" value=\"\" spellcheck=\"false\" aria-label=\"3\" autocapitalize=\"off\" id=\"AnSwEr0003\" dir=\"auto\" name=\"AnSwEr0003\" class=\"codeshard\" autocomplete=\"off\"></div><input type=\"hidden\" name=\"previous&#95;AnSwEr0003\" value=\"\"></li>\n</ol>\n<div style=\"margin-top:1em\"></div>\n<h3 style=\"margin:0\">Solution</h3>\n<div style=\"margin-top:1em\"></div>\nWhen <span class='tex2jax_ignore'>\\(a = [4]\\)</span> and <span class='tex2jax_ignore'>\\(b = [3]\\)</span>:\n<ul type=\"disc\" style=\"margin:0; padding-left:2.25em\">\n<li>Sum: <span class='tex2jax_ignore'>\\([4] + [3] = [7]\\)</span>\n</li>\n<li>Function: <span class='tex2jax_ignore'>\\(f(x) = [4]x + [3]\\)</span>\n</li>\n<li>Type: Linear (degree 1 polynomial)</li>\n</ul>\n</div>\n1",
+   "tex" : "1<div class=\"PGML\">\n<h2 style=\"margin:0\">Complex Integration Test</h2>\n<div style=\"margin-top:1em\"></div>\nGiven: <span class='tex2jax_ignore'>\\(a = [4]\\)</span> and <span class='tex2jax_ignore'>\\(b = [3]\\)</span>\n<div style=\"margin-top:1em\"></div>\n<ol type=\"1\" style=\"margin:0; padding-left:2.25em\">\n<li>What is <span class='tex2jax_ignore'>\\(a + b\\)</span>? <div class=\"text-nowrap d-inline\"><input class=\"codeshard\" autocomplete=\"off\" id=\"AnSwEr0001\" dir=\"auto\" name=\"AnSwEr0001\" spellcheck=\"false\" autocapitalize=\"off\" aria-label=\"1\" value=\"\" type=\"text\" size=\"5\"></div><input type=\"hidden\" value=\"\" name=\"previous&#95;AnSwEr0001\"></li>\n<div style=\"margin-top:1em\"></div>\n<li>What is the function <span class='tex2jax_ignore'>\\(f(x) = ax + b\\)</span>? <div class=\"text-nowrap d-inline\"><input autocomplete=\"off\" class=\"codeshard\" dir=\"auto\" name=\"AnSwEr0002\" id=\"AnSwEr0002\" spellcheck=\"false\" aria-label=\"2\" autocapitalize=\"off\" value=\"\" type=\"text\" size=\"10\"></div><input name=\"previous&#95;AnSwEr0002\" value=\"\" type=\"hidden\"></li>\n<div style=\"margin-top:1em\"></div>\n<li>What type of function is this? <div class=\"text-nowrap d-inline\"><input size=\"1\" type=\"text\" value=\"\" spellcheck=\"false\" aria-label=\"3\" autocapitalize=\"off\" id=\"AnSwEr0003\" dir=\"auto\" name=\"AnSwEr0003\" class=\"codeshard\" autocomplete=\"off\"></div><input type=\"hidden\" name=\"previous&#95;AnSwEr0003\" value=\"\"></li>\n</ol>\n<div style=\"margin-top:1em\"></div>\n<h3 style=\"margin:0\">Solution</h3>\n<div style=\"margin-top:1em\"></div>\nWhen <span class='tex2jax_ignore'>\\(a = [4]\\)</span> and <span class='tex2jax_ignore'>\\(b = [3]\\)</span>:\n<ul type=\"disc\" style=\"margin:0; padding-left:2.25em\">\n<li>Sum: <span class='tex2jax_ignore'>\\([4] + [3] = [7]\\)</span>\n</li>\n<li>Function: <span class='tex2jax_ignore'>\\(f(x) = [4]x + [3]\\)</span>\n</li>\n<li>Type: Linear (degree 1 polynomial)</li>\n</ul>\n</div>\n1",
+   "warnings" : [
+      "Use of uninitialized value in concatenation (.) or string at line 1295 of (eval 108)\n   from within main::SOLUTION_HEADING called at line 18 of (eval 110)\nERROR in defining MODES: neither display mode 'HTML' nor any fallback modes () supplied. at line 1159 of (eval 108)\n   from within main::MODES called at line 1295 of (eval 108)\n   from within main::SOLUTION_HEADING called at line 18 of (eval 110)\nUse of uninitialized value in concatenation (.) or string at line 1295 of (eval 108)\n   from within main::SOLUTION_HEADING called at line 19 of (eval 110)\nERROR in defining MODES: neither display mode 'HTML' nor any fallback modes () supplied. at line 1159 of (eval 108)\n   from within main::MODES called at line 1295 of (eval 108)\n   from within main::SOLUTION_HEADING called at line 19 of (eval 110)\nUse of uninitialized value in concatenation (.) or string at line 1303 of (eval 108)\n   from within main::HINT_HEADING called at line 20 of (eval 110)\nERROR in defining MODES: neither display mode 'HTML' nor any fallback modes () supplied. at line 1159 of (eval 108)\n   from within main::MODES called at line 1303 of (eval 108)\n   from within main::HINT_HEADING called at line 20 of (eval 110)\nUse of uninitialized value in concatenation (.) or string at (eval 108) line 1295.\nERROR in defining MODES: neither display mode 'HTML' nor any fallback modes () supplied. at (eval 108) line 1159.\nUse of uninitialized value in concatenation (.) or string at (eval 108) line 1295.\nERROR in defining MODES: neither display mode 'HTML' nor any fallback modes () supplied. at (eval 108) line 1159.\nUse of uninitialized value in concatenation (.) or string at (eval 108) line 1303.\nERROR in defining MODES: neither display mode 'HTML' nor any fallback modes () supplied. at (eval 108) line 1159.\n",
+      "ERROR in defining MODES: neither display mode 'HTML' nor any fallback modes () supplied. at (eval 108) line 1159.\n",
+      "Unquoted string \"x\" may clash with future reserved word at line 1 of (eval 168)\n",
+      "Operator or semicolon missing before *x at line 1 of (eval 168)\n",
+      "Ambiguous use of * resolved as operator * at line 1 of (eval 168)\n",
+      "Argument \"x\" isn't numeric in multiplication (*) at line 1 of (eval 168)\n",
+      "ERROR in defining MODES: neither display mode 'HTML' nor any fallback modes () supplied. at (eval 108) line 1159.\n"
+   ]
+}

@@ -2,10 +2,11 @@
   "answers": [
     {
       "correct": false,
+      "correct_value": "<1, 2, 3>",
       "message": "",
       "name": "AnSwEr0001",
       "score": 0.0,
-      "type": "dict"
+      "type": "VectorAnswerChecker"
     }
   ],
   "errors": [],

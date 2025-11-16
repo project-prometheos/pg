@@ -1,11 +1,20 @@
 {
-   "answers" : [],
-   "errors" : [
-      "Error executing PG snippet: Global symbol \"$int1\" requires explicit package name (did you forget to declare \"my $int1\"?) at (eval 70) line 7.\nGlobal symbol \"$int2\" requires explicit package name (did you forget to declare \"my $int2\"?) at (eval 70) line 8.\nGlobal symbol \"$union\" requires explicit package name (did you forget to declare \"my $union\"?) at (eval 70) line 9.\nsyntax error at (eval 70) line 12, near \"Interval 1\"\nExecution of (eval 70) aborted due to compilation errors.\n\n"
+   "answers" : [
+      {
+         "correct" : 1,
+         "correct_value" : "(0,5)",
+         "message" : "",
+         "name" : "AnSwEr1",
+         "score" : 1,
+         "type" : "AnswerEvaluator"
+      }
    ],
-   "html" : "",
-   "tex" : "",
+   "errors" : [],
+   "html" : "1Interval 1: \\($int1\\)$BR\nInterval 2: \\($int2\\)$BR\nUnion: \\($union\\)$BR\n$BR\nEnter the interval (0,5): \\{ans_rule(20)\\}$BR\n1",
+   "tex" : "1Interval 1: \\($int1\\)$BR\nInterval 2: \\($int2\\)$BR\nUnion: \\($union\\)$BR\n$BR\nEnter the interval (0,5): \\{ans_rule(20)\\}$BR\n1",
    "warnings" : [
-      "Number found where operator expected (Do you need to predeclare \"Interval\"?) at (eval 70) line 12, near \"Interval 1\"\n"
+      "Use of uninitialized value in concatenation (.) or string at line 1295 of (eval 108)\n   from within main::SOLUTION_HEADING called at line 18 of (eval 110)\nERROR in defining MODES: neither display mode 'HTML' nor any fallback modes () supplied. at line 1159 of (eval 108)\n   from within main::MODES called at line 1295 of (eval 108)\n   from within main::SOLUTION_HEADING called at line 18 of (eval 110)\nUse of uninitialized value in concatenation (.) or string at line 1295 of (eval 108)\n   from within main::SOLUTION_HEADING called at line 19 of (eval 110)\nERROR in defining MODES: neither display mode 'HTML' nor any fallback modes () supplied. at line 1159 of (eval 108)\n   from within main::MODES called at line 1295 of (eval 108)\n   from within main::SOLUTION_HEADING called at line 19 of (eval 110)\nUse of uninitialized value in concatenation (.) or string at line 1303 of (eval 108)\n   from within main::HINT_HEADING called at line 20 of (eval 110)\nERROR in defining MODES: neither display mode 'HTML' nor any fallback modes () supplied. at line 1159 of (eval 108)\n   from within main::MODES called at line 1303 of (eval 108)\n   from within main::HINT_HEADING called at line 20 of (eval 110)\nUse of uninitialized value in concatenation (.) or string at (eval 108) line 1295.\nERROR in defining MODES: neither display mode 'HTML' nor any fallback modes () supplied. at (eval 108) line 1159.\nUse of uninitialized value in concatenation (.) or string at (eval 108) line 1295.\nERROR in defining MODES: neither display mode 'HTML' nor any fallback modes () supplied. at (eval 108) line 1159.\nUse of uninitialized value in concatenation (.) or string at (eval 108) line 1303.\nERROR in defining MODES: neither display mode 'HTML' nor any fallback modes () supplied. at (eval 108) line 1159.\n",
+      "ERROR in defining MODES: neither display mode 'HTML' nor any fallback modes () supplied. at (eval 108) line 1159.\n",
+      "ERROR in defining MODES: neither display mode 'HTML' nor any fallback modes () supplied. at (eval 108) line 1159.\n"
    ]
 }

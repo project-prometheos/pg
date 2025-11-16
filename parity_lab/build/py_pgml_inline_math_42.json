@@ -1,0 +1,16 @@
+{
+  "answers": [
+    {
+      "correct": true,
+      "correct_value": "6",
+      "message": "",
+      "name": "AnSwEr0001",
+      "score": 1.0,
+      "type": "Real"
+    }
+  ],
+  "errors": [],
+  "html": "\nCompute $3 \\times 2$.\n\nAnswer: ___ANSWER_BLANK_AnSwEr0001___\n\n## Explanation\nWhen you multiply 3 by 2, you get $6$.\n",
+  "tex": "\nCompute $3 \\times 2$.\n\nAnswer: ___ANSWER_BLANK_AnSwEr0001___\n\n## Explanation\nWhen you multiply 3 by 2, you get $6$.\n",
+  "warnings": []
+}

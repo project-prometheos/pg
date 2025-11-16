@@ -1,0 +1,16 @@
+{
+  "answers": [
+    {
+      "correct": false,
+      "correct_value": "Increasing",
+      "message": "",
+      "name": "AnSwEr0001",
+      "score": 0.0,
+      "type": "function"
+    }
+  ],
+  "errors": [],
+  "html": "What is the behavior of the function \\(f(x) = x^2\\) for \\(x > 0\\)?\n <br/> \n <select class=\"pg-popup-menu\"><option value=\"Choose one\">Choose one</option><option value=\"Increasing\">Increasing</option><option value=\"Decreasing\">Decreasing</option><option value=\"Constant\">Constant</option></select>",
+  "tex": "What is the behavior of the function \\(f(x) = x^2\\) for \\(x > 0\\)?\n <br/> \n <select class=\"pg-popup-menu\"><option value=\"Choose one\">Choose one</option><option value=\"Increasing\">Increasing</option><option value=\"Decreasing\">Decreasing</option><option value=\"Constant\">Constant</option></select>",
+  "warnings": []
+}

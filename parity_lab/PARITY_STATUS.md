@@ -48,13 +48,31 @@ This document tracks the status of Perl vs Python parity comparisons for PG (Pro
 
 ## Test Results Summary
 
-### Basic Snippets
+### Current Status (Latest Test)
+- **Both work**: 16 snippets (76%)
+- **Perl only**: 2 snippets
+- **Python only**: 2 snippets  
+- **Perl errors**: 1 snippet (graph_basic - expected, missing WWPlot)
+
+### Working Snippets (Both Perl and Python)
 | Snippet | Perl HTML | Python HTML | Perl Answers | Python Answers | Status |
 |---------|----------|-------------|--------------|----------------|--------|
-| standard_basic.pg | 163 chars | 238 chars | 1 | 1 | ✅ Both work |
-| mathobjects_formula.pg | TBD | TBD | TBD | TBD | Testing... |
-| choice_multiple_choice.pg | 1 char | 508 chars | 0 | 1 | ⚠️ Different output |
-| fraction_basic.pg | 0 chars | 147 chars | 0 | 0 | ⚠️ Different output |
+| choice_checkbox | 44 chars | 775 chars | 1 | 1 | ✅ Both work |
+| choice_multiple_choice | 44 chars | 508 chars | 1 | 1 | ✅ Both work |
+| course_basic | 58 chars | 62 chars | 0 | 0 | ✅ Both work |
+| integration_complex | 1867 chars | 1110 chars | 1 | 1 | ✅ Both work |
+| integration_realistic | 2599 chars | 1632 chars | 1 | 1 | ✅ Both work |
+| mathobjects_formula | 156 chars | 228 chars | 1 | 1 | ✅ Both work |
+| mathobjects_intervals | 123 chars | 194 chars | 1 | 1 | ✅ Both work |
+| mathobjects_vectors | 162 chars | 276 chars | 1 | 1 | ✅ Both work |
+| multianswer_basic | 174 chars | 429 chars | 1 | 1 | ✅ Both work |
+| pgml_answer_blanks | 1442 chars | 850 chars | 4 | 4 | ✅ Both work |
+| pgml_formatting | 835 chars | 302 chars | 0 | 0 | ✅ Both work |
+| pgml_inline_math | 596 chars | 474 chars | 0 | 0 | ✅ Both work |
+| random_numbers | 114 chars | 123 chars | 0 | 0 | ✅ Both work |
+| standard_basic | 174 chars | 238 chars | 1 | 1 | ✅ Both work |
+| standard_modes | 172 chars | 145 chars | 0 | 0 | ✅ Both work |
+| standard_solution | 49 chars | 90 chars | 1 | 1 | ✅ Both work |
 
 ### Issues Found
 1. **Choice/Checkbox macros**: Perl produces minimal output, Python renders fully
@@ -78,13 +96,28 @@ python parity_lab/tools/render_diff/diff_outputs.py <perl_json> <python_json>
 bash parity_lab/run_parity_comparison.sh
 ```
 
+## Recent Improvements
+
+### Fixes Applied
+1. ✅ **BEGIN_TEXT preprocessing**: Fixed to use heredoc syntax for proper handling of curly braces
+2. ✅ **HTML::Entities**: Added fallback implementation for missing module
+3. ✅ **PGML preprocessing**: Fixed BEGIN_PGML/END_PGML conversion to PGML() calls
+4. ✅ **Choice classes**: Pre-loaded Multiple, ChoiceList, Match, Select classes
+5. ✅ **Solution/Hint blocks**: Added BEGIN_SOLUTION/END_SOLUTION and BEGIN_HINT/END_HINT preprocessing
+
+### Progress
+- **Before fixes**: 7 snippets working (33%)
+- **After fixes**: 16 snippets working (76%)
+- **Improvement**: +9 snippets, +43 percentage points
+
 ## Next Steps
 
-1. **Normalize answer names**: Update comparison logic to handle format differences
-2. **Investigate macro differences**: Why some macros produce different output
-3. **Add more test cases**: Expand snippet coverage
-4. **Document expected differences**: Create normalization rules
-5. **Performance comparison**: Measure execution time differences
+1. **Fix fraction context**: Investigate why `context::Extensions::create()` returns unblessed context
+2. **Normalize answer names**: Update comparison logic to handle format differences (AnSwEr1 vs AnSwEr0001)
+3. **Investigate macro differences**: Why some macros produce different output
+4. **Add more test cases**: Expand snippet coverage
+5. **Document expected differences**: Create normalization rules
+6. **Performance comparison**: Measure execution time differences
 
 ## Notes
 

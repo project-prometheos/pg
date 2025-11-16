@@ -1,0 +1,40 @@
+{
+  "answers": [
+    {
+      "correct": false,
+      "correct_value": "tax",
+      "message": "",
+      "name": "AnSwEr0001",
+      "score": 0.0,
+      "type": "str"
+    },
+    {
+      "correct": false,
+      "correct_value": "total",
+      "message": "",
+      "name": "AnSwEr0002",
+      "score": 0.0,
+      "type": "str"
+    },
+    {
+      "correct": false,
+      "correct_value": "discount",
+      "message": "",
+      "name": "AnSwEr0003",
+      "score": 0.0,
+      "type": "str"
+    },
+    {
+      "correct": false,
+      "correct_value": "final_price",
+      "message": "",
+      "name": "AnSwEr0004",
+      "score": 0.0,
+      "type": "str"
+    }
+  ],
+  "errors": [],
+  "html": "\n## Realistic Problem: Shopping\n\nYou purchase an item for $\\$80$.\n\na) The sales tax rate is 8%. What is the tax amount? \n   $\\$$___ANSWER_BLANK_AnSwEr0001___\n\nb) What is the total after tax? \n   $\\$$___ANSWER_BLANK_AnSwEr0002___\n\nc) You have a 10% off coupon. What is the discount amount? \n   $\\$$___ANSWER_BLANK_AnSwEr0003___\n\nd) What is the final price? \n   $\\$$___ANSWER_BLANK_AnSwEr0004___\n\n---\n\n### Explanation\n\n* Tax: $80 \\times 0.08 = \\$6.4$\n* Total with tax: $80 + 6.4 = \\$86.4$\n* Discount: $86.4 \\times 10\\% = \\$8.64$\n* Final price: $86.4 - 8.64 = \\$77.76$\n",
+  "tex": "\n## Realistic Problem: Shopping\n\nYou purchase an item for $\\$80$.\n\na) The sales tax rate is 8%. What is the tax amount? \n   $\\$$___ANSWER_BLANK_AnSwEr0001___\n\nb) What is the total after tax? \n   $\\$$___ANSWER_BLANK_AnSwEr0002___\n\nc) You have a 10% off coupon. What is the discount amount? \n   $\\$$___ANSWER_BLANK_AnSwEr0003___\n\nd) What is the final price? \n   $\\$$___ANSWER_BLANK_AnSwEr0004___\n\n---\n\n### Explanation\n\n* Tax: $80 \\times 0.08 = \\$6.4$\n* Total with tax: $80 + 6.4 = \\$86.4$\n* Discount: $86.4 \\times 10\\% = \\$8.64$\n* Final price: $86.4 - 8.64 = \\$77.76$\n",
+  "warnings": []
+}

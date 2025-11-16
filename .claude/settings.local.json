@@ -29,7 +29,8 @@
       "Bash(test:*)",
       "Bash(/c/Users/mdahl/.conda/envs/pytorch-5090/python.exe d:/pg/test_html_output.py)",
       "Bash(git restore:*)",
-      "Bash(timeout 30 python:*)"
+      "Bash(timeout 30 python:*)",
+      "Bash(perl:*)"
     ],
     "deny": [],
     "ask": []

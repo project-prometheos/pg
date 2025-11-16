@@ -2,10 +2,11 @@
   "answers": [
     {
       "correct": false,
+      "correct_value": "2*x + 1",
       "message": "",
       "name": "AnSwEr0001",
       "score": 0.0,
-      "type": "dict"
+      "type": "FormulaAnswerChecker"
     }
   ],
   "errors": [],

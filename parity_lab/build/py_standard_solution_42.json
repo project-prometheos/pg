@@ -1,0 +1,16 @@
+{
+  "answers": [
+    {
+      "correct": false,
+      "correct_value": "4",
+      "message": "",
+      "name": "AnSwEr0001",
+      "score": 0.0,
+      "type": "RealAnswerChecker"
+    }
+  ],
+  "errors": [],
+  "html": "Multiply \\( 2  \\times  2 \\): <br/> \n <input type=\"text\" size=\"10\" class=\"pg-answer-blank\">",
+  "tex": "Multiply \\( 2  \\times  2 \\): <br/> \n <input type=\"text\" size=\"10\" class=\"pg-answer-blank\">",
+  "warnings": []
+}

@@ -1,0 +1,24 @@
+{
+  "answers": [
+    {
+      "correct": false,
+      "correct_value": "x**2 + 3*x + 2",
+      "message": "",
+      "name": "AnSwEr0001",
+      "score": 0.0,
+      "type": "FormulaAnswerChecker"
+    },
+    {
+      "correct": false,
+      "correct_value": "5",
+      "message": "",
+      "name": "AnSwEr0002",
+      "score": 0.0,
+      "type": "RealAnswerChecker"
+    }
+  ],
+  "errors": [],
+  "html": "Enter a formula:  <input type=\"text\" size=\"20\" class=\"pg-answer-blank\"> \n <a href=\"/help/formulas\" target=\"_blank\">Help</a> \n <br/> \n <br/> \nEnter a number:  <input type=\"text\" size=\"10\" class=\"pg-answer-blank\"> \n <a href=\"/help/numbers\" target=\"_blank\">Help</a>",
+  "tex": "Enter a formula:  <input type=\"text\" size=\"20\" class=\"pg-answer-blank\"> \n <a href=\"/help/formulas\" target=\"_blank\">Help</a> \n <br/> \n <br/> \nEnter a number:  <input type=\"text\" size=\"10\" class=\"pg-answer-blank\"> \n <a href=\"/help/numbers\" target=\"_blank\">Help</a>",
+  "warnings": []
+}

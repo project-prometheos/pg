@@ -2,10 +2,11 @@
   "answers": [
     {
       "correct": false,
-      "message": "",
+      "correct_value": "3, 4, 5",
+      "message": "Wrong number of answers: expected 3, got 1",
       "name": "AnSwEr0001",
       "score": 0.0,
-      "type": "dict"
+      "type": "MultiAnswerEvaluator"
     }
   ],
   "errors": [],

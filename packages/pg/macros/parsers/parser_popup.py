@@ -26,6 +26,21 @@ class PopUp:
         self.correct = correct
         self.options = options
 
+    def menu(self) -> str:
+        """
+        Generate HTML for the dropdown menu.
+        
+        Returns:
+            HTML string for select element
+        """
+        options = []
+        for choice in self.choices:
+            # Escape HTML in choices
+            choice_str = str(choice).replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;')
+            options.append(f'<option value="{choice_str}">{choice_str}</option>')
+        
+        return f'<select class="pg-popup-menu">{"".join(options)}</select>'
+    
     def cmp(self) -> Callable:
         """
         Return a checker function for this PopUp.

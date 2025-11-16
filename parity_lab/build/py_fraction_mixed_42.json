@@ -1,0 +1,16 @@
+{
+  "answers": [
+    {
+      "correct": false,
+      "correct_value": "0.75",
+      "message": "",
+      "name": "AnSwEr0001",
+      "score": 0.0,
+      "type": "RealAnswerChecker"
+    }
+  ],
+  "errors": [],
+  "html": "Fraction reduction tests: <br/> \n6/8 reduces to: \\( 0.75 \\) <br/> \n12/16 reduces to: \\( 0.75 \\) <br/> \n15/20 reduces to: \\( 0.75 \\) <br/> \n <br/> \nFraction arithmetic: <br/> \n1/2 + 1/3 = \\( 5/6 \\) <br/> \n <br/> \nEnter 3/4:  <input type=\"text\" size=\"10\" class=\"pg-answer-blank\"> <br/>",
+  "tex": "Fraction reduction tests: <br/> \n6/8 reduces to: \\( 0.75 \\) <br/> \n12/16 reduces to: \\( 0.75 \\) <br/> \n15/20 reduces to: \\( 0.75 \\) <br/> \n <br/> \nFraction arithmetic: <br/> \n1/2 + 1/3 = \\( 5/6 \\) <br/> \n <br/> \nEnter 3/4:  <input type=\"text\" size=\"10\" class=\"pg-answer-blank\"> <br/>",
+  "warnings": []
+}

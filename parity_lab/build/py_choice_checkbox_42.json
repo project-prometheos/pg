@@ -1,0 +1,16 @@
+{
+  "answers": [
+    {
+      "correct": true,
+      "correct_value": "A,B,C",
+      "message": "Correct!",
+      "name": "AnSwEr0001",
+      "score": 1.0,
+      "type": "StringEvaluator"
+    }
+  ],
+  "errors": [],
+  "html": "<p>Select all even 'numbers':</p> \n <br/> \n <div class=\"choice\"><input type=\"checkbox\" name=\"answer\" value=\"0\" id=\"choice_0\"><label for=\"choice_0\">A. 2</label></div>\n<div class=\"choice\"><input type=\"checkbox\" name=\"answer\" value=\"1\" id=\"choice_1\"><label for=\"choice_1\">B. 4</label></div>\n<div class=\"choice\"><input type=\"checkbox\" name=\"answer\" value=\"2\" id=\"choice_2\"><label for=\"choice_2\">C. 6</label></div>\n<div class=\"choice\"><input type=\"checkbox\" name=\"answer\" value=\"3\" id=\"choice_3\"><label for=\"choice_3\">D. 1</label></div>\n<div class=\"choice\"><input type=\"checkbox\" name=\"answer\" value=\"4\" id=\"choice_4\"><label for=\"choice_4\">E. 3</label></div>\n<div class=\"choice\"><input type=\"checkbox\" name=\"answer\" value=\"5\" id=\"choice_5\"><label for=\"choice_5\">F. 5</label></div>",
+  "tex": "<p>Select all even 'numbers':</p> \n <br/> \n <div class=\"choice\"><input type=\"checkbox\" name=\"answer\" value=\"0\" id=\"choice_0\"><label for=\"choice_0\">A. 2</label></div>\n<div class=\"choice\"><input type=\"checkbox\" name=\"answer\" value=\"1\" id=\"choice_1\"><label for=\"choice_1\">B. 4</label></div>\n<div class=\"choice\"><input type=\"checkbox\" name=\"answer\" value=\"2\" id=\"choice_2\"><label for=\"choice_2\">C. 6</label></div>\n<div class=\"choice\"><input type=\"checkbox\" name=\"answer\" value=\"3\" id=\"choice_3\"><label for=\"choice_3\">D. 1</label></div>\n<div class=\"choice\"><input type=\"checkbox\" name=\"answer\" value=\"4\" id=\"choice_4\"><label for=\"choice_4\">E. 3</label></div>\n<div class=\"choice\"><input type=\"checkbox\" name=\"answer\" value=\"5\" id=\"choice_5\"><label for=\"choice_5\">F. 5</label></div>",
+  "warnings": []
+}
