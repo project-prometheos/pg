@@ -1,0 +1,76 @@
+{
+  "all_match": false,
+  "difference_count": 4,
+  "differences": [
+    {
+      "type": "tex",
+      "issue": "content_mismatch",
+      "severity": "high",
+      "diff": [
+        "--- Perl TeX",
+        "+++ Python TeX",
+        "@@ -1,9 +1,8 @@",
+        "-1Point: ((1,2,3))<BR>",
+        "-Vector v: (<4,5,6>)<BR>",
+        "-Vector u: (<1,0,0>)<BR>",
+        "-<BR>",
+        "-Dot product v\u00b7u: (4)<BR>",
+        "-Norm of v: (8.77496)<BR>",
+        "-<BR>",
+        "-Enter vector <1,2,3>: {ans_rule(20)}<BR>",
+        "-1",
+        "+Point: \\( (1, 2, 3) \\) <br/>",
+        "+Vector v: \\( <4, 5, 6> \\) <br/>",
+        "+Vector u: \\( <1, 0, 0> \\) <br/>",
+        "+<br/>",
+        "+Dot product v\u00b7u: \\( <5, 5, 6> \\) <br/>",
+        "+Norm of v: \\( 8.774964387392123 \\) <br/>",
+        "+<br/>",
+        "+Enter vector <1,2,3>: <input type=\"text\" size=\"20\" class=\"pg-answer-blank\"> <br/>"
+      ],
+      "perl_length": 172,
+      "python_length": 266
+    },
+    {
+      "type": "html",
+      "issue": "content_mismatch",
+      "severity": "high",
+      "diff": [
+        "--- Perl HTML",
+        "+++ Python HTML",
+        "@@ -1,9 +1,8 @@",
+        "-1Point: ((1,2,3))<BR>",
+        "-Vector v: (<4,5,6>)<BR>",
+        "-Vector u: (<1,0,0>)<BR>",
+        "-<BR>",
+        "-Dot product v\u00b7u: (4)<BR>",
+        "-Norm of v: (8.77496)<BR>",
+        "-<BR>",
+        "-Enter vector <1,2,3>: {ans_rule(20)}<BR>",
+        "-1",
+        "+Point: \\( (1, 2, 3) \\) <br/>",
+        "+Vector v: \\( <4, 5, 6> \\) <br/>",
+        "+Vector u: \\( <1, 0, 0> \\) <br/>",
+        "+<br/>",
+        "+Dot product v\u00b7u: \\( <5, 5, 6> \\) <br/>",
+        "+Norm of v: \\( 8.774964387392123 \\) <br/>",
+        "+<br/>",
+        "+Enter vector <1,2,3>: <input type=\"text\" size=\"20\" class=\"pg-answer-blank\"> <br/>"
+      ],
+      "perl_length": 172,
+      "python_length": 266
+    },
+    {
+      "type": "answer",
+      "name": "AnSwEr0001",
+      "issue": "missing_in_perl",
+      "severity": "high"
+    },
+    {
+      "type": "answer",
+      "name": "AnSwEr1",
+      "issue": "missing_in_python",
+      "severity": "high"
+    }
+  ]
+}

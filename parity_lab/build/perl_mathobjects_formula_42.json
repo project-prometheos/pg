@@ -1,0 +1,11 @@
+{
+   "answers" : [],
+   "errors" : [
+      "Error executing PG snippet: Global symbol \"$f\" requires explicit package name (did you forget to declare \"my $f\"?) at (eval 70) line 11.\nGlobal symbol \"$g\" requires explicit package name (did you forget to declare \"my $g\"?) at (eval 70) line 12.\nGlobal symbol \"$f_at_2\" requires explicit package name (did you forget to declare \"my $f_at_2\"?) at (eval 70) line 14.\nGlobal symbol \"$f\" requires explicit package name (did you forget to declare \"my $f\"?) at (eval 70) line 14.\nGlobal symbol \"$g_at_3\" requires explicit package name (did you forget to declare \"my $g_at_3\"?) at (eval 70) line 15.\nGlobal symbol \"$g\" requires explicit package name (did you forget to declare \"my $g\"?) at (eval 70) line 15.\nsyntax error at (eval 70) line 18, near \"Formula 1\"\nExecution of (eval 70) aborted due to compilation errors.\n\n"
+   ],
+   "html" : "",
+   "tex" : "",
+   "warnings" : [
+      "Number found where operator expected (Do you need to predeclare \"Formula\"?) at (eval 70) line 18, near \"Formula 1\"\n"
+   ]
+}

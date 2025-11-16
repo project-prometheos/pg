@@ -1,0 +1,22 @@
+{
+  "answers": [
+    {
+      "correct": false,
+      "message": "",
+      "name": "AnSwEr0001",
+      "score": 0.0,
+      "type": "dict"
+    },
+    {
+      "correct": false,
+      "message": "",
+      "name": "AnSwEr0002",
+      "score": 0.0,
+      "type": "dict"
+    }
+  ],
+  "errors": [],
+  "html": "<div class=\"pgml-document\">\n<p>Rewrite the following using a single exponent.</p>\n<p><span class=\"pgml-variable\">[$exp]</span>* </p>\n</div>",
+  "tex": "<div class=\"pgml-document\">\n<p>Rewrite the following using a single exponent.</p>\n<p><span class=\"pgml-variable\">[$exp]</span>* </p>\n</div>",
+  "warnings": []
+}

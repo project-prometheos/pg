@@ -1,0 +1,11 @@
+{
+   "answers" : [],
+   "errors" : [
+      "Error executing PG snippet: Global symbol \"$c\" requires explicit package name (did you forget to declare \"my $c\"?) at (eval 70) line 9.\nGlobal symbol \"$multians\" requires explicit package name (did you forget to declare \"my $multians\"?) at (eval 70) line 12.\nGlobal symbol \"$c\" requires explicit package name (did you forget to declare \"my $c\"?) at (eval 70) line 12.\nsyntax error at (eval 70) line 28, near \") where \"\nExecution of (eval 70) aborted due to compilation errors.\n\n"
+   ],
+   "html" : "",
+   "tex" : "",
+   "warnings" : [
+      "Bareword found where operator expected (Missing operator before \"where\"?) at (eval 70) line 28, near \") where\"\n"
+   ]
+}

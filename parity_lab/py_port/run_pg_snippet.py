@@ -18,6 +18,14 @@ def execute_pg_snippet(snippet_path: Path, seed: int) -> Dict[str, Any]:
     preprocessor = PGPreprocessor()
     content = snippet_path.read_text(encoding='utf-8')
     result = preprocessor.preprocess(content, use_sandbox_macros=False)
+    
+    # Fix PGML import - replace incorrect import with comment
+    # The PGML function will be added to namespace below
+    if 'from pg.pgml import PGML' in result.code:
+        result.code = result.code.replace(
+            'from pg.pgml import PGML',
+            '# from pg.pgml import PGML  # Fixed: PGML added to namespace below'
+        )
 
     # 2. Import all implemented packages
     import pg.macros.core as pgcore
@@ -126,6 +134,18 @@ def execute_pg_snippet(snippet_path: Path, seed: int) -> Dict[str, Any]:
         'BEGIN_HINT': lambda: '',
         'END_HINT': lambda: '',
     }
+
+    # Add PGML if available
+    try:
+        from pg.macros.core.pgml import PGML
+        namespace['PGML'] = PGML
+    except (ImportError, AttributeError):
+        # Fallback: try to get from pg.pgml.pgml_macros
+        try:
+            from pg.pgml.pgml_macros import PGML
+            namespace['PGML'] = PGML
+        except (ImportError, AttributeError):
+            print("Warning: PGML not found", file=sys.stderr)
 
     # Add MathObjects if available (only add what exists)
     if HAS_PG_MATH:

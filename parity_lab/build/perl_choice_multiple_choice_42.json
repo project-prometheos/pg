@@ -1,0 +1,11 @@
+{
+   "answers" : [],
+   "errors" : [
+      "Error executing PG snippet: Global symbol \"$mc\" requires explicit package name (did you forget to declare \"my $mc\"?) at (eval 70) line 5.\nGlobal symbol \"$mc\" requires explicit package name (did you forget to declare \"my $mc\"?) at (eval 70) line 6.\nGlobal symbol \"$mc\" requires explicit package name (did you forget to declare \"my $mc\"?) at (eval 70) line 10.\nGlobal symbol \"$mc\" requires explicit package name (did you forget to declare \"my $mc\"?) at (eval 70) line 15.\nGlobal symbol \"$mc\" requires explicit package name (did you forget to declare \"my $mc\"?) at (eval 70) line 18.\nsyntax error at (eval 70) line 18, near \")\\\"\nExecution of (eval 70) aborted due to compilation errors.\n\n"
+   ],
+   "html" : "",
+   "tex" : "",
+   "warnings" : [
+      "Backslash found where operator expected (Missing operator before \"\\\"?) at (eval 70) line 18, near \")\\\"\n"
+   ]
+}

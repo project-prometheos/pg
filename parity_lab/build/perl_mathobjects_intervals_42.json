@@ -1,0 +1,11 @@
+{
+   "answers" : [],
+   "errors" : [
+      "Error executing PG snippet: Global symbol \"$int1\" requires explicit package name (did you forget to declare \"my $int1\"?) at (eval 70) line 7.\nGlobal symbol \"$int2\" requires explicit package name (did you forget to declare \"my $int2\"?) at (eval 70) line 8.\nGlobal symbol \"$union\" requires explicit package name (did you forget to declare \"my $union\"?) at (eval 70) line 9.\nsyntax error at (eval 70) line 12, near \"Interval 1\"\nExecution of (eval 70) aborted due to compilation errors.\n\n"
+   ],
+   "html" : "",
+   "tex" : "",
+   "warnings" : [
+      "Number found where operator expected (Do you need to predeclare \"Interval\"?) at (eval 70) line 12, near \"Interval 1\"\n"
+   ]
+}

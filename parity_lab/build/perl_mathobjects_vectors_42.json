@@ -1,0 +1,9 @@
+{
+   "answers" : [],
+   "errors" : [
+      "Error executing PG snippet: Global symbol \"$p\" requires explicit package name (did you forget to declare \"my $p\"?) at (eval 70) line 7.\nGlobal symbol \"$v\" requires explicit package name (did you forget to declare \"my $v\"?) at (eval 70) line 8.\nGlobal symbol \"$u\" requires explicit package name (did you forget to declare \"my $u\"?) at (eval 70) line 9.\nGlobal symbol \"$dot\" requires explicit package name (did you forget to declare \"my $dot\"?) at (eval 70) line 11.\nGlobal symbol \"$v\" requires explicit package name (did you forget to declare \"my $v\"?) at (eval 70) line 11.\nGlobal symbol \"$u\" requires explicit package name (did you forget to declare \"my $u\"?) at (eval 70) line 11.\nGlobal symbol \"$norm\" requires explicit package name (did you forget to declare \"my $norm\"?) at (eval 70) line 12.\nGlobal symbol \"$v\" requires explicit package name (did you forget to declare \"my $v\"?) at (eval 70) line 12.\nsyntax error at (eval 70) line 15, near \"Point:\"\nExecution of (eval 70) aborted due to compilation errors.\n\n"
+   ],
+   "html" : "",
+   "tex" : "",
+   "warnings" : []
+}

@@ -11,13 +11,14 @@
 ## KEYWORDS('algebra', 'answer blank in the exponent')
 #:% name = Answer Blank in the Exponent
 #:% type = Sample
-#:% subject = [algebra, precalculus]
-#:% categories = [exponent]
+#:% subject = PerlList([algebra, precalculus])
+#:% categories = PerlList([exponent])
 #:% section = preamble
 from pg.mathobjects import *
 from pg.course import *
 from pg.pgml import *
 from pg.standard import *
+from pg.macros.core.pgml import PGML
 # Loaded: PGstandard.pl, PGML.pl, PGcourse.pl
 
 DOCUMENT()
@@ -39,7 +40,7 @@ exponent = Formula(f"{n}")
 if (displayMode == 'TeX'):
     exp = f"\\( \\displaystyle {expression} = ("  +  ans_rule(4)  +  ")^{"  +  ans_rule(4)  +  "}\\)"
 else:
-    exp = (((f"<span>\\(\\displaystyle {expression} = \\Big(\\)" + str(ans_rule(4))) + '\\(\\Big)\\)</span><span style="vertical-align: 12pt;">') + str(ans_rule(4))) + '</span>'
+    exp = f"<span>\\(\\displaystyle {expression} = \\Big(\\)"  +  ans_rule(4)  +  '\\(\\Big)\\)</span><span style="vertical-align: 12pt;">'  +  ans_rule(4)  +  '</span>'
 #:% section = statement
 #: Insert the exponential stored as `$exp`.
 PGML_BLOCK_0 = '''
