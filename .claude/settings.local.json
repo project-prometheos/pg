@@ -5,7 +5,13 @@
       "Bash(where:*)",
       "Bash(\"C:\\Users\\mdahl\\AppData\\Local\\Microsoft\\WindowsApps\\python.exe\" pg_solve.py tutorial/sample-problems/Algebra/FractionAnswer.pg)",
       "Bash(findstr:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(python:*)",
+      "Bash(\"C:\\Users\\mdahl\\AppData\\Local\\Microsoft\\WindowsApps\\python.exe\" \"d:\\pg\\pg_solve.py\" \"d:\\pg\\tutorial\\sample-problems\\Algebra\\FractionAnswer.pg\")",
+      "Bash(find:*)",
+      "Bash(python3:*)",
+      "Bash(git add:*)",
+      "Bash(git revert:*)"
     ],
     "deny": [],
     "ask": []
