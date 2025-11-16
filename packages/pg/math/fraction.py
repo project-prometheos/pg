@@ -259,10 +259,38 @@ class Fraction(MathValue):
             def check(self, student_answer):
                 """Check student answer."""
                 try:
+                    import os
+                    debug = not os.environ.get('PYPG_DISABLE_LOGGING')
+
                     # Parse student answer as Fraction
+                    # IMPORTANT: Don't reduce during parsing - we need to check the form for reduction validation
                     from .compute import Compute
-                    student_frac = Compute(
-                        str(student_answer), self.correct.context)
+                    # We need to parse without reduction to check if the student reduced properly
+                    # Parse as string and create Fraction with reduce=False
+                    try:
+                        # Try Compute first in case it's a formula
+                        student_frac = Compute(
+                            str(student_answer), self.correct.context)
+                    except:
+                        # If Compute fails, try direct parsing
+                        student_frac = None
+
+                    # If we got a Fraction from Compute, re-parse without reducing
+                    if student_frac and isinstance(student_frac, Fraction):
+                        # Parse the string directly to get unreduced form
+                        answer_str = str(student_answer).strip()
+                        if '/' in answer_str:
+                            try:
+                                parts = answer_str.split('/')
+                                num_str, den_str = parts[0].strip(), parts[1].strip()
+                                student_num = int(num_str)
+                                student_den = int(den_str)
+                                # Create fraction WITHOUT reducing
+                                student_frac = Fraction(student_num, student_den, self.correct.context, reduce=False)
+                            except:
+                                # Fall back to the computed value
+                                pass
+
 
                     if not isinstance(student_frac, Fraction):
                         return {'correct': False, 'score': 0.0, 'message': 'Answer must be a fraction'}
@@ -281,7 +309,8 @@ class Fraction(MathValue):
                     if self.correct.compare(student_frac):
                         # Check reduction if required
                         if self.options.get('studentsMustReduceFractions', False):
-                            if not student_frac.is_reduced():
+                            is_reduced = student_frac.is_reduced()
+                            if not is_reduced:
                                 msg = 'Your answer is not reduced to lowest terms'
                                 if self.options.get('showFractionReductionWarnings', True):
                                     return {'correct': False, 'score': 0.0, 'message': msg}

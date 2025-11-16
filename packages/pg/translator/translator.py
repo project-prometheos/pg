@@ -899,16 +899,16 @@ class PGTranslator:
     ) -> bool | None:
         """
         Perform the comparison using custom checker or operator (Perl cmp_compare equivalent).
-        
+
         Reference: lib/Value/AnswerChecker.pm::cmp_compare (lines 266-288)
-        
+
         Args:
             correct_value: The correct MathObject
             student_value: Parsed student MathObject
             ans_result: AnswerResult (acts as ans_hash)
             nth: Which answer in MultiAnswer (for error messages)
             custom_checker: Custom checker function (if provided)
-            
+
         Returns:
             True if equal, False if not equal, None if error
         """
@@ -1000,7 +1000,9 @@ class PGTranslator:
             evaluator = evaluator_map[eval_id]
 
             if len(group_items) > 1 and hasattr(evaluator, "cmp"):
-                checker = evaluator.cmp()
+                # Get options from the first item in the group (all should have the same)
+                cmp_options = group_items[0][2] if len(group_items[0]) > 2 else {}
+                checker = evaluator.cmp(**cmp_options)
                 if hasattr(checker, "check"):
                     student_answers = [ans for _, ans, _ in group_items]
                     check_result = checker.check(*student_answers)
@@ -1116,7 +1118,7 @@ class PGTranslator:
                 # This must come before compare() check since many MathObjects have both
                 if hasattr(evaluator, "cmp"):
                     # MathObject with cmp() - use Perl-equivalent flow
-                    checker = evaluator.cmp()
+                    checker = evaluator.cmp(**cmp_options)
 
                     # Create initial AnswerResult
                     ans_result = AnswerResult(
