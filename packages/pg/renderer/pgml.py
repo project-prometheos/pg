@@ -263,6 +263,7 @@ class PGMLRenderer:
                     'checker': checker,
                     'variables': variables,
                     'options': options,
+                    'evaluator': base_val,  # Store the actual evaluator object
                 }
                 if custom_checker_src is not None:
                     spec['options']['custom_checker_src'] = custom_checker_src
