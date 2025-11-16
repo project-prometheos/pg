@@ -3693,8 +3693,13 @@ if __name__ == "__main__":
                     j += 1
                 if brace_depth == 0:
                     code_block = pgml_content[i+1:j]
+                    # Convert Perl syntax to Python:
+                    # - => to = (Perl fat comma to Python assignment)
+                    # - -> to . (Perl method call to Python attribute access)
+                    # - :: to . (Perl package separator to Python module separator)
+                    # - Remove $ from variable names
                     transformed = code_block.replace(
-                        '->', '.').replace('::', '.')
+                        '=>', '=').replace('->', '.').replace('::', '.')
                     transformed = re.sub(
                         r'\$([a-zA-Z_]\w*)', r'\1', transformed)
                     result.append('{')
