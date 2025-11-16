@@ -350,15 +350,24 @@ class LinearRelation:
         self.bop = bop
         self.type = 'Relation'  # Mark as Relation type
     
+    @property
     def reduce(self) -> 'LinearRelation':
         """
         Reduce/simplify the linear relation.
         
         Returns:
             Self for method chaining
+        
+        Note: This is a property (not a method) to match Perl MathObjects behavior
+        where ->reduce and ->reduce() are equivalent.
         """
         if hasattr(self.plane, 'reduce'):
-            self.plane = self.plane.reduce()
+            # If plane has reduce as property, call it
+            if isinstance(self.plane.reduce, property):
+                reduced = self.plane.reduce
+            else:
+                reduced = self.plane.reduce() if callable(self.plane.reduce) else self.plane.reduce
+            self.plane = reduced
         return self
     
     def compare(self, other: Any, tolerance: float = 0.001) -> int:

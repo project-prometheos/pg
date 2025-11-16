@@ -150,7 +150,21 @@ def extract_answer_string(math_obj: Any) -> Optional[str]:
         except Exception:
             pass
 
-    # 2.5. Check if it's a List object with elements (needs special handling)
+    # 2.5. Check if it's a LinearRelation object
+    obj_type = type(math_obj).__name__
+    if obj_type == "LinearRelation":
+        try:
+            # LinearRelation has string() method that returns the formula
+            if hasattr(math_obj, "string") and callable(math_obj.string):
+                return math_obj.string()
+            elif hasattr(math_obj, "to_string") and callable(math_obj.to_string):
+                return math_obj.to_string()
+            # Fallback to str representation
+            return str(math_obj)
+        except Exception:
+            pass
+
+    # 2.6. Check if it's a List object with elements (needs special handling)
     if hasattr(math_obj, "elements"):
         try:
             result = extract_list_string(math_obj)
@@ -159,7 +173,7 @@ def extract_answer_string(math_obj: Any) -> Optional[str]:
         except Exception:
             pass
 
-    # 2.6. Check if it's a Point object
+    # 2.7. Check if it's a Point object
     if type(math_obj).__name__ == "Point":
         try:
             if hasattr(math_obj, "string") and callable(math_obj.string):
@@ -167,7 +181,7 @@ def extract_answer_string(math_obj: Any) -> Optional[str]:
         except Exception:
             pass
 
-    # 2.7. Check if it's a PopUp/DropDown/RadioButtons - extract correct answer
+    # 2.8. Check if it's a PopUp/DropDown/RadioButtons - extract correct answer
     obj_type = type(math_obj).__name__
     if obj_type in ("PopUp", "DropDown", "RadioButtons"):
         try:

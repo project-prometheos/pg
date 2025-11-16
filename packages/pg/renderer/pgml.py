@@ -160,13 +160,21 @@ class PGMLRenderer:
 
         # Evaluate answer expression to get correct value or spec dict
         correct_value = self._eval_answer(answer_expr)
+        
+        # Handle None (variable not found or evaluation failed)
+        if correct_value is None:
+            # Variable not found - skip this answer blank
+            # Return placeholder but don't register (will show as "No answer blanks detected")
+            return f'___ANSWER_BLANK_{answer_id}___'
+        
         # Store the evaluator object, dict spec, or string
         # Don't convert evaluator objects to strings!
         if isinstance(correct_value, dict):
             self.answer_blanks[answer_id] = correct_value
         elif hasattr(correct_value, 'cmp') or hasattr(correct_value, 'evaluate') or hasattr(correct_value, 'check'):
-            # It's an evaluator object - keep it as-is
-            self.answer_blanks[answer_id] = correct_value
+            # It's an evaluator object - wrap in dict format for consistency
+            # This ensures it's properly recognized by the answer extraction system
+            self.answer_blanks[answer_id] = {"evaluator": correct_value}
         else:
             # It's a simple value - convert to string
             self.answer_blanks[answer_id] = str(correct_value)
@@ -315,7 +323,13 @@ class PGMLRenderer:
 
             # Simple variable reference $var
             var_name = expr.lstrip('$')
-            result = self.variables.get(var_name, expr)
+            result = self.variables.get(var_name, None)
+            
+            # If variable not found, return None (will be handled as error)
+            if result is None:
+                # Variable not found - this might be an error, but return None
+                # The caller should handle this gracefully
+                return None
 
             # If result is an evaluator object (has evaluate method), return it directly
             if hasattr(result, 'evaluate') or hasattr(result, 'cmp') or hasattr(result, 'check'):
