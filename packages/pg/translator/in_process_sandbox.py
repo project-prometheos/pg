@@ -492,11 +492,13 @@ class InProcessSandbox:
 
                 # Register answer blanks in environment
                 for ans_name, ans_spec in answer_blanks.items():
-                    # Create answer evaluator entry
-                    if not isinstance(ans_spec, dict):
-                        # It's an evaluator object or value
-                        env.register_answer(ans_name, ans_spec)
+                    # For PGML answers, we want to preserve the full spec dict
+                    # Store directly in answers_hash to avoid conversion by register_answer
+                    if isinstance(ans_spec, dict) and 'evaluator' in ans_spec:
+                        # PGML spec format - store full dict directly
+                        env.answers_hash[ans_name] = ans_spec
                     else:
+                        # Legacy format or evaluator object - use register_answer
                         env.register_answer(ans_name, ans_spec)
 
                 # Return rendered HTML (which TEXT() will append)
@@ -1257,9 +1259,10 @@ class InProcessSandbox:
             try:
                 if hasattr(self, '_pg_core') and hasattr(self._pg_core, '_pg_environment'):
                     real_pg_env = self._pg_core._pg_environment
-                    if real_pg_env and hasattr(real_pg_env, 'answers'):
-                        # Merge answers from real environment
-                        answers.update(real_pg_env.answers)
+                    if real_pg_env and hasattr(real_pg_env, 'answers_hash'):
+                        # Merge answers from real environment's answers_hash
+                        # The answers registered via PGML() function store full spec dicts
+                        answers.update(real_pg_env.answers_hash)
             except Exception:
                 pass  # If something fails, just use what we have
             solution_text = ''.join(getattr(pg_env, 'solution_array', [])) if hasattr(
