@@ -54,26 +54,16 @@ def _register_answers_from_pgml(node, context):
     This walks the PGML AST and registers any answer blanks found.
     """
     # Try to get the ANS function from the calling code's scope
-    ANS = None
     try:
-        # Try multiple frame levels to handle different call stack depths
-        for frame_level in range(2, 10):
-            try:
-                frame = sys._getframe(frame_level)
-                if 'ANS' in frame.f_locals:
-                    ANS = frame.f_locals['ANS']
-                    break
-                elif 'ANS' in frame.f_globals:
-                    ANS = frame.f_globals['ANS']
-                    break
-            except ValueError:
-                # Frame doesn't exist at this level, try next
-                continue
+        frame = sys._getframe(2)  # Go up: this func -> PGML -> calling code
+        if 'ANS' in frame.f_locals:
+            ANS = frame.f_locals['ANS']
+        elif 'ANS' in frame.f_globals:
+            ANS = frame.f_globals['ANS']
+        else:
+            return  # ANS not available, skip registering
     except Exception:
-        pass
-
-    if not ANS:
-        return  # ANS not available, skip registering
+        return  # Something went wrong, skip registering
 
     # Walk the AST to find answer blanks
     def find_answer_blanks(node):
