@@ -1075,24 +1075,56 @@ if __name__ == "__main__":
                     bracket_count = 0
                     j = bracket_start
 
-                    # Find matching closing bracket
-                    while j < len(code_str):
-                        if code_str[j] == '[':
-                            bracket_count += 1
-                        elif code_str[j] == ']':
-                            bracket_count -= 1
-                            if bracket_count == 0:
-                                # Found matching closing bracket
-                                list_literal = code_str[bracket_start:j+1]
-                                result.append(
-                                    f'{var_name} = PerlList({list_literal})')
-                                i = j + 1
-                                break
+                    # Check if this is a PGML answer blank pattern like [_]{...}
+                    # If so, skip the PerlList conversion
+                    list_content_start = j + 1
+                    is_pgml_blank = False
+
+                    # Check if content starts with underscores only: [_+]
+                    if list_content_start < len(code_str):
+                        temp_j = list_content_start
+                        underscore_count = 0
+                        while temp_j < len(code_str) and code_str[temp_j] == '_':
+                            underscore_count += 1
+                            temp_j += 1
+                        # If we found only underscores followed by ], this is a PGML blank
+                        if underscore_count > 0 and temp_j < len(code_str) and code_str[temp_j] == ']':
+                            is_pgml_blank = True
+
+                    if is_pgml_blank:
+                        # Skip PerlList conversion for PGML answer blanks
+                        # Just copy the original text character by character
+                        result.append(code_str[i:j+1])  # Add "var = ["
+                        # Find the matching close bracket and keep it as-is
+                        bracket_count = 1
                         j += 1
+                        while j < len(code_str) and bracket_count > 0:
+                            if code_str[j] == '[':
+                                bracket_count += 1
+                            elif code_str[j] == ']':
+                                bracket_count -= 1
+                            result.append(code_str[j])
+                            j += 1
+                        i = j
                     else:
-                        # No matching bracket found, keep original
-                        result.append(code_str[i])
-                        i += 1
+                        # Find matching closing bracket for regular list assignments
+                        while j < len(code_str):
+                            if code_str[j] == '[':
+                                bracket_count += 1
+                            elif code_str[j] == ']':
+                                bracket_count -= 1
+                                if bracket_count == 0:
+                                    # Found matching closing bracket
+                                    list_literal = code_str[bracket_start:j+1]
+                                    result.append(
+                                        f'{var_name} = PerlList({list_literal})')
+                                    i = j + 1
+                                    break
+                            j += 1
+                        else:
+                            # No matching bracket found, keep original
+                            result.append(code_str[i])
+                            i += 1
                 else:
                     result.append(code_str[i])
                     i += 1
