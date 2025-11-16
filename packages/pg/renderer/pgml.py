@@ -194,6 +194,42 @@ class PGMLRenderer:
             if hasattr(result, 'evaluate') or hasattr(result, 'cmp') or hasattr(result, 'check'):
                 return result
 
+        # Handle Python-style method calls: var.cmp(...) (preprocessor converts $var->cmp(...) to this)
+        python_cmp_match = re.match(
+            r'^(\w+)\s*\.\s*cmp\s*\((.*?)\)\s*(?:\.\w+\(.*?\))*$', expr, re.DOTALL)
+        if python_cmp_match:
+            var_name = python_cmp_match.group(1)
+            options_str = python_cmp_match.group(2)
+            base_val = self.variables.get(var_name, None)
+            # Determine checker/options
+            custom_checker_src, options = self._extract_custom_checker(
+                options_str)
+
+            if options.get('upToConstant', False):
+                # Additive constant parity (antiderivative style)
+                checker = 'up_to_additive_constant'
+            else:
+                checker = 'standard'
+            if custom_checker_src is not None:
+                checker = 'custom'
+            # Build answer spec
+            if hasattr(base_val, 'to_string'):
+                value_str = base_val.to_string()
+                variables = getattr(base_val, 'variables', [])
+            else:
+                value_str = str(base_val) if base_val is not None else expr
+                variables = []
+            spec = {
+                'correct_value': value_str,
+                'type': 'formula',
+                'checker': checker,
+                'variables': variables,
+                'options': options,
+            }
+            if custom_checker_src is not None:
+                spec['options']['custom_checker_src'] = custom_checker_src
+            return spec
+
         # If it starts with $, it may be a variable or a method call like $var->cmp(...)
         if expr.startswith('$'):
             # Detect $var->cmp(options)
@@ -349,18 +385,23 @@ class PGMLRenderer:
         return self._interpolate_variables_in_string(expr)
 
     def _parse_cmp_options(self, s: str) -> Dict[str, Any]:
-        """Parse a minimal subset of cmp(...) options from Perl-style 'key => value' list.
+        """Parse a minimal subset of cmp(...) options from key=value or key=>value list.
 
-        Only options that we currently use are parsed (e.g., upToConstant => 1).
+        Supports both Python-style assignment (=) and Perl-style fat comma (=>).
+        Only options that we currently use are parsed (e.g., upToConstant = 1).
         Unknown keys are ignored.
         """
         opts: Dict[str, Any] = {}
         # Split on commas not inside parentheses (cmp values here are simple)
         parts = [p.strip() for p in s.split(',') if p.strip()]
         for part in parts:
-            if '=>' not in part:
+            # Handle both => (Perl) and = (Python) separators
+            if '=>' in part:
+                key, val = [x.strip() for x in part.split('=>', 1)]
+            elif '=' in part:
+                key, val = [x.strip() for x in part.split('=', 1)]
+            else:
                 continue
-            key, val = [x.strip() for x in part.split('=>', 1)]
             # Strip surrounding quotes for key
             key = key.strip('"\'')
             # Normalize boolean/numeric values
